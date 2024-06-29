@@ -92,6 +92,7 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
+              console.error({ REGISTER_CONTACT: error })
                 return { error: true, message: error.message };
             }
         }

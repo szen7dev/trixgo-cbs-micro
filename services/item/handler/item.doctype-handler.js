@@ -133,12 +133,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, doctypeID, projectID, parentID, type, keyword, limit, lastestID, select, populates, isShowParentAndChild } = ctx.params;
-				const { _id: userID, company } = ctx.meta.infoUser;
+                let { companyID, doctypeID, projectID, parentID, type, keyword, limit, lastestID, select, populates, isShowParentAndChild, userID } = ctx.params;
+        				const infoUser = ctx.meta?.infoUser;
 
-                if(!companyID){
-                    companyID = company._id;
+                if(infoUser) {
+                  if(!companyID){
+                      companyID = infoUser.company?._id;
+                  }
+
+                  userID = infoUser._id;
                 }
+
                 let resultAfterCallHandler;
                 if(doctypeID){
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getInfo({

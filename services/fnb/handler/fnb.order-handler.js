@@ -46,9 +46,12 @@ module.exports = {
             try {
               console.log({ FNB_ORDER_INSERT_PARAMS: ctx.params });
                 await this.validateEntity(ctx.params);
-                let { type, voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid } = ctx.params;
+                let { type, voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID } = ctx.params;
 
-                const { _id: userID } = ctx.meta.infoUser;
+                const infoUser = ctx.meta?.infoUser;
+                if(infoUser) {
+                  userID = infoUser._id;
+                }
 
                 if(!type){
                     // console.log('000000000000000000000000')
