@@ -126,8 +126,10 @@ class Model extends BaseModel {
                 }
 
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
-                if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact)
-                    return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
+                if(conditionObj.$or && conditionObj.$or.length > 0 && infoContact) {
+                  return resolve({ error: false, data: infoContact });
+                }
+                // return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
 
                 let dataInsert = {
                     userCreate: authorID,

@@ -22,6 +22,7 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_ORDER=======================================//
     ORDERS                                  : `${BASE_ROUTE}${ORDER}`,
+    ORDERS_CREATE                           : `${BASE_ROUTE}${ORDER}/create`, // Public (don't need token)
     ORDER_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}${ORDER}/get-list-by-property`,
     ORDER_UPDATE_VALUE                      : `${BASE_ROUTE}${ORDER}/update-value`,
     ORDER_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${ORDER}/download-template-excel`,

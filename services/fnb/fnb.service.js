@@ -79,6 +79,7 @@ module.exports = {
 		[CF_ACTIONS_FNB.ORDER_EXPORT_EXCEL3]							: FNB__ORDER_HANDLER.exportExcel3,
 		[CF_ACTIONS_FNB.ORDER_RESET_ALL_DATA]							: FNB__ORDER_HANDLER.resetAllData,
 		[CF_ACTIONS_FNB.ORDER_CONVERT_ALL_DATA]							: FNB__ORDER_HANDLER.convertAllData,
+		[CF_ACTIONS_FNB.ORDER_CREATE]									: FNB__ORDER_HANDLER.insert,
 
 		//========================================== FNB_PRODUCT ==============================================//
 		[CF_ACTIONS_FNB.PRODUCT_INSERT]									: FNB__PRODUCT_HANDLER.insert,
@@ -130,7 +131,7 @@ module.exports = {
 		[CF_ACTIONS_FNB.VOUCHER_DOWNLOAD_TEMPLATE_EXCEL]				: FNB__VOUCHER_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_FNB.VOUCHER_IMPORT_FROM_EXCEL]						: FNB__VOUCHER_HANDLER.importFromExcel,
 		[CF_ACTIONS_FNB.VOUCHER_EXPORT_EXCEL]							: FNB__VOUCHER_HANDLER.exportExcel,
-		
+
 		//========================================== FNB_CUSTOMER_CARE ==============================================//
 		[CF_ACTIONS_FNB.CUSTOMER_CARE_INSERT]									: FNB__CUSTOMER_CARE_HANDLER.insert,
 		[CF_ACTIONS_FNB.CUSTOMER_CARE_UPDATE]									: FNB__CUSTOMER_CARE_HANDLER.update,
