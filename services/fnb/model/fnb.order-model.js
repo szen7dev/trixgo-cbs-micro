@@ -781,15 +781,22 @@ class Model extends BaseModel {
 
         // Tiền mặt và chuyển khoản
         if (!isNaN(paymentMethod) && Number(paymentMethod) === 1) {
-          dataUpdateFw.$inc = {
-            cashAmount: Number(amount)
+          if(dataUpdateFw.$inc) {
+            dataUpdateFw.$inc.cashAmount = +amount;
+          } else {
+            dataUpdateFw.$inc = {
+              cashAmount: +amount
+            }
           }
         }
 
         if (!isNaN(paymentMethod) && Number(paymentMethod) === 2) {
-          console.log({amount})
-          dataUpdateFw.$inc = {
-            transferAmount: Number(amount)
+          if(dataUpdateFw.$inc) {
+            dataUpdateFw.$inc.transferAmount = +amount;
+          } else {
+            dataUpdateFw.$inc = {
+              transferAmount: +amount
+            }
           }
         }
         // console.log(dataUpdateFw)
