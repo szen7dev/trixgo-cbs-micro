@@ -163,6 +163,42 @@ module.exports = {
     },
 
     /**
+	 * Dev: MinhVH
+	 * Func: Get list and get info doctype (kysuhiep)
+	 */
+    getInfoAndGetListKySuHiep: {
+        params: {
+            // Field bổ sung
+            projectID       : { type: "string", optional: true },
+            // Field mặc định
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { projectID, keyword, limit, lastestID, select, populates } = ctx.params;
+
+                const parentID = "668926773bdb16001316392a";
+                const type = 24;
+                const userID = "6046c7982c1dc33996dddd20";
+                const companyID = "6046c7962c1dc33996dddcb7";
+
+                const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getListKySuHiep({
+                    companyID, projectID, parentID, lastestID, userID, type, keyword, limit, select, populates
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Code:  HiepNH
      * Name Download Template Excel
      * Date: 9/12/2022

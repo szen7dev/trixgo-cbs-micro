@@ -272,7 +272,44 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ goodsID, vimeoId, select, populates }) {
+    getInfo({ goodsID, select, populates }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(goodsID && !checkObjectIDs(goodsID))
+                    return resolve({ error: true, message: 'Request params goodsID invalid', status: 400 });
+
+                 if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                 const filter = {};
+                 goodsID && (filter['_id'] = goodsID);
+                 console.log({ filter })
+
+                let infoAterGet = await ITEM__GOODS_COLL.findOne(filter)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoAterGet)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+
+                return resolve({ error: false, data: infoAterGet, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    getInfoKySuHiep({ goodsID, vimeoId, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(goodsID && !checkObjectIDs(goodsID))
@@ -442,6 +479,141 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
+    }
+
+    /**
+     * Name  : Danh sách goods (kysuhiep)
+     * Author: MinhVH
+     */
+    getListKySuHiep({
+        companyID, parentID, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
+        keyword, limit = 10, lastestID, select, populates = {}, sortDirection = '-1'
+    }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(limit > 20){
+                    limit = 20
+                } else{
+                    limit = +limit;
+                }
+
+                let sortBy;
+                let conditionObj = { };
+                let keys	 = [`createAt__${sortDirection}`, `_id__${sortDirection}`];
+
+                if(fundaID && checkObjectIDs(fundaID)){
+                    conditionObj.fundas = {$in: [fundaID]}
+                }
+
+                if(parentID && checkObjectIDs(parentID)){
+                    conditionObj.parent = ObjectID(parentID);
+                }
+
+                if(forCustomer && !isNaN(forCustomer)){
+                    conditionObj.forCustomer = Number(forCustomer)
+                }
+
+                // Chỉ lấy danh mục
+                if(isParent && Number(isParent) == 1){
+                    conditionObj.parent = { $exists: false }
+                }
+
+                // Phân loại (sản phẩm chính/topping)
+                if(type && !isNaN(type)){
+                    conditionObj.type = Number(type)
+                }
+
+                // Theo trạng thái
+                if(status && !isNaN(status)){
+                    conditionObj.status = Number(status)
+                }
+
+                // Theo mục đích sử dụng
+                if(usage && !isNaN(usage)){
+                    conditionObj.usage = Number(usage)
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+					populates = JSON.parse(populates);
+				} else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = companyID;
+                }
+
+                // Chỉ lấy danh sách cha hoặc con
+                if(isListParentOfListChilds == 1){
+                    if(parentID){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
+                }
+
+                if(keyword){
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    conditionObj.name = new RegExp(keyword, 'i');
+                }
+
+                let conditionObjOrg = { ...conditionObj };
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await ITEM__GOODS_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy       = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await ITEM__GOODS_COLL.find(conditionObj)
+                    .select(select)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await ITEM__GOODS_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+
     }
 
     /**

@@ -34,7 +34,7 @@ const CF_ACTIONS_FNB = {
    ORDER_EXPORT_EXCEL2                             : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL2`,
    ORDER_EXPORT_EXCEL3                             : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL3`,
    ORDER_RESET_ALL_DATA                            : `${BASE_ACTIONS}_${ORDER}_RESET_ALL_DATA`,
-   ORDER_CREATE                                    : `${BASE_ACTIONS}_${ORDER}_CREATE`, // Public (don't need token)
+   ORDER_KY_SU_HIEP                                : `${BASE_ACTIONS}_${ORDER}_KY_SU_HIEP`,
    ORDER_CONVERT_ALL_DATA                          : `${BASE_ACTIONS}_${ORDER}_CONVERT_ALL_DATA`,
 
    /**
