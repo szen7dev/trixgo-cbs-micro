@@ -14,7 +14,6 @@ const STORAGE           = 'STORAGE';
 const ACCOUNT           = 'ACCOUNT';
 const FUNDA             = 'FUNDA';
 const GOOD              = 'GOOD';
-const COURSE            = 'COURSE';
 const SIGNATURE         = 'SIGNATURE';
 const DEPARTMENT_DIRECTORY = 'DEPARTMENT_DIRECTORY';
 const CONFIG            = 'CONFIG';
@@ -61,6 +60,7 @@ const CF_ACTIONS_ITEM = {
     DOCTYPE_UPDATE                              : `${BASE_ACTIONS}_${DOCTYPE}_UPDATE`,
     DOCTYPE_REMOVE                              : `${BASE_ACTIONS}_${DOCTYPE}_REMOVE`,
     DOCTYPE_GET_INFO_AND_GET_LIST               : `${BASE_ACTIONS}_${DOCTYPE}_GET_INFO_AND_GET_LIST`,
+    DOCTYPE_GET_INFO_AND_GET_LIST_KYSUHIEP      : `${BASE_ACTIONS}_${DOCTYPE}_GET_INFO_AND_GET_LIST_KYSUHIEP`,
     DOCTYPE_IMPORT_FROM_EXCEL                   : `${BASE_ACTIONS}_${DOCTYPE}_IMPORT_FROM_EXCEL`,
 
      /**
@@ -138,7 +138,7 @@ const CF_ACTIONS_ITEM = {
     GOOD_DOWNLOAD_TEMPLATE_EXCEL                : `${BASE_ACTIONS}_${GOOD}_DOWNLOAD_TEMPLATE_EXCEL`,
     GOOD_IMPORT_FROM_EXCEL                      : `${BASE_ACTIONS}_${GOOD}_IMPORT_FROM_EXCEL`,
     GOOD_EXPORT_EXCEL                           : `${BASE_ACTIONS}_${GOOD}_EXPORT_EXCEL`,
-    COURSE_GET_INFO_AND_GET_LIST                : `${BASE_ACTIONS}_${COURSE}_GET_INFO_AND_GET_LIST`,
+    GOOD_GET_INFO_AND_GET_LIST_KYSUHIEP         : `${BASE_ACTIONS}_${GOOD}_GET_INFO_AND_GET_LIST_KYSUHIEP`,
 
     /**
     * SIGNATURE

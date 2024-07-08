@@ -112,6 +112,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.DOCTYPE_UPDATE] 						: ITEM__DOCTYPE_HANDLER.update,
 		[CF_ACTIONS_ITEM.DOCTYPE_REMOVE] 						: ITEM__DOCTYPE_HANDLER.remove,
 		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ITEM.DOCTYPE_GET_INFO_AND_GET_LIST_KYSUHIEP] 		: ITEM__DOCTYPE_HANDLER.getInfoAndGetListKySuHiep,
 		[CF_ACTIONS_ITEM.DOCTYPE_IMPORT_FROM_EXCEL]				: ITEM__DOCTYPE_HANDLER.importFromExcel,
 
 		//==========================================  CONTACT  ===================================
@@ -169,7 +170,7 @@ module.exports = {
 		[CF_ACTIONS_ITEM.GOOD_DOWNLOAD_TEMPLATE_EXCEL]	: ITEM__GOOD_HANDLER.downloadTemplateExcel,
 		[CF_ACTIONS_ITEM.GOOD_IMPORT_FROM_EXCEL]				: ITEM__GOOD_HANDLER.importFromExcel,
 		[CF_ACTIONS_ITEM.GOOD_EXPORT_EXCEL] 					: ITEM__GOOD_HANDLER.exportExcel,
-		[CF_ACTIONS_ITEM.COURSE_GET_INFO_AND_GET_LIST] 			: ITEM__GOOD_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ITEM.GOOD_GET_INFO_AND_GET_LIST_KYSUHIEP] 			: ITEM__GOOD_HANDLER.getInfoAndGetListKySuHiep,
 
 		//==========================================  SIGNATURE  ======================================
 		[CF_ACTIONS_ITEM.SIGNATURE_INSERT] 						: ITEM__SIGNATURE_HANDLER.insert,
