@@ -53,7 +53,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor, ctx }) {
+    insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor }) {
         return new Promise(async resolve => {
             try {
                 let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('company')
@@ -152,7 +152,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID }){
-        console.log({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID })
+        // console.log({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID })
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(authorID) || !_isValid(documentID))
@@ -164,7 +164,7 @@ class Model extends BaseModel {
                     select: 'name'
                 })
                 .select('contact')
-                console.log(infoDoc)
+                // console.log(infoDoc)
                 if(!infoDoc)
                     return resolve({ error: true, message: 'documentID_not_valid' })
                 // console.log(infoDoc)
@@ -300,6 +300,21 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await HUMAN__CONTACT_DOCUMENT_COLL.findByIdAndUpdate(documentID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update", keyError: KEY_ERROR.UPDATE_FAILED })
+
+                // Cập nhật số file đính kèm vào nhân sự
+                let listDocs = await HUMAN__CONTACT_DOCUMENT_COLL.find({contact: infoDoc?.contact?._id}).select('name files')
+                let arrFile = []
+                for(const item of listDocs){
+                    if(item.files && item.files.length){
+                        for(const subitem of item.files){
+                            arrFile.push(subitem)
+                        }
+                    }
+                }
+                // console.log(arrFile)
+                await ITEM__CONTACT_COLL.findByIdAndUpdate(infoDoc?.contact?._id, {
+                    files: arrFile
+                }, { new: true })
 
                 return resolve({ error: false, data: infoAfterUpdate })
             } catch (error) {

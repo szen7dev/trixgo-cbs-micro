@@ -1042,7 +1042,7 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: "can't_get_info", status: 403 })
 
                     // Record Traffic
-                    // //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                    // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                     return resolve({ error: false, data: infoAterGet, status: 200 })
                 }else{
@@ -1069,7 +1069,7 @@ class Model extends BaseModel {
                             return resolve({ error: true, message: "can't_get_info", status: 403 })
 
                         // Record Traffic
-                        // //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                        // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                         return resolve({ error: false, data: infoAterGet, status: 200 })
                     }else{
@@ -2043,7 +2043,7 @@ class Model extends BaseModel {
      * Date: 8/12/2022
      */
     importFromExcel({ option, companyID, dataImport, userID }) {
-        console.log({ option, companyID, dataImport, userID })
+        // console.log({ option, companyID, dataImport, userID })
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
@@ -2294,14 +2294,14 @@ class Model extends BaseModel {
     }
 
     exportExcelByFilter({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail, ctx }) {
-        console.log({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail })
+        // console.log({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
                 //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 if(!option){
-                    console.log('==========================')
+                    // console.log('==========================')
                     const populates = JSON.stringify({
                         path: 'department position field property area area1 area2 linkUser workingStatus contractType',
                         select: 'name sign',
@@ -2333,7 +2333,7 @@ class Model extends BaseModel {
                     return resolve(result);
                 }
                 else if(Number(option) === 1){
-                    console.log('11111111111111111111111111111')
+                    // console.log('11111111111111111111111111111')
 
                     let totalCustomer = 0, newCustomer = 0
 
@@ -2531,6 +2531,7 @@ class Model extends BaseModel {
                         workbook.sheet("NhanSu").row(i).cell(23).value(item?.contractType?.name);
                         workbook.sheet("NhanSu").row(i).cell(24).value(item.dayOff);
                         workbook.sheet("NhanSu").row(i).cell(25).value(item.note);
+                        workbook.sheet("NhanSu").row(i).cell(26).value(item?.files.length);
                         i++
                     });
 
