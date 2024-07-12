@@ -56,7 +56,7 @@ class Model extends BaseModel {
     insert({ userCreate, contactID, type, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract, timeMobilize, factor }) {
         return new Promise(async resolve => {
             try {
-                let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('company')
+                let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('company name')
                 if(!infoContact)
                     return resolve({ error: true, message: 'contactID_not_valid' })
 
@@ -113,19 +113,25 @@ class Model extends BaseModel {
                 let convertStr = '';
                 if(name && name != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(name)
+                    // console.log({_____1: convertStr})
                 }
                 if(description && description != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(description)
+                    // console.log({_____2: convertStr})
                 }
                 if(sign && sign != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                    // console.log({_____3: convertStr})
                 }
                 if(note && note != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                    // console.log({_____4: convertStr})
                 }
                 if(infoContact?.name != '' && infoContact?.name != 'undefined'){
                     convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
+                    // console.log({_____5: convertStr})
                 }
+                // console.log({_____6: convertStr})
                 dataInsert.namecv = convertStr
                 // console.log(dataInsert)
 
