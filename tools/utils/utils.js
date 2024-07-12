@@ -42,6 +42,11 @@ exports.randomIntFromInterval = function (min, max) {
 };
 
 /**
+ * Kiểm soát truy cập ứng dụng
+ */
+exports.getRequestAPI = { permission: 1 }
+
+/**
  * param: email
  * return bolean
  */
@@ -49,7 +54,6 @@ exports.checkEmail = email => {
     var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
 }
-
 
 /*
  * Hàm validation các kí tự thực thi script
@@ -68,7 +72,6 @@ exports.isValidationData = data => {
     }
     return true;
 }
-
 
 let stringDomain = [
     '.com', '.vn', '.edu', '.net', '.org', '.gov', '.info',
