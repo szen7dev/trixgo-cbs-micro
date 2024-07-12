@@ -6,6 +6,7 @@ const moment = require("moment");
 
 const { KEY_ERROR } = require("../../../tools/keys");
 const {
+  getRequestAPI,
   checkObjectIDs,
   IsJsonString,
   validateParamsObjectID,
@@ -17,6 +18,7 @@ const {
 } = require("../../../tools/utils/time_utils");
 const { RANGE_BASE_PAGINATION_V2 } = require("../../../tools/cursor_base/playground/index");
 const { CF_DOMAIN_SERVICES } = require("../../gateway/helper/domain.constant");
+const { CF_ACTIONS_ANALYSIS }  = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO } = require("../../zalo_oa/helper/zalo.actions");
 
 /**s
@@ -1131,7 +1133,9 @@ class Model extends BaseModel {
         }
 
         // Record Traffic
-        //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+        if(getRequestAPI.permission == 1){
+          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+        }
 
         return resolve({ error: false, data: infoAfterInsert });
       } catch (error) {
@@ -2201,7 +2205,9 @@ class Model extends BaseModel {
         }
 
         // Record Traffic
-        //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+        if(getRequestAPI.permission == 1){
+          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        }
 
         return resolve({ error: false, data: infoAfterInsert });
       } catch (error) {
@@ -3242,7 +3248,9 @@ class Model extends BaseModel {
         }
 
         // Record Traffic
-        //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+        if(getRequestAPI.permission == 1){
+          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        }
 
         return resolve({ error: false, data: infoAfterInsert });
 
@@ -3940,6 +3948,11 @@ class Model extends BaseModel {
         if (!checkObjectIDs(orderID))
           return resolve({ error: true, message: "param_invalid" });
 
+        // Record Traffic
+        if(getRequestAPI.permission == 1){
+          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        }
+
         // populate
         if (populates && typeof populates === "string") {
           if (!IsJsonString(populates))
@@ -3967,9 +3980,6 @@ class Model extends BaseModel {
             message: "cannot_get",
             keyError: KEY_ERROR.GET_INFO_FAILED,
           });
-
-        // Record Traffic
-        //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
         return resolve({ error: false, data: infoPlanGroup });
       } catch (error) {
@@ -4024,7 +4034,9 @@ class Model extends BaseModel {
     return new Promise(async (resolve) => {
       try {
         // Record Traffic
-        //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        if(getRequestAPI.permission == 1){
+          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        }
 
         if (Number(limit) > 10) {
           limit = 10;
@@ -4331,7 +4343,9 @@ class Model extends BaseModel {
     return new Promise(async (resolve) => {
       try {
         // Record Traffic
-        //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        if(getRequestAPI.permission == 1){
+          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        }
 
         let duration = getTimeBetween(toDate, fromDate);
         // console.log({duration:duration/86400})
