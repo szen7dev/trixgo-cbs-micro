@@ -692,125 +692,161 @@ class Model extends BaseModel {
         // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.taichinh.includes(email.toString())){
-                    let conditionObj = { company: companyID }
-
-                    let obj = JSON.parse(filterParams);
-
-                    let fundasID = obj.fundasID
-                    let shiftTypes = obj.shiftTypes
-                    let fromDate = obj.fromDate
-                    let toDate = obj.toDate
-                    let keyword = obj.keyword
-                    let salesChannels = obj.salesChannels
-                    let statuss = obj.statuss
-                    let isMistake = obj.isMistake
-                    let isDiscount = obj.isDiscount
-                    let isSalesoff = obj.isSalesoff
-                    let isCredit = obj.isCredit
-                    let isOffer = obj.isOffer
-                    let isNonResident = obj.isNonResident
-                    let isCustomerType = obj.isCustomerType
-
-                    if(fundasID && fundasID.length ){
-                        let arrFun = fundasID.map(item=>ObjectID(item))
-
-                        if(arrFun.length) {
-                            conditionObj.funda = { $in: arrFun };
-                        }
-                    }else{
-                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
-                        if(fundasIDIsMember.length) {
-                            conditionObj.funda = { $in: fundasIDIsMember };
+                if(Number(option) == 1){
+                    if(FNB_ACC.taichinh.includes(email.toString())){
+                        let conditionObj = { company: companyID }
+    
+                        let obj = JSON.parse(filterParams);
+    
+                        let fundasID = obj.fundasID
+                        let shiftTypes = obj.shiftTypes
+                        let fromDate = obj.fromDate
+                        let toDate = obj.toDate
+                        let keyword = obj.keyword
+                        let salesChannels = obj.salesChannels
+                        let statuss = obj.statuss
+                        let isMistake = obj.isMistake
+                        let isDiscount = obj.isDiscount
+                        let isSalesoff = obj.isSalesoff
+                        let isCredit = obj.isCredit
+                        let isOffer = obj.isOffer
+                        let isNonResident = obj.isNonResident
+                        let isCustomerType = obj.isCustomerType
+    
+                        if(fundasID && fundasID.length ){
+                            let arrFun = fundasID.map(item=>ObjectID(item))
+    
+                            if(arrFun.length) {
+                                conditionObj.funda = { $in: arrFun };
+                            }
                         }else{
-                            conditionObj.funda = { $in: [] }
+                            let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                            let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                            if(fundasIDIsMember.length) {
+                                conditionObj.funda = { $in: fundasIDIsMember };
+                            }else{
+                                conditionObj.funda = { $in: [] }
+                            }
                         }
-                    }
-
-                    shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
-                    salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
-                    statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
-
-                    // Phân loại khác
-                    if(isMistake && isMistake == 1){
-                        conditionObj.numberOfMistakes = { $gt: 0 }
-                    }
-
-                    if(isNonResident && isNonResident == 1){
-                        conditionObj.nonResident = 2
-                    }
-
-                    if(isDiscount && isDiscount == 1){
-                        conditionObj.discount = { $gt: 0 }
-                    }
-
-                    if(isSalesoff && isSalesoff == 1){
-                        conditionObj.salesoff = { $gt: 0 }
-                    }
-
-                    if(isCredit && isCredit == 1){
-                        conditionObj.credit = { $gt: 0 }
-                    }
-
-                    if(isOffer && isOffer == 1){
-                        conditionObj.offer = { $gt: 0 }
-                    }
-
-                    if(isCustomerType && isCustomerType == 1){
-                        conditionObj.customerType = 1
-                    }
-                    if(isCustomerType && isCustomerType == 2){
-                        conditionObj.customerType = 2
-                    }
-                    // console.log(conditionObj)
-
-                    // Phân loại theo thời khoảng
-                    if(fromDate && toDate){
-                        conditionObj.createAt = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
+    
+                        shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
+                        salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
+                        statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
+    
+                        // Phân loại khác
+                        if(isMistake && isMistake == 1){
+                            conditionObj.numberOfMistakes = { $gt: 0 }
                         }
-                    }
-
-                    if(keyword){
-                        keyword = keyword.split(" ");
-                        keyword = '.*' + keyword.join(".*") + '.*';
-                        const regSearch = new RegExp(keyword, 'i');
-
-                        conditionObj.$or = [
-                            { name: regSearch },
-                            { sign: regSearch },
-                        ]
-                    }
-                    // console.log(conditionObj)
-
-                    let listData  = await FNB_ORDER_COLL.find(conditionObj)
-                    .populate({
-                        path: "campaignType",
-                        select: "name",
-                    })
-                    .populate({
-                        path: "referrer",
-                        select: "name phone",
-                    })
-                    .populate({
-                        path: "customer",
-                        select: "name phone",
-                    })
-                    .populate({
-                        path: "funda",
-                        select: "name sign",
-                    })
-                    .populate({
-                        path: "shift",
-                        select: "name sign",
-                    })
-                    .limit(2000)
-                    .sort({createAt: -1})
-                    // console.log(listData)
-
-                    let listData2 = await FNB_ORDER_PRODUCT_COLL.aggregate([
+    
+                        if(isNonResident && isNonResident == 1){
+                            conditionObj.nonResident = 2
+                        }
+    
+                        if(isDiscount && isDiscount == 1){
+                            conditionObj.discount = { $gt: 0 }
+                        }
+    
+                        if(isSalesoff && isSalesoff == 1){
+                            conditionObj.salesoff = { $gt: 0 }
+                        }
+    
+                        if(isCredit && isCredit == 1){
+                            conditionObj.credit = { $gt: 0 }
+                        }
+    
+                        if(isOffer && isOffer == 1){
+                            conditionObj.offer = { $gt: 0 }
+                        }
+    
+                        if(isCustomerType && isCustomerType == 1){
+                            conditionObj.customerType = 1
+                        }
+                        if(isCustomerType && isCustomerType == 2){
+                            conditionObj.customerType = 2
+                        }
+                        // console.log(conditionObj)
+    
+                        // Phân loại theo thời khoảng
+                        if(fromDate && toDate){
+                            conditionObj.createAt = {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
+                            }
+                        }
+    
+                        if(keyword){
+                            keyword = keyword.split(" ");
+                            keyword = '.*' + keyword.join(".*") + '.*';
+                            const regSearch = new RegExp(keyword, 'i');
+    
+                            conditionObj.$or = [
+                                { name: regSearch },
+                                { sign: regSearch },
+                            ]
+                        }
+                        // console.log(conditionObj)
+    
+                        let listData  = await FNB_ORDER_COLL.find(conditionObj)
+                        .populate({
+                            path: "campaignType",
+                            select: "name",
+                        })
+                        .populate({
+                            path: "referrer",
+                            select: "name phone",
+                        })
+                        .populate({
+                            path: "customer",
+                            select: "name phone",
+                        })
+                        .populate({
+                            path: "funda",
+                            select: "name sign",
+                        })
+                        .populate({
+                            path: "shift",
+                            select: "name sign",
+                        })
+                        .limit(2000)
+                        .sort({createAt: -1})
+                        // console.log(listData)
+    
+                        let listData2 = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                                {
+                                    $match: {
+                                        order: {$in: listData.map(item => ObjectID(item._id))}
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { funda: '$funda', product: '$product' },
+                                        quantity: { $sum: "$quantity" }
+                                    }
+                                },
+                                {
+                                    $sort: {
+                                        '_id.product': 1
+                                    }
+                                }
+                            ])
+    
+                        let conditionPopulate1 = {
+                            path: '_id.product',
+                            select: '_id name',
+                            model: 'fnb_product'
+                        }
+    
+                        let conditionPopulate2 = {
+                            path: '_id.funda',
+                            select: '_id name',
+                            model: 'funda'
+                        }
+    
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate1)
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate2)
+                        // console.log(listData2)
+    
+                        let listData3 = await FNB_ORDER_PRODUCT_COLL.aggregate([
                             {
                                 $match: {
                                     order: {$in: listData.map(item => ObjectID(item._id))}
@@ -818,7 +854,7 @@ class Model extends BaseModel {
                             },
                             {
                                 $group: {
-                                    _id: { funda: '$funda', product: '$product' },
+                                    _id: { product: '$product' },
                                     quantity: { $sum: "$quantity" }
                                 }
                             },
@@ -828,125 +864,201 @@ class Model extends BaseModel {
                                 }
                             }
                         ])
-
-                    let conditionPopulate1 = {
-                        path: '_id.product',
-                        select: '_id name',
-                        model: 'fnb_product'
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData3, conditionPopulate1)
+    
+                        // Modify the workbook.
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
+                        .then(async workbook => {
+                            var i = 3;
+                            listData?.forEach((item, index) => {
+                                workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
+                                workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
+                                workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                                workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
+                                workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
+                                workbook.sheet("Order").row(i).cell(6).value(item.name);
+                                workbook.sheet("Order").row(i).cell(7).value(item.sign);
+                                workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
+                                workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
+                                workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
+                                workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
+                                workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
+                                workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
+                                workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
+                                workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
+                                workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
+                                workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
+                                workbook.sheet("Order").row(i).cell(18).value(Number(item?.shippingFeeTotal));
+                                workbook.sheet("Order").row(i).cell(19).value(Number(item?.shippingFee));
+                                workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfSizeM));
+                                workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfSizeL));
+                                workbook.sheet("Order").row(i).cell(22).value(Number(item.numberOfProducts));
+                                workbook.sheet("Order").row(i).cell(23).value(Number(item.numberOfMistakes));
+                                workbook.sheet("Order").row(i).cell(24).value(item.note);
+                                workbook.sheet("Order").row(i).cell(25).value(Number(item.loyaltyPoints));
+                                workbook.sheet("Order").row(i).cell(26).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
+                                workbook.sheet("Order").row(i).cell(27).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
+                                if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
+                                    workbook.sheet("Order").row(i).cell(28).value('Đơn nhân viên');
+                                }
+                                if(Number(item.nonResident) === 2){
+                                    workbook.sheet("Order").row(i).cell(29).value('Khách vãng lai');
+                                }
+                                workbook.sheet("Order").row(i).cell(30).value(`${item?.customer?._id}`);
+                                workbook.sheet("Order").row(i).cell(31).value(item?.customer?.phone);
+                                workbook.sheet("Order").row(i).cell(32).value(item?.customer?.name);
+                                workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? `${item?.referrer?._id}` : "");
+                                workbook.sheet("Order").row(i).cell(34).value(item?.referrer ? item?.referrer?.phone : "");
+                                workbook.sheet("Order").row(i).cell(35).value(item?.referrer ? item?.referrer?.name : "");
+                                workbook.sheet("Order").row(i).cell(36).value(item?.campaignType ? item?.campaignType?.name : "");
+    
+                                i++
+                            });
+    
+                            var i = 3;
+                            listData2?.forEach((item, index) => {
+                                workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
+                                workbook.sheet("Product").row(i).cell(2).value(`${item._id.product.name}`);
+                                workbook.sheet("Product").row(i).cell(3).value(`${item._id.funda.name}`);
+                                workbook.sheet("Product").row(i).cell(4).value(Number(item?.quantity));
+    
+                                i++
+                            });
+    
+                            var i = 3;
+                            listData3?.forEach((item, index) => {
+                                workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
+                                workbook.sheet("Report").row(i).cell(2).value(`${item._id.product.name}`);
+                                workbook.sheet("Report").row(i).cell(3).value(Number(item?.quantity));
+    
+                                i++
+                            });
+    
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
+                    }else{
+                        return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                     }
+                }
 
-                    let conditionPopulate2 = {
-                        path: '_id.funda',
-                        select: '_id name',
-                        model: 'funda'
-                    }
+                // Tải định mức KPI
+                if(Number(option) == 2){
+                    if(FNB_ACC.taichinh.includes(email.toString())){
+                        let conditionObj = { company: ObjectID(companyID), status: 5 }
+    
+                        let obj = JSON.parse(filterParams);
+    
+                        let fundasID = obj.fundasID
+                        let fromDate = obj.fromDate
+                        let toDate = obj.toDate
 
-                    await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate1)
-                    await FNB_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate2)
-                    // console.log(listData2)
-
-                    let listData3 = await FNB_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                order: {$in: listData.map(item => ObjectID(item._id))}
+                        if(fundasID && fundasID.length ){
+                            let arrFun = fundasID.map(item=>ObjectID(item))
+    
+                            if(arrFun.length) {
+                                conditionObj.funda = { $in: arrFun };
                             }
-                        },
-                        {
-                            $group: {
-                                _id: { product: '$product' },
-                                quantity: { $sum: "$quantity" }
-                            }
-                        },
-                        {
-                            $sort: {
-                                '_id.product': 1
+                        }else{
+                            return resolve({ error: true, message: 'Bạn phải chọn cơ sở', status: 500 })
+                        }
+    
+                        // Phân loại theo thời khoảng
+                        if(fromDate && toDate){
+                            conditionObj.createAt = {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
                             }
                         }
-                    ])
-                    await FNB_ORDER_PRODUCT_COLL.populate(listData3, conditionPopulate1)
 
-                    // Modify the workbook.
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
-                    .then(async workbook => {
-                        var i = 3;
-                        listData?.forEach((item, index) => {
-                            workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                            workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                            workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-                            workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(6).value(item.name);
-                            workbook.sheet("Order").row(i).cell(7).value(item.sign);
-                            workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-                            workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-                            workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-                            workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                            workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
-                            workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
-                            workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
-                            workbook.sheet("Order").row(i).cell(18).value(Number(item?.shippingFeeTotal));
-                            workbook.sheet("Order").row(i).cell(19).value(Number(item?.shippingFee));
-                            workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfSizeM));
-                            workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfSizeL));
-                            workbook.sheet("Order").row(i).cell(22).value(Number(item.numberOfProducts));
-                            workbook.sheet("Order").row(i).cell(23).value(Number(item.numberOfMistakes));
-                            workbook.sheet("Order").row(i).cell(24).value(item.note);
-                            workbook.sheet("Order").row(i).cell(25).value(Number(item.loyaltyPoints));
-                            workbook.sheet("Order").row(i).cell(26).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
-                            workbook.sheet("Order").row(i).cell(27).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
-                            if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
-                                workbook.sheet("Order").row(i).cell(28).value('Đơn nhân viên');
+                        // console.log(conditionObj)
+
+                        let arrSize = ['M','L']
+                        let arrSugar = [100, 70, 50, 30, 0]
+                        let arrIce = [100, 70, 50, 30, 0]
+
+                        let listData  = await FNB_ORDER_COLL.find(conditionObj).select('_id')
+
+                        let listData1 = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                // $match: conditionObj,
+                                $match: {
+                                    order: {$in: listData.map(item => ObjectID(item._id))}
+                                },
+                            },
+                            {
+                                $group: {
+                                    _id: { funda: '$funda', product: '$product', size: '$size', sugar: '$sugar', ice: '$ice' },
+                                    quantity: { $sum: "$quantity" }
+                                }
+                            },
+                            {
+                                $sort: {
+                                    '_id.product': 1, 'quantity': 1
+                                }
                             }
-                            if(Number(item.nonResident) === 2){
-                                workbook.sheet("Order").row(i).cell(29).value('Khách vãng lai');
+                        ])
+
+                        let conditionPopulate1 = {
+                            path: '_id.funda',
+                            select: '_id name',
+                            model: 'funda'
+                        }
+
+                        let conditionPopulate2 = {
+                            path: '_id.product',
+                            select: '_id name',
+                            model: 'fnb_product'
+                        }
+
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate1)
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate2)
+                        // console.log(listData)
+    
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_product_kpi.xlsx')))
+                        .then(async workbook => {
+                            if(fromDate && toDate){
+                                workbook.sheet("Product").row(1).cell(1).value(`Từ: ${moment(new Date(fromDate)).format('DD/MM/YYYY')} - Đến: ${moment(new Date(toDate)).format('DD/MM/YYYY')}`);
                             }
-                            workbook.sheet("Order").row(i).cell(30).value(`${item?.customer?._id}`);
-                            workbook.sheet("Order").row(i).cell(31).value(item?.customer?.phone);
-                            workbook.sheet("Order").row(i).cell(32).value(item?.customer?.name);
-                            workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? `${item?.referrer?._id}` : "");
-                            workbook.sheet("Order").row(i).cell(34).value(item?.referrer ? item?.referrer?.phone : "");
-                            workbook.sheet("Order").row(i).cell(35).value(item?.referrer ? item?.referrer?.name : "");
-                            workbook.sheet("Order").row(i).cell(36).value(item?.campaignType ? item?.campaignType?.name : "");
 
-                            i++
-                        });
+                            var i = 3;
+                            listData1?.forEach((item, index) => {
+                                workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
+                                workbook.sheet("Product").row(i).cell(2).value(item?._id?.funda?.name);
+                                workbook.sheet("Product").row(i).cell(3).value(item?._id?.product?.name);
+                                workbook.sheet("Product").row(i).cell(4).value(arrSize[Number(item?._id.size)-1]);
+                                workbook.sheet("Product").row(i).cell(5).value(arrSugar[Number(item?._id.sugar)-1]);
+                                workbook.sheet("Product").row(i).cell(6).value(arrIce[Number(item?._id.ice)-1]);
+                                workbook.sheet("Product").row(i).cell(7).value(Number(item?.quantity));
+    
+                                i++
+                            });
+                         
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `PhanLoaiSanPham_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
 
-                        var i = 3;
-                        listData2?.forEach((item, index) => {
-                            workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Product").row(i).cell(2).value(`${item._id.product.name}`);
-                            workbook.sheet("Product").row(i).cell(3).value(`${item._id.funda.name}`);
-                            workbook.sheet("Product").row(i).cell(4).value(Number(item?.quantity));
-
-                            i++
-                        });
-
-                        var i = 3;
-                        listData3?.forEach((item, index) => {
-                            workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Report").row(i).cell(2).value(`${item._id.product.name}`);
-                            workbook.sheet("Report").row(i).cell(3).value(Number(item?.quantity));
-
-                            i++
-                        });
-
-                        const now = new Date();
-                        const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
-                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                        await workbook.toFileAsync(pathWriteFile);
-                        const result = await uploadFileS3(pathWriteFile, fileName);
-
-                        fs.unlinkSync(pathWriteFile);
-                        return resolve({ error: false, data: result?.Location, status: 200 });
-                    })
-                }else{
-                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                    }else{
+                        return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                    }
                 }
+
             } catch (error) {
                 // console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
