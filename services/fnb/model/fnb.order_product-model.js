@@ -950,8 +950,117 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Tải định mức KPI
+                // Tải định mức Sản phẩm
                 if(Number(option) == 2){
+                    if(FNB_ACC.taichinh.includes(email.toString())){
+                        let conditionObj = { company: ObjectID(companyID), status: 5 }
+    
+                        let obj = JSON.parse(filterParams);
+    
+                        let fundasID = obj.fundasID
+                        let fromDate = obj.fromDate
+                        let toDate = obj.toDate
+
+                        if(fundasID && fundasID.length ){
+                            let arrFun = fundasID.map(item=>ObjectID(item))
+    
+                            if(arrFun.length) {
+                                conditionObj.funda = { $in: arrFun };
+                            }
+                        }else{
+                            return resolve({ error: true, message: 'Bạn phải chọn cơ sở', status: 500 })
+                        }
+    
+                        // Phân loại theo thời khoảng
+                        if(fromDate && toDate){
+                            conditionObj.createAt = {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
+                            }
+                        }
+
+                        // console.log(conditionObj)
+
+                        let arrSize = ['M','L']
+                        let arrSugar = [100, 70, 50, 30, 0]
+                        let arrIce = [100, 70, 50, 30, 0]
+
+                        let listData  = await FNB_ORDER_COLL.find(conditionObj).select('_id')
+
+                        let listData1 = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                // $match: conditionObj,
+                                $match: {
+                                    order: {$in: listData.map(item => ObjectID(item._id))}
+                                },
+                            },
+                            {
+                                $group: {
+                                    _id: { funda: '$funda', product: '$product', size: '$size', sugar: '$sugar', ice: '$ice' },
+                                    quantity: { $sum: "$quantity" }
+                                }
+                            },
+                            {
+                                $sort: {
+                                    '_id.product': 1, 'quantity': 1
+                                }
+                            }
+                        ])
+
+                        let conditionPopulate1 = {
+                            path: '_id.funda',
+                            select: '_id name',
+                            model: 'funda'
+                        }
+
+                        let conditionPopulate2 = {
+                            path: '_id.product',
+                            select: '_id name',
+                            model: 'fnb_product'
+                        }
+
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate1)
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate2)
+                        // console.log(listData)
+    
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_product_kpi.xlsx')))
+                        .then(async workbook => {
+                            if(fromDate && toDate){
+                                workbook.sheet("Product").row(1).cell(1).value(`Từ: ${moment(new Date(fromDate)).format('DD/MM/YYYY')} - Đến: ${moment(new Date(toDate)).format('DD/MM/YYYY')}`);
+                            }
+
+                            var i = 3;
+                            listData1?.forEach((item, index) => {
+                                workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
+                                workbook.sheet("Product").row(i).cell(2).value(item?._id?.funda?.name);
+                                workbook.sheet("Product").row(i).cell(3).value(item?._id?.product?.name);
+                                workbook.sheet("Product").row(i).cell(4).value(arrSize[Number(item?._id.size)-1]);
+                                workbook.sheet("Product").row(i).cell(5).value(arrSugar[Number(item?._id.sugar)-1]);
+                                workbook.sheet("Product").row(i).cell(6).value(arrIce[Number(item?._id.ice)-1]);
+                                workbook.sheet("Product").row(i).cell(7).value(Number(item?.quantity));
+    
+                                i++
+                            });
+                         
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `PhanLoaiSanPham_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
+
+                    }else{
+                        return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                    }
+                }
+
+                // Tải định mức Topping
+                if(Number(option) == 3){
                     if(FNB_ACC.taichinh.includes(email.toString())){
                         let conditionObj = { company: ObjectID(companyID), status: 5 }
     
