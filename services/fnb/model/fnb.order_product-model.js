@@ -989,7 +989,6 @@ class Model extends BaseModel {
 
                         let listData1 = await FNB_ORDER_PRODUCT_COLL.aggregate([
                             {
-                                // $match: conditionObj,
                                 $match: {
                                     order: {$in: listData.map(item => ObjectID(item._id))}
                                 },
@@ -1015,18 +1014,30 @@ class Model extends BaseModel {
 
                         let conditionPopulate2 = {
                             path: '_id.product',
-                            select: '_id name',
-                            model: 'fnb_product'
+                            select: '_id name link',
+                            model: 'fnb_product',
+                            populate: {
+                                path: '_id.product.link',
+                                select: '_id name',
+                                model: 'fnb_product',
+                            }
+                        }
+
+                        let conditionPopulate3 = {
+                            path: '_id.product.link',
+                            select: '_id name link',
+                            model: 'fnb_product',
                         }
 
                         await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate1)
                         await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate2)
-                        // console.log(listData)
+                        await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate3)
+                        // console.log(listData1[0])
     
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_product_kpi.xlsx')))
                         .then(async workbook => {
                             if(fromDate && toDate){
-                                workbook.sheet("Product").row(1).cell(1).value(`Từ: ${moment(new Date(fromDate)).format('DD/MM/YYYY')} - Đến: ${moment(new Date(toDate)).format('DD/MM/YYYY')}`);
+                                workbook.sheet("Product").row(1).cell(3).value(`Từ: ${moment(new Date(fromDate)).format('DD/MM/YYYY')} - Đến: ${moment(new Date(toDate)).format('DD/MM/YYYY')}`);
                             }
 
                             var i = 3;
@@ -1038,6 +1049,7 @@ class Model extends BaseModel {
                                 workbook.sheet("Product").row(i).cell(5).value(arrSugar[Number(item?._id.sugar)-1]);
                                 workbook.sheet("Product").row(i).cell(6).value(arrIce[Number(item?._id.ice)-1]);
                                 workbook.sheet("Product").row(i).cell(7).value(Number(item?.quantity));
+                                workbook.sheet("Product").row(i).cell(8).value(item?._id?.product?.link?.name);
     
                                 i++
                             });
@@ -1088,33 +1100,45 @@ class Model extends BaseModel {
                             }
                         }
 
-                        // console.log(conditionObj)
-
-                        let arrSize = ['M','L']
-                        let arrSugar = [100, 70, 50, 30, 0]
-                        let arrIce = [100, 70, 50, 30, 0]
-
                         let listData  = await FNB_ORDER_COLL.find(conditionObj).select('_id')
 
                         let listData1 = await FNB_ORDER_PRODUCT_COLL.aggregate([
                             {
-                                // $match: conditionObj,
                                 $match: {
                                     order: {$in: listData.map(item => ObjectID(item._id))}
                                 },
                             },
                             {
+                                $project: {
+                                    funda: 1,
+                                    subProducts: 1,
+                                    quantity: 1,
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: "fnb_products",
+                                    localField: "subProducts",
+                                    foreignField: "_id",
+                                    as: "subProd"
+                                }
+                            },
+                            {
+                                $unwind: "$subProd"
+                            },
+                            {
                                 $group: {
-                                    _id: { funda: '$funda', product: '$product', size: '$size', sugar: '$sugar', ice: '$ice' },
+                                    _id: { funda: '$funda', product: '$subProd._id' },
                                     quantity: { $sum: "$quantity" }
                                 }
                             },
                             {
                                 $sort: {
-                                    '_id.product': 1, 'quantity': 1
+                                    '_id.subProd': 1, 'quantity': 1
                                 }
                             }
                         ])
+                        // console.log(listData1)
 
                         let conditionPopulate1 = {
                             path: '_id.funda',
@@ -1130,30 +1154,27 @@ class Model extends BaseModel {
 
                         await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate1)
                         await FNB_ORDER_PRODUCT_COLL.populate(listData1, conditionPopulate2)
-                        // console.log(listData)
+                        // console.log(listData1)
     
-                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_product_kpi.xlsx')))
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_subproduct_kpi.xlsx')))
                         .then(async workbook => {
                             if(fromDate && toDate){
-                                workbook.sheet("Product").row(1).cell(1).value(`Từ: ${moment(new Date(fromDate)).format('DD/MM/YYYY')} - Đến: ${moment(new Date(toDate)).format('DD/MM/YYYY')}`);
+                                workbook.sheet("SubProduct").row(1).cell(3).value(`Từ: ${moment(new Date(fromDate)).format('DD/MM/YYYY')} - Đến: ${moment(new Date(toDate)).format('DD/MM/YYYY')}`);
                             }
 
                             var i = 3;
                             listData1?.forEach((item, index) => {
-                                workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
-                                workbook.sheet("Product").row(i).cell(2).value(item?._id?.funda?.name);
-                                workbook.sheet("Product").row(i).cell(3).value(item?._id?.product?.name);
-                                workbook.sheet("Product").row(i).cell(4).value(arrSize[Number(item?._id.size)-1]);
-                                workbook.sheet("Product").row(i).cell(5).value(arrSugar[Number(item?._id.sugar)-1]);
-                                workbook.sheet("Product").row(i).cell(6).value(arrIce[Number(item?._id.ice)-1]);
-                                workbook.sheet("Product").row(i).cell(7).value(Number(item?.quantity));
+                                workbook.sheet("SubProduct").row(i).cell(1).value(Number(index+1));
+                                workbook.sheet("SubProduct").row(i).cell(2).value(item?._id?.funda?.name);
+                                workbook.sheet("SubProduct").row(i).cell(3).value(item?._id?.product?.name);
+                                workbook.sheet("SubProduct").row(i).cell(4).value(Number(item?.quantity));
     
                                 i++
                             });
                          
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `PhanLoaiSanPham_${now.getTime()}.xlsx`;
+                            const fileName = `ToppingThem_${now.getTime()}.xlsx`;
                             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
     
                             await workbook.toFileAsync(pathWriteFile);
