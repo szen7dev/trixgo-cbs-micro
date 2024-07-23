@@ -94,6 +94,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         type: Number,
         default : 0
     },
+    //_________Link tới product
+    link: {
+        type: Schema.Types.ObjectId,
+        ref: "fnb_product"
+    },
     //_________Ảnh đại diện
     images: [{
         type: Schema.Types.ObjectId,
