@@ -193,7 +193,7 @@ module.exports = {
 	 * Name Danh sách contact
 	 */
     getInfoAndGetList: {
-        // auth: "required",
+        auth: "required",
         params: {
             // Field bổ sung
             contactID           : { type: "string", optional: true },
@@ -433,7 +433,6 @@ module.exports = {
     importFromExcel: {
         auth: 'required',
         params: {
-            // option    : { type: 'string', optional: true },
             dataImport: { type: 'string' }
         },
         async handler(ctx) {
@@ -512,5 +511,4 @@ module.exports = {
             }
         }
     },
-
 }
