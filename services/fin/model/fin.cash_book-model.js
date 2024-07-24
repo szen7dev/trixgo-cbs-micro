@@ -1908,6 +1908,86 @@ class Model extends BaseModel {
                 })
             }
 
+            // Tải điểm danh
+            else if(option == 3){
+                let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                    company: companyID,
+                    parent: {$exists: true, $ne: null },
+                    // date: {
+                    //     $gte: moment(fromDate).toDate(),
+                    //     $lte: moment(toDate).toDate(),
+                    // }
+
+                })
+                .select('parent name hours unitprice amount status date note assignee createAt')
+                .populate({
+                    path: 'assignee',
+                    select:'fullname department',
+                    populate: {
+                        path: 'department',
+                        select: 'name',
+                    }
+                })
+                // console.log(listData)
+                
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_attendance_report.xlsx')))
+                .then(async workbook => {
+
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        let year = new Date(item.createAt).getFullYear()
+                        let month = new Date(item.createAt).getMonth() + 1
+                        let day = new Date(item.createAt).getDate()
+
+                        let time1 = new Date(`${year}-${month}-${day} 08:00:00`);
+                        let time2 = new Date(`${year}-${month}-${day} 13:00:00`);
+                        let time3 = new Date(`${year}-${month}-${day} 18:00:00`);
+
+                        let a = (new Date(item?.createAt)).getTime()
+                        let b1 = (new Date(time1)).getTime()
+                        let b2 = (new Date(time2)).getTime()
+                        let b3 = (new Date(time3)).getTime()
+                        
+                        let d = new Date(item.createAt);
+
+                        workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
+                        workbook.sheet("Data").row(i).cell(2).value(item?.assignee?.fullname)
+                        workbook.sheet("Data").row(i).cell(3).value(item?.assignee?.department?.name)
+                        workbook.sheet("Data").row(i).cell(4).value(item?.name)
+                        workbook.sheet("Data").row(i).cell(5).value(item?.createAt)
+                        workbook.sheet("Data").row(i).cell(6).value(time1)
+                        workbook.sheet("Data").row(i).cell(7).value(time2)
+                        workbook.sheet("Data").row(i).cell(8).value(time3)
+                        if(Number(d.getHours()) > 18){
+                            workbook.sheet("Data").row(i).cell(11).value(Number((a - b3) / (1000*60))) 
+                        }else{
+                            if(Number(d.getHours()) > 13){
+                                workbook.sheet("Data").row(i).cell(10).value(Number((a - b2) / (1000*60)))
+                            }else{
+                                if(Number(d.getHours()) > 8){
+                                    workbook.sheet("Data").row(i).cell(9).value(Number((a - b1) / (1000*60)))
+                                }
+                            }
+                        }
+                        workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
+
+                        i++
+                    })
+        
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `timesheet_attendance_report${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+            }
+
            } catch (error) {
                return resolve({ error: true, message: error.message, status: 500 });
            }
