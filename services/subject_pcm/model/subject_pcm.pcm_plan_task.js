@@ -5073,7 +5073,7 @@ class Model extends BaseModel {
                                     }
                                 }
                             }
-                            workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com//pcm/detail/${item.task}`)
+                            workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com/pcm/detail/${item.task}`)
 
                             i++
                         })
