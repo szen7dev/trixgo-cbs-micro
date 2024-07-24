@@ -1913,10 +1913,10 @@ class Model extends BaseModel {
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
                     company: companyID,
                     parent: {$exists: true, $ne: null },
-                    // date: {
-                    //     $gte: moment(fromDate).toDate(),
-                    //     $lte: moment(toDate).toDate(),
-                    // }
+                    date: {
+                        $gte: moment( new Date(fromDate)).toDate(),
+                        $lte: moment( new Date(toDate)).toDate(),
+                    }
 
                 })
                 .select('parent name hours unitprice amount status date note assignee createAt')
@@ -1931,7 +1931,7 @@ class Model extends BaseModel {
                 // console.log(listData)
                 
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_attendance_report.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_attendance_report.xlsx')))
                 .then(async workbook => {
 
                     var i = 3;
@@ -1940,11 +1940,13 @@ class Model extends BaseModel {
                         let month = new Date(item.createAt).getMonth() + 1
                         let day = new Date(item.createAt).getDate()
 
+                        let time0 = new Date(`${year}-${month}-${day} 06:00:00`);
                         let time1 = new Date(`${year}-${month}-${day} 08:00:00`);
-                        let time2 = new Date(`${year}-${month}-${day} 13:00:00`);
+                        let time2 = new Date(`${year}-${month}-${day} 12:30:00`);
                         let time3 = new Date(`${year}-${month}-${day} 18:00:00`);
 
                         let a = (new Date(item?.createAt)).getTime()
+                        let b0 = (new Date(time0)).getTime()
                         let b1 = (new Date(time1)).getTime()
                         let b2 = (new Date(time2)).getTime()
                         let b3 = (new Date(time3)).getTime()
@@ -1956,21 +1958,25 @@ class Model extends BaseModel {
                         workbook.sheet("Data").row(i).cell(3).value(item?.assignee?.department?.name)
                         workbook.sheet("Data").row(i).cell(4).value(item?.name)
                         workbook.sheet("Data").row(i).cell(5).value(item?.createAt)
-                        workbook.sheet("Data").row(i).cell(6).value(time1)
-                        workbook.sheet("Data").row(i).cell(7).value(time2)
-                        workbook.sheet("Data").row(i).cell(8).value(time3)
+                        workbook.sheet("Data").row(i).cell(6).value(time0)
+                        workbook.sheet("Data").row(i).cell(7).value(time1)
+                        workbook.sheet("Data").row(i).cell(8).value(time2)
+                        workbook.sheet("Data").row(i).cell(9).value(time3)
+
                         if(Number(d.getHours()) > 18){
-                            workbook.sheet("Data").row(i).cell(11).value(Number((a - b3) / (1000*60))) 
-                        }else{
-                            if(Number(d.getHours()) > 13){
-                                workbook.sheet("Data").row(i).cell(10).value(Number((a - b2) / (1000*60)))
-                            }else{
-                                if(Number(d.getHours()) > 8){
-                                    workbook.sheet("Data").row(i).cell(9).value(Number((a - b1) / (1000*60)))
-                                }
-                            }
+                            workbook.sheet("Data").row(i).cell(13).value(Number((a - b3) / (1000*60))) 
                         }
-                        workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
+                        else if(Number(d.getHours()) > 12.5){
+                            workbook.sheet("Data").row(i).cell(12).value(Number((a - b2) / (1000*60)))
+                        }
+                        else if(Number(d.getHours()) > 8){
+                            workbook.sheet("Data").row(i).cell(11).value(Number((a - b1) / (1000*60)))
+                        }
+                        else{
+                            workbook.sheet("Data").row(i).cell(10).value(Number((a - b0) / (1000*60)))
+                        }
+
+                        // workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
 
                         i++
                     })
