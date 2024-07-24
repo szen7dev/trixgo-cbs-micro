@@ -2304,7 +2304,7 @@ class Model extends BaseModel {
                     // console.log('==========================')
                     const populates = JSON.stringify({
                         path: 'department position field property area area1 area2 linkUser workingStatus contractType',
-                        select: 'name sign',
+                        select: 'name sign fullname',
                         populate:{
                             path: 'parent',
                             select: 'name',
@@ -2332,39 +2332,31 @@ class Model extends BaseModel {
                     const result = await this.downloadExcelFile(data.listRecords)
                     return resolve(result);
                 }
+
                 else if(Number(option) === 1){
-                    // console.log('11111111111111111111111111111')
 
-                    let totalCustomer = 0, newCustomer = 0
-
-                    // let limit = Number(page * unit)
-                    // let listData = await FNB_ORDER_COLL.find({
-                    //     company: companyID
-                    // })
-                    // .limit(limit)
-
-                    let listData = await FNB_ORDER_COLL.aggregate([
-                        {
-                            $match: {
-                                company: ObjectID(companyID),
-                                date: {
-                                    $gte: moment(fromDate).toDate(),
-                                    $lte: moment(toDate).toDate()
-                                }
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { customer: "$customer", amount: "$amount" },
-                                // quantity: { $sum: 1 },
-                                // numberOfProducts: { $sum: "$numberOfProducts" },
-                                // total: { $sum: "$total" },
-                                // discount: { $sum: "$discount" },
-                                // salesoff: { $sum: "$salesoff" },
-                                // amount: { $sum: "$amount" },
-                            }
-                        }
-                    ])
+                    // let listData = await FNB_ORDER_COLL.aggregate([
+                    //     {
+                    //         $match: {
+                    //             company: ObjectID(companyID),
+                    //             date: {
+                    //                 $gte: moment(fromDate).toDate(),
+                    //                 $lte: moment(toDate).toDate()
+                    //             }
+                    //         }
+                    //     },
+                    //     {
+                    //         $group: {
+                    //             _id: { customer: "$customer", amount: "$amount" },
+                    //             // quantity: { $sum: 1 },
+                    //             // numberOfProducts: { $sum: "$numberOfProducts" },
+                    //             // total: { $sum: "$total" },
+                    //             // discount: { $sum: "$discount" },
+                    //             // salesoff: { $sum: "$salesoff" },
+                    //             // amount: { $sum: "$amount" },
+                    //         }
+                    //     }
+                    // ])
 
                     // Khách mới
                     let listDataNew = await FNB_ORDER_COLL.aggregate([
@@ -2395,18 +2387,6 @@ class Model extends BaseModel {
                             $sort: { "quantity": 1 }
                         }
                     ])
-                    // console.log({
-                    //     company: ObjectID(companyID),
-                    //     date: {
-                    //         $gte: moment(fromDate).toDate(),
-                    //         $lte: moment(toDate).toDate()
-                    //     }
-                    // })
-                    // console.log(listData.length)
-                    // console.log(listDataNew.length)
-                    // // console.log(listData)
-
-                    // console.log(listData)
 
                     return resolve({ error: false, data: listDataNew, status: 200 });
                 }
@@ -2434,26 +2414,6 @@ class Model extends BaseModel {
                     .sort({modifyAt: -1})
                     // .sort({purchasedValue: -1})
                     .limit(limit)
-
-                    // let limit = Number(page * unit)
-                    // let listData = await ITEM__CONTACT_COLL.find(conditionObj)
-                    // .select('_id')
-                    // .sort({_id: 1})
-                    // .limit(limit)
-                    // .lean()
-
-                    // let infoBegin = listData[Number(page - 1)*unit]
-                    // let infoEnd = listData.slice(-1)
-
-                    // console.log(infoBegin)
-                    // console.log(infoEnd)
-
-                    // conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
-
-                    // let listDataConvert = await ITEM__CONTACT_COLL.find(conditionObj)
-                    // .select('_id name phone email birthday purchasedValue type note getVouchers')
-                    // .sort({_id: 1})
-                    // .lean()
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_ads.xlsx')))
@@ -2500,6 +2460,7 @@ class Model extends BaseModel {
     }
 
     downloadExcelFile(data) {
+        // console.log('Bạn vừa tải data về hệ thống')
         return new Promise(resolve => {
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
                 .then(async workbook => {
@@ -2508,30 +2469,51 @@ class Model extends BaseModel {
                     data?.forEach((item, index) => {
                         workbook.sheet("NhanSu").row(i).cell(1).value(Number(index+1));
                         workbook.sheet("NhanSu").row(i).cell(2).value(item.name);
-                        workbook.sheet("NhanSu").row(i).cell(3).value(item?.department?.name);
-                        workbook.sheet("NhanSu").row(i).cell(4).value(item?.position?.name);
-                        workbook.sheet("NhanSu").row(i).cell(5).value(item.birthday);
-                        workbook.sheet("NhanSu").row(i).cell(6).value(item.gender > 1 ? `${CONTACT_GENDER[Number(item.gender)-1].text}` : "");
-                        workbook.sheet("NhanSu").row(i).cell(7).value(item.phone);
-                        workbook.sheet("NhanSu").row(i).cell(8).value(item.email);
-                        workbook.sheet("NhanSu").row(i).cell(9).value(item.identity);
-                        workbook.sheet("NhanSu").row(i).cell(10).value(item.dateProvice);
-                        workbook.sheet("NhanSu").row(i).cell(11).value(item.place);
-                        workbook.sheet("NhanSu").row(i).cell(12).value((item?.area2 != null && item?.area2 != undefined) ? (`${item?.area2?.name}, ${item?.area2?.parent?.name}, ${item?.area2?.parent?.parent?.name}`) : "");
-                        workbook.sheet("NhanSu").row(i).cell(13).value((item?.area != null && item?.area != undefined) ? (`${item.address},${item?.area?.name}, ${item?.area?.parent?.name}, ${item?.area?.parent?.parent?.name}`) : "");
-                        workbook.sheet("NhanSu").row(i).cell(14).value(item.taxid);
-                        workbook.sheet("NhanSu").row(i).cell(15).value((!isNaN(item.insuranceNumber) && item.insuranceNumber != 0) ? Number(item.insuranceNumber) : 0);
-                        workbook.sheet("NhanSu").row(i).cell(16).value(item.insuranceSign);
-                        workbook.sheet("NhanSu").row(i).cell(17).value(item.insuranceDate);
-                        workbook.sheet("NhanSu").row(i).cell(18).value((!isNaN(item.sallaryBasic) && item.sallaryBasic != 0) ? Number(item.sallaryBasic) : 0);
-                        workbook.sheet("NhanSu").row(i).cell(19).value(item.bankAccount);
-                        workbook.sheet("NhanSu").row(i).cell(20).value(item.signerIn);
-                        workbook.sheet("NhanSu").row(i).cell(21).value(item.workStartDate);
-                        workbook.sheet("NhanSu").row(i).cell(22).value(item.contractDate);
-                        workbook.sheet("NhanSu").row(i).cell(23).value(item?.contractType?.name);
-                        workbook.sheet("NhanSu").row(i).cell(24).value(item.dayOff);
-                        workbook.sheet("NhanSu").row(i).cell(25).value(item.note);
-                        workbook.sheet("NhanSu").row(i).cell(26).value(item?.files.length);
+                        workbook.sheet("NhanSu").row(i).cell(3).value(item.sign);
+                        workbook.sheet("NhanSu").row(i).cell(4).value(item.subtype >= 1 ? `${HUMAN_CLASSIFY[Number(item.subtype)-1].text}` : "");
+                        workbook.sheet("NhanSu").row(i).cell(5).value(item?.department?.name);
+                        workbook.sheet("NhanSu").row(i).cell(6).value(item?.position?.name);
+                        workbook.sheet("NhanSu").row(i).cell(7).value(item.gender >= 1 ? `${CONTACT_GENDER[Number(item.gender)-1].text}` : "");
+                        workbook.sheet("NhanSu").row(i).cell(8).value(item.birthday);
+                        workbook.sheet("NhanSu").row(i).cell(9).value(item.phone);
+                        workbook.sheet("NhanSu").row(i).cell(10).value(item.email);
+                        workbook.sheet("NhanSu").row(i).cell(11).value(item?.workingStatus?.name);
+                        workbook.sheet("NhanSu").row(i).cell(12).value(item.realStatus >= 1 ? `${PERSONAL_STATUS[Number(item.realStatus)-1].text}` : "");
+                        workbook.sheet("NhanSu").row(i).cell(13).value(item?.contractType?.name);
+                        workbook.sheet("NhanSu").row(i).cell(14).value(item.contractSign);
+                        workbook.sheet("NhanSu").row(i).cell(15).value(item.identity);
+                        workbook.sheet("NhanSu").row(i).cell(16).value(item.dateProvice);
+                        workbook.sheet("NhanSu").row(i).cell(17).value(item.place);
+                        workbook.sheet("NhanSu").row(i).cell(18).value(item.address);
+                        workbook.sheet("NhanSu").row(i).cell(19).value((item?.area != null && item?.area != undefined) ? (`${item?.area?.name}, ${item?.area?.parent?.name}, ${item?.area?.parent?.parent?.name}`) : "");
+                        workbook.sheet("NhanSu").row(i).cell(20).value((item?.area1 != null && item?.area1 != undefined) ? (`${item?.area1?.name}, ${item?.area1?.parent?.name}, ${item?.area1?.parent?.parent?.name}`) : "");
+                        workbook.sheet("NhanSu").row(i).cell(21).value((item?.area2 != null && item?.area2 != undefined) ? (`${item?.area2?.name}, ${item?.area2?.parent?.name}, ${item?.area2?.parent?.parent?.name}`) : "");
+                        workbook.sheet("NhanSu").row(i).cell(22).value(item.taxid);
+                        workbook.sheet("NhanSu").row(i).cell(23).value(item.insuranceStatus >= 1 ? `${INSURANCE_STATUS[Number(item.insuranceStatus)-1].text}` : "");
+                        workbook.sheet("NhanSu").row(i).cell(24).value(item.insuranceSign);
+                        workbook.sheet("NhanSu").row(i).cell(25).value(item.insuranceDate);
+                        workbook.sheet("NhanSu").row(i).cell(26).value((!isNaN(item.sallaryBasic) && item.sallaryBasic != 0) ? Number(item.sallaryBasic) : 0);
+                        workbook.sheet("NhanSu").row(i).cell(27).value((!isNaN(item.insuranceFee) && item.insuranceFee != 0) ? Number(item.insuranceFee) : 0);
+                        workbook.sheet("NhanSu").row(i).cell(28).value((!isNaN(item.sallaryFactor) && item.sallaryFactor != 0) ? Number(item.sallaryFactor) : 0);
+                        workbook.sheet("NhanSu").row(i).cell(29).value((!isNaN(item.sallarySubFactor) && item.sallarySubFactor != 0) ? Number(item.sallarySubFactor) : 0);
+                        workbook.sheet("NhanSu").row(i).cell(30).value(item.signerIn);
+                        workbook.sheet("NhanSu").row(i).cell(31).value(item.workStartDate);
+                        workbook.sheet("NhanSu").row(i).cell(32).value(item.contractDate);
+                        workbook.sheet("NhanSu").row(i).cell(33).value(item.contractValid);
+                        workbook.sheet("NhanSu").row(i).cell(34).value(item.contractExpire);
+                        workbook.sheet("NhanSu").row(i).cell(35).value(item.appointDate);
+                        workbook.sheet("NhanSu").row(i).cell(36).value(item.signerOut);
+                        workbook.sheet("NhanSu").row(i).cell(37).value(item.dayOff);
+                        workbook.sheet("NhanSu").row(i).cell(38).value(item.bankAccount);
+                        workbook.sheet("NhanSu").row(i).cell(39).value(item.bank);
+                        workbook.sheet("NhanSu").row(i).cell(40).value(item.familyPolicy >= 1 ? `${CONTACT_POLICY[Number(item.familyPolicy)-1].text}` : "");
+                        workbook.sheet("NhanSu").row(i).cell(41).value(item.family);
+                        workbook.sheet("NhanSu").row(i).cell(42).value((!isNaN(item.union) && item.union != 0) ? Number(item.union) : 0);
+                        workbook.sheet("NhanSu").row(i).cell(43).value((!isNaN(item.share) && item.share != 0) ? Number(item.share) : 0);
+                        workbook.sheet("NhanSu").row(i).cell(44).value(item.description);
+                        workbook.sheet("NhanSu").row(i).cell(45).value(item.note);
+                        workbook.sheet("NhanSu").row(i).cell(46).value(item?.linkUser?.fullname);
+                        workbook.sheet("NhanSu").row(i).cell(47).value(item?.files.length);
                         i++
                     });
 
