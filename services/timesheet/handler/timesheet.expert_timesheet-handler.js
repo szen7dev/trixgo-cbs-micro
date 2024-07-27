@@ -29,11 +29,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID } = ctx.params;
+                let { parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({
-                    userCreate: userID, companyID: company._id, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, ctx
+                    userCreate: userID, companyID: company._id, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -74,7 +74,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
+                let { expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
                      dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype } = ctx.params;
 
                 // console.log(ctx.params)
@@ -82,7 +82,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
-                    expertTimesheetID, userID, projectID, name, type, assigneeID, hours, unitprice, amount, status, approver,
+                    expertTimesheetID, userID, projectID, name, location, type, assigneeID, hours, unitprice, amount, status, approver,
                     note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype
                 });
 
