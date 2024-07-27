@@ -151,7 +151,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype }){
+    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype }){
             // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype })
         return new Promise(async (resolve) => {
             const that = this
@@ -187,6 +187,10 @@ class Model extends BaseModel {
 
                 if(name && name != ""){
                     dataUpdate.name = name;
+                }
+
+                if(location && location != ""){
+                    dataUpdate.location = location;
                 }
 
                 if(note && note != ""){
