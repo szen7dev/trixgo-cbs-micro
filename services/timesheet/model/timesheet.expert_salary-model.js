@@ -61,8 +61,9 @@ class Model extends BaseModel {
                     });
                 }
 
-                let year = new Date().getFullYear()
-                let month = new Date().getMonth()
+                let year = new Date(date).getFullYear()
+                let month = new Date(date).getMonth()
+                console.log({year,month})
                 let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                     company: companyID,
                     parent: { $exists: false },
