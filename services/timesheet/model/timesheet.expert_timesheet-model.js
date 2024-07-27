@@ -43,8 +43,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID }) {
-        // console.log({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID })
+    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID }) {
+        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID })
         return new Promise(async resolve => {
             try {
                 if(!name){
@@ -111,7 +111,11 @@ class Model extends BaseModel {
                     dataInsert.type = type;
                 }
 
-                if(note){
+                if(location && location != ""){
+                    dataInsert.location = location;
+                }
+
+                if(note && note != ""){
                     dataInsert.note = note;
                 }
 
@@ -181,8 +185,12 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(name){
+                if(name && name != ""){
                     dataUpdate.name = name;
+                }
+
+                if(note && note != ""){
+                    dataUpdate.note = note;
                 }
 
                 if(date){
@@ -254,10 +262,6 @@ class Model extends BaseModel {
                 if(approver){
                     dataUpdate.approver = approver;
                     dataUpdate.timeApprover =  Date.now();
-                }
-
-                if(note){
-                    dataUpdate.note = note;
                 }
 
                 let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]
