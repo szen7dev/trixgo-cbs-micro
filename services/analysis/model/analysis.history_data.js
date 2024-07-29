@@ -33,6 +33,10 @@ const ITEM__WAREHOUSE_COLL            		    = require('../../item/database/item.
 const ITEM__GOODS_COLL            		        = require('../../item/database/item.goods-coll')
 const FNB_CUSTOMER_CARE_COLL                    = require('../../fnb/database/fnb.customer_care-coll');
 const FNB_MISTAKE_COLL                          = require('../../fnb/database/fnb.mistake-coll');
+const DOCUMENT__DOC_COLL               			= require('../../document/database/document.doc-coll');
+const HUMAN__CONTACT_DOCUMENT_COLL              = require('../../human/database/human.contact_document-coll');
+const { join } = require('path/win32');
+
 
 class Model extends BaseModel {
 
@@ -667,7 +671,8 @@ class Model extends BaseModel {
                         conditionObj.companyOfAuthor = ObjectID(companyID)
                     }
                 }
-    
+                
+                // Dữ liệu truy cập
                 if(option == 1){
                     let listData = await ANALYSIS__HISTORY_TRAFFIC_COLL.find(conditionObj)
                     .limit(5000)
@@ -864,6 +869,148 @@ class Model extends BaseModel {
                          const now = new Date();
                          const filePath = '../../../files/temporary_uploads/';
                          const fileName = `traffic_report${now.getTime()}.xlsx`;
+                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                         await workbook.toFileAsync(pathWriteFile);
+                         const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                         fs.unlinkSync(pathWriteFile);
+                         return resolve({ error: false, data: result?.Location, status: 200 });
+                     });
+                }
+
+                // Dữ liệu nhập liệu hồ sơ
+                if(option == 2){
+                    let conditionObj1 = { company: ObjectID(companyID), author: { $exists: true, $ne: null } }
+                    let conditionObj2 = { company: ObjectID(companyID), userCreate: { $exists: true, $ne: null } }
+                    let conditionObj3 = { company: ObjectID(companyID), userUpdate: { $exists: true, $ne: null } }
+
+                    if(isValidDate(fromDate) && isValidDate(toDate)){
+                        conditionObj1.createAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                        conditionObj1.modifyAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+                    
+                    // Hồ sơ văn bản
+                    let listData1 = await DOCUMENT__DOC_COLL.aggregate([
+                        {
+                            $match: conditionObj1
+                        },
+                        {
+                            $group: {
+                                _id: { author: "$author" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+                    .sort({"quantity": -1})
+
+                    let listData2 = await DOCUMENT__DOC_COLL.aggregate([
+                        {
+                            $match: conditionObj3
+                        },
+                        {
+                            $group: {
+                                _id: { author: "$userUpdate" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    // Hồ sơ nhân sự
+                    let listData3 = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                        {
+                            $match: conditionObj2
+                        },
+                        {
+                            $group: {
+                                _id: { author: "$userCreate" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let listData4 = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                        {
+                            $match: conditionObj3
+                        },
+                        {
+                            $group: {
+                                _id: { author: "$userUpdate" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    await DOCUMENT__DOC_COLL.populate(listData1, {  
+                        path: '_id.author',
+                        select: 'fullname',
+                        model: 'user' 
+                    })
+
+                    await HUMAN__CONTACT_DOCUMENT_COLL.populate(listData3, {  
+                        path: '_id.author',
+                        select: 'fullname',
+                        model: 'user' 
+                    })
+                    // console.log(listData1)
+                    // console.log(listData2)
+                    // console.log(listData3)
+                    // console.log(listData4)
+
+                     // Modify the workbook.
+                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/common_input_report.xlsx')))
+                     .then(async workbook => {
+                        if(isValidDate(fromDate) && isValidDate(toDate)){
+                            workbook.sheet("Data").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                        }
+    
+                        var i = 4
+                        listData1.forEach((item, index) =>{
+                         workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
+                         workbook.sheet("Data").row(i).cell(2).value(`${item?._id.author?._id}`)
+                         workbook.sheet("Data").row(i).cell(3).value(item?._id.author?.fullname)
+                         workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity))
+
+                            i++
+                        })
+
+                        for(var j = 4; j <= Number(listData1.length + 3); j++ ){
+                            let userID = workbook.sheet("Data").row(j).cell(2).value()
+                            for(const item of listData2){
+                                if(userID.toString() === item._id.author.toString()){
+                                    workbook.sheet("Data").row(j).cell(5).value(Number(item?.quantity))
+                                }
+                            }
+                        }
+
+                        var i = 4
+                        listData3.forEach((item, index) =>{
+                         workbook.sheet("Data1").row(i).cell(1).value(Number(index + 1))
+                         workbook.sheet("Data1").row(i).cell(2).value(`${item?._id.author?._id}`)
+                         workbook.sheet("Data1").row(i).cell(3).value(item?._id.author?.fullname)
+                         workbook.sheet("Data1").row(i).cell(4).value(Number(item?.quantity))
+
+                            i++
+                        })
+
+                        for(var j = 4; j <= Number(listData3.length + 3); j++ ){
+                            let userID = workbook.sheet("Data1").row(j).cell(2).value()
+                            for(const item of listData4){
+                                if(userID.toString() === item._id.author.toString()){
+                                    workbook.sheet("Data1").row(j).cell(5).value(Number(item?.quantity))
+                                }
+                            }
+                        }
+               
+                         const now = new Date();
+                         const filePath = '../../../files/temporary_uploads/';
+                         const fileName = `common_input_report${now.getTime()}.xlsx`;
                          const pathWriteFile = path.resolve(__dirname, filePath, fileName);
     
                          await workbook.toFileAsync(pathWriteFile);
