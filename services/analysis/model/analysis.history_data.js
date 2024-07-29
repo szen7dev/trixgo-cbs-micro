@@ -968,6 +968,7 @@ class Model extends BaseModel {
                      .then(async workbook => {
                         if(isValidDate(fromDate) && isValidDate(toDate)){
                             workbook.sheet("Data").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                            workbook.sheet("Data1").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         }
     
                         var i = 4
