@@ -43,8 +43,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID }) {
-        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID })
+    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype }) {
+        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype })
+        const that = this
         return new Promise(async resolve => {
             try {
                 if(!name){
@@ -138,6 +139,11 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
+
+                // Cập nhật cho mẩu tin cha
+                if(checkObjectIDs(parentID)){
+                    await that.updateValue({ parentID, userID: userCreate })
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
