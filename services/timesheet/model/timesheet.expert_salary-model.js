@@ -63,15 +63,15 @@ class Model extends BaseModel {
 
                 let year = new Date(date).getFullYear()
                 let month = new Date(date).getMonth()
-                console.log({year,month})
-                let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                    company: companyID,
-                    parent: { $exists: false },
-                    $where:
-                    `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
-                })
-                if(checkExists)
-                    return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` })
+                // console.log({year,month})
+                // let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                //     company: companyID,
+                //     parent: { $exists: false },
+                //     $where:
+                //     `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
+                // })
+                // if(checkExists)
+                //     return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` })
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
