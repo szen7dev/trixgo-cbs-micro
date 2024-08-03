@@ -41,6 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     },
     //________Nội dung (*)
     name: String,
+    namecv: String,
     //________Nhân sự hưởng lương
     human: {
         type: Schema.Types.ObjectId,

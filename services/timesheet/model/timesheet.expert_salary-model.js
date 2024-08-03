@@ -18,6 +18,7 @@ const {
   IsJsonString,
   validateParamsObjectID
 }  = require('../../../tools/utils/utils');
+const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
  * COLLECTIONS
@@ -125,6 +126,18 @@ class Model extends BaseModel {
                     dataInsert.paid = Number(paid);
                 }
 
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsert.namecv = convertStr
+
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
@@ -223,7 +236,7 @@ class Model extends BaseModel {
                     dataUpdate.human = humanID;
                 }
 
-                if(name){
+                if(name && name != ""){
                     dataUpdate.name = name;
                 }
 
@@ -235,9 +248,21 @@ class Model extends BaseModel {
                     dataUpdate.status = status;
                 }
 
-                if(note){
+                if(note && note != ""){
                     dataUpdate.note = note;
                 }
+                
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdate.namecv = convertStr
 
                 if(convertFactor){
                     dataUpdate.convertFactor = convertFactor;
@@ -1054,9 +1079,11 @@ class Model extends BaseModel {
                     }
 
                     if(keyword){
+                        keyword = stringUtils.removeAccents(keyword)
                         keyword = keyword.split(" ");
                         keyword = '.*' + keyword.join(".*") + '.*';
-                        conditionObj.name =  new RegExp(keyword, 'i')
+                        const regSearch = new RegExp(keyword, 'i');
+                        conditionObj.namecv = regSearch
                     }
                 }
 

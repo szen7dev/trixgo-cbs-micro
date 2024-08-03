@@ -4,6 +4,7 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const _isValid                          = require('mongoose').Types.ObjectId;
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
  * TOOLS
@@ -124,6 +125,18 @@ class Model extends BaseModel {
                     dataInsert.hours = hours;
                 }
 
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsert.namecv = convertStr
+
                 let unitprice2 = 0
                 if(unitprice){
                     unitprice2 = Number(unitprice)
@@ -202,6 +215,18 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataUpdate.note = note;
                 }
+
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdate.namecv = convertStr
 
                 if(date){
                     dataUpdate.date = date;
@@ -544,12 +569,20 @@ class Model extends BaseModel {
                     conditionObj.subtype = Number(subtype)
                 }
 
-				if(keyword){
+                if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+                    conditionObj.namecv = regSearch
                 }
-                // console.log(conditionObj)
+
+				// if(keyword){
+                //     keyword = keyword.split(" ");
+                //     keyword = '.*' + keyword.join(".*") + '.*';
+                //     conditionObj.name = new RegExp(keyword, 'i');
+                // }
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 

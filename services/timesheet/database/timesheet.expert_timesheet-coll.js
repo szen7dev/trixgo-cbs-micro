@@ -46,6 +46,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     }],
     //________Nội dung công việc (*)
     name: String,
+    namecv: String,
     //_________Địa chỉ theo google map
     location: String,
     //________Phân loại: 1 quản lý, 2 sản xuất

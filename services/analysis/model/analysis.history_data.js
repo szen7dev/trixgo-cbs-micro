@@ -24,7 +24,6 @@ const APP_COLL                                  = require('../../auth/database/p
 const COMPANY_COLL                              = require('../../auth/database/auth.company-coll')
 const ANALYSIS__HISTORY_DATA_COLL               = require('../database/analysis.history_data-coll')
 const ANALYSIS__HISTORY_TRAFFIC_COLL            = require('../database/analysis.history_traffic-coll')
-// const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
 const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll')
@@ -35,8 +34,8 @@ const FNB_CUSTOMER_CARE_COLL                    = require('../../fnb/database/fn
 const FNB_MISTAKE_COLL                          = require('../../fnb/database/fnb.mistake-coll');
 const DOCUMENT__DOC_COLL               			= require('../../document/database/document.doc-coll');
 const HUMAN__CONTACT_DOCUMENT_COLL              = require('../../human/database/human.contact_document-coll');
-const { join } = require('path/win32');
-
+const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
 
 class Model extends BaseModel {
 
@@ -120,7 +119,6 @@ class Model extends BaseModel {
                 }
 
                 // convertDoctype
-
                 else if(option == 2){
                     let selectObj = '_id name sign description'
                 
@@ -437,6 +435,117 @@ class Model extends BaseModel {
                     await ITEM__GOODS_COLL.updateMany({company: companyID, _id: {$in: goodsID}},{$set: {fundas: fundasID}})
                 }
 
+                // convert Timesheet
+                else if(option == 11){
+                    let selectObj = '_id name note'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertTimesheet({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await TIMESHEET__EXPERT_TIMESHEET_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // convert Salary
+                else if(option == 12){
+                    let selectObj = '_id name note'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertSalary({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await TIMESHEET__EXPERT_SALARY_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // convert Document
+                else if(option == 13){
+                    let selectObj = '_id name sign storeSign description note approver'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await DOCUMENT__DOC_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await DOCUMENT__DOC_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertDocument({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await DOCUMENT__DOC_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -584,6 +693,86 @@ class Model extends BaseModel {
                 }
 
                 await BUDGET__WORK_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertTimesheet({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertSalary({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+                
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+
+                await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertDocument({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await DOCUMENT__DOC_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+                if(info.sign && info.sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.sign)
+                }
+                if(info.storeSign && info.storeSign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.storeSign)
+                }
+                if(info.description && info.description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.description)
+                }
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+                if(info.approver && info.approver != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.approver)
+                }
+
+                await DOCUMENT__DOC_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
               
                 return resolve({ error: false})
             } catch (error) {
