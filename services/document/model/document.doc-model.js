@@ -1031,16 +1031,24 @@ class Model extends BaseModel {
                     conditionObj.usersMarked = { $in: [userID] }
                 }
 
+                // if(keyword){
+                //     keyword = keyword.split(" ");
+                //     keyword = '.*' + keyword.join(".*") + '.*';
+                //     const regSearch = new RegExp(keyword, 'i');
+
+                //     conditionObj.$or = [
+                //         { name: regSearch },
+                //         { sign: regSearch },
+                //         { storeSign: regSearch },
+                //     ]
+                // }
+
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                        { storeSign: regSearch },
-                    ]
+                    conditionObj.namecv = regSearch
                 }
 
                 /**
