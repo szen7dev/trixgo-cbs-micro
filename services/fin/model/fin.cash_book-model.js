@@ -773,7 +773,7 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     downloadTemplateExcel({ option, companyID, parentID, salaryID, year, userID }) {
-        // console.log({ option, companyID, parentID, salaryID, userID })
+        console.log({ option, companyID, parentID, salaryID, year, userID })
         return new Promise(async resolve => {
             try {
                 // let option = 3
@@ -1083,7 +1083,7 @@ class Model extends BaseModel {
                             select:'fullname name contacts',
                             populate: ({
                                 path: 'contacts',
-                                select:'bankAccount bank identity',
+                                select:'sallaryBasic bankAccount bank identity',
                                 
                             })
                         })
@@ -1092,6 +1092,104 @@ class Model extends BaseModel {
                          // Modify the workbook.
                          XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx')))
                          .then(async workbook => {
+
+                            workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
+                            var i = 4
+                            listData.forEach((item, index) =>{
+                                let tongThu = Number(item.salary + item.onLeaveSalary + item.revenueBonus + item.reward + item.mealAllowance)
+                                let tongGiamTru = Number(item.punishment + item.insurance + item.pitax + item.union + item.share + item.other)
+
+                                workbook.sheet("BangLuongUpdate").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(2).value(item?.human?.fullname)
+                                workbook.sheet("BangLuongUpdate").row(i).cell(3).value(item?.project?.name)
+                                workbook.sheet("BangLuongUpdate").row(i).cell(4).value(item?.position?.name)
+                                workbook.sheet("BangLuongUpdate").row(i).cell(5).value(Number(item.salary))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(6).value(Number(item.convertFactor))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(7).value(Number(item.onLeaveSalary))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(8).value(Number(item.revenueBonus))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(9).value(Number(item.reward))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(10).value(Number(item.mealAllowance))
+
+                                workbook.sheet("BangLuongUpdate").row(i).cell(12).value(Number(item.punishment))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(13).value(Number(item.insurance))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(14).value(Number(item.pitax))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.union))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.share))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.other))
+
+                                workbook.sheet("BangLuongUpdate").row(i).cell(20).value(Number(item.advance))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(21).value(Number(item.paid))
+
+                                workbook.sheet("BangLuongUpdate").row(i).cell(23).value(item?.note)
+                                workbook.sheet("BangLuongUpdate").row(i).cell(24).value(`${item?._id}`)   
+                                workbook.sheet("BangLuongUpdate").row(i).cell(25).value(Number(item?.kpiFactor))   
+
+                                if(item?.human.contacts.length){
+                                    // console.log(item?.human.contacts[0])
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(30).value(item?.human.contacts[0].bankAccount)     
+                                }
+                                    
+                                workbook.sheet("BangLuongUpdate").row(i).cell(26).value(Number(item?.subAllowance1))   
+                                workbook.sheet("BangLuongUpdate").row(i).cell(27).value(Number(item?.pependent))   
+                                workbook.sheet("BangLuongUpdate").row(i).cell(29).value(Number(item?.subAllowance2))   
+                                
+                                /**
+                                 * BangLuongIn
+                                 * - Phục vụ in ấn, trình ký duyệt
+                                 */
+                                workbook.sheet("BangLuongIn").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("BangLuongIn").row(i).cell(2).value(item?.human?.fullname)
+                                workbook.sheet("BangLuongIn").row(i).cell(3).value(item?.project?.name)
+                                workbook.sheet("BangLuongIn").row(i).cell(4).value(item?.position?.name)
+
+                                if(item?.human.contacts.length){
+                                    workbook.sheet("BangLuongIn").row(i).cell(5).value(Number(item?.human.contacts[0].sallaryBasic))     
+                                }
+
+                                workbook.sheet("BangLuongIn").row(i).cell(6).value(Number(item.salary))
+                                workbook.sheet("BangLuongIn").row(i).cell(7).value(Number(item.onLeaveSalary))
+
+                                workbook.sheet("BangLuongIn").row(i).cell(8).value(Number(item.revenueBonus))
+                                workbook.sheet("BangLuongIn").row(i).cell(9).value(Number(item.reward))
+                                workbook.sheet("BangLuongIn").row(i).cell(10).value(Number(item.mealAllowance))
+                                workbook.sheet("BangLuongIn").row(i).cell(11).value(Number(tongThu)) //
+
+                                workbook.sheet("BangLuongIn").row(i).cell(12).value(Number(item.punishment))
+                                workbook.sheet("BangLuongIn").row(i).cell(13).value(Number(item.insurance))
+                                workbook.sheet("BangLuongIn").row(i).cell(14).value(Number(item.pitax))
+                                workbook.sheet("BangLuongIn").row(i).cell(15).value(Number(item.union))
+                                workbook.sheet("BangLuongIn").row(i).cell(16).value(Number(item.share))
+                                workbook.sheet("BangLuongIn").row(i).cell(17).value(Number(item.other))
+                                workbook.sheet("BangLuongIn").row(i).cell(18).value(Number(tongGiamTru)) //
+
+                                workbook.sheet("BangLuongIn").row(i).cell(19).value(Number(tongThu - tongGiamTru)) //
+
+                                workbook.sheet("BangLuongIn").row(i).cell(20).value(Number(item.advance))
+                                workbook.sheet("BangLuongIn").row(i).cell(21).value(Number(item.paid))
+                                workbook.sheet("BangLuongIn").row(i).cell(22).value(Number(item.remaining)) //
+
+                                workbook.sheet("BangLuongIn").row(i).cell(23).value(item?.note)
+
+                                /**
+                                 * BangLuongPay
+                                 * - Bảng lương phục vụ thanh toán, chuyển khoản
+                                 */
+                                workbook.sheet("BangLuongPay").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("BangLuongPay").row(i).cell(2).value(item?.human?.fullname.slice(0, -4))
+                                workbook.sheet("BangLuongPay").row(i).cell(4).value(Number(item.remaining))
+
+                                if(item?.human.contacts.length){
+                                    workbook.sheet("BangLuongPay").row(i).cell(3).value(item?.human.contacts[0].identity)     
+                                    workbook.sheet("BangLuongPay").row(i).cell(5).value(item?.human.contacts[0].bankAccount) 
+                                    workbook.sheet("BangLuongPay").row(i).cell(6).value(item?.human.contacts[0].bank)     
+                                }
+                                
+                                i++
+                            })
+
+                            /**
+                             * Tổng hợp lương
+                             */
                             var i = 3
                             listDepartment.forEach((item, index) =>{
                                 workbook.sheet("TongHop1").row(i).cell(1).value(Number(index + 1))
@@ -1108,93 +1206,6 @@ class Model extends BaseModel {
                                 workbook.sheet("TongHop2").row(i).cell(2).value(item?.name)
                                 workbook.sheet("TongHop2").row(i).cell(3).value()
                                 workbook.sheet("TongHop2").row(i).cell(4).value(item?.note)
-                                
-                                i++
-                            })
-
-                            workbook.sheet("BangLuong").row(1).cell(1).value(infoParent.name)
-
-                            var i = 4
-                            listData.forEach((item, index) =>{
-                                let tongThu = Number(item.salary + item.onLeaveSalary + item.revenueBonus + item.reward + item.mealAllowance)
-                                let tongGiamTru = Number(item.punishment + item.insurance + item.pitax + item.union + item.share + item.other)
-
-                                workbook.sheet("BangLuong").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("BangLuong").row(i).cell(2).value(item?.human?.fullname)
-                                workbook.sheet("BangLuong").row(i).cell(3).value(item?.project?.name)
-                                workbook.sheet("BangLuong").row(i).cell(4).value(item?.position?.name)
-                                workbook.sheet("BangLuong").row(i).cell(5).value(Number(item.salary))
-                                // workbook.sheet("BangLuong").row(i).cell(6).value(Number(item.convertFactor))
-                                workbook.sheet("BangLuong").row(i).cell(7).value(Number(item.onLeaveSalary))
-                                workbook.sheet("BangLuong").row(i).cell(8).value(Number(item.revenueBonus))
-                                workbook.sheet("BangLuong").row(i).cell(9).value(Number(item.reward))
-                                workbook.sheet("BangLuong").row(i).cell(10).value(Number(item.mealAllowance))
-
-                                workbook.sheet("BangLuong").row(i).cell(12).value(Number(item.punishment))
-                                workbook.sheet("BangLuong").row(i).cell(13).value(Number(item.insurance))
-                                // workbook.sheet("BangLuong").row(i).cell(14).value(Number(item.pitax))
-                                // workbook.sheet("BangLuong").row(i).cell(15).value(Number(item.union))
-                                workbook.sheet("BangLuong").row(i).cell(16).value(Number(item.share))
-                                workbook.sheet("BangLuong").row(i).cell(17).value(Number(item.other))
-
-                                workbook.sheet("BangLuong").row(i).cell(20).value(Number(item.advance))
-                                workbook.sheet("BangLuong").row(i).cell(21).value(Number(item.paid))
-
-                                workbook.sheet("BangLuong").row(i).cell(23).value(item?.note)
-                                workbook.sheet("BangLuong").row(i).cell(24).value(`${item?._id}`)   
-                                workbook.sheet("BangLuong").row(i).cell(25).value(Number(item?.kpiFactor))   
-
-                                if(item?.human.contacts.length){
-                                    // console.log(item?.human.contacts[0])
-                                    workbook.sheet("BangLuong").row(i).cell(30).value(item?.human.contacts[0].bankAccount)     
-                                }
-                                    
-                                workbook.sheet("BangLuong").row(i).cell(26).value(Number(item?.subAllowance1))   
-                                workbook.sheet("BangLuong").row(i).cell(27).value(Number(item?.pependent))   
-                                workbook.sheet("BangLuong").row(i).cell(29).value(Number(item?.subAllowance2))   
-                                
-                                // Bảng lương 2
-                                workbook.sheet("BangLuong2").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("BangLuong2").row(i).cell(2).value(item?.human?.fullname)
-                                workbook.sheet("BangLuong2").row(i).cell(3).value(item?.project?.name)
-                                workbook.sheet("BangLuong2").row(i).cell(4).value(item?.position?.name)
-                                workbook.sheet("BangLuong2").row(i).cell(5).value(Number(item.salary))
-                                workbook.sheet("BangLuong2").row(i).cell(6).value(Number(item.convertFactor))
-                                workbook.sheet("BangLuong2").row(i).cell(7).value(Number(item.onLeaveSalary))
-
-                                workbook.sheet("BangLuong2").row(i).cell(8).value(Number(item.revenueBonus))
-                                workbook.sheet("BangLuong2").row(i).cell(9).value(Number(item.reward))
-                                workbook.sheet("BangLuong2").row(i).cell(10).value(Number(item.mealAllowance))
-                                workbook.sheet("BangLuong2").row(i).cell(11).value(Number(item.punishment))
-                                workbook.sheet("BangLuong2").row(i).cell(12).value(Number(item.insurance))
-                                workbook.sheet("BangLuong2").row(i).cell(13).value(Number(item.pitax))
-                                workbook.sheet("BangLuong2").row(i).cell(14).value(Number(item.union))
-                                workbook.sheet("BangLuong2").row(i).cell(15).value(Number(item.share))
-                                workbook.sheet("BangLuong2").row(i).cell(16).value(Number(item.other))
-
-                                workbook.sheet("BangLuong2").row(i).cell(17).value(Number(tongThu))
-                                workbook.sheet("BangLuong2").row(i).cell(18).value(Number(tongGiamTru))
-
-                                workbook.sheet("BangLuong2").row(i).cell(19).value(Number(item.advance))
-                                workbook.sheet("BangLuong2").row(i).cell(20).value(Number(item.paid))
-                                workbook.sheet("BangLuong2").row(i).cell(21).value(Number(item.remaining))
-                                workbook.sheet("BangLuong2").row(i).cell(22).value(item?.note)
-                                workbook.sheet("BangLuong2").row(i).cell(23).value(`${item?._id}`)   
-                                
-                                if(item?.human.contacts.length){
-                                    workbook.sheet("BangLuong2").row(i).cell(24).value(item?.human.contacts[0].bankAccount)     
-                                }
-
-                                // Bảng lương 3
-                                workbook.sheet("BangLuong3").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("BangLuong3").row(i).cell(2).value(item?.human?.fullname)
-                                workbook.sheet("BangLuong3").row(i).cell(4).value(Number(item.remaining))
-
-                                if(item?.human.contacts.length){
-                                    workbook.sheet("BangLuong3").row(i).cell(3).value(item?.human.contacts[0].identity)     
-                                    workbook.sheet("BangLuong3").row(i).cell(5).value(item?.human.contacts[0].bankAccount) 
-                                    workbook.sheet("BangLuong3").row(i).cell(6).value(item?.human.contacts[0].bank)     
-                                }
                                 
                                 i++
                             })

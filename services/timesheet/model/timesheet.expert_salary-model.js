@@ -209,7 +209,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, pependent }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
+        console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -328,8 +328,9 @@ class Model extends BaseModel {
                 if(!isNaN(salary) || !isNaN(onLeaveSalary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance) || !isNaN(paid)){
                     dataUpdate.remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
                 }
-                // console.log(dataUpdate)
+                console.log(dataUpdate)
 
+                // Kiểm tra quyền cập nhật
                 const adminsID = [...infoSalary.admins?.map(item => item?.toString())]
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
@@ -372,69 +373,15 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Cập nhật Bảng lương
+                // Cập nhật Thông tin Bảng lương
                 if(!infoAfterUpdate.parent){
                     // Cập nhật hệ số chuyển đổi vào Chi tiết lương
                     if(convertFactor){
                         await TIMESHEET__EXPERT_SALARY_COLL.updateMany({parent: expertSalaryID},{$set: {convertFactor: convertFactor}})
                     }
-
-                    // Thêm các nhân sự còn thiếu vào bảng lương
-                    // let companyID = infoSalary.company, userCreate = userID
-                    // let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 })
-                    // .select('fullname department position contacts')
-                    // .populate({
-                    //     path: 'contacts',
-                    //     select: 'company sallaryBasic insuranceFee union share'
-                    // })
-
-                    // for(const item of listHuman){
-                    //     let infoS = await TIMESHEET__EXPERT_SALARY_COLL.findOne({parent: expertSalaryID, human: item._id})
-                    //     if(!infoS){
-                    //         let insuranceFee = 0, union = 0, share = 0
-                    //         if(item.contacts && item.contacts.length){
-                    //             for(const contact of item.contacts){
-                    //                 if(contact.company.toString() === companyID.toString() && contact.insuranceFee){
-                    //                     insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
-                    //                     union = Number(union) + Number(contact.union)
-                    //                     share = Number(share) + Number(contact.share)
-                    //                 }
-                    //             }
-                    //         }
-
-                    //         let dataInsertDetail = {
-                    //             userCreate,
-                    //             name: 'Default',
-                    //             admins: [userCreate],
-                    //             members: [userCreate],
-                    //             human: item._id,
-                    //             parent: expertSalaryID,
-                    //             company: companyID,
-                    //             convertFactor: infoSalary.convertFactor,
-                    //             project: item.department,
-                    //             position: item.position,
-                    //             date: infoSalary.date,
-                    //             type: infoSalary.type,
-                    //         }
-
-                    //         if(Number(insuranceFee) > 0){
-                    //             dataInsertDetail.insurance = Number(insuranceFee)
-                    //         }
-
-                    //         if(Number(union) > 0){
-                    //             dataInsertDetail.union = Number(union)
-                    //         }
-
-                    //         if(Number(share) > 0){
-                    //             dataInsertDetail.share = Number(share)
-                    //         }
-
-                    //         await this.insertData(dataInsertDetail)
-                    //     }
-                    // }
                 }
 
-                // Cập nhật giá trị vào Bảng lương cha
+                // Cập nhật giá trị chi tiết vào Bảng lương cha
                 if(infoAfterUpdate.parent && checkObjectIDs(infoAfterUpdate.parent)){
                     await that.updateValue({ expertSalaryID: infoAfterUpdate.parent, userID })
                 }
@@ -1011,7 +958,8 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let nextCursor	= null;
                 let sortBy      = null;
-                let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['project__1', '_id__1'];
+                // let keys	 = ['createAt__1', '_id__1'];
 
                 if(sortOption == 1){
                     keys	 = ['date__-1', '_id__-1'];
