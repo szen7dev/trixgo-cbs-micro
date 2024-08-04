@@ -453,7 +453,7 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype, ctx }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype }) {
         // console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type})
         return new Promise(async (resolve) => {
             try {
@@ -491,23 +491,20 @@ class Model extends BaseModel {
                     }
                 }
 
+                let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
+                    appID: "61e049cffdebf77b072d1b14", 
+                    userID
+                 })
+
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 
                     if(humanID && checkObjectIDs(humanID)){
                         conditionObj.assignee = humanID;
                     }
-                    // if(assigneeID && checkObjectIDs(assigneeID)){
-                    //     conditionObj.assignee = assigneeID;
-                    // }
 				}else{
                     // Danh sách bảng chấm công
                     if(!option){
-                        let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
-                            appID: "61e049cffdebf77b072d1b14", 
-                            userID
-                         })
-
                         // Nếu là Admin ứng dụng
                         if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
                             conditionObj.company = companyID
@@ -520,13 +517,26 @@ class Model extends BaseModel {
                                 {admins: { $in: [userID] }},
                                 {members: { $in: [userID] }}
                             ]
+
                             conditionObj.company = companyID
                             conditionObj.parent = { $exists: false }
                         }
+
+                        // console.log('==================')
+                        // console.log(conditionObj)
                     }
 
-                    // Chi tiết chấm công của userID
+                    // Chi tiết chấm công của userID: gom nhóm theo Tháng
                     else if(option == 1){
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                       
+                        }else{
+                            conditionObj.$or = [
+                                {admins: { $in: [userID] }},
+                                {members: { $in: [userID] }}
+                            ]
+                        }
+
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = assigneeID
                         if(month & year){
@@ -534,8 +544,17 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Chi tiết chấm công của Công ty
+                    // Chi tiết chấm công của Công ty: gom nhóm theo Tháng
                     else if(option == 2){
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                       
+                        }else{
+                            conditionObj.$or = [
+                                {admins: { $in: [userID] }},
+                                {members: { $in: [userID] }}
+                            ]
+                        }
+
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = userID
                         if(month & year){
@@ -543,26 +562,34 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Chi tiết chấm công theo workID
+                    // Chi tiết chấm công theo workID: gom nhóm theo Ngân sách
                     else if(option == 3){
                         conditionObj.work = workID;
                     }
                 }
 
-                // Chi tiết chấm công của user đang truy cập
+                // Chi tiết chấm công của userID đang truy cập
                 if(type && type == 2){
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = userID
 
-                    delete conditionObj.$or 
+                    // delete conditionObj.$or 
                 }
 
                 // Chi tiết chấm công của 1 nhân sự
                 if(type && type == 3){
+                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                       
+                    }else{
+                        conditionObj.$or = [
+                            {admins: { $in: [userID] }},
+                            {members: { $in: [userID] }}
+                        ]
+                    }
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = humanID
 
-                    delete conditionObj.$or 
+                    // delete conditionObj.$or 
                 }
 
                 if(subtype ){
@@ -576,13 +603,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-
-				// if(keyword){
-                //     keyword = keyword.split(" ");
-                //     keyword = '.*' + keyword.join(".*") + '.*';
-                //     conditionObj.name = new RegExp(keyword, 'i');
-                // }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 
