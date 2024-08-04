@@ -454,7 +454,7 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, workID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype }) {
-        console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type})
+        // console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type})
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
