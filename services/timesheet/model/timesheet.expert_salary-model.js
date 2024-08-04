@@ -209,7 +209,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, pependent }){
-        console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, pependent })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -328,7 +328,7 @@ class Model extends BaseModel {
                 if(!isNaN(salary) || !isNaN(onLeaveSalary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance) || !isNaN(paid)){
                     dataUpdate.remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
                 }
-                console.log(dataUpdate)
+                // console.log(dataUpdate)
 
                 // Kiểm tra quyền cập nhật
                 const adminsID = [...infoSalary.admins?.map(item => item?.toString())]
@@ -806,6 +806,7 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
+                // ĐỒNG BỘ
                 if(option == 1){
                     // Cập nhật chấm công vào các Chi tiết của Bảng lương
                     await that.updateValueTimesheet({ expertSalaryID: salaryID, userID, companyID })
@@ -817,7 +818,10 @@ class Model extends BaseModel {
                     await that.updateValue( {expertSalaryID: salaryID, userID })
 
                     return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
-                }else if(option == 2){
+                }
+                
+                // XÓA
+                else if(option == 2){
                     //___________Quyền truy cập ứng dụng Nhân sự
                     let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
                         appID: "61e049cffdebf77b072d1b14",
@@ -938,7 +942,7 @@ class Model extends BaseModel {
     getList({
         option, sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID }) {
-        // console.log({sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
+        // console.log({option, sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -1035,6 +1039,9 @@ class Model extends BaseModel {
                     }
                 }
 
+                /**
+                 * Phiếu lương của userID đang truy cập
+                 */
                 if(option && option == 1){
                     conditionObj.human = userID
                     conditionObj.parent = { $exists: true, $ne: null }
@@ -1060,7 +1067,7 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
                 // sortBy      = { project: 1 };
-                console.log({sortBy})
+                // console.log({sortBy})
 
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
