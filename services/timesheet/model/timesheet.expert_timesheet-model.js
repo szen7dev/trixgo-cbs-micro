@@ -535,6 +535,13 @@ class Model extends BaseModel {
 
                     // Chi tiết chấm công của userID: gom nhóm theo Tháng
                     else if(option == 1){
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+
+                        }else{
+                            // Lấy tạm danh sách Rỗng
+                            conditionObj.company = { $exists: false }
+                        }
+
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = assigneeID
                         if(month & year){
@@ -544,6 +551,13 @@ class Model extends BaseModel {
 
                     // Chi tiết chấm công của Công ty: gom nhóm theo Tháng
                     else if(option == 2){
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                            
+                        }else{
+                            // Lấy tạm danh sách Rỗng
+                            conditionObj.company = { $exists: false }
+                        }
+
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = userID
                         if(month & year){
@@ -567,8 +581,13 @@ class Model extends BaseModel {
 
                 // Chi tiết chấm công của 1 nhân sự
                 if(type && type == 3){
-                    conditionObj.parent = { $exists: true, $ne: null }
-                    conditionObj.assignee = humanID
+                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                        conditionObj.parent = { $exists: true, $ne: null }
+                        conditionObj.assignee = humanID
+                    }else{
+                        // Lấy tạm danh sách Rỗng
+                        conditionObj.company = { $exists: false }
+                    }
 
                     delete conditionObj.$or 
                 }
