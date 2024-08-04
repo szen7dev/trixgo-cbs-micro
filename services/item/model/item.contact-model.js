@@ -28,8 +28,8 @@ const {
  } = require('../helper/item.keys-constant')
 const stringUtils					    = require('../../../tools/utils/string_utils')
 
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
+// const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+// const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * COLLECTIONS

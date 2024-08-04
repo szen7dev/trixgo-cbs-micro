@@ -4,6 +4,7 @@ const BaseModel                         = require('../../../tools/db/base_model'
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const _isValid                          = require('mongoose').Types.ObjectId;
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
  * TOOLS
@@ -43,8 +44,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID }) {
-        // console.log({ userCreate, companyID, parentID, name, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID })
+    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype }) {
+        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype })
+        const that = this
         return new Promise(async resolve => {
             try {
                 if(!name){
@@ -111,13 +113,29 @@ class Model extends BaseModel {
                     dataInsert.type = type;
                 }
 
-                if(note){
+                if(location && location != ""){
+                    dataInsert.location = location;
+                }
+
+                if(note && note != ""){
                     dataInsert.note = note;
                 }
 
                 if(hours){
                     dataInsert.hours = hours;
                 }
+
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsert.namecv = convertStr
 
                 let unitprice2 = 0
                 if(unitprice){
@@ -135,6 +153,11 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
+                // Cập nhật cho mẩu tin cha
+                if(checkObjectIDs(parentID)){
+                    await that.updateValue({ parentID, userID: userCreate })
+                }
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -147,7 +170,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype }){
+    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype }){
             // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype })
         return new Promise(async (resolve) => {
             const that = this
@@ -181,9 +204,29 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(name){
+                if(name && name != ""){
                     dataUpdate.name = name;
                 }
+
+                if(location && location != ""){
+                    dataUpdate.location = location;
+                }
+
+                if(note && note != ""){
+                    dataUpdate.note = note;
+                }
+
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdate.namecv = convertStr
 
                 if(date){
                     dataUpdate.date = date;
@@ -254,10 +297,6 @@ class Model extends BaseModel {
                 if(approver){
                     dataUpdate.approver = approver;
                     dataUpdate.timeApprover =  Date.now();
-                }
-
-                if(note){
-                    dataUpdate.note = note;
                 }
 
                 let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]
@@ -372,7 +411,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertTimesheetID, userID, select, populates, ctx }) {
+    getInfo({ expertTimesheetID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(expertTimesheetID))
@@ -401,7 +440,17 @@ class Model extends BaseModel {
                 // Record Traffic
                 //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
+                // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                       
+                // }else{
+                //     conditionObj.$or = [
+                //         {admins: { $in: [userID] }},
+                //         {members: { $in: [userID] }}
+                //     ]
+                // }
+
                 return resolve({ error: false, data: infoAterGet, status: 200 })
+                // return resolve({ error: true, message: error.message, status: 500 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -414,7 +463,7 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype, ctx }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype }) {
         // console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type})
         return new Promise(async (resolve) => {
             try {
@@ -452,23 +501,20 @@ class Model extends BaseModel {
                     }
                 }
 
+                let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
+                    appID: "61e049cffdebf77b072d1b14", 
+                    userID
+                 })
+
 				if(checkObjectIDs(parentID)){
 					conditionObj.parent = parentID;
 
                     if(humanID && checkObjectIDs(humanID)){
                         conditionObj.assignee = humanID;
                     }
-                    // if(assigneeID && checkObjectIDs(assigneeID)){
-                    //     conditionObj.assignee = assigneeID;
-                    // }
 				}else{
-                    // Danh sách bảng chấm công
+                    // Danh sách Bảng chấm công
                     if(!option){
-                        let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
-                            appID: "61e049cffdebf77b072d1b14", 
-                            userID
-                         })
-
                         // Nếu là Admin ứng dụng
                         if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
                             conditionObj.company = companyID
@@ -481,13 +527,21 @@ class Model extends BaseModel {
                                 {admins: { $in: [userID] }},
                                 {members: { $in: [userID] }}
                             ]
+
                             conditionObj.company = companyID
                             conditionObj.parent = { $exists: false }
                         }
                     }
 
-                    // Chi tiết chấm công của userID
+                    // Chi tiết chấm công của userID: gom nhóm theo Tháng
                     else if(option == 1){
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+
+                        }else{
+                            // Lấy tạm danh sách Rỗng
+                            conditionObj.company = { $exists: false }
+                        }
+
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = assigneeID
                         if(month & year){
@@ -495,8 +549,15 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Chi tiết chấm công của Công ty
+                    // Chi tiết chấm công của Công ty: gom nhóm theo Tháng
                     else if(option == 2){
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                            
+                        }else{
+                            // Lấy tạm danh sách Rỗng
+                            conditionObj.company = { $exists: false }
+                        }
+
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = userID
                         if(month & year){
@@ -504,13 +565,13 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Chi tiết chấm công theo workID
+                    // Chi tiết chấm công theo workID: gom nhóm theo Ngân sách
                     else if(option == 3){
                         conditionObj.work = workID;
                     }
                 }
 
-                // Chi tiết chấm công của user đang truy cập
+                // Chi tiết chấm công của userID đang truy cập
                 if(type && type == 2){
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = userID
@@ -520,8 +581,13 @@ class Model extends BaseModel {
 
                 // Chi tiết chấm công của 1 nhân sự
                 if(type && type == 3){
-                    conditionObj.parent = { $exists: true, $ne: null }
-                    conditionObj.assignee = humanID
+                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                        conditionObj.parent = { $exists: true, $ne: null }
+                        conditionObj.assignee = humanID
+                    }else{
+                        // Lấy tạm danh sách Rỗng
+                        conditionObj.company = { $exists: false }
+                    }
 
                     delete conditionObj.$or 
                 }
@@ -530,10 +596,12 @@ class Model extends BaseModel {
                     conditionObj.subtype = Number(subtype)
                 }
 
-				if(keyword){
+                if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+                    conditionObj.namecv = regSearch
                 }
                 // console.log(conditionObj)
 

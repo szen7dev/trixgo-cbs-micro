@@ -24,7 +24,6 @@ const APP_COLL                                  = require('../../auth/database/p
 const COMPANY_COLL                              = require('../../auth/database/auth.company-coll')
 const ANALYSIS__HISTORY_DATA_COLL               = require('../database/analysis.history_data-coll')
 const ANALYSIS__HISTORY_TRAFFIC_COLL            = require('../database/analysis.history_traffic-coll')
-// const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
 const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll')
@@ -33,6 +32,10 @@ const ITEM__WAREHOUSE_COLL            		    = require('../../item/database/item.
 const ITEM__GOODS_COLL            		        = require('../../item/database/item.goods-coll')
 const FNB_CUSTOMER_CARE_COLL                    = require('../../fnb/database/fnb.customer_care-coll');
 const FNB_MISTAKE_COLL                          = require('../../fnb/database/fnb.mistake-coll');
+const DOCUMENT__DOC_COLL               			= require('../../document/database/document.doc-coll');
+const HUMAN__CONTACT_DOCUMENT_COLL              = require('../../human/database/human.contact_document-coll');
+const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
 
 class Model extends BaseModel {
 
@@ -116,7 +119,6 @@ class Model extends BaseModel {
                 }
 
                 // convertDoctype
-
                 else if(option == 2){
                     let selectObj = '_id name sign description'
                 
@@ -433,6 +435,117 @@ class Model extends BaseModel {
                     await ITEM__GOODS_COLL.updateMany({company: companyID, _id: {$in: goodsID}},{$set: {fundas: fundasID}})
                 }
 
+                // convert Timesheet
+                else if(option == 11){
+                    let selectObj = '_id name note'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertTimesheet({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await TIMESHEET__EXPERT_TIMESHEET_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // convert Salary
+                else if(option == 12){
+                    let selectObj = '_id name note'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertSalary({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await TIMESHEET__EXPERT_SALARY_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // convert Document
+                else if(option == 13){
+                    let selectObj = '_id name sign storeSign description note approver'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await DOCUMENT__DOC_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await DOCUMENT__DOC_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertDocument({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await DOCUMENT__DOC_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -588,6 +701,86 @@ class Model extends BaseModel {
         });
     }
 
+    convertTimesheet({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertSalary({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+                
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+
+                await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertDocument({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await DOCUMENT__DOC_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+                if(info.sign && info.sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.sign)
+                }
+                if(info.storeSign && info.storeSign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.storeSign)
+                }
+                if(info.description && info.description != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.description)
+                }
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+                if(info.approver && info.approver != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.approver)
+                }
+
+                await DOCUMENT__DOC_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
     resetData({ option, companyID, page, unit, getNumber, newPassword, pass, salaryID }){
         // console.log({ option, companyID, page, unit, getNumber, newPassword })
         return new Promise(async resolve => { 
@@ -667,7 +860,8 @@ class Model extends BaseModel {
                         conditionObj.companyOfAuthor = ObjectID(companyID)
                     }
                 }
-    
+                
+                // Dữ liệu truy cập
                 if(option == 1){
                     let listData = await ANALYSIS__HISTORY_TRAFFIC_COLL.find(conditionObj)
                     .limit(5000)
@@ -864,6 +1058,149 @@ class Model extends BaseModel {
                          const now = new Date();
                          const filePath = '../../../files/temporary_uploads/';
                          const fileName = `traffic_report${now.getTime()}.xlsx`;
+                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+    
+                         await workbook.toFileAsync(pathWriteFile);
+                         const result = await uploadFileS3(pathWriteFile, fileName);
+    
+                         fs.unlinkSync(pathWriteFile);
+                         return resolve({ error: false, data: result?.Location, status: 200 });
+                     });
+                }
+
+                // Dữ liệu nhập liệu hồ sơ
+                if(option == 2){
+                    let conditionObj1 = { company: ObjectID(companyID), author: { $exists: true, $ne: null } }
+                    let conditionObj2 = { company: ObjectID(companyID), userCreate: { $exists: true, $ne: null } }
+                    let conditionObj3 = { company: ObjectID(companyID), userUpdate: { $exists: true, $ne: null } }
+
+                    if(isValidDate(fromDate) && isValidDate(toDate)){
+                        conditionObj1.createAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                        conditionObj1.modifyAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+                    
+                    // Hồ sơ văn bản
+                    let listData1 = await DOCUMENT__DOC_COLL.aggregate([
+                        {
+                            $match: conditionObj1
+                        },
+                        {
+                            $group: {
+                                _id: { author: "$author" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+                    .sort({"quantity": -1})
+
+                    let listData2 = await DOCUMENT__DOC_COLL.aggregate([
+                        {
+                            $match: conditionObj3
+                        },
+                        {
+                            $group: {
+                                _id: { author: "$userUpdate" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    // Hồ sơ nhân sự
+                    let listData3 = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                        {
+                            $match: conditionObj2
+                        },
+                        {
+                            $group: {
+                                _id: { author: "$userCreate" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    let listData4 = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                        {
+                            $match: conditionObj3
+                        },
+                        {
+                            $group: {
+                                _id: { author: "$userUpdate" },
+                                quantity: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    await DOCUMENT__DOC_COLL.populate(listData1, {  
+                        path: '_id.author',
+                        select: 'fullname',
+                        model: 'user' 
+                    })
+
+                    await HUMAN__CONTACT_DOCUMENT_COLL.populate(listData3, {  
+                        path: '_id.author',
+                        select: 'fullname',
+                        model: 'user' 
+                    })
+                    // console.log(listData1)
+                    // console.log(listData2)
+                    // console.log(listData3)
+                    // console.log(listData4)
+
+                     // Modify the workbook.
+                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/common_input_report.xlsx')))
+                     .then(async workbook => {
+                        if(isValidDate(fromDate) && isValidDate(toDate)){
+                            workbook.sheet("Data").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                            workbook.sheet("Data1").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                        }
+    
+                        var i = 4
+                        listData1.forEach((item, index) =>{
+                         workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
+                         workbook.sheet("Data").row(i).cell(2).value(`${item?._id.author?._id}`)
+                         workbook.sheet("Data").row(i).cell(3).value(item?._id.author?.fullname)
+                         workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity))
+
+                            i++
+                        })
+
+                        for(var j = 4; j <= Number(listData1.length + 3); j++ ){
+                            let userID = workbook.sheet("Data").row(j).cell(2).value()
+                            for(const item of listData2){
+                                if(userID.toString() === item._id.author.toString()){
+                                    workbook.sheet("Data").row(j).cell(5).value(Number(item?.quantity))
+                                }
+                            }
+                        }
+
+                        var i = 4
+                        listData3.forEach((item, index) =>{
+                         workbook.sheet("Data1").row(i).cell(1).value(Number(index + 1))
+                         workbook.sheet("Data1").row(i).cell(2).value(`${item?._id.author?._id}`)
+                         workbook.sheet("Data1").row(i).cell(3).value(item?._id.author?.fullname)
+                         workbook.sheet("Data1").row(i).cell(4).value(Number(item?.quantity))
+
+                            i++
+                        })
+
+                        for(var j = 4; j <= Number(listData3.length + 3); j++ ){
+                            let userID = workbook.sheet("Data1").row(j).cell(2).value()
+                            for(const item of listData4){
+                                if(userID.toString() === item._id.author.toString()){
+                                    workbook.sheet("Data1").row(j).cell(5).value(Number(item?.quantity))
+                                }
+                            }
+                        }
+               
+                         const now = new Date();
+                         const filePath = '../../../files/temporary_uploads/';
+                         const fileName = `common_input_report${now.getTime()}.xlsx`;
                          const pathWriteFile = path.resolve(__dirname, filePath, fileName);
     
                          await workbook.toFileAsync(pathWriteFile);

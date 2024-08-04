@@ -41,6 +41,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     },
     //________Nội dung (*)
     name: String,
+    namecv: String,
     //________Nhân sự hưởng lương
     human: {
         type: Schema.Types.ObjectId,
@@ -88,12 +89,12 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
-    //________Sub1 (tiền ăn)
+    //________Sub1 (phụ cấp tiền ăn)
     subAllowance1: {
         type: Number,
         default: 0 
     },
-    //________Sub2 (làm ngày nghỉ lễ)
+    //________Sub2 (phụ cấp làm ngày nghỉ lễ)
     subAllowance2: {
         type: Number,
         default: 0 

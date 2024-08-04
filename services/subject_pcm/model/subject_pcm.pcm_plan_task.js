@@ -1813,7 +1813,7 @@ class Model extends BaseModel {
                     assigneeID,
                     relatedIDs,
                     parentID: parent,
-                    authorAttachs,
+                    // authorAttachs, // Bỏ đi vì không dùng tới
                     type,
                     subType: subtype,
                     // startTime,

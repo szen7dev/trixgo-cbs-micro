@@ -418,7 +418,6 @@ class Model extends BaseModel {
                 if(!isNaN(completeStatus)){
                     dataUpdate.completeStatus = completeStatus;
                 }
-
                 
                 /**
                  * Convert to query
@@ -840,15 +839,23 @@ class Model extends BaseModel {
                     delete conditionObj.parent
                 }
 
+                // if(keyword){
+                //     keyword = keyword.split(" ");
+                //     keyword = '.*' + keyword.join(".*") + '.*';
+                //     const regSearch = new RegExp(keyword, 'i');
+
+                //     conditionObj.$or = [
+                //         { name: regSearch },
+                //         { sign: regSearch },
+                //     ]
+                // }
+
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    conditionObj.namecv = regSearch
                 }
 
                 /**
@@ -1024,16 +1031,24 @@ class Model extends BaseModel {
                     conditionObj.usersMarked = { $in: [userID] }
                 }
 
+                // if(keyword){
+                //     keyword = keyword.split(" ");
+                //     keyword = '.*' + keyword.join(".*") + '.*';
+                //     const regSearch = new RegExp(keyword, 'i');
+
+                //     conditionObj.$or = [
+                //         { name: regSearch },
+                //         { sign: regSearch },
+                //         { storeSign: regSearch },
+                //     ]
+                // }
+
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                        { storeSign: regSearch },
-                    ]
+                    conditionObj.namecv = regSearch
                 }
 
                 /**

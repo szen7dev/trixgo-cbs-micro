@@ -18,6 +18,7 @@ const {
   IsJsonString,
   validateParamsObjectID
 }  = require('../../../tools/utils/utils');
+const stringUtils					    = require('../../../tools/utils/string_utils')
 
 /**
  * COLLECTIONS
@@ -61,16 +62,17 @@ class Model extends BaseModel {
                     });
                 }
 
-                let year = new Date().getFullYear()
-                let month = new Date().getMonth()
-                let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                    company: companyID,
-                    parent: { $exists: false },
-                    $where:
-                    `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
-                })
-                if(checkExists)
-                    return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` })
+                let year = new Date(date).getFullYear()
+                let month = new Date(date).getMonth()
+                // console.log({year,month})
+                // let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                //     company: companyID,
+                //     parent: { $exists: false },
+                //     $where:
+                //     `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
+                // })
+                // if(checkExists)
+                //     return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` })
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
@@ -123,6 +125,18 @@ class Model extends BaseModel {
                 if(paid){
                     dataInsert.paid = Number(paid);
                 }
+
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataInsert.namecv = convertStr
 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
@@ -195,7 +209,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, pependent }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, pependent })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -222,7 +236,7 @@ class Model extends BaseModel {
                     dataUpdate.human = humanID;
                 }
 
-                if(name){
+                if(name && name != ""){
                     dataUpdate.name = name;
                 }
 
@@ -234,9 +248,21 @@ class Model extends BaseModel {
                     dataUpdate.status = status;
                 }
 
-                if(note){
+                if(note && note != ""){
                     dataUpdate.note = note;
                 }
+                
+                /**
+                 * Convert to query
+                 */
+                let convertStr = ''
+                if(name && name != ""){
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(note && note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                dataUpdate.namecv = convertStr
 
                 if(convertFactor){
                     dataUpdate.convertFactor = convertFactor;
@@ -304,6 +330,7 @@ class Model extends BaseModel {
                 }
                 // console.log(dataUpdate)
 
+                // Kiểm tra quyền cập nhật
                 const adminsID = [...infoSalary.admins?.map(item => item?.toString())]
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
@@ -346,69 +373,15 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Cập nhật Bảng lương
+                // Cập nhật Thông tin Bảng lương
                 if(!infoAfterUpdate.parent){
                     // Cập nhật hệ số chuyển đổi vào Chi tiết lương
                     if(convertFactor){
                         await TIMESHEET__EXPERT_SALARY_COLL.updateMany({parent: expertSalaryID},{$set: {convertFactor: convertFactor}})
                     }
-
-                    // Thêm các nhân sự còn thiếu vào bảng lương
-                    // let companyID = infoSalary.company, userCreate = userID
-                    // let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 })
-                    // .select('fullname department position contacts')
-                    // .populate({
-                    //     path: 'contacts',
-                    //     select: 'company sallaryBasic insuranceFee union share'
-                    // })
-
-                    // for(const item of listHuman){
-                    //     let infoS = await TIMESHEET__EXPERT_SALARY_COLL.findOne({parent: expertSalaryID, human: item._id})
-                    //     if(!infoS){
-                    //         let insuranceFee = 0, union = 0, share = 0
-                    //         if(item.contacts && item.contacts.length){
-                    //             for(const contact of item.contacts){
-                    //                 if(contact.company.toString() === companyID.toString() && contact.insuranceFee){
-                    //                     insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
-                    //                     union = Number(union) + Number(contact.union)
-                    //                     share = Number(share) + Number(contact.share)
-                    //                 }
-                    //             }
-                    //         }
-
-                    //         let dataInsertDetail = {
-                    //             userCreate,
-                    //             name: 'Default',
-                    //             admins: [userCreate],
-                    //             members: [userCreate],
-                    //             human: item._id,
-                    //             parent: expertSalaryID,
-                    //             company: companyID,
-                    //             convertFactor: infoSalary.convertFactor,
-                    //             project: item.department,
-                    //             position: item.position,
-                    //             date: infoSalary.date,
-                    //             type: infoSalary.type,
-                    //         }
-
-                    //         if(Number(insuranceFee) > 0){
-                    //             dataInsertDetail.insurance = Number(insuranceFee)
-                    //         }
-
-                    //         if(Number(union) > 0){
-                    //             dataInsertDetail.union = Number(union)
-                    //         }
-
-                    //         if(Number(share) > 0){
-                    //             dataInsertDetail.share = Number(share)
-                    //         }
-
-                    //         await this.insertData(dataInsertDetail)
-                    //     }
-                    // }
                 }
 
-                // Cập nhật giá trị vào Bảng lương cha
+                // Cập nhật giá trị chi tiết vào Bảng lương cha
                 if(infoAfterUpdate.parent && checkObjectIDs(infoAfterUpdate.parent)){
                     await that.updateValue({ expertSalaryID: infoAfterUpdate.parent, userID })
                 }
@@ -833,6 +806,7 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
+                // ĐỒNG BỘ
                 if(option == 1){
                     // Cập nhật chấm công vào các Chi tiết của Bảng lương
                     await that.updateValueTimesheet({ expertSalaryID: salaryID, userID, companyID })
@@ -844,7 +818,10 @@ class Model extends BaseModel {
                     await that.updateValue( {expertSalaryID: salaryID, userID })
 
                     return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
-                }else if(option == 2){
+                }
+                
+                // XÓA
+                else if(option == 2){
                     //___________Quyền truy cập ứng dụng Nhân sự
                     let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
                         appID: "61e049cffdebf77b072d1b14",
@@ -965,7 +942,7 @@ class Model extends BaseModel {
     getList({
         option, sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID }) {
-        // console.log({sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
+        // console.log({option, sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -985,7 +962,8 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let nextCursor	= null;
                 let sortBy      = null;
-                let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['project__1', '_id__1'];
+                // let keys	 = ['createAt__1', '_id__1'];
 
                 if(sortOption == 1){
                     keys	 = ['date__-1', '_id__-1'];
@@ -1053,12 +1031,17 @@ class Model extends BaseModel {
                     }
 
                     if(keyword){
+                        keyword = stringUtils.removeAccents(keyword)
                         keyword = keyword.split(" ");
                         keyword = '.*' + keyword.join(".*") + '.*';
-                        conditionObj.name =  new RegExp(keyword, 'i')
+                        const regSearch = new RegExp(keyword, 'i');
+                        conditionObj.namecv = regSearch
                     }
                 }
 
+                /**
+                 * Phiếu lương của userID đang truy cập
+                 */
                 if(option && option == 1){
                     conditionObj.human = userID
                     conditionObj.parent = { $exists: true, $ne: null }
@@ -1084,7 +1067,7 @@ class Model extends BaseModel {
 					sortBy        = dataPagingAndSort.data.sort;
                 }
                 // sortBy      = { project: 1 };
-                console.log({sortBy})
+                // console.log({sortBy})
 
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
