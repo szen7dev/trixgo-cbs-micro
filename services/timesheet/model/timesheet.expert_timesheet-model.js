@@ -411,7 +411,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertTimesheetID, userID, select, populates, ctx }) {
+    getInfo({ expertTimesheetID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(expertTimesheetID))
@@ -440,7 +440,17 @@ class Model extends BaseModel {
                 // Record Traffic
                 //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
+                // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                       
+                // }else{
+                //     conditionObj.$or = [
+                //         {admins: { $in: [userID] }},
+                //         {members: { $in: [userID] }}
+                //     ]
+                // }
+
                 return resolve({ error: false, data: infoAterGet, status: 200 })
+                // return resolve({ error: true, message: error.message, status: 500 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -503,7 +513,7 @@ class Model extends BaseModel {
                         conditionObj.assignee = humanID;
                     }
 				}else{
-                    // Danh sách bảng chấm công
+                    // Danh sách Bảng chấm công
                     if(!option){
                         // Nếu là Admin ứng dụng
                         if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
@@ -521,22 +531,10 @@ class Model extends BaseModel {
                             conditionObj.company = companyID
                             conditionObj.parent = { $exists: false }
                         }
-
-                        // console.log('==================')
-                        // console.log(conditionObj)
                     }
 
                     // Chi tiết chấm công của userID: gom nhóm theo Tháng
                     else if(option == 1){
-                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                       
-                        }else{
-                            conditionObj.$or = [
-                                {admins: { $in: [userID] }},
-                                {members: { $in: [userID] }}
-                            ]
-                        }
-
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = assigneeID
                         if(month & year){
@@ -546,15 +544,6 @@ class Model extends BaseModel {
 
                     // Chi tiết chấm công của Công ty: gom nhóm theo Tháng
                     else if(option == 2){
-                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                       
-                        }else{
-                            conditionObj.$or = [
-                                {admins: { $in: [userID] }},
-                                {members: { $in: [userID] }}
-                            ]
-                        }
-
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = userID
                         if(month & year){
@@ -573,23 +562,15 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = userID
 
-                    // delete conditionObj.$or 
+                    delete conditionObj.$or 
                 }
 
                 // Chi tiết chấm công của 1 nhân sự
                 if(type && type == 3){
-                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                       
-                    }else{
-                        conditionObj.$or = [
-                            {admins: { $in: [userID] }},
-                            {members: { $in: [userID] }}
-                        ]
-                    }
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = humanID
 
-                    // delete conditionObj.$or 
+                    delete conditionObj.$or 
                 }
 
                 if(subtype ){
