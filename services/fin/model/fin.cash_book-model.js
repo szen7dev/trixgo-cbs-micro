@@ -2017,6 +2017,11 @@ class Model extends BaseModel {
 
             // Kiểm tra việc chấm công
             else if(option == 4){
+                let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
+                    appID: "61e049cffdebf77b072d1b14", 
+                    userID
+                 })
+
                 // console.log({yearFilter, monthFilter})
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
@@ -2069,7 +2074,13 @@ class Model extends BaseModel {
                     var i = 4
                      listUser.forEach((item, index) =>{
                          workbook.sheet("Data2").row(i).cell(1).value(Number(index+1))
-                         workbook.sheet("Data2").row(i).cell(2).value(item.fullname)
+                        //  workbook.sheet("Data2").row(i).cell(2).value(item.fullname)
+                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                            workbook.sheet("Data2").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
+                        }else{
+                            workbook.sheet("Data2").row(i).cell(2).value(item.fullname)
+                        }
+                         
                          workbook.sheet("Data2").row(i).cell(3).value(`${item.department.name}`)
                          workbook.sheet("Data2").row(i).cell(4).value(`${item.position.name}`)
                          workbook.sheet("Data2").row(i).cell(5).value(`${item._id}`)

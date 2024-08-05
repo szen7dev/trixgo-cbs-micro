@@ -4918,7 +4918,7 @@ class Model extends BaseModel {
      * Date: 15/09/2022
      */
     downloadTemplateImportExcel({ option, companyID, projectID, taskID,  userID }) {
-        console.log({ option, companyID, projectID, taskID, userID })
+        // console.log({ option, companyID, projectID, taskID, userID })
         return new Promise(async resolve => {
             try {
                 // Mẫu Import excel
@@ -4995,7 +4995,7 @@ class Model extends BaseModel {
                             workbook.sheet("BangKeMuaVao").row(i).cell(9).value(Number(item?.amount + item?.vatAmount))
                             workbook.sheet("BangKeMuaVao").row(i).cell(10).value(item?.description)
                             workbook.sheet("BangKeMuaVao").row(i).cell(11).value(item?.status)
-                            workbook.sheet("BangKeMuaVao").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com//pcm/detail/${item._id}`)
+                            workbook.sheet("BangKeMuaVao").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com/pcm/detail/${item._id}`)
                             workbook.sheet("BangKeMuaVao").row(i).cell(14).value(item?.parent?.name)
                             workbook.sheet("BangKeMuaVao").row(i).cell(15).value(item?.author?.fullname)
                             workbook.sheet("BangKeMuaVao").row(i).cell(16).value(moment(item?.createAt).format('DD/MM/YYYY HH:mm'))
