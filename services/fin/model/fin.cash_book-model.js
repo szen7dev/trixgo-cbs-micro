@@ -1984,13 +1984,13 @@ class Model extends BaseModel {
                         workbook.sheet("Data").row(i).cell(8).value(time2)
                         workbook.sheet("Data").row(i).cell(9).value(time3)
 
-                        if(Number(d.getHours()) > 18){
+                        if(Number(d.getHours()) >= 18){
                             workbook.sheet("Data").row(i).cell(13).value(Number((a - b3) / (1000*60))) 
                         }
-                        else if(Number(d.getHours()) > 12.5){
+                        else if(Number(d.getHours()) >= 12.5){
                             workbook.sheet("Data").row(i).cell(12).value(Number((a - b2) / (1000*60)))
                         }
-                        else if(Number(d.getHours()) > 8){
+                        else if(Number(d.getHours()) >= 8){
                             workbook.sheet("Data").row(i).cell(11).value(Number((a - b1) / (1000*60)))
                         }
                         else{
