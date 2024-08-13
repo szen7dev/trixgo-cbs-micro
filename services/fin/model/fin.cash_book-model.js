@@ -1964,8 +1964,9 @@ class Model extends BaseModel {
                         let time1 = new Date(`${year}-${month}-${day} 06:00:00`);
                         let time2 = new Date(`${year}-${month}-${day} 07:00:00`);
                         let time3 = new Date(`${year}-${month}-${day} 08:00:00`);
-                        let time4 = new Date(`${year}-${month}-${day} 12:30:00`);
-                        let time5 = new Date(`${year}-${month}-${day} 18:00:00`);
+                        let time4 = new Date(`${year}-${month}-${day} 10:00:00`);
+                        let time5 = new Date(`${year}-${month}-${day} 12:30:00`);
+                        let time6 = new Date(`${year}-${month}-${day} 18:00:00`);
 
                         let a = (new Date(item?.createAt)).getTime()
                         let b1 = (new Date(time1)).getTime()
@@ -1973,6 +1974,7 @@ class Model extends BaseModel {
                         let b3 = (new Date(time3)).getTime()
                         let b4 = (new Date(time4)).getTime()
                         let b5 = (new Date(time5)).getTime()
+                        let b6 = (new Date(time6)).getTime()
                         
                         let d = new Date(item.createAt);
 
@@ -1986,21 +1988,25 @@ class Model extends BaseModel {
                         workbook.sheet("Data").row(i).cell(8).value(time3)
                         workbook.sheet("Data").row(i).cell(9).value(time4)
                         workbook.sheet("Data").row(i).cell(10).value(time5)
+                        workbook.sheet("Data").row(i).cell(11).value(time6)
 
                         if(Number(d.getHours()) >= 18){
-                            workbook.sheet("Data").row(i).cell(15).value(Number((a - b5) / (1000*60))) 
+                            workbook.sheet("Data").row(i).cell(17).value(Number((a - b6) / (1000*60))) 
                         }
                         else if(Number(d.getHours()) >= 12.5){
-                            workbook.sheet("Data").row(i).cell(14).value(Number((a - b4) / (1000*60)))
+                            workbook.sheet("Data").row(i).cell(16).value(Number((a - b5) / (1000*60)))
+                        }
+                        else if(Number(d.getHours()) >= 10){
+                            workbook.sheet("Data").row(i).cell(15).value(Number((a - b4) / (1000*60)))
                         }
                         else if(Number(d.getHours()) >= 8){
-                            workbook.sheet("Data").row(i).cell(13).value(Number((a - b3) / (1000*60)))
+                            workbook.sheet("Data").row(i).cell(14).value(Number((a - b3) / (1000*60)))
                         }
                         else if(Number(d.getHours()) >= 7){
-                            workbook.sheet("Data").row(i).cell(12).value(Number((a - b2) / (1000*60)))
+                            workbook.sheet("Data").row(i).cell(13).value(Number((a - b2) / (1000*60)))
                         }
                         else{
-                            workbook.sheet("Data").row(i).cell(11).value(Number((a - b1) / (1000*60)))
+                            workbook.sheet("Data").row(i).cell(12).value(Number((a - b1) / (1000*60)))
                         }
 
                         // workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
