@@ -2088,20 +2088,20 @@ class Model extends BaseModel {
                     var i = 4
                     listUser.forEach((item, index) =>{
                         workbook.sheet("Data1").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("Data2").row(i).cell(1).value(Number(index+1))
+
                         if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
                             workbook.sheet("Data1").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
-                            workbook.sheet("Data2").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
-
                             workbook.sheet("Data1").row(i).cell(3).value(`${item.department.name}`)
                             workbook.sheet("Data1").row(i).cell(4).value(`${item.position.name}`)
                             workbook.sheet("Data1").row(i).cell(5).value(`${item._id}`)
 
+                            workbook.sheet("Data2").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
                             workbook.sheet("Data2").row(i).cell(3).value(`${item.department.name}`)
                             workbook.sheet("Data2").row(i).cell(4).value(`${item.position.name}`)
                             workbook.sheet("Data2").row(i).cell(5).value(`${item._id}`)    
                         }else{
                             workbook.sheet("Data1").row(i).cell(2).value(item.fullname)
-
                             workbook.sheet("Data1").row(i).cell(3).value(`${item.department.name}`)
                             workbook.sheet("Data1").row(i).cell(4).value(`${item.position.name}`)
                             workbook.sheet("Data1").row(i).cell(5).value(`${item._id}`)
