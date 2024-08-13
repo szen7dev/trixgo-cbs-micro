@@ -2063,6 +2063,7 @@ class Model extends BaseModel {
                         $group: {
                             _id: { assignee: '$assignee', day: '$day' },
                             quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
                         }
                     },
                 ])
@@ -2080,45 +2081,46 @@ class Model extends BaseModel {
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_check.xlsx')))
                 .then(async workbook => {
                     if(isValidDate(fromDate) && isValidDate(toDate)){
+                        workbook.sheet("Data1").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         workbook.sheet("Data2").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                     }
 
                     var i = 4
-                     listUser.forEach((item, index) =>{
-                         workbook.sheet("Data2").row(i).cell(1).value(Number(index+1))
-                        //  workbook.sheet("Data2").row(i).cell(2).value(item.fullname)
+                    listUser.forEach((item, index) =>{
+                        workbook.sheet("Data1").row(i).cell(1).value(Number(index+1))
                         if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                            workbook.sheet("Data1").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
                             workbook.sheet("Data2").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
+
+                            workbook.sheet("Data1").row(i).cell(3).value(`${item.department.name}`)
+                            workbook.sheet("Data1").row(i).cell(4).value(`${item.position.name}`)
+                            workbook.sheet("Data1").row(i).cell(5).value(`${item._id}`)
+
+                            workbook.sheet("Data2").row(i).cell(3).value(`${item.department.name}`)
+                            workbook.sheet("Data2").row(i).cell(4).value(`${item.position.name}`)
+                            workbook.sheet("Data2").row(i).cell(5).value(`${item._id}`)    
                         }else{
-                            workbook.sheet("Data2").row(i).cell(2).value(item.fullname)
+                            workbook.sheet("Data1").row(i).cell(2).value(item.fullname)
+
+                            workbook.sheet("Data1").row(i).cell(3).value(`${item.department.name}`)
+                            workbook.sheet("Data1").row(i).cell(4).value(`${item.position.name}`)
+                            workbook.sheet("Data1").row(i).cell(5).value(`${item._id}`)
                         }
-                         
-                         workbook.sheet("Data2").row(i).cell(3).value(`${item.department.name}`)
-                         workbook.sheet("Data2").row(i).cell(4).value(`${item.position.name}`)
-                         workbook.sheet("Data2").row(i).cell(5).value(`${item._id}`)
+                        
+                        i++
+                    })
 
-                        //  workbook.sheet("Data3").row(i).cell(1).value(Number(index+1))
-                        //  workbook.sheet("Data3").row(i).cell(2).value(item.fullname)
-                        //  workbook.sheet("Data3").row(i).cell(3).value(`${item.department.name}`)
-                        //  workbook.sheet("Data3").row(i).cell(4).value(`${item.position.name}`)
-                        //  workbook.sheet("Data3").row(i).cell(5).value(`${item._id}`)
-
-                        //  workbook.sheet("Data4").row(i).cell(1).value(Number(index+1))
-                        //  workbook.sheet("Data4").row(i).cell(2).value(item.fullname)
-                        //  workbook.sheet("Data4").row(i).cell(3).value(`${item.department.name}`)
-                        //  workbook.sheet("Data4").row(i).cell(4).value(`${item.position.name}`)
-                        //  workbook.sheet("Data4").row(i).cell(5).value(`${item._id}`)
-
-                         i++
-                     })
-
-                     listData2?.forEach((item, index) => {
+                    listData2?.forEach((item, index) => {
                         for(var i=4; i<=listUser.length + 3; i++){
-                            let userID = workbook.sheet("Data2").row(i).cell(5).value();
+                            let userID = workbook.sheet("Data1").row(i).cell(5).value();
 
                             for(var j=1; j<=31; j++){
                                 if(item._id.day == j && userID.toString() === item._id.assignee.toString()){
-                                    workbook.sheet("Data2").row(i).cell(j + 5).value(item.quantity);
+                                    workbook.sheet("Data1").row(i).cell(j + 5).value(item.quantity);
+
+                                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                                        workbook.sheet("Data2").row(i).cell(j + 5).value(Number(item.amount)); 
+                                    }
                                 }
                             }
                         }
