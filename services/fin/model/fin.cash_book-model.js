@@ -2049,6 +2049,7 @@ class Model extends BaseModel {
                             month : {$month : "$date"},
                             day: { $dayOfMonth: "$date" },
                             hours: 1,
+                            amount: 1,
                             subtype: 1,
                             assignee: 1,
                         }
