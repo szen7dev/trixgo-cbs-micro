@@ -1672,6 +1672,8 @@ class Model extends BaseModel {
                 yearFilter = new Date(toDate).getFullYear()
                 monthFilter = new Date(toDate).getMonth() + 1
             }
+            // console.log({yearFilter})
+            // console.log({monthFilter})
 
             // Tải bảng chấm công
             if(option == 1){
@@ -1698,9 +1700,9 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            day: { $dayOfMonth: "$date" },
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             hours: 1,
                             subtype: 1,
                             assignee: 1,
@@ -2045,9 +2047,9 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
-                            day: { $dayOfMonth: "$date" },
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             hours: 1,
                             amount: 1,
                             subtype: 1,

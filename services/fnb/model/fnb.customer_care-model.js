@@ -962,7 +962,6 @@ class Model extends BaseModel {
                             }
                         }
                     }
-
                     // console.log(conditionObj)
                     // console.log(conditionPopulate)
                     // console.log(conditionObjYear)
@@ -974,10 +973,10 @@ class Model extends BaseModel {
                         },
                         {
                             $project : {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
-                                day: { $dayOfMonth: "$createAt" },
-                                hour : {$hour : "$createAt"},
+                                year : {$year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                                day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                                hour : {$hour: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
                                 funda : 1,
                                 mistake : 1,
                                 manager : 1,

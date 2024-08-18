@@ -410,11 +410,11 @@ class Model extends BaseModel {
                 }
 
                 conditionProject = {
-                    year : {$year : "$date"},
-                    month : {$month : "$date"},
-                    day: { $dayOfMonth: "$date" },
-                    dayOfWeek: { $dayOfWeek: "$date" },
-                    hour : {$hour : "$date"},
+                    year: { $year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
+                    month: { $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
+                    day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
+                    dayOfWeek: { $dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
+                    hour : { $hour: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                     date: 1,
                     order: 1,
                     customer: 1,
