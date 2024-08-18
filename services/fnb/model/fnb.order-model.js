@@ -4953,9 +4953,9 @@ class Model extends BaseModel {
               },
               {
                 $project: {
-                  year: { $year: "$createAt" },
-                  month: { $month: "$createAt" },
-                  day: { $dayOfMonth: "$createAt" },
+                  year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                  month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                  day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
                   company: 1,
                   funda: 1,
                   createAt: 1,
@@ -5019,9 +5019,9 @@ class Model extends BaseModel {
               },
               {
                 $project: {
-                  year: { $year: "$createAt" },
-                  month: { $month: "$createAt" },
-                  day: { $dayOfMonth: "$createAt" },
+                  year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                  month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                  day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
                   company: 1,
                   funda: 1,
                   createAt: 1,
@@ -5058,11 +5058,11 @@ class Model extends BaseModel {
               },
               {
                 $project: {
-                  year: { $year: "$createAt" },
-                  month: { $month: "$createAt" },
-                  day: { $dayOfMonth: "$createAt" },
-                  dayOfWeek: { $dayOfWeek: "$createAt" },
-                  hour: { $hour: "$createAt" },
+                  year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                  month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                  day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                  dayOfWeek: { $dayOfWeek: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                  hour: { $hour: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
                   funda: 1,
                   customer: 1,
                   new: 1,
@@ -5845,9 +5845,9 @@ class Model extends BaseModel {
               }
 
               let projectObj = {
-                year: { $year: "$createAt" },
-                month: { $month: "$createAt" },
-                day: { $dayOfMonth: "$createAt" },
+                year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
                 company: 1,
                 funda: 1,
                 createAt: 1,

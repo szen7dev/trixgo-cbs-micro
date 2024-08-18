@@ -892,9 +892,9 @@ class Model extends BaseModel {
                         }
         
                         let projectObj =  {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            day: { $dayOfMonth: "$createAt" },
+                            year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                            month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                            day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
                             company : 1,
                             funda : 1,
                             staffs : 1,
@@ -1098,9 +1098,9 @@ class Model extends BaseModel {
                             }
             
                             let projectObj =  {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
-                                day: { $dayOfMonth: "$createAt" },
+                                year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                                month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                                day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
                                 company : 1,
                                 funda : 1,
                                 staffs : 1,
@@ -1146,9 +1146,9 @@ class Model extends BaseModel {
                                 avgTotalPerStaff: {$exists: true, $ne: null, $gte: 0},
                             }
                             let projectOrderObj =  {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
-                                day: { $dayOfMonth: "$createAt" },
+                                year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                                month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                                day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
                                 company : 1,
                                 funda : 1,
                                 createAt: 1,
