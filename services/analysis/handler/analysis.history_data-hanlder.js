@@ -62,6 +62,35 @@ module.exports = {
         }
     },
 
+    cloneData: {
+        auth: 'required',
+        params: {
+            option: { type: "string" },
+            companyID: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+                let { option, companyID, orgProjectID, targetProjectID } = ctx.params;
+
+                // console.log(ctx.params)
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                const resultAfterCallHandler = await ANALYSIS__HISTORY_DATA_MODEL.cloneData({
+                    option, userID, companyID, orgProjectID, targetProjectID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
     convertData: {
         auth: 'required',
         params: {

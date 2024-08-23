@@ -36,6 +36,9 @@ const DOCUMENT__DOC_COLL               			= require('../../document/database/doc
 const HUMAN__CONTACT_DOCUMENT_COLL              = require('../../human/database/human.contact_document-coll');
 const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
+const PCM_PLAN_GROUP_COLL            		    = require('../../subject_pcm/database/subject_pcm.pcm_plan_group-coll')
+
+const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/model/subject_pcm.pcm_plan_group').MODEL
 
 class Model extends BaseModel {
 
@@ -69,6 +72,33 @@ class Model extends BaseModel {
         return new Promise(async resolve => { 
             try {
                 return resolve({ error: false, data: 'Get data thành công' });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    cloneData({ option, companyID, userID, orgProjectID, targetProjectID }){
+        // console.log({ option, companyID, userID, orgProjectID, targetProjectID })
+        const that = this
+        return new Promise(async resolve => { 
+            try {
+                let conditionObj = {}
+                
+                // Cấu trúc dữ liệu công việc dự án
+                if(option == 1){
+                    let orgList = await PCM_PLAN_GROUP_COLL.find({project: orgProjectID}).select('name sign')
+                    for(const item of orgList){
+                       await PCM_PLAN_GROUP_MODEL.insert({ 
+                            projectID: targetProjectID, 
+                            name: item.name, 
+                            sign: item.sign, 
+                            userID 
+                        })
+                    }
+                }
+
+                return resolve({ error: false, data: 'Clone thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
