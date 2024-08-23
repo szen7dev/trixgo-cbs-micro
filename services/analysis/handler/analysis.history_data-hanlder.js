@@ -72,7 +72,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { option, companyID, orgProjectID, targetProjectID } = ctx.params;
+                let { option, companyID, orgProjectID, targetProjectID, copyPermission  } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -81,7 +81,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ANALYSIS__HISTORY_DATA_MODEL.cloneData({
-                    option, userID, companyID, orgProjectID, targetProjectID
+                    option, userID, companyID, orgProjectID, targetProjectID, copyPermission 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

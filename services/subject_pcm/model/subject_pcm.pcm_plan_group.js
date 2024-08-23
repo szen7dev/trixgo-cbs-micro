@@ -44,7 +44,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, parentID, name, sign, userID }) {
+    insert({ projectID, parentID, name, sign, userID, admins, members }) {
         return new Promise(async resolve => {
             try {
                 let infoProject = await DEPARTMENT_COLL.findById(projectID)
@@ -68,6 +68,14 @@ class Model extends BaseModel {
                     admins: [userID],
                     members: [userID] 
                 };
+
+                if(admins){
+                    dataInsert.admins = admins
+                }
+
+                if(admins){
+                    dataInsert.members = members
+                }
                 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID;
