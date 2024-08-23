@@ -113,6 +113,24 @@ class Model extends BaseModel {
                     
                 }
 
+                // Copy quyền truy cập dữ liệu
+                else if(option == 2){
+                    let orgList1 = await PCM_PLAN_GROUP_COLL.find({project: orgProjectID}).select('sign admins members')
+                    let orgList2 = await PCM_PLAN_GROUP_COLL.find({project: targetProjectID}).select('sign')
+                    for(const item of orgList1){
+                        for(const subitem of orgList2){
+                            if(item.sign === subitem.sign){
+                                await PCM_PLAN_GROUP_COLL.findByIdAndUpdate(subitem._id,
+                                    {
+                                        admins: item.admins, 
+                                        members: item.members, 
+                                    },
+                                    { new: true })
+                            }
+                        }
+                     }
+                }
+
                 return resolve({ error: false, data: 'Clone thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
