@@ -25,6 +25,7 @@ const CF_ROUTINGS_ANALYSIS = {
      */
     HISTORY_DATAS_GET_DATA                      : `${BASE_ROUTE}${HISTORY_DATAS}/get_data`,
     HISTORY_DATAS_EXPORT_EXCEL                  : `${BASE_ROUTE}${HISTORY_DATAS}/export_excel`,
+    HISTORY_DATAS_CLONE_DATA                    : `${BASE_ROUTE}${HISTORY_DATAS}/clone_data`,
     HISTORY_DATAS_CONVERT_DATA                  : `${BASE_ROUTE}${HISTORY_DATAS}/convert_data`,
     HISTORY_DATAS_RESET_DATA                    : `${BASE_ROUTE}${HISTORY_DATAS}/reset_data`,
 }

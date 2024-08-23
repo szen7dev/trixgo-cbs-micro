@@ -44,24 +44,19 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, parentID, name, sign, userID, ctx }) {
+    insert({ projectID, parentID, name, sign, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(projectID))
-                    return resolve({ error: true, message: 'projectID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                let infoProject = await DEPARTMENT_COLL.findById(projectID)
+                if(!infoProject)
+                    return resolve({ error: true, message: "Thông tin dự án không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                // console.log(infoProject)
 
                 let checkExist = await PCM_PLAN_GROUP_COLL.findOne({ project: projectID, name, sign });
                 if(checkExist)
                     return resolve({ error: true, message: "Tên và mã hiệu đã tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                    departmentID: projectID
-                })
-                // console.log(infoProject)
-                if(!infoProject)
-                    return resolve({ error: true, message: "Thông tin dự án không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-
-                let companyID = infoProject?.data?.company
+                let companyID = infoProject?.company
                 // console.log({companyID})
 
                 let dataInsert = { 
@@ -71,7 +66,7 @@ class Model extends BaseModel {
                     sign, 
                     userCreate: userID, 
                     admins: [userID],
-                     members: [userID] 
+                    members: [userID] 
                 };
                 
                 if(checkObjectIDs(parentID)){
