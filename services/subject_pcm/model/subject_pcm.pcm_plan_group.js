@@ -44,7 +44,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, parentID, name, sign, userID, admins, members }) {
+    insert({ projectID, parentID, name, sign, userID, admins, members, ctx }) {
         return new Promise(async resolve => {
             try {
                 let infoProject = await DEPARTMENT_COLL.findById(projectID)
