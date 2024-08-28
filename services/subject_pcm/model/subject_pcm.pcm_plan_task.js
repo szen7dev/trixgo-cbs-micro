@@ -139,7 +139,7 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx }) {
-        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, company, select, populates })
+        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates })
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = {};
