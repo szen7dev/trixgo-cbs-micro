@@ -6,7 +6,7 @@ exports.sendNotificationviaOneSignal = function(data) {
 
     let headers = {
       "Content-Type": "application/json; charset=utf-8",
-      "Authorization": "NDFlZGFiOTMtYjM1My00ZWIyLTg4MmItYmNhMTBiMGUxYjQz",
+      "Authorization": "OGE2ZTEwNzAtYzY5MC00YjBjLTk3ZGItMTQzNGM4ZjM1YjYw",
     };
 
     let options = {
