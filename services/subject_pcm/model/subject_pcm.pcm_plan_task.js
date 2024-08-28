@@ -139,7 +139,7 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx }) {
-        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, company, select, populates })
+        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates })
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = {};
@@ -3006,7 +3006,7 @@ class Model extends BaseModel {
                 end.setHours(23,59,59,999)
 
                 let amountUnreadTaskSync=0, amountMyTaskTodaySync=0, amountMyTaskComingSync = 0, amountMyApprovalSync = 0
-                let amountMyTask1Sync=0, amountMyTask2Sync=0, amountMyTask3Sync=0, amountMyTask4Sync=0, amountMyTask5Sync=0
+                let amountMyTaskSync =0, amountMyTask1Sync=0, amountMyTask2Sync=0, amountMyTask3Sync=0, amountMyTask4Sync=0, amountMyTask5Sync=0
 
                 if(!option){
                     // Số công việc chưa xem
@@ -3025,6 +3025,14 @@ class Model extends BaseModel {
                         actualFinishTime: { $gte: start, $lte: end },
                     })
                     // console.log({ $gte: start, $lte: end })
+
+                    // Số công việc của tôi chưa hoàn thành
+                    amountMyTaskSync = PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        status: { $ne: 3 },
+                        upcoming: 1,
+                        usersDelete: { $nin: [userID] },
+                    })
 
                     // Số công việc của tôi - Quá hạn
                     amountMyTask1Sync = PCM_PLAN_TASK_COLL.count({
@@ -3093,7 +3101,7 @@ class Model extends BaseModel {
                         upcoming: 2
                     })
 
-                    let [ amountUnreadTask, amountMyTaskToday, amountMyTaskComing, amountMyApproval, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4, amountMyTask5 ] = await Promise.all([amountUnreadTaskSync, amountMyTaskTodaySync, amountMyTaskComingSync, amountMyApprovalSync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync, amountMyTask5Sync])
+                    let [ amountUnreadTask, amountMyTaskToday, amountMyTaskComing, amountMyApproval, amountMyTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4, amountMyTask5 ] = await Promise.all([amountUnreadTaskSync, amountMyTaskTodaySync, amountMyTaskComingSync, amountMyApprovalSync, amountMyTaskSync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync, amountMyTask5Sync])
 
                     // console.log({amountMyTask1})
                     // console.log({amountMyTask2})
@@ -3104,6 +3112,7 @@ class Model extends BaseModel {
                         amountMyTaskComing, 
                         amountMyTaskToday, 
                         amountMyApproval,
+                        amountMyTask,
                         amountMyTask1,
                         amountMyTask2, 
                         amountMyTask3, 
@@ -3258,13 +3267,21 @@ class Model extends BaseModel {
                     let end = new Date();
                     end.setHours(23,59,59,999);
 
-                    let amountUnreadTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
+                    let amountUnreadTask=0,amountMyTask=0,amountMyTask1=0,amountMyTask2=0,amountMyTask3=0,amountMyTask4=0
 
                     // Số công việc chưa xem
                     amountUnreadTask = await PCM_PLAN_TASK_COLL.count({
                         news: { $in: [userID] },
                         upcoming: 1,
                         usersDelete: { $nin: [userID] }
+                    })
+
+                    // Số công việc của tôi chưa hoàn thành
+                    amountMyTask = await PCM_PLAN_TASK_COLL.count({
+                        assignee: userID,
+                        upcoming: 1,
+                        usersDelete: { $nin: [userID] },
+                        status: { $ne: 3 },
                     })
 
                     // Số công việc của tôi - Quá hạn
@@ -3313,7 +3330,7 @@ class Model extends BaseModel {
                     // console.log({amountMyTask3})
 
                     return resolve({ error: false, data: {
-                        amountUnreadTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
+                        amountUnreadTask, amountMyTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
                     }});
                 }else{
                     /**

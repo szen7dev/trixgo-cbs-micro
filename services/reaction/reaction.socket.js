@@ -190,7 +190,7 @@ exports.REACTION_SOCKET = {
 				return sendDataToMultilSocketsOfListUser({
 					listUserConnected: listUserActive,
 					arrReceiver: [userID],
-					data: { error: true, data: arrReceiver, message: "Người nhận không hợp lệ" },
+          data: { error: true, data: { arrReceiver, infoObject }, message: "Người nhận không hợp lệ" },
 					event: [EVENT_SOCKET_CONSTANT_COMMENT.COMMENT_SSC_ADD_COMMENT], io
 				});
 			}

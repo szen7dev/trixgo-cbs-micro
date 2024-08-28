@@ -24,11 +24,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  projectID, parentID, name, sign } = ctx.params;
+                let {  projectID, parentID, name, sign, admins, members } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await PCM_PLAN_GROUP_MODEL.insert({
-                    projectID, parentID, name, sign, userID
+                    projectID, parentID, name, sign, userID, admins, members, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
