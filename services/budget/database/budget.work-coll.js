@@ -77,6 +77,11 @@ module.exports  = DATABASE_MIDDLEWARE("budget_work", {
     description: String,
     //_________Ghi chú
     note: String,
+    //_________Nguồn lực/Sản phẩm
+    goods: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
+    },
     /**
      * NGÂN SÁCH
      */
