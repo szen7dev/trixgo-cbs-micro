@@ -23,6 +23,16 @@ module.exports  = DATABASE_MIDDLEWARE("budget_submittal", {
         type: Schema.Types.ObjectId,
         ref: "budget_work"
     },      
+    //_________Nhân sự
+    staff: {
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },    
+    //_________Mã khách
+    contact: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },    
     /**
      * THÔNG TIN NGÂN SÁCH
      */
