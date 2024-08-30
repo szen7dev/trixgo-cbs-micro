@@ -609,9 +609,9 @@ class Model extends BaseModel {
                     }
                 }
 
-                // convert expert_timesheets namecv
+                // convert expert_timesheets namecv cho Bảng chấm công cha
                 else if(option == 14){
-                    let selectObj = '_id name note parent namecv'
+                    let selectObj = '_id name note'
                 
                     if(companyID && checkObjectIDs(companyID)){
                         conditionObj.company = ObjectID(companyID)
@@ -638,7 +638,7 @@ class Model extends BaseModel {
                         .lean()
     
                         for(const item of listDataConvert){
-                            await that.convertDocument({ docID: item._id, selectObj })
+                            await that.convertTimesheet({ docID: item._id, selectObj })
                         }
     
                         return resolve({ error: false, message: "Done", data: {page} })
