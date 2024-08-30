@@ -135,7 +135,9 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
-                dataInsert.namecv = convertStr
+                if(convertStr != ""){
+                    dataInsert.namecv = convertStr
+                }
 
                 let unitprice2 = 0
                 if(unitprice){
@@ -171,7 +173,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype }){
-            // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype })
+        // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -184,6 +186,13 @@ class Model extends BaseModel {
                         status: 400
                     })
                 }
+
+                //___________Quyền truy cập ứng dụng Nhân sự
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049cffdebf77b072d1b14",
+                    userID
+                })
+                // console.log(infoAppUser)
 
                 let dataUpdate = {
                     userUpdate: userID,
@@ -226,7 +235,9 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
-                dataUpdate.namecv = convertStr
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
+                }
 
                 if(date){
                     dataUpdate.date = date;
@@ -300,7 +311,11 @@ class Model extends BaseModel {
                 }
 
                 let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]
-                if(adminsID.includes(userID.toString())) {
+                // console.log({admins})
+                // console.log({members})
+                // console.log({adminsID})
+
+                if(adminsID.includes(userID.toString()) || infoAppUser.data.level == 0) {
                     if(admins) {
                         if(admins.length && checkObjectIDs(admins)) {
                             admins = [...new Set(admins)];

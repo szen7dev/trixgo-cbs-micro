@@ -609,6 +609,45 @@ class Model extends BaseModel {
                     }
                 }
 
+                // convert expert_timesheets namecv
+                else if(option == 14){
+                    let selectObj = '_id name note parent namecv'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                        conditionObj.parent = {$exists: false}
+                        conditionObj.namecv = ""
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertDocument({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await TIMESHEET__EXPERT_TIMESHEET_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
