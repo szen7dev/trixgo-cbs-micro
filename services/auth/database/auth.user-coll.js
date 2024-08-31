@@ -52,15 +52,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     balance: { type: Number, default: 0 },
     //_________Điểm thưởng
     rewards: { type: Number, default: 0 },
-    /**
-     * NGƯỜI PHỤC VỤ
-     */
-    //_________Rating chất lượng phục vụ
-    rating: { type: Number, default: 0 },
-    //_________Số lượng đánh giá
-    numberOfRating: { type: Number, default: 0 },
-    //_________Số lượng đơn hàng phục vụ
-    numberOfOrders: { type: Number, default: 0 },
     //_______Ngày sinh
     birthDay: {
         type   : Date,
@@ -86,6 +77,17 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     }],
+    /**
+     * VẬN HÀNH
+     */
+    //_________Rating chất lượng phục vụ
+    rating: { type: Number, default: 0 },
+    //_________Số lượng đánh giá
+    numberOfRating: { type: Number, default: 0 },
+    //_________Số lượng đơn hàng phục vụ
+    numberOfOrders: { type: Number, default: 0 },
+    //_________Số nghỉ phép trong năm
+    numberOnLeave: { type: Number, default: 0 },
     //_______Ảnh đại diện
     image: {
         type: String,
@@ -183,7 +185,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         registrationID  :{ type : String },
         oneSignalID     :{ type : String }, //id cho dịch vụ push noti: OneSignal
         /**
-         * vì mobile có 2 loại app khác nhau
+         * vì mobile có Nhiều loại app khác nhau
          *  1/ WEB_CBS          : ****
          *  2/ MOBILE_TEARSER   : ****
          *  3/ MOBILE_CBS       : **** (không có phần chatting, nên các event chatting của loại MOBILE_CBS sẽ không cần push đến đây)

@@ -24,18 +24,19 @@
             unit                : { type: "string", optional: true },
             note                : { type: "string", optional: true },
             plus                : { type: "number", optional: true },
-            quantity            : { type: "number" },
-            unitPrice           : { type: "number" },
+            quantity            : { type: "number", optional: true },
+            unitPrice           : { type: "number", optional: true },
          },
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { plus, taskID, workID, name, sign, note, quantity, unitPrice } = ctx.params;
+                 let { plus, taskID, workID, staffID, contactID, goodsID, name, sign, note, quantity, unitPrice } = ctx.params;
+                //  console.log(ctx.params)
 
                  const { _id: userID } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler = await BUDGET__SUBMITTAL_MODEL.insert({
-                    ctx, userID, plus, taskID, workID, name, sign, note, quantity, unitPrice
+                    ctx, userID, plus, taskID, workID, staffID, contactID, goodsID, name, sign, note, quantity, unitPrice
                  });
 
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

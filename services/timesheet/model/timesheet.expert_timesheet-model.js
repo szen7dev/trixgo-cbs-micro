@@ -173,7 +173,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype }){
-        // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype })
+        console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -270,7 +270,7 @@ class Model extends BaseModel {
                 if(subtype && Number(subtype)  != Number(infoTimeSheetID.subtype)){
                     dataUpdate.subtype = subtype;
 
-                    // Ngày nghỉ phép, lễ/tết
+                    // Ngày nghỉ phép, lễ/tết, công tác
                     if([2,3,4].includes(Number(subtype))){
                         let newAssigneeID
                         if(assigneeID){
@@ -366,6 +366,21 @@ class Model extends BaseModel {
                 // Cập nhật cho mẩu tin cha
                 if(infoAfterUpdate.parent){
                     await that.updateValue({ parentID: infoAfterUpdate.parent, userID })
+                }
+
+                // Cập nhật số ngày nghỉ phép trong năm tới hiện tại: USER_COLL
+                if(subtype == 2){
+                    let year = new Date(date).getFullYear()
+                    let numberOnLeave = await TIMESHEET__EXPERT_TIMESHEET_COLL.count({ 
+                        assignee: infoAfterUpdate.assignee, 
+                        subtype: 2,
+                        $where: `return this.date.getFullYear() === ${Number(year)}`
+                    })
+                    // console.log({numberOnLeave})
+                    
+                    await USER_COLL.findByIdAndUpdate(infoAfterUpdate.assignee, {
+                        numberOnLeave: numberOnLeave
+                    }, { new: true })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
@@ -479,7 +494,7 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, workID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype }) {
-        // console.log({sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type})
+        // console.log({ sortOption, parentID, workID, userID, keyword, option, month, year, assigneeID, humanID, companyID, type, subtype })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
