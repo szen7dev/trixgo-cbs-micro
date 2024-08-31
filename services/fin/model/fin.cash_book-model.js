@@ -440,7 +440,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, userID, companyID, accountID, parentID, companyOfUser,
+    getList({ outin, type, userID, companyID, accountID, customerID, goodsID, parentID, companyOfUser,
         keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
         return new Promise(async (resolve) => {
             try {
@@ -476,9 +476,9 @@ class Model extends BaseModel {
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
 
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID;
-                    }
+                    // if (checkObjectIDs(accountID)) {
+                    //     conditionObj.account = accountID;
+                    // }
                 } else {
                     // Chỉ hiển thị sổ quỹ mà user là member
                     conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
@@ -494,21 +494,42 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
+                if (checkObjectIDs(accountID)) {
+                    conditionObj.account = accountID;
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
+                if (checkObjectIDs(customerID)) {
+                    conditionObj.customer = customerID;
                 }
+
+                if (checkObjectIDs(goodsID)) {
+                    conditionObj.goods = goodsID;
+                }
+                if (!
+                    isNaN(outin) && Number(outin) >= 1) {
+                        conditionObj.outin = Number(outin)
+                }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    conditionObj.type = Number(type)
+                }
+
+                // // Lấy dòng tiền vào ra (có giá trị income > 0)
+                // if(Number(outin) === 1){
+                //     conditionObj.income = { $gt: 0 }
+                // }
+
+                // // Lấy dòng tiền vào ra (có giá trị income > 0)
+                // if(Number(outin) === 2){
+                //     conditionObj.expense = { $gt: 0 }
+                // }
 
                 if (keyword) {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = RegExp(keyword, 'i');
                 }
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 

@@ -142,7 +142,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    outin, cashBookID, companyID, accountID, customerID, contractID, parentID, isCompanyOther,
+                    outin, type, cashBookID, companyID, accountID, customerID, goodsID, contractID, parentID, isCompanyOther,
                     keyword, limit, lastestID, populates, select, sortKey
                 } = ctx.params;
 
@@ -159,7 +159,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
-                        outin, companyID, accountID, customerID, contractID, parentID, userID, isCompanyOther,
+                        outin, type, companyID, accountID, customerID, goodsID, contractID, parentID, userID, isCompanyOther,
                         keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id
                     });
                 }
