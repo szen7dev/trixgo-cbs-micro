@@ -30,3 +30,12 @@ Bổ sung status code response cho tất cả api
 - Version socket :
   - socket-io : 2.x.x (2.2.2)
   - socket-redis : 5.x.x
+
+MỘT SỐ DATA CÂN NHẮC/SẼ BỎ
+- Chatting***
+- Gateway
+- Media
+- Notification
+- Operation***
+- Personal
+- Reminder (hỏi lại Minh)

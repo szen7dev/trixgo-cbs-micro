@@ -52,7 +52,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ companyID, userID, parentID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice }) {
+        // console.log({ companyID, userID, parentID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -74,6 +75,10 @@ class Model extends BaseModel {
                     dataInsert.contract = contractID;
                 }
 
+                if (checkObjectIDs(goodsID)) {
+                    dataInsert.goods = goodsID;
+                }
+
                 if (name) {
                     dataInsert.name = name;
                 }
@@ -88,6 +93,28 @@ class Model extends BaseModel {
 
                 if (note) {
                     dataInsert.note = note;
+                }
+
+                if (!isNaN(outin) && Number(outin) >= 1) {
+                    dataInsert.outin = Number(outin)
+                }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    dataInsert.type = Number(type)
+                }
+
+                let unitPrice2 = 0
+                if(unitPrice){
+                    unitPrice2 = Number(unitPrice)
+                }
+                if(quantity){
+                    dataInsert.quantity = Number(quantity)
+                }
+                if(unitPrice2 != 0){
+                    let amount  = quantity * unitPrice2
+
+                    dataInsert.unitPrice = unitPrice2
+                    dataInsert.amount = amount
                 }
 
                 if (!isNaN(arising) && Number(arising) >= 0) {
@@ -143,8 +170,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID }) {
-        // console.log({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID })
+    update({ cashBookID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, quantity, unitPrice }) {
+        // console.log({ cashBookID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -181,6 +208,12 @@ class Model extends BaseModel {
                     dataUpdate.contract = null
                 }
 
+                if (checkObjectIDs(goodsID)) {
+                    dataUpdate.goods = goodsID;
+                }else{
+                    dataUpdate.goods = null
+                }
+
                 if (name) {
                     dataUpdate.name = name;
                 }
@@ -191,6 +224,28 @@ class Model extends BaseModel {
 
                 if (sign) {
                     dataUpdate.sign = sign;
+                }
+
+                if (!isNaN(outin) && Number(outin) >= 1) {
+                    dataUpdate.outin = Number(outin)
+                }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    dataUpdate.type = Number(type)
+                }
+
+                let unitPrice2 = 0
+                if(unitPrice){
+                    unitPrice2 = Number(unitPrice)
+                }
+                if(quantity){
+                    dataUpdate.quantity = Number(quantity)
+                }
+                if(unitPrice2 != 0){
+                    let amount  = quantity * unitPrice2
+
+                    dataUpdate.unitPrice = unitPrice2
+                    dataUpdate.amount = amount
                 }
 
                 let str = ''

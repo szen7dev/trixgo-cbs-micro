@@ -34,12 +34,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance } = ctx.params;
+                const { parentID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.insert({
-                    companyID: company._id, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance
+                    companyID: company._id, userID, parentID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -74,11 +74,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, } = ctx.params;
+                const { cashBookID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, outin, type, quantity, unitPrice } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.update({
-                    cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID
+                    cashBookID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
