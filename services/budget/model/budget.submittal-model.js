@@ -32,8 +32,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Code: 
      */
-    insert({ userID, plus, taskID, workID, staffID, contactID, name, sign, note, quantity, unitPrice }) { 
-        // console.log({ userID, plus, taskID, workID, staffID, contactID, name, sign, note, quantity, unitPrice })
+    insert({ userID, plus, taskID, workID, staffID, contactID, goodsID, name, sign, note, quantity, unitPrice }) { 
+        // console.log({ userID, plus, taskID, workID, staffID, contactID, goodsID, name, sign, note, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -57,6 +57,10 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(contactID)){
                     dataInsert.contact = contactID
+                }
+
+                if(checkObjectIDs(goodsID)){
+                    dataInsert.goods = goodsID
                 }
 
                 if(plus && [1,2,3].includes(Number(plus))){

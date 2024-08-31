@@ -34,6 +34,16 @@ module.exports  = DATABASE_MIDDLEWARE("budget_submittal", {
         ref: "contact"
     },    
     /**
+     * Nguồn lực/Sản phẩm
+     * - Phục vụ duyệt giá
+     * - Giá theo lịch sử đã duyệt giá (vật tư, nhân công trước đó)
+     * - Giá theo lịch sử nhập vật tư
+     */
+    goods: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
+    },  
+    /**
      * THÔNG TIN NGÂN SÁCH
      */
     /**
@@ -47,17 +57,7 @@ module.exports  = DATABASE_MIDDLEWARE("budget_submittal", {
     reason: {
         type: Schema.Types.ObjectId,
         ref: "doctype",
-    },  
-    /**
-     * Nguồn lực/Sản phẩm
-     * - Phục vụ duyệt giá
-     * - Giá theo lịch sử đã duyệt giá (vật tư, nhân công trước đó)
-     * - Giá theo lịch sử nhập vật tư
-     */
-    goods: {
-        type: Schema.Types.ObjectId,
-        ref : "goods"
-    },      
+    },       
     //_________Tên
     name: String,
     //_________Mã hiệu

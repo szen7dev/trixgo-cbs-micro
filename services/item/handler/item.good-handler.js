@@ -32,12 +32,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, duration, usage, authorID } = ctx.params;
+                const { companyID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, duration, usage, authorID } = ctx.params;
+                
                 const { _id: userID, company } = ctx.meta.infoUser;
-
                 // console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, convertID, convertQuantity, status, duration, usage, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, authorID });
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID, parentID, convertID, convertQuantity, status, duration, usage, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, authorID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
