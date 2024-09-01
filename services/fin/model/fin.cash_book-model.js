@@ -359,6 +359,7 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { },
+                            amount: { $sum: "$amount" },
                             income: { $sum: "$income" },
                             expense: { $sum: "$expense" },
                         }
@@ -373,6 +374,7 @@ class Model extends BaseModel {
                     dataUpdate.closingBalance = Number(closingBalance)
                     dataUpdate.income = Number(listData[0].income)
                     dataUpdate.expense = Number(listData[0].expense)
+                    dataUpdate.amount = Number(listData[0].amount)
                 }
 
                 let infoAfterUpdate = await FIN__CASH_BOOK_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
