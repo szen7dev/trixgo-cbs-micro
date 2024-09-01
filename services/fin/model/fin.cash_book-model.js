@@ -57,6 +57,11 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
+                if(!parentID){
+                    if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
+                        return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID});
+                }
+
                 let dataInsert = { userCreate: userID, admins: [userID], members: [userID] };
 
                 if (checkObjectIDs(parentID)) {
@@ -129,12 +134,18 @@ class Model extends BaseModel {
 
                 // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
                 if(checkObjectIDs(parentID)) {
-                    const infoParentCashbook = await FIN__CASH_BOOK_COLL
+                    const infoParent = await FIN__CASH_BOOK_COLL
                         .findById(parentID)
-                        .select('company')
+                        .select('company project warehouse customer contract outin type')
                         .lean();
-
-                    dataInsert.company = infoParentCashbook.company;
+                    
+                    dataInsert.company = infoParent.company;
+                    dataInsert.project = infoParent.project;
+                    dataInsert.warehouse = infoParent.warehouse;
+                    dataInsert.customer = infoParent.customer;
+                    dataInsert.contract = infoParent.contract;
+                    dataInsert.outin = infoParent.outin;
+                    dataInsert.type = infoParent.type;
                 } else{
                     dataInsert.company = companyID;
                 }
@@ -231,10 +242,10 @@ class Model extends BaseModel {
                 }
 
                 let unitPrice2 = 0
-                if (!isNaN(unitPrice) && Number(unitPrice) >= 0) {
+                if (unitPrice != 0) {
                     unitPrice2 = Number(unitPrice)
                 }
-                if (!isNaN(quantity) && Number(quantity) >= 0) {
+                if (quantity) {
                     dataUpdate.quantity = Number(quantity)
                 }
                 if(unitPrice2 >= 0){
@@ -315,8 +326,9 @@ class Model extends BaseModel {
                     await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
                 }
 
-                // Cập nhật lại trạng thái các phần tử con
+                // Cập nhật lại các phần tử con
                 if(!infoAfterUpdate.parent){
+                    // Trạng thái của phiếu (hủy bỏ hay không)
                     if (active && !isNaN(active) && Number(active) > 0) {
                         await FIN__CASH_BOOK_COLL.updateMany(
                             { 
@@ -325,6 +337,21 @@ class Model extends BaseModel {
                             { $set: { "active" : Number(active)} }
                         )
                     }
+
+                    // Cập nhật các thuộc tính khác
+                    await FIN__CASH_BOOK_COLL.updateMany(
+                        { 
+                            parent: ObjectID(cashBookID),
+                        },
+                        { $set: { 
+                            "project" : infoAfterUpdate.project,
+                            "warehouse" : infoAfterUpdate.warehouse,
+                            "customer" : infoAfterUpdate.customer,
+                            "contract" : infoAfterUpdate.contract,
+                            "outin" : infoAfterUpdate.outin,
+                            "type" : infoAfterUpdate.type,
+                        } }
+                    )
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
