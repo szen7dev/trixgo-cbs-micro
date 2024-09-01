@@ -75,13 +75,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, outin, type, quantity, unitPrice } = ctx.params;
+                const { cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, workID, name, sign, note, date, income, expense, active, members, admins, outin, type, quantity, unitPrice } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.update({
-                    cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice
+                    cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

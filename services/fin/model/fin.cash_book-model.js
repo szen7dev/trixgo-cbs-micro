@@ -105,20 +105,6 @@ class Model extends BaseModel {
                     dataInsert.type = Number(type)
                 }
 
-                let unitPrice2 = 0
-                if(unitPrice){
-                    unitPrice2 = Number(unitPrice)
-                }
-                if(quantity){
-                    dataInsert.quantity = Number(quantity)
-                }
-                if(unitPrice2 != 0){
-                    let amount  = quantity * unitPrice2
-
-                    dataInsert.unitPrice = unitPrice2
-                    dataInsert.amount = amount
-                }
-
                 if (!isNaN(arising) && Number(arising) >= 0) {
                     dataInsert.arising = arising;
                 }
@@ -172,8 +158,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice }) {
-        // console.log({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice })
+    update({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice }) {
+        // console.log({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -195,30 +181,28 @@ class Model extends BaseModel {
                 }
 
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+
                 if (checkObjectIDs(projectID)) {
                     dataUpdate.project = projectID;
                 }
                 if (checkObjectIDs(warehouseID)) {
+                  
                     dataUpdate.warehouse = warehouseID;
                 }
                 if (checkObjectIDs(accountID)) {
                     dataUpdate.account = accountID;
                 }
-
                 if (checkObjectIDs(customerID)) {
                     dataUpdate.customer = customerID;
                 }
-
                 if (checkObjectIDs(contractID)) {
                     dataUpdate.contract = contractID;
-                }else{
-                    dataUpdate.contract = null
                 }
-
                 if (checkObjectIDs(goodsID)) {
                     dataUpdate.goods = goodsID;
-                }else{
-                    dataUpdate.goods = null
+                }
+                if (checkObjectIDs(workID)) {
+                    dataUpdate.work = workID;
                 }
 
                 if (name) {
@@ -242,40 +226,30 @@ class Model extends BaseModel {
                 }
 
                 let unitPrice2 = 0
-                if(unitPrice){
+                if (!isNaN(unitPrice) && Number(unitPrice) >= 0) {
                     unitPrice2 = Number(unitPrice)
                 }
-                if(quantity){
+                if (!isNaN(quantity) && Number(quantity) >= 0) {
                     dataUpdate.quantity = Number(quantity)
                 }
-                if(unitPrice2 != 0){
-                    let amount  = quantity * unitPrice2
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity * unitPrice2)
 
                     dataUpdate.unitPrice = unitPrice2
                     dataUpdate.amount = amount
                 }
-
-                let str = ''
-                if(infoCashBook.note != undefined && infoCashBook.note != ""){
-                    str = `${infoCashBook.note}`
-                }
                  
                 if (income >= 0) {
-                    str = str + `-Thu cũ: ${infoCashBook.income}`
-
                     dataUpdate.income = income;
                 }
 
                 if (expense >= 0) {
-                    str = str + `-Chi cũ: ${infoCashBook.expense}`
-
                     dataUpdate.expense = expense;
                 }
 
-                if (note) {
-                    str = str + note;
+                if (note && note != "") {
+                    dataUpdate.note = note;
                 }
-                dataUpdate.note = str;
 
                 if (active && !isNaN(active) && Number(active) > 0) {
                     dataUpdate.active = active;
@@ -369,7 +343,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
                 let infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
 
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 let listData = await FIN__CASH_BOOK_COLL.aggregate([
                     {

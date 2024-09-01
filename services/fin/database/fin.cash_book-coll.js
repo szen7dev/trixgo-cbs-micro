@@ -51,6 +51,11 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
         type: Schema.Types.ObjectId,
         ref : "goods"
     },
+    //________Link với ngân sách
+    work: {
+        type: Schema.Types.ObjectId,
+        ref : "budget_work"
+    },
     //_________Admin (được quyền xem, sửa)
     admins : [{
         type   : Schema.Types.ObjectId,
