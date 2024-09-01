@@ -52,7 +52,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance }) {
+    insert({ companyID, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice }) {
+        // console.log({ companyID, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice  })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -61,19 +62,27 @@ class Model extends BaseModel {
                 if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
                 }
-
+                if (checkObjectIDs(projectID)) {
+                    dataInsert.project = projectID;
+                }
+                if (checkObjectIDs(warehouseID)) {
+                    dataInsert.warehouse = warehouseID;
+                }
                 if (checkObjectIDs(accountID)) {
                     dataInsert.account = accountID;
                 }
-
                 if (checkObjectIDs(customerID)) {
                     dataInsert.customer = customerID;
                 }
-
                 if (checkObjectIDs(contractID)) {
                     dataInsert.contract = contractID;
                 }
-
+                if (checkObjectIDs(goodsID)) {
+                    dataInsert.goods = goodsID;
+                }
+                if (checkObjectIDs(assetsID)) {
+                    dataInsert.assets = assetsID;
+                }
                 if (name) {
                     dataInsert.name = name;
                 }
@@ -88,6 +97,14 @@ class Model extends BaseModel {
 
                 if (note) {
                     dataInsert.note = note;
+                }
+
+                if (!isNaN(outin) && Number(outin) >= 1) {
+                    dataInsert.outin = Number(outin)
+                }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    dataInsert.type = Number(type)
                 }
 
                 if (!isNaN(arising) && Number(arising) >= 0) {
@@ -143,8 +160,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID }) {
-        // console.log({ cashBookID, accountID, customerID, contractID, name, sign, note, date, income, expense, active, members, admins, userID })
+    update({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice }) {
+        // console.log({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -167,18 +184,30 @@ class Model extends BaseModel {
 
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
+                if (checkObjectIDs(projectID)) {
+                    dataUpdate.project = projectID;
+                }
+                if (checkObjectIDs(warehouseID)) {
+                  
+                    dataUpdate.warehouse = warehouseID;
+                }
                 if (checkObjectIDs(accountID)) {
                     dataUpdate.account = accountID;
                 }
-
                 if (checkObjectIDs(customerID)) {
                     dataUpdate.customer = customerID;
                 }
-
                 if (checkObjectIDs(contractID)) {
                     dataUpdate.contract = contractID;
-                }else{
-                    dataUpdate.contract = null
+                }
+                if (checkObjectIDs(goodsID)) {
+                    dataUpdate.goods = goodsID;
+                }
+                if (checkObjectIDs(assetsID)) {
+                    dataUpdate.assets = assetsID;
+                }
+                if (checkObjectIDs(workID)) {
+                    dataUpdate.work = workID;
                 }
 
                 if (name) {
@@ -193,27 +222,39 @@ class Model extends BaseModel {
                     dataUpdate.sign = sign;
                 }
 
-                let str = ''
-                if(infoCashBook.note != undefined && infoCashBook.note != ""){
-                    str = `${infoCashBook.note}`
+                if (!isNaN(outin) && Number(outin) >= 1) {
+                    dataUpdate.outin = Number(outin)
+                }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    dataUpdate.type = Number(type)
+                }
+
+                let unitPrice2 = 0
+                if (!isNaN(unitPrice) && Number(unitPrice) >= 0) {
+                    unitPrice2 = Number(unitPrice)
+                }
+                if (!isNaN(quantity) && Number(quantity) >= 0) {
+                    dataUpdate.quantity = Number(quantity)
+                }
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity * unitPrice2)
+
+                    dataUpdate.unitPrice = unitPrice2
+                    dataUpdate.amount = amount
                 }
                  
                 if (income >= 0) {
-                    str = str + `-Thu cũ: ${infoCashBook.income}`
-
                     dataUpdate.income = income;
                 }
 
                 if (expense >= 0) {
-                    str = str + `-Chi cũ: ${infoCashBook.expense}`
-
                     dataUpdate.expense = expense;
                 }
 
-                if (note) {
-                    str = str + note;
+                if (note && note != "") {
+                    dataUpdate.note = note;
                 }
-                dataUpdate.note = str;
 
                 if (active && !isNaN(active) && Number(active) > 0) {
                     dataUpdate.active = active;
@@ -307,7 +348,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
                 let infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
 
-                let dataUpdate = { userUpdate: userID };
+                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
                 let listData = await FIN__CASH_BOOK_COLL.aggregate([
                     {
@@ -385,8 +426,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, userID, companyID, accountID, parentID, companyOfUser,
-        keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
+    getList({ outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+        // console.log({ outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
         return new Promise(async (resolve) => {
             try {
                 let sortBy;
@@ -421,9 +462,9 @@ class Model extends BaseModel {
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
 
-                    if (checkObjectIDs(accountID)) {
-                        conditionObj.account = accountID;
-                    }
+                    // if (checkObjectIDs(accountID)) {
+                    //     conditionObj.account = accountID;
+                    // }
                 } else {
                     // Chỉ hiển thị sổ quỹ mà user là member
                     conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
@@ -439,21 +480,69 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 1){
-                    conditionObj.income = { $gt: 0 }
+                if(fromDate && toDate){
+                    if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                        let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                        let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                        conditionObj.date  = { 
+                            $gte: moment(startTime).toDate(),
+                            $lte: moment(endTime).toDate()
+                        }
+                    }
                 }
 
-                // Lấy dòng tiền vào ra (có giá trị income > 0)
-                if(Number(outin) === 2){
-                    conditionObj.expense = { $gt: 0 }
+                if (checkObjectIDs(projectID)) {
+                    conditionObj.project = projectID;
                 }
+
+                if (checkObjectIDs(warehouseID)) {
+                    conditionObj.warehouse = warehouseID;
+                }
+
+                if (checkObjectIDs(accountID)) {
+                    conditionObj.account = accountID;
+                }
+
+                if (checkObjectIDs(customerID)) {
+                    conditionObj.customer = customerID;
+                }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj.userCreate = userCreateID;
+                }
+
+                if (checkObjectIDs(goodsID)) {
+                    conditionObj.goods = goodsID;
+                }
+                if (checkObjectIDs(assetsID)) {
+                    conditionObj.assets = assetsID;
+                }
+
+                if (!
+                    isNaN(outin) && Number(outin) >= 1) {
+                        conditionObj.outin = Number(outin)
+                }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    conditionObj.type = Number(type)
+                }
+
+                // // Lấy dòng tiền vào ra (có giá trị income > 0)
+                // if(Number(outin) === 1){
+                //     conditionObj.income = { $gt: 0 }
+                // }
+
+                // // Lấy dòng tiền vào ra (có giá trị income > 0)
+                // if(Number(outin) === 2){
+                //     conditionObj.expense = { $gt: 0 }
+                // }
 
                 if (keyword) {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = RegExp(keyword, 'i');
                 }
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 
