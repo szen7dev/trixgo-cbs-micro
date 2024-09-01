@@ -11,6 +11,16 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Dự án, phòng ban
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "department"
+    },
+    //_________Kho bãi
+    warehouse: {
+        type: Schema.Types.ObjectId,
+        ref : "warehouse"
+    },
     //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,
@@ -80,7 +90,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
     //______Khối lượng/Số lượng
     quantity: {
         type: Number,
-        default : 0
+        default : 1
     },
     //______Đơn giá
     unitPrice: {

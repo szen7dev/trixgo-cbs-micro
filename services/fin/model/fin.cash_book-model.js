@@ -52,8 +52,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, userID, parentID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice }) {
-        // console.log({ companyID, userID, parentID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, quantity, unitPrice })
+    insert({ companyID, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice }) {
+        // console.log({ companyID, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice  })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -62,19 +62,21 @@ class Model extends BaseModel {
                 if (checkObjectIDs(parentID)) {
                     dataInsert.parent = parentID;
                 }
-
+                if (checkObjectIDs(projectID)) {
+                    dataInsert.project = projectID;
+                }
+                if (checkObjectIDs(warehouseID)) {
+                    dataInsert.warehouse = warehouseID;
+                }
                 if (checkObjectIDs(accountID)) {
                     dataInsert.account = accountID;
                 }
-
                 if (checkObjectIDs(customerID)) {
                     dataInsert.customer = customerID;
                 }
-
                 if (checkObjectIDs(contractID)) {
                     dataInsert.contract = contractID;
                 }
-
                 if (checkObjectIDs(goodsID)) {
                     dataInsert.goods = goodsID;
                 }
@@ -170,8 +172,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, quantity, unitPrice }) {
-        // console.log({ cashBookID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, quantity, unitPrice })
+    update({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice }) {
+        // console.log({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -193,7 +195,12 @@ class Model extends BaseModel {
                 }
 
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
-
+                if (checkObjectIDs(projectID)) {
+                    dataUpdate.project = projectID;
+                }
+                if (checkObjectIDs(warehouseID)) {
+                    dataUpdate.warehouse = warehouseID;
+                }
                 if (checkObjectIDs(accountID)) {
                     dataUpdate.account = accountID;
                 }
@@ -440,8 +447,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, type, userID, companyID, accountID, customerID, goodsID, parentID, companyOfUser,
-        keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther }) {
+    getList({ outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+        // console.log({ outin, type, userID, companyID, accountID, customerID, goodsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
         return new Promise(async (resolve) => {
             try {
                 let sortBy;
@@ -494,12 +501,35 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(fromDate && toDate){
+                    if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                        let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                        let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                        conditionObj.date  = { 
+                            $gte: moment(startTime).toDate(),
+                            $lte: moment(endTime).toDate()
+                        }
+                    }
+                }
+
+                if (checkObjectIDs(projectID)) {
+                    conditionObj.project = projectID;
+                }
+
+                if (checkObjectIDs(warehouseID)) {
+                    conditionObj.warehouse = warehouseID;
+                }
+
                 if (checkObjectIDs(accountID)) {
                     conditionObj.account = accountID;
                 }
 
                 if (checkObjectIDs(customerID)) {
                     conditionObj.customer = customerID;
+                }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj.userCreate = userCreateID;
                 }
 
                 if (checkObjectIDs(goodsID)) {

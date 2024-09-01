@@ -34,12 +34,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { parentID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice } = ctx.params;
+                const { parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice } = ctx.params;
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.insert({
-                    companyID: company._id, userID, parentID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice
+                    companyID: company._id, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -74,11 +75,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, outin, type, quantity, unitPrice } = ctx.params;
+                const { cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, outin, type, quantity, unitPrice } = ctx.params;
+                // console.log(ctx.params)
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.update({
-                    cashBookID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice
+                    cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -142,9 +145,10 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    outin, type, cashBookID, companyID, accountID, customerID, goodsID, contractID, parentID, isCompanyOther,
-                    keyword, limit, lastestID, populates, select, sortKey
+                    outin, type, cashBookID, companyID, projectID, warehouseID, accountID, customerID, goodsID, contractID, parentID, userCreateID, isCompanyOther,
+                    keyword, limit, lastestID, populates, select, sortKey, fromDate, toDate
                 } = ctx.params;
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -159,8 +163,8 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
-                        outin, type, companyID, accountID, customerID, goodsID, contractID, parentID, userID, isCompanyOther,
-                        keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id
+                        outin, type, companyID, projectID, warehouseID, accountID, customerID, goodsID, contractID, parentID, userID, userCreateID, isCompanyOther,
+                        keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id, fromDate, toDate
                     });
                 }
 
