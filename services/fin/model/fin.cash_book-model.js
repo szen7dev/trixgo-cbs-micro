@@ -52,8 +52,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice }) {
-        // console.log({ companyID, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice  })
+    insert({ companyID, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice }) {
+        // console.log({ companyID, userID, parentID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, name, sign, note, date, income, expense, arising, openingBalance, closingBalance, outin, type, quantity, unitPrice  })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -80,7 +80,9 @@ class Model extends BaseModel {
                 if (checkObjectIDs(goodsID)) {
                     dataInsert.goods = goodsID;
                 }
-
+                if (checkObjectIDs(assetsID)) {
+                    dataInsert.assets = assetsID;
+                }
                 if (name) {
                     dataInsert.name = name;
                 }
@@ -158,8 +160,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice }) {
-        // console.log({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice })
+    update({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice }) {
+        // console.log({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -200,6 +202,9 @@ class Model extends BaseModel {
                 }
                 if (checkObjectIDs(goodsID)) {
                     dataUpdate.goods = goodsID;
+                }
+                if (checkObjectIDs(assetsID)) {
+                    dataUpdate.assets = assetsID;
                 }
                 if (checkObjectIDs(workID)) {
                     dataUpdate.work = workID;
@@ -421,8 +426,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
-        // console.log({ outin, type, userID, companyID, accountID, customerID, goodsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+    getList({ outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+        // console.log({ outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
         return new Promise(async (resolve) => {
             try {
                 let sortBy;
@@ -509,6 +514,10 @@ class Model extends BaseModel {
                 if (checkObjectIDs(goodsID)) {
                     conditionObj.goods = goodsID;
                 }
+                if (checkObjectIDs(assetsID)) {
+                    conditionObj.assets = assetsID;
+                }
+
                 if (!
                     isNaN(outin) && Number(outin) >= 1) {
                         conditionObj.outin = Number(outin)
