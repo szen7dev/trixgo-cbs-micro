@@ -15,6 +15,7 @@ const CF_ROUTINGS_FIN = {
 
     // ================================CASH_BOOK=======================================//
     CASH_BOOK                                   : `${BASE_ROUTE}${CASH_BOOK}`, 
+    CASH_BOOK_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}${CASH_BOOK}/get-list-by-property`,  
     CASH_BOOK_GET_AMOUNT_BY_PROPERTY            : `${BASE_ROUTE}${CASH_BOOK}/get-amount-by-property`,
     CASH_BOOK_GET_AMOUNT_BY_PARENT              : `${BASE_ROUTE}${CASH_BOOK}/get-amount-income-expense-by-parent`,
     CASH_BOOK_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${CASH_BOOK}/download-template-excel`,

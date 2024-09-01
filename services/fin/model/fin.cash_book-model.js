@@ -29,6 +29,7 @@ const CONTRACT_COLL                      = require('../../item/database/item.con
 const FINANCIAL_GENERAL_JOURNAL_COLL     = require('../.../../../accounting/database/accounting.financial_general_journal-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL   = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL      = require('../../timesheet/database/timesheet.expert_salary-coll')
+const ITEM__GOODS_COLL            		 = require('../../item/database/item.goods-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -625,6 +626,68 @@ class Model extends BaseModel {
 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : getListByProperty
+     * Author: HiepNH
+     * Date: 2/9/2024
+     */
+    getListByProperty({ option, companyID }) {
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1. Ban đầu query tổng tất cả dữ liệu
+                 * 2. Sau bổ sung các phiếu đầu kỳ/kết chuyển số dư
+                 */
+                let sortBy;
+                let conditionObj = {
+                    company: ObjectID(companyID),
+                    goods: { $exists: true, $ne: null }
+                };
+
+                let conditionGroup = {}, conditionPopulate = {}
+
+                conditionGroup = {
+                    _id: { goods: "$goods", outin: "$outin" },
+                    quantity: { $sum: "$quantity" },
+                    amount: { $sum: "$amount" }
+                }
+
+                // conditionPopulate = {
+                //     path: '_id.goods',
+                //     select: '_id name sign',
+                //     model: 'goods'
+                // }
+                
+                let listData = await FIN__CASH_BOOK_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: {
+                            "_id.quantity": 1
+                        }
+                    }
+                ])
+
+                let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: listData.map(item => item._id.goods)}})
+                .select('name sign unit')
+                // console.log(listGoods)
+
+                // if(!isNaN(option) && Number(option) > 0){
+                //     await FIN__CASH_BOOK_COLL.populate(listData, conditionPopulate)
+                // }
+
+                return resolve({ error: false, data: {listGoods, listData} })
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
             }
         })
     }
