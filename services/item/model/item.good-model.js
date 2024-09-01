@@ -38,6 +38,8 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	insert({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID }){
+        // console.log('333333333333333')
+        // console.log({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")

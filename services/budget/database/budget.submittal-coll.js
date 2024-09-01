@@ -43,6 +43,11 @@ module.exports  = DATABASE_MIDDLEWARE("budget_submittal", {
         type: Schema.Types.ObjectId,
         ref : "goods"
     },  
+    //_________Tài sản/thiết bị dùng để quản lý sửa chữa, tiêu hao
+    assets: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
+    }, 
     /**
      * THÔNG TIN NGÂN SÁCH
      */
