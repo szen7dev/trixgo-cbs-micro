@@ -68,7 +68,7 @@ module.exports = {
             date        : { type: "string", optional: true },
             income      : { type: "number", optional: true },
             expense     : { type: "number", optional: true },
-            active      : { type: "number", optional: true },
+            // active      : { type: "number", optional: true },
             members     : { type: "array", optional: true },
             admins      : { type: "array", optional: true },
         },

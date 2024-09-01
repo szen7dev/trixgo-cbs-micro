@@ -79,6 +79,7 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
      * 3. Vật tư phụ
      * 4. Công cụ dụng cụ
      * 5. Hàng hóa/Cấu kiện/Thành phẩm
+     * 6. Văn phòng phẩm
      */
     type: {
         type: Number,
