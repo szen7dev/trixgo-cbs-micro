@@ -132,7 +132,6 @@ class Model extends BaseModel {
                 if (!isNaN(expense) && Number(expense) >= 0) {
                     dataInsert.expense = expense;
                 }
-                console.log('11111111111111111')
 
                 // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
                 if(checkObjectIDs(parentID)) {
@@ -140,8 +139,6 @@ class Model extends BaseModel {
                         .findById(parentID)
                         .select('company project warehouse customer contract outin type date')
                         .lean();
-                    console.log('2222222222222')
-                    console.log(infoParent)
 
                     dataInsert.company = infoParent.company;
                     dataInsert.project = infoParent.project;
@@ -154,8 +151,6 @@ class Model extends BaseModel {
                 } else{
                     dataInsert.company = companyID;
                 }
-                console.log('3333333333333333')
-                console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
