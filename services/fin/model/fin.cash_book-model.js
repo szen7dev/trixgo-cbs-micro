@@ -132,7 +132,6 @@ class Model extends BaseModel {
                 if (!isNaN(expense) && Number(expense) >= 0) {
                     dataInsert.expense = expense;
                 }
-                console.log('11111111111111111')
 
                 // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
                 if(checkObjectIDs(parentID)) {
@@ -140,8 +139,6 @@ class Model extends BaseModel {
                         .findById(parentID)
                         .select('company project warehouse customer contract outin type date')
                         .lean();
-                    console.log('2222222222222')
-                    console.log(infoParent)
 
                     dataInsert.company = infoParent.company;
                     dataInsert.project = infoParent.project;
@@ -154,8 +151,6 @@ class Model extends BaseModel {
                 } else{
                     dataInsert.company = companyID;
                 }
-                console.log('3333333333333333')
-                console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -463,8 +458,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
-        // console.log({ outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+    getList({ option, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+        // console.log({ option, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
         return new Promise(async (resolve) => {
             try {
                 let sortBy;
@@ -498,22 +493,27 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
-
-                    // if (checkObjectIDs(accountID)) {
-                    //     conditionObj.account = accountID;
-                    // }
                 } else {
-                    // Chỉ hiển thị sổ quỹ mà user là member
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
+                    if(!option){
+                        // Chỉ hiển thị sổ quỹ mà user là member
+                        conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
+                        conditionObj.parent = { $exists: false } // Lấy theo công ty
 
-                    // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
-                    if(isCompanyOther === 'true') {
-                        conditionObj.company = {
-                            $nin: [companyOfUser]
+                        // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
+                        if(isCompanyOther === 'true') {
+                            conditionObj.company = {
+                                $nin: [companyOfUser]
+                            }
+                        } else{
+                            conditionObj.company = companyID;
                         }
-                    } else{
-                        conditionObj.company = companyID;
+                    }
+                    // Báo cáo chi tiết theo Goods
+                    else{
+                        if(option == 1){
+                            conditionObj.parent = { $exists: true, $ne: null }
+                            conditionObj.goods = { $exists: true, $ne: null }
+                        }
                     }
                 }
 
@@ -551,13 +551,13 @@ class Model extends BaseModel {
                 if (checkObjectIDs(goodsID)) {
                     conditionObj.goods = goodsID;
                 }
+
                 if (checkObjectIDs(assetsID)) {
                     conditionObj.assets = assetsID;
                 }
 
-                if (!
-                    isNaN(outin) && Number(outin) >= 1) {
-                        conditionObj.outin = Number(outin)
+                if (!isNaN(outin) && Number(outin) >= 1) {
+                    conditionObj.outin = Number(outin)
                 }
 
                 if (!isNaN(type) && Number(type) >= 1) {
@@ -642,7 +642,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 2/9/2024
      */
-    getListByProperty({ option, companyID }) {
+    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -659,6 +659,65 @@ class Model extends BaseModel {
                     company: ObjectID(companyID),
                     goods: { $exists: true, $ne: null },
                     outin: 2
+                }
+
+                // if(fromDate && toDate){
+                //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                //         conditionObj1.date  = { 
+                //             $gte: moment(startTime).toDate(),
+                //             $lte: moment(endTime).toDate()
+                //         }
+                //         conditionObj2.date  = { 
+                //             $gte: moment(startTime).toDate(),
+                //             $lte: moment(endTime).toDate()
+                //         }
+                //     }
+                // }
+
+                if (checkObjectIDs(projectID)) {
+                    conditionObj1.project = ObjectID(projectID);
+                    conditionObj2.project = ObjectID(projectID);
+                }
+
+                if (checkObjectIDs(warehouseID)) {
+                    conditionObj1.warehouse = ObjectID(warehouseID);
+                    conditionObj2.warehouse = ObjectID(warehouseID);
+                }
+
+                if (checkObjectIDs(accountID)) {
+                    conditionObj1.account = ObjectID(accountID);
+                    conditionObj2.account = ObjectID(accountID);
+                }
+
+                if (checkObjectIDs(customerID)) {
+                    conditionObj1.customer = ObjectID(customerID);
+                    conditionObj2.customer = ObjectID(customerID);
+                }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj1.userCreate = ObjectID(userCreateID);
+                    conditionObj2.userCreate = ObjectID(userCreateID);
+                }
+
+                if (checkObjectIDs(goodsID)) {
+                    conditionObj1.goods = ObjectID(goodsID);
+                    conditionObj2.goods = ObjectID(goodsID);
+                }
+                if (checkObjectIDs(assetsID)) {
+                    conditionObj1.assets = ObjectID(assetsID);
+                    conditionObj2.assets = ObjectID(assetsID);
+                }
+
+                // if (!isNaN(outin) && Number(outin) >= 1) {
+                //     conditionObj1.outin = Number(outin)
+                //     conditionObj2.outin = Number(outin)
+                // }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    conditionObj1.type = Number(type)
+                    conditionObj2.type = Number(type)
                 }
 
                 let conditionGroup = {}, conditionPopulate = {}
