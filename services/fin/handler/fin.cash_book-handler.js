@@ -144,9 +144,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {
-                    outin, type, cashBookID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userCreateID, isCompanyOther,
-                    keyword, limit, lastestID, populates, select, sortKey, fromDate, toDate
+                let { option, outin, type, cashBookID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userCreateID, isCompanyOther, keyword, limit, lastestID, populates, select, sortKey, fromDate, toDate
                 } = ctx.params;
                 // console.log(ctx.params)
 
@@ -162,9 +160,7 @@ module.exports = {
                         cashBookID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({
-                        outin, type, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userID, userCreateID, isCompanyOther,
-                        keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id, fromDate, toDate
+                    resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getList({ option, outin, type, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userID, userCreateID, isCompanyOther, keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id, fromDate, toDate
                     });
                 }
 

@@ -463,8 +463,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
-        // console.log({ outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+    getList({ option, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+        // console.log({ option, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
         return new Promise(async (resolve) => {
             try {
                 let sortBy;
@@ -498,22 +498,27 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID;
-
-                    // if (checkObjectIDs(accountID)) {
-                    //     conditionObj.account = accountID;
-                    // }
                 } else {
-                    // Chỉ hiển thị sổ quỹ mà user là member
-                    conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                    conditionObj.parent = { $exists: false } // Lấy theo công ty
+                    if(!option){
+                        // Chỉ hiển thị sổ quỹ mà user là member
+                        conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
+                        conditionObj.parent = { $exists: false } // Lấy theo công ty
 
-                    // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
-                    if(isCompanyOther === 'true') {
-                        conditionObj.company = {
-                            $nin: [companyOfUser]
+                        // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
+                        if(isCompanyOther === 'true') {
+                            conditionObj.company = {
+                                $nin: [companyOfUser]
+                            }
+                        } else{
+                            conditionObj.company = companyID;
                         }
-                    } else{
-                        conditionObj.company = companyID;
+                    }
+                    // Báo cáo chi tiết theo Goods
+                    else{
+                        if(option == 1){
+                            conditionObj.parent = { $exists: true, $ne: null }
+                            conditionObj.goods = { $exists: true, $ne: null }
+                        }
                     }
                 }
 
@@ -551,12 +556,13 @@ class Model extends BaseModel {
                 if (checkObjectIDs(goodsID)) {
                     conditionObj.goods = goodsID;
                 }
+
                 if (checkObjectIDs(assetsID)) {
                     conditionObj.assets = assetsID;
                 }
 
                 if (!isNaN(outin) && Number(outin) >= 1) {
-                        conditionObj.outin = Number(outin)
+                    conditionObj.outin = Number(outin)
                 }
 
                 if (!isNaN(type) && Number(type) >= 1) {
