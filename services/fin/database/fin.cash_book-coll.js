@@ -68,8 +68,8 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
     }],
     /**
      * Phân loại vào ra
-     * 1-Bán ra
-     * 2-Mua vào
+     * 1-Bán ra/Xuất kho
+     * 2-Mua vào/Nhập kho
      */
     outin: { type: Number, default: 1 },
     /**

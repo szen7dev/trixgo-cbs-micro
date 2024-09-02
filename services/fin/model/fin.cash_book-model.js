@@ -132,14 +132,17 @@ class Model extends BaseModel {
                 if (!isNaN(expense) && Number(expense) >= 0) {
                     dataInsert.expense = expense;
                 }
+                console.log('11111111111111111')
 
                 // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
                 if(checkObjectIDs(parentID)) {
                     const infoParent = await FIN__CASH_BOOK_COLL
                         .findById(parentID)
-                        .select('company project warehouse customer contract outin type')
+                        .select('company project warehouse customer contract outin type date')
                         .lean();
-                    
+                    console.log('2222222222222')
+                    console.log(infoParent)
+
                     dataInsert.company = infoParent.company;
                     dataInsert.project = infoParent.project;
                     dataInsert.warehouse = infoParent.warehouse;
@@ -147,9 +150,12 @@ class Model extends BaseModel {
                     dataInsert.contract = infoParent.contract;
                     dataInsert.outin = infoParent.outin;
                     dataInsert.type = infoParent.type;
+                    dataInsert.date = infoParent.date;
                 } else{
                     dataInsert.company = companyID;
                 }
+                console.log('3333333333333333')
+                console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -351,6 +357,7 @@ class Model extends BaseModel {
                             "contract" : infoAfterUpdate.contract,
                             "outin" : infoAfterUpdate.outin,
                             "type" : infoAfterUpdate.type,
+                            "date" : infoAfterUpdate.date,
                         } }
                     )
                 }
@@ -643,49 +650,92 @@ class Model extends BaseModel {
                  * 1. Ban đầu query tổng tất cả dữ liệu
                  * 2. Sau bổ sung các phiếu đầu kỳ/kết chuyển số dư
                  */
-                let sortBy;
-                let conditionObj = {
+                let conditionObj1 = {
                     company: ObjectID(companyID),
-                    goods: { $exists: true, $ne: null }
-                };
+                    goods: { $exists: true, $ne: null },
+                    outin: 1
+                }
+                let conditionObj2 = {
+                    company: ObjectID(companyID),
+                    goods: { $exists: true, $ne: null },
+                    outin: 2
+                }
 
                 let conditionGroup = {}, conditionPopulate = {}
 
                 conditionGroup = {
-                    _id: { goods: "$goods", outin: "$outin" },
+                    _id: { goods: "$goods" },
                     quantity: { $sum: "$quantity" },
                     amount: { $sum: "$amount" }
                 }
-
-                // conditionPopulate = {
-                //     path: '_id.goods',
-                //     select: '_id name sign',
-                //     model: 'goods'
-                // }
                 
-                let listData = await FIN__CASH_BOOK_COLL.aggregate([
+                let listData1 = await FIN__CASH_BOOK_COLL.aggregate([
                     {
-                        $match: conditionObj
+                        $match: conditionObj1
                     },
                     {
                         $group: conditionGroup
                     },
+                ])
+
+                let listData2 = await FIN__CASH_BOOK_COLL.aggregate([
                     {
-                        $sort: {
-                            "_id.quantity": 1
-                        }
+                        $match: conditionObj2
+                    },
+                    {
+                        $group: conditionGroup
                     }
                 ])
 
-                let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: listData.map(item => item._id.goods)}})
+                let arr = [...listData1,...listData2]
+
+                let arrCombine = [], arr1 = [], arr2 = []
+                listData1.forEach(item=>{
+                    let key = item._id.goods;
+                    if (!Array.isArray(arr1[key])) {
+                        arr1[key] = [];
+                    }
+                    arr1[key].push(item)
+                })
+
+                listData2.forEach(item=>{
+                    let key = item._id.goods;
+                    if (!Array.isArray(arr2[key])) {
+                        arr2[key] = [];
+                    }
+                    arr2[key].push(item)
+                })
+                // console.log(arr1)
+                // console.log(arr2)
+
+                let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
                 .select('name sign unit')
-                // console.log(listGoods)
 
-                // if(!isNaN(option) && Number(option) > 0){
-                //     await FIN__CASH_BOOK_COLL.populate(listData, conditionPopulate)
-                // }
+                listGoods.forEach(item =>{
+                    let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
 
-                return resolve({ error: false, data: {listGoods, listData} })
+                    if(arr1[item._id]){
+                        quantityExpense = arr1[item._id][0].quantity
+                        expense = arr1[item._id][0].amount
+                    }
+                    
+                    if(arr2[item._id]){
+                        quantityIncome = arr2[item._id][0].quantity
+                        income = arr2[item._id][0].amount
+                    }
+
+                    arrCombine.push({
+                        _id: item._id,
+                        name: item.name,
+                        unit: item.unit,
+                        quantityIncome: Number(quantityIncome),
+                        income: Number(income),
+                        quantityExpense: Number(quantityExpense),
+                        expense: Number(expense),
+                    })
+                })
+
+                return resolve({ error: false, data: arrCombine })
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
