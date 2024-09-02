@@ -175,31 +175,26 @@ module.exports = {
         }
     },
 
+    /**
+     * Name: getListByProperty
+     * Author: Hiepnh
+     * Date: 2/9/2024
+     */
     getListByProperty: {
         auth: "required",
         params: {
             option          : { type: "string", optional: true },
-            optionAccount   : { type: "string", optional: true },
-            optionTerm      : { type: "string", optional: true },
-            fromDate        : { type: "string", optional: true },
-            toDate          : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            name            : { type: "string", optional: true },
-            arrAccNames     : { type: "array", optional: true },
-            arrAccIDs       : { type: "array", optional: true },
-            arrCompanyIDs   : { type: "array", optional: true },
-            arrFundaIDs     : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option } = ctx.params;
+                let { option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID,  fromDate, toDate } = ctx.params;
 
                 // console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getListByProperty({ option, companyID: company._id })
+                let resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.getListByProperty({ companyID: company._id, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

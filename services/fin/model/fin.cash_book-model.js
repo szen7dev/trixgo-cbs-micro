@@ -555,8 +555,7 @@ class Model extends BaseModel {
                     conditionObj.assets = assetsID;
                 }
 
-                if (!
-                    isNaN(outin) && Number(outin) >= 1) {
+                if (!isNaN(outin) && Number(outin) >= 1) {
                         conditionObj.outin = Number(outin)
                 }
 
@@ -642,7 +641,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 2/9/2024
      */
-    getListByProperty({ option, companyID }) {
+    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -659,6 +658,65 @@ class Model extends BaseModel {
                     company: ObjectID(companyID),
                     goods: { $exists: true, $ne: null },
                     outin: 2
+                }
+
+                // if(fromDate && toDate){
+                //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                //         conditionObj1.date  = { 
+                //             $gte: moment(startTime).toDate(),
+                //             $lte: moment(endTime).toDate()
+                //         }
+                //         conditionObj2.date  = { 
+                //             $gte: moment(startTime).toDate(),
+                //             $lte: moment(endTime).toDate()
+                //         }
+                //     }
+                // }
+
+                if (checkObjectIDs(projectID)) {
+                    conditionObj1.project = ObjectID(projectID);
+                    conditionObj2.project = ObjectID(projectID);
+                }
+
+                if (checkObjectIDs(warehouseID)) {
+                    conditionObj1.warehouse = ObjectID(warehouseID);
+                    conditionObj2.warehouse = ObjectID(warehouseID);
+                }
+
+                if (checkObjectIDs(accountID)) {
+                    conditionObj1.account = ObjectID(accountID);
+                    conditionObj2.account = ObjectID(accountID);
+                }
+
+                if (checkObjectIDs(customerID)) {
+                    conditionObj1.customer = ObjectID(customerID);
+                    conditionObj2.customer = ObjectID(customerID);
+                }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj1.userCreate = ObjectID(userCreateID);
+                    conditionObj2.userCreate = ObjectID(userCreateID);
+                }
+
+                if (checkObjectIDs(goodsID)) {
+                    conditionObj1.goods = ObjectID(goodsID);
+                    conditionObj2.goods = ObjectID(goodsID);
+                }
+                if (checkObjectIDs(assetsID)) {
+                    conditionObj1.assets = ObjectID(assetsID);
+                    conditionObj2.assets = ObjectID(assetsID);
+                }
+
+                // if (!isNaN(outin) && Number(outin) >= 1) {
+                //     conditionObj1.outin = Number(outin)
+                //     conditionObj2.outin = Number(outin)
+                // }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    conditionObj1.type = Number(type)
+                    conditionObj2.type = Number(type)
                 }
 
                 let conditionGroup = {}, conditionPopulate = {}
