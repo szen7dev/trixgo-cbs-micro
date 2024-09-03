@@ -496,7 +496,7 @@ class Model extends BaseModel {
                 } else {
                     if(!option){
                         // Chỉ hiển thị sổ quỹ mà user là member
-                        conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
+                        // conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
                         conditionObj.parent = { $exists: false } // Lấy theo công ty
 
                         // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
@@ -511,22 +511,23 @@ class Model extends BaseModel {
                     // Báo cáo chi tiết theo Goods
                     else{
                         if(option == 1){
+                            conditionObj.company = companyID
                             conditionObj.parent = { $exists: true, $ne: null }
                             conditionObj.goods = { $exists: true, $ne: null }
                         }
                     }
                 }
 
-                if(fromDate && toDate){
-                    if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
-                        let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-                        let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-                        conditionObj.date  = { 
-                            $gte: moment(startTime).toDate(),
-                            $lte: moment(endTime).toDate()
-                        }
-                    }
-                }
+                // if(fromDate && toDate){
+                //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                //         conditionObj.date  = { 
+                //             $gte: moment(startTime).toDate(),
+                //             $lte: moment(endTime).toDate()
+                //         }
+                //     }
+                // }
 
                 if (checkObjectIDs(projectID)) {
                     conditionObj.project = projectID;
