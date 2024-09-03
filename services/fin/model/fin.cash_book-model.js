@@ -276,6 +276,7 @@ class Model extends BaseModel {
                 // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
                 if(infoCashBook.parent && infoCashBook.parent.company){
                     dataUpdate.company = infoCashBook.parent.company
+                    dataUpdate.date = infoCashBook.parent.date
                 }
                 // console.log(dataUpdate)
 
