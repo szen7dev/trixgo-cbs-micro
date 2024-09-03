@@ -2364,6 +2364,43 @@ class Model extends BaseModel {
                 ])
                 // console.log(listData2)
                 
+                let listData3 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null }
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            hours: 1,
+                            subtype: 1,
+                            assignee: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(yearFilter),
+                            month: Number(monthFilter),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee', day: '$day', subtype: '$subtype' }, //fix lại bị sai ở đây nếu 1 ngày có 2 Subtype
+                            quantity: { $sum: "$hours" },
+                        }
+                    },
+                    {
+                        $sort: {
+                            "_id.day": 1
+                        }
+                    }
+                ])
+                
                 let listUser = await USER_COLL.find({_id: {$in: listData2.map(item=>item._id.assignee)}})
                 .select('fullname department position')
                 .populate({
@@ -2378,12 +2415,14 @@ class Model extends BaseModel {
                     if(isValidDate(fromDate) && isValidDate(toDate)){
                         workbook.sheet("Data1").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         workbook.sheet("Data2").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                        workbook.sheet("Data3").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                     }
 
                     var i = 4
                     listUser.forEach((item, index) =>{
                         workbook.sheet("Data1").row(i).cell(1).value(Number(index+1))
                         workbook.sheet("Data2").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("Data3").row(i).cell(1).value(Number(index+1))
 
                         if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
                             workbook.sheet("Data1").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
@@ -2395,6 +2434,11 @@ class Model extends BaseModel {
                             workbook.sheet("Data2").row(i).cell(3).value(`${item.department.name}`)
                             workbook.sheet("Data2").row(i).cell(4).value(`${item.position.name}`)
                             workbook.sheet("Data2").row(i).cell(5).value(`${item._id}`)    
+
+                            workbook.sheet("Data3").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
+                            workbook.sheet("Data3").row(i).cell(3).value(`${item.department.name}`)
+                            workbook.sheet("Data3").row(i).cell(4).value(`${item.position.name}`)
+                            workbook.sheet("Data3").row(i).cell(5).value(`${item._id}`)  
                         }else{
                             workbook.sheet("Data1").row(i).cell(2).value(item.fullname)
                             workbook.sheet("Data1").row(i).cell(3).value(`${item.department.name}`)
@@ -2416,6 +2460,42 @@ class Model extends BaseModel {
                                     if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
                                         workbook.sheet("Data2").row(i).cell(j + 5).value(Number(item.amount)); 
                                     }
+                                }
+                            }
+                        }
+                    })
+
+                    listData3?.forEach((item, index) => {
+                        // if(item._id.assignee.toString() === "6046bcf1b55525368b11ab91"){
+                        //     console.log(item)
+                        // }
+                        for(var i=4; i<=listUser.length + 3; i++){
+                            let userID = workbook.sheet("Data1").row(i).cell(5).value();
+    
+                            for(var j=1; j<=31; j++){
+                                if(item._id.day == j && userID.toString() === item._id.assignee.toString()){    
+                                    // Đã chỉ lọc ra những mẩu tin đầu tiên thôi
+                                    // let str = ''
+                                    if(item._id.subtype == 1){
+                                        // str = str + 'x'
+                                        workbook.sheet("Data3").row(i).cell(j + 5).value('x');
+                                    }
+    
+                                    else if(item._id.subtype == 2){
+                                        // str = str + 'p'
+                                        workbook.sheet("Data3").row(i).cell(j + 5).value('p');
+                                    }
+    
+                                    else if(item._id.subtype == 3){
+                                        // str = str + 'l'
+                                        workbook.sheet("Data3").row(i).cell(j + 5).value('l');
+                                    }
+    
+                                    else{
+                                        // str = str + 'ct'
+                                        workbook.sheet("Data3").row(i).cell(j + 5).value('ct');
+                                    }
+                                    // workbook.sheet("Data3").row(i).cell(j + 5).value(str);
                                 }
                             }
                         }
