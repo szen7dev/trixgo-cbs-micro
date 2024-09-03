@@ -496,7 +496,7 @@ class Model extends BaseModel {
                 } else {
                     if(!option){
                         // Chỉ hiển thị sổ quỹ mà user là member
-                        conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
+                        // conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
                         conditionObj.parent = { $exists: false } // Lấy theo công ty
 
                         // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
