@@ -2474,28 +2474,21 @@ class Model extends BaseModel {
     
                             for(var j=1; j<=31; j++){
                                 if(item._id.day == j && userID.toString() === item._id.assignee.toString()){    
-                                    // Đã chỉ lọc ra những mẩu tin đầu tiên thôi
-                                    // let str = ''
                                     if(item._id.subtype == 1){
-                                        // str = str + 'x'
                                         workbook.sheet("Data3").row(i).cell(j + 5).value('x');
                                     }
     
                                     else if(item._id.subtype == 2){
-                                        // str = str + 'p'
                                         workbook.sheet("Data3").row(i).cell(j + 5).value('p');
                                     }
     
                                     else if(item._id.subtype == 3){
-                                        // str = str + 'l'
                                         workbook.sheet("Data3").row(i).cell(j + 5).value('l');
                                     }
     
                                     else{
-                                        // str = str + 'ct'
                                         workbook.sheet("Data3").row(i).cell(j + 5).value('ct');
                                     }
-                                    // workbook.sheet("Data3").row(i).cell(j + 5).value(str);
                                 }
                             }
                         }
