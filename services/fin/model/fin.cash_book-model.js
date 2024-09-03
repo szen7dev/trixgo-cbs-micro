@@ -511,22 +511,23 @@ class Model extends BaseModel {
                     // Báo cáo chi tiết theo Goods
                     else{
                         if(option == 1){
+                            conditionObj.company = companyID
                             conditionObj.parent = { $exists: true, $ne: null }
                             conditionObj.goods = { $exists: true, $ne: null }
                         }
                     }
                 }
 
-                if(fromDate && toDate){
-                    if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
-                        let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-                        let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-                        conditionObj.date  = { 
-                            $gte: moment(startTime).toDate(),
-                            $lte: moment(endTime).toDate()
-                        }
-                    }
-                }
+                // if(fromDate && toDate){
+                //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                //         conditionObj.date  = { 
+                //             $gte: moment(startTime).toDate(),
+                //             $lte: moment(endTime).toDate()
+                //         }
+                //     }
+                // }
 
                 if (checkObjectIDs(projectID)) {
                     conditionObj.project = projectID;
