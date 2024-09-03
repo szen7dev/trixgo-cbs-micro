@@ -819,12 +819,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Xoá dự án/phòng ban KHÔNG CHO PHÉP XÓA CÁC DANH MỤC
-     * Author: Depv
-     * Code: F00401
-     */
-
-    /**
      * Name: Lấy thông tin dự án/phòng ban 
      * Author: Depv
      * Code: F00401
@@ -891,13 +885,6 @@ class Model extends BaseModel {
         // console.log({ companyID, keyword, type, userID, isMember, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                
-                if(!checkObjectIDs(userID))
-                    return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
-
                 let conditionObj  = {};
                 let sortBy;
                 let keys	      = ['modifyAt__-1', '_id__-1'];
@@ -912,18 +899,13 @@ class Model extends BaseModel {
                     conditionObj.members = { $in: [userID] }
                 }
 
-                // Lấy các dự án mà có budget > 0
-                // if(isBudget && Number(isBudget) > 0){
-                //     conditionObj.budget = { $gt: 0 }
-                // }
-
-                // Lấy các dự án của companyID
+                //_____Lấy các dự án của companyID
                 if(companyID && !checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
                 companyID && (conditionObj.company = companyID);
 
-                // Phân loại dự án, phòng ban
+                //_____Phân loại dự án, phòng ban
                 if(type){
                     conditionObj.type = +type;
                 }

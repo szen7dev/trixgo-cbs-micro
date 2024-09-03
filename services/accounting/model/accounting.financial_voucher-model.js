@@ -1111,7 +1111,6 @@ class Model extends BaseModel {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     const regSearch = new RegExp(keyword, 'i');
-
                     conditionObj.namecv = regSearch
                 }
                 // console.log(conditionObj)

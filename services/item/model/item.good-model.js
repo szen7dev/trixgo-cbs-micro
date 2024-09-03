@@ -294,7 +294,6 @@ class Model extends BaseModel {
 
                  const filter = {};
                  goodsID && (filter['_id'] = goodsID);
-                 console.log({ filter })
 
                 let infoAterGet = await ITEM__GOODS_COLL.findOne(filter)
                     .select(select)
@@ -426,9 +425,11 @@ class Model extends BaseModel {
                 }
 
                 if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.name = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+                    conditionObj.namecv = regSearch
                 }
 
                 let conditionObjOrg = { ...conditionObj };
