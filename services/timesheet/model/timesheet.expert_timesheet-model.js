@@ -369,7 +369,7 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật số ngày nghỉ phép trong năm tới hiện tại: USER_COLL
-                if(subtype == 2){
+                if(infoAfterUpdate.parent && subtype == 2){
                     let year = new Date(date).getFullYear()
                     let numberOnLeave = await TIMESHEET__EXPERT_TIMESHEET_COLL.count({ 
                         assignee: infoAfterUpdate.assignee, 
@@ -494,7 +494,7 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, workID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype }) {
-        // console.log({ sortOption, parentID, workID, userID, keyword, option, month, year, assigneeID, humanID, companyID, type, subtype })
+        // console.log({ sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type, subtype })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
