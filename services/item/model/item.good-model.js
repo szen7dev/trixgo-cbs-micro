@@ -259,7 +259,9 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
-                dataUpdate.namecv = convertStr
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
+                }
 
                 let infoAfterUpdate = await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true });
                 return resolve({ error: false, data: infoAfterUpdate });
