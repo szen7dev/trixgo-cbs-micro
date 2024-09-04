@@ -648,6 +648,43 @@ class Model extends BaseModel {
                     }
                 }
 
+                // convert Goods namecv
+                else if(option == 15){
+                    let selectObj = '_id name sign unit note'
+                
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await ITEM__GOODS_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await ITEM__GOODS_COLL.find(conditionObj)
+                        .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+    
+                        for(const item of listDataConvert){
+                            await that.convertGoods({ docID: item._id, selectObj })
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await ITEM__GOODS_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -875,6 +912,34 @@ class Model extends BaseModel {
                 }
 
                 await DOCUMENT__DOC_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
+              
+                return resolve({ error: false})
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        });
+    }
+
+    convertGoods({ docID, selectObj }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await ITEM__GOODS_COLL.findById(docID).select(`${selectObj}`)
+
+                let convertStr = ''
+                if(info.name && info.name != ""){
+                    convertStr = stringUtils.removeAccents(info.name)
+                }
+                if(info.sign && info.sign != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.sign)
+                }
+                if(info.unit && info.unit != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.unit)
+                }
+                if(info.note && info.note != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(info.note)
+                }
+
+                await ITEM__GOODS_COLL.findByIdAndUpdate(docID, {namecv: convertStr}, { new: true })
               
                 return resolve({ error: false})
             } catch (error) {
