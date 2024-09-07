@@ -28,6 +28,7 @@ let CF_DOMAIN_SERVICES = {
     QRCODE          : 'qrcode',
     MARKET          : 'market',
     FNB             : 'fnb',
+    STORE           : 'store',
     FACEBOOK        : 'facebook',
     ZALO            : 'zalo',
 }

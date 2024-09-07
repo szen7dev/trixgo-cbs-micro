@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 /**
  * MODELS
  */
-const FNB_ORDER_GOODS_MODEL            = require('../model/fnb.order_goods-model.js').MODEL;
+const STORE_ORDER_PRODUCT_MODEL            = require('../model/store.order_product-model.js').MODEL;
 
 module.exports = {
     /**
@@ -34,7 +34,7 @@ module.exports = {
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.insert({
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({
                     orderID, goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, rating, userID
                 });
 
@@ -75,7 +75,7 @@ module.exports = {
                 let {  orderID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.update({
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.update({
                     orderID, userID,
                     mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount
                 });
@@ -102,7 +102,7 @@ module.exports = {
                 let {  orderID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.remove({
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.remove({
                     orderID
                 });
 
@@ -140,7 +140,7 @@ module.exports = {
                 let { companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.getList({
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getList({
                         companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
                     });
 
@@ -179,7 +179,7 @@ module.exports = {
                 let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
-                let resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.getListByProperty({
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getListByProperty({
                     option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey, 
                      userID
@@ -207,7 +207,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.downloadTemplateExcel({
+                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID 
                 })
 
@@ -235,7 +235,7 @@ module.exports = {
                 const { dataImport } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.importFromExcel({
+                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.importFromExcel({
                     taskID, dataImport, userID, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -267,7 +267,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                const resultAfterCallHandler = await FNB_ORDER_GOODS_MODEL.exportExcel2({
+                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.exportExcel2({
                     userID, email, companyID, option, month, year, filterParams
                 })
 

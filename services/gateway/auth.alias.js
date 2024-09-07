@@ -33,7 +33,8 @@ const { CF_ROUTINGS_BIDDING }		= require('../bidding/helper/bidding.routes-const
 const { CF_ROUTINGS_FIN }			= require('../fin/helper/fin.routes-constant');
 const { CF_ROUTINGS_BUDGET }		= require('../budget/helper/budget.routes-constant');
 const { CF_ROUTINGS_FNB }			= require('../fnb/helper/fnb.routes-constant');
-const { CF_ROUTINGS_PAYMENT }			= require('../payment/helper/payment.routes-constant');
+const { CF_ROUTINGS_PAYMENT }		= require('../payment/helper/payment.routes-constant');
+const { CF_ROUTINGS_STORE }			= require('../store/helper/store.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -63,6 +64,7 @@ const { CF_ACTIONS_FIN }			= require('../fin/helper/fin.actions-constant');
 const { CF_ACTIONS_BUDGET }			= require('../budget/helper/budget.actions-constant');
 const { CF_ACTIONS_FNB }			= require('../fnb/helper/fnb.actions-constant');
 const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
+const { CF_ACTIONS_STORE } 			= require('../store/helper/store.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -2387,6 +2389,23 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.BATCH_EXPORT_EXCEL}`],
 
 		//---------------------------🏁 END SERVICE FNB 🏁---------------------------//
+
+		//---------------------------🏁 BEGIN SERVICE STORE 🏁-------------------------//
+		//____store_order
+		[`POST ${CF_ROUTINGS_STORE.ORDERS}`] :
+		[`${CF_DOMAIN_SERVICES.STORE}.${CF_ACTIONS_STORE.ORDER_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_STORE.ORDERS}`] :
+		[`${CF_DOMAIN_SERVICES.STORE}.${CF_ACTIONS_STORE.ORDER_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_STORE.ORDERS}`] :
+		[`${CF_DOMAIN_SERVICES.STORE}.${CF_ACTIONS_STORE.ORDER_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_STORE.ORDERS}`] :
+		[`${CF_DOMAIN_SERVICES.STORE}.${CF_ACTIONS_STORE.ORDER_GET_INFO_AND_GET_LIST}`],
+
+		
+		//---------------------------🏁 END SERVICE STORE 🏁---------------------------//
 	},
 
 	// Disable to call not-mapped actions

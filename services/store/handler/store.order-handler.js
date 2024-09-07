@@ -6,68 +6,39 @@ const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_cod
 /**
  * MODELS
  */
-const FNB_ORDER_MODEL = require('../model/fnb.order-model').MODEL;
+const STORE_ORDER_MODEL = require('../model/store.order-model').MODEL;
 
 module.exports = {
     /**
      * Name: Insert
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 9/4/2022
      */
     insert: {
         auth: "required",
         params: {
-            voucherID: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            fundaID: { type: "string" },
-            customerID: { type: "string" },
-            businessID: { type: "string", optional: true },
-            channelID: { type: "string", optional: true },
-            affiliateID: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            shiftID: { type: "string" },
-            assigneeID: { type: "string", optional: true },
+            accountID: { type: "string", optional: true },
+            customerID: { type: "string", optional: true },
+            contractID: { type: "string", optional: true },
             name: { type: "string" },
-            appOrderSign: { type: "string", optional: true },
+            sign: { type: "string", optional: true },
             note: { type: "string", optional: true },
-            salesChannel: { type: "string", optional: true },
-            paymentMethod: { type: "string", optional: true },
-            sources: { type: "string", optional: true },
-            service: { type: "string", optional: true },
-            total: { type: "string", optional: true },
-            discount: { type: "string", optional: true },
-            salesoff: { type: "string", optional: true },
-            credit: { type: "string", optional: true },
-            offer: { type: "string", optional: true },
-            vatAmount: { type: "string", optional: true },
-            products: { type: "array", optional: true },
+            date: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-                console.log({ FNB_ORDER_INSERT_PARAMS: ctx.params });
                 await this.validateEntity(ctx.params);
-                let { type, voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID } = ctx.params;
+                let { outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note } = ctx.params;
 
-                const infoUser = ctx.meta?.infoUser;
-                if (infoUser) {
-                    userID = infoUser._id;
-                }
+                const { _id: userID, company } = ctx.meta.infoUser;
 
                 if (!type) {
-                    // console.log('000000000000000000000000')
-                    let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                        voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
+                    let resultAfterCallHandler = await STORE_ORDER_MODEL.insert({
+                        companyID: company._id, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note
                     })
 
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-                } else {
-                    // console.log('11111111111111111111')
-                    let resultAfterCallHandler = await FNB_ORDER_MODEL.insert2({
-                        voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
-                    })
-
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-                }
+                } 
             } catch (error) {
                 return { error: true, message: error.message };
             }
@@ -115,7 +86,7 @@ module.exports = {
                 const shiftID = "666896eb8d5b8b00121fc6be";
                 const businessID = "666897a88d5b8b00121fc6c1";
 
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.insertOrderKySuHiep({
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.insertOrderKySuHiep({
                     voucherID, parentID, customerID, channelID, affiliateID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx,
                     fundaID, shiftID, businessID,
                 })
@@ -147,7 +118,7 @@ module.exports = {
                 let { orderID, customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID, shippingFeeTotal, shippingFee, paid } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_ORDER_MODEL.update({
+                let resultAfterCallHandler = await STORE_ORDER_MODEL.update({
                     orderID, userID,
                     customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID, shippingFeeTotal, shippingFee, paid
                 });
@@ -174,7 +145,7 @@ module.exports = {
                 let { orderID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_ORDER_MODEL.updateValue({
+                let resultAfterCallHandler = await STORE_ORDER_MODEL.updateValue({
                     orderID, userID
                 });
 
@@ -200,7 +171,7 @@ module.exports = {
                 let { orderID } = ctx.params;
                 const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await FNB_ORDER_MODEL.remove({
+                let resultAfterCallHandler = await STORE_ORDER_MODEL.remove({
                     orderID
                 });
 
@@ -262,11 +233,11 @@ module.exports = {
 
                 let resultAfterCallHandler;
                 if (orderID) {
-                    resultAfterCallHandler = await FNB_ORDER_MODEL.getInfo({
+                    resultAfterCallHandler = await STORE_ORDER_MODEL.getInfo({
                         orderID, select, populates, ctx
                     })
                 } else {
-                    resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
+                    resultAfterCallHandler = await STORE_ORDER_MODEL.getList({
                         type, option, companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID, ctx
                     })
                 }
@@ -305,7 +276,7 @@ module.exports = {
                 const { _id: userID, company } = ctx.meta.infoUser;
                 let { optionFixFunda, option, optionGroup, optionStatus, optionTime, fundasID, fundas, customerID, year, month, fromDate, toDate, staffID, optionStar, voucherType } = ctx.params;
 
-                let resultAfterCallHandler = await FNB_ORDER_MODEL.getListByProperty({
+                let resultAfterCallHandler = await STORE_ORDER_MODEL.getListByProperty({
                     companyID: company._id, fundasID, fundas, customerID, optionFixFunda, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, userID, staffID, optionStar, voucherType, ctx
                 });
 
@@ -331,7 +302,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.downloadTemplateExcel({
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID
                 })
 
@@ -360,7 +331,7 @@ module.exports = {
 
                 // console.log( ctx.params)
 
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.importFromExcel({
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.importFromExcel({
                     option, companyID: company._id, dataImport, userID, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -392,7 +363,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel({
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.exportExcel({
                     userID, email, companyID, filterParams, queryFnb
                 })
 
@@ -426,7 +397,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel2({
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.exportExcel2({
                     userID, email, companyID, option, month, year, fromDate, toDate, filterParams
                 })
 
@@ -457,7 +428,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel3({
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.exportExcel3({
                     userID, email, companyID, filterParams, ctx
                 })
 
@@ -488,7 +459,7 @@ module.exports = {
                 const { _id: userID, email, company } = ctx.meta.infoUser;
                 let { option, password, fundaID, page, arrCustomers } = ctx.params;
 
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.resetAllData({
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.resetAllData({
                     option, email, password, userID, fundaID, companyID: company._id, page, arrCustomers
                 })
 
@@ -516,7 +487,7 @@ module.exports = {
 
                 let { password, option, companyID, page, unit, checkNumber } = ctx.params;
 
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.convertAllData({
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.convertAllData({
                     password, option, companyID, page, unit, checkNumber
                 })
 

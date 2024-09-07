@@ -14,15 +14,11 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { template } = require('lodash');
 const moment = require("moment");
-const { getTimeBetween }                            = require('../../../tools/utils/time_utils')
+const { getTimeBetween }                       = require('../../../tools/utils/time_utils')
 
-/**s
- * import inter-coll, exter-coll
- */
-const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
-// const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
-const FNB_ORDER_GOODS_COLL                     = require('../database/fnb.order_goods-coll');
+const STORE_ORDER_COLL                         = require('../database/store.order-coll');
+const STORE_ORDER_PRODUCT_COLL                 = require('../database/store.order_product-coll');
 
 /**
  * import inter-model, exter-model
@@ -32,21 +28,10 @@ const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
-const {
-    FNB_FACTOR,
-    FNB_SHIFT_TYPES,
-    FNB_SALES_CHANNEL,
-    FNB_PAYMENT_METHOD,
-    FNB_STATUS
- } = require('../helper/fnb.keys-constant')
-
- const { 
-    FNB_ACC,
- } = require('../helper/fnb.keys-constant')
 class Model extends BaseModel {
 
     constructor() {
-        super(FNB_ORDER_GOODS_COLL);
+        super(STORE_ORDER_PRODUCT_COLL);
     }
 
     /**
@@ -68,11 +53,11 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(orderID))
                     return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let infoOrder = await FNB_ORDER_COLL.findById(orderID)
+                let infoOrder = await STORE_ORDER_COLL.findById(orderID)
                 if(!infoOrder)
                     return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                // let infoProduct = await FNB_ORDER_GOODS_COLL.findById(goodsID)
+                // let infoProduct = await STORE_ORDER_PRODUCT_COLL.findById(goodsID)
                 // if(!infoProduct)
                 //     return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
@@ -192,7 +177,7 @@ class Model extends BaseModel {
                 }
 
                 console.log({ dataUpdate })
-                let infoAfterUpdate = await FNB_ORDER_GOODS_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true });
+                let infoAfterUpdate = await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
@@ -228,7 +213,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await FNB_ORDER_GOODS_COLL.findById(goodsID)
+                let infoPlanGroup = await STORE_ORDER_PRODUCT_COLL.findById(goodsID)
                                     .select(select)
                                     .populate(populates)
 
@@ -316,7 +301,7 @@ class Model extends BaseModel {
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await FNB_ORDER_GOODS_COLL.findById(lastestID);
+                    let infoData = await STORE_ORDER_PRODUCT_COLL.findById(lastestID);
                     if(!infoData)
                         return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -330,7 +315,7 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await FNB_ORDER_GOODS_COLL.find(conditionObj)
+                let infoDataAfterGet = await STORE_ORDER_PRODUCT_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -347,7 +332,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-                let totalRecord = await FNB_ORDER_GOODS_COLL.count(conditionObjOrg);
+                let totalRecord = await STORE_ORDER_PRODUCT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
@@ -417,7 +402,7 @@ class Model extends BaseModel {
                     }
 
                     // Danh sách đang triển khai
-                    let listData = await FNB_ORDER_GOODS_COLL.aggregate([
+                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: conditionObj
                         },
@@ -446,7 +431,7 @@ class Model extends BaseModel {
                     ])
 
                     if(!isNaN(option) && [1].includes(Number(option))){
-                        await FNB_ORDER_GOODS_COLL.populate(listData, conditionPopulate)
+                        await STORE_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
                     }
 
                     return resolve({ error: false, data: listData })
@@ -560,7 +545,7 @@ class Model extends BaseModel {
                     }
                     // console.log(conditionObj)
 
-                    let listData  = await FNB_ORDER_COLL.find(conditionObj)
+                    let listData  = await STORE_ORDER_COLL.find(conditionObj)
                     .populate({
                         path: "campaignType",
                         select: "name",
@@ -585,7 +570,7 @@ class Model extends BaseModel {
                     .sort({createAt: -1})
                     // console.log(listData)
 
-                    let listData2 = await FNB_ORDER_GOODS_COLL.aggregate([
+                    let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                             {
                                 $match: {
                                     order: {$in: listData.map(item => ObjectID(item._id))}
@@ -616,11 +601,11 @@ class Model extends BaseModel {
                         model: 'funda'
                     }
 
-                    await FNB_ORDER_GOODS_COLL.populate(listData2, conditionPopulate1)
-                    await FNB_ORDER_GOODS_COLL.populate(listData2, conditionPopulate2)
+                    await STORE_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate1)
+                    await STORE_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate2)
                     // console.log(listData2)
 
-                    let listData3 = await FNB_ORDER_GOODS_COLL.aggregate([
+                    let listData3 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
                                 order: {$in: listData.map(item => ObjectID(item._id))}
@@ -638,7 +623,7 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    await FNB_ORDER_GOODS_COLL.populate(listData3, conditionPopulate1)
+                    await STORE_ORDER_PRODUCT_COLL.populate(listData3, conditionPopulate1)
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
