@@ -178,13 +178,9 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                if (!checkObjectIDs(cashBookID))
-                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
-
                 const infoCashBook = await FIN__CASH_BOOK_COLL.findById(cashBookID)
                 .populate('parent')
                 .lean();
-                // console.log(infoCashBook)
 
                 if(!infoCashBook) {
                     return resolve({
@@ -194,6 +190,12 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
+
+                //___________Quyền truy cập ứng dụng Nhân sự
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "5f52341f880c2f26c8df8c10",
+                    userID
+                })
 
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
@@ -282,7 +284,7 @@ class Model extends BaseModel {
 
                 const adminsID = [...infoCashBook.admins?.map(item => item.toString()), infoCashBook.userCreate?.toString()];
 
-                if(adminsID.includes(userID.toString())) {
+                if((!infoAppUser.error && infoAppUser.data.level == 0) || adminsID.includes(userID.toString())) {
                     if(admins && admins.length) {
                         if(checkObjectIDs(admins)) {
                             admins = [...new Set(admins)];
@@ -459,16 +461,16 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ option, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 30, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
-        // console.log({ option, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+    getList({ option, active, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+        // console.log({ option, active, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
         return new Promise(async (resolve) => {
             try {
                 let sortBy;
                 let conditionObj = {};
                 let keys = ['createAt__-1', '_id__-1'];
 
-                if (limit > 30) {
-                    limit = 30
+                if (limit > 50) {
+                    limit = 50
                 } else {
                     limit = +limit;
                 }
@@ -558,6 +560,10 @@ class Model extends BaseModel {
                     conditionObj.assets = assetsID;
                 }
 
+                if (!isNaN(active) && Number(active) >= 1) {
+                    conditionObj.active = Number(active)
+                }
+
                 if (!isNaN(outin) && Number(outin) >= 1) {
                     conditionObj.outin = Number(outin)
                 }
@@ -601,6 +607,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
                     sortBy = dataPagingAndSort.data.sort;
                 }
+                // console.log(sortBy)
 
                 let infoDataAfterGet = await FIN__CASH_BOOK_COLL.find(conditionObj)
                     .limit(limit + 1)
@@ -655,12 +662,14 @@ class Model extends BaseModel {
                 let conditionObj1 = {
                     company: ObjectID(companyID),
                     goods: { $exists: true, $ne: null },
-                    outin: 1
+                    active: 1,
+                    outin: 1,
                 }
                 let conditionObj2 = {
                     company: ObjectID(companyID),
                     goods: { $exists: true, $ne: null },
-                    outin: 2
+                    active: 1,
+                    outin: 2,
                 }
 
                 // if(fromDate && toDate){
