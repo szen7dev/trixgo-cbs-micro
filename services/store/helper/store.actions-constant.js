@@ -1,0 +1,39 @@
+const BASE_ACTIONS = 'ACT_STORE';
+
+const ORDER                      = 'ORDER';
+const ORDER_PRODUCT              = 'ORDER_PRODUCT';
+
+const CF_ACTIONS_STORE= {
+
+   /**
+   * ORDER
+   */
+   ORDER_INSERT                                    : `${BASE_ACTIONS}_${ORDER}_INSERT`,
+   ORDER_UPDATE                                    : `${BASE_ACTIONS}_${ORDER}_UPDATE`,
+   ORDER_REMOVE                                    : `${BASE_ACTIONS}_${ORDER}_REMOVE`,
+   ORDER_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${ORDER}_GET_INFO_AND_GET_LIST`,
+   ORDER_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${ORDER}_GET_LIST_BY_PROPERTY`,
+   ORDER_UPDATE_VALUE                              : `${BASE_ACTIONS}_${ORDER}_UPDATE_VALUE`,
+   ORDER_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${ORDER}_DOWNLOAD_TEMPLATE_EXCEL`,
+   ORDER_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${ORDER}_IMPORT_FROM_EXCEL`,
+   ORDER_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL`,
+   ORDER_EXPORT_EXCEL2                             : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL2`,
+   ORDER_EXPORT_EXCEL3                             : `${BASE_ACTIONS}_${ORDER}_EXPORT_EXCEL3`,
+   ORDER_RESET_ALL_DATA                            : `${BASE_ACTIONS}_${ORDER}_RESET_ALL_DATA`,
+   ORDER_KY_SU_HIEP                                : `${BASE_ACTIONS}_${ORDER}_KY_SU_HIEP`,
+   ORDER_CONVERT_ALL_DATA                          : `${BASE_ACTIONS}_${ORDER}_CONVERT_ALL_DATA`,
+
+   /**
+   * ORDER_PRODUCT
+   */
+   ORDER_PRODUCT_INSERT                            : `${BASE_ACTIONS}_${ORDER_PRODUCT}_INSERT`,
+   ORDER_PRODUCT_UPDATE                            : `${BASE_ACTIONS}_${ORDER_PRODUCT}_UPDATE`,
+   ORDER_PRODUCT_REMOVE                            : `${BASE_ACTIONS}_${ORDER_PRODUCT}_REMOVE`,
+   ORDER_PRODUCT_GET_INFO_AND_GET_LIST             : `${BASE_ACTIONS}_${ORDER_PRODUCT}_GET_INFO_AND_GET_LIST`,
+   ORDER_PRODUCT_GET_LIST_BY_PROPERTY              : `${BASE_ACTIONS}_${ORDER_PRODUCT}_GET_LIST_BY_PROPERTY`,
+   ORDER_PRODUCT_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ACTIONS}_${ORDER_PRODUCT}_DOWNLOAD_TEMPLATE_EXCEL`,
+   ORDER_PRODUCT_IMPORT_FROM_EXCEL                 : `${BASE_ACTIONS}_${ORDER_PRODUCT}_IMPORT_FROM_EXCEL`,
+   ORDER_PRODUCT_EXPORT_EXCEL                      : `${BASE_ACTIONS}_${ORDER_PRODUCT}_EXPORT_EXCEL`,
+}
+
+exports.CF_ACTIONS_STORE = CF_ACTIONS_STORE

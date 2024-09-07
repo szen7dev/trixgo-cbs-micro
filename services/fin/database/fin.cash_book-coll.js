@@ -16,6 +16,11 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
+    //_________Hợp đồng
+    contract: {
+        type: Schema.Types.ObjectId,
+        ref : "contract"
+    },
     //_________Kho bãi
     warehouse: {
         type: Schema.Types.ObjectId,
@@ -35,11 +40,6 @@ module.exports  = DATABASE_MIDDLEWARE("cash_book", {
     customer: {
         type: Schema.Types.ObjectId,
         ref: 'contact'
-    },
-    //_________Hợp đồng
-    contract: {
-        type: Schema.Types.ObjectId,
-        ref : "contract"
     },
     //_________Vật tư, thiết bị, công cụ dụng cụ
     goods: {
