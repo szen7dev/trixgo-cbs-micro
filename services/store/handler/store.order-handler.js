@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_cod
 /**
  * MODELS
  */
-const STORE_ORDER_MODEL = require('../model/store.order-model').MODEL;
+const STORE_ORDER_MODEL = require('../model/store.order-model.js').MODEL;
 
 module.exports = {
     /**
@@ -32,13 +32,11 @@ module.exports = {
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if (!type) {
-                    let resultAfterCallHandler = await STORE_ORDER_MODEL.insert({
-                        companyID: company._id, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note
-                    })
+                let resultAfterCallHandler = await STORE_ORDER_MODEL.insert({
+                    companyID: company._id, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note
+                })
 
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-                } 
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
                 return { error: true, message: error.message };
             }

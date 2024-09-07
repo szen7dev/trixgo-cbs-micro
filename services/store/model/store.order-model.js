@@ -46,12 +46,11 @@ class Model extends BaseModel {
    * Code: 8/9/2024
    */
   insert({ companyID, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note }) {
+    console.log({ companyID, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note })
     return new Promise(async (resolve) => {
         try {
-            if(!parentID){
-                if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
-                    return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-            }
+          if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
+            return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
 
             let dataInsert = { 
               company: companyID,
