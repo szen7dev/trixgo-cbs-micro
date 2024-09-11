@@ -406,6 +406,8 @@ module.exports = {
                     limit, lastestID, select, populates, reportID, upcoming
                 } = ctx.params;
 
+                // console.log(ctx.params)
+
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
                     option, companyID: company._id,
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
