@@ -2378,7 +2378,7 @@ class Model extends BaseModel {
      * Date: 11/05/2022
      */
     getListByFilter({
-        option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+        option, sortOption, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, unlimited,
         limit = 20, lastestID, select, populates, userID, reportID, upcoming
     }) {
@@ -2422,6 +2422,10 @@ class Model extends BaseModel {
                 let nextCursor  = null;
                 let sortBy      = null;
                 let keys	 = ['modifyAt__-1', '_id__-1'];
+
+                if(sortOption && Number(sortOption) == 1){
+                    keys	 = ['createAt__-1', '_id__-1'];
+                }
                 // let keys	    = ['actualFinishTime__-1', '_id__-1'];
 
                 if(limit > 20 && isNaN(limit)){
@@ -2644,7 +2648,7 @@ class Model extends BaseModel {
      * Date: 27/8/2023
      */
     getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword }){
-        console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword })
+        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword })
         return new Promise(async resolve => {
             try {
                 //__________Record Traffic

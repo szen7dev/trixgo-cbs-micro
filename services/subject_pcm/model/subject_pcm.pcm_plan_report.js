@@ -37,28 +37,14 @@ class Model extends BaseModel {
         // console.log({ companyID, projectID, type, name, description, conditionPin, parentID, userID })
         return new Promise(async (resolve) => {
             try {
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataInsert = { };
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
                 if(!checkObjectIDs(companyID))
                     return resolve({ error: true, message: 'Request params companyID invalid', status: 400 });
 
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 dataInsert = { 
                     company: companyID, 
                     author: userID, 
@@ -90,7 +76,7 @@ class Model extends BaseModel {
                     dataInsert.project = projectID;
                 }
 
-                let infoAfterInsert = await this.insertData(dataInsert);
+                let infoAfterInsert = await this.insertData(dataInsert)
 
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: KEY_ERROR.INSERT_FAILED, keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
@@ -113,27 +99,14 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(!option){
-                    /**
-                     * DECALARTION VARIABLE (1)
-                     */
                     let dataUpdate = { userUpdate: userID };
 
-                    /**
-                     * VALIDATION STEP (2)
-                     *  - Kiểm tra valid từ các input
-                     *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                     */
                     if(!checkObjectIDs(userID))
                         return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
                     if(!checkObjectIDs(reportID))
                         return resolve({ error: true, message: 'Request params reportID invalid', status: 400 });
 
-                    /**
-                     * LOGIC STEP (3)
-                     *  3.1: Convert type + update name (ví dụ: string -> number)
-                     *  3.2: Operation database
-                     */
                     const infoReport = await PCM_PLAN_REPORT_COLL
                         .findById(reportID)
                         .select('author')
@@ -179,6 +152,8 @@ class Model extends BaseModel {
                     }
 
                     if(conditionPin){
+                        // console.log(conditionPin) 
+                        conditionPin.sortOption = 1 // Dùng để lọc dữ liệu
                         dataUpdate.conditionPin = conditionPin;
                     }
 
@@ -191,9 +166,7 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, data: infoAfterUpdate, status: 200 });
                 }else{
-                    // console.log('================OKKKKKKKKKKKKKKKKKKKKK')
                     for(const item of reportsID){
-                        // console.log(item)
                         let info = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(item, {
                             $addToSet: {
                                 subjects: taskID
@@ -202,7 +175,6 @@ class Model extends BaseModel {
                     }
 
                     for(const item of reportsRemoveID){
-                        // console.log(item)
                         let info = await PCM_PLAN_REPORT_COLL.findByIdAndUpdate(item, {
                             $pull: {
                                 subjects: taskID
@@ -226,22 +198,12 @@ class Model extends BaseModel {
     remove({ reportsID, userID }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
                 if(!reportsID.length || !checkObjectIDs(reportsID))
                     return resolve({ error: true, message: 'Request params reportsID invalid', status: 400 });
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 const infoAfterUpdate = await PCM_PLAN_REPORT_COLL.deleteMany({
                     _id: {
                         $in: reportsID
@@ -303,20 +265,17 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getList({ keyword, limit = 10, lastestID, type, parentID, userID, select, populates= {} }) {
+    getList({ keyword, limit = 50, lastestID, type, parentID, userID, select, populates= {} }) {
         // console.log('=================>>>>>>>>>>>>>>Báo cáo động================')
         // console.log({ keyword, limit, lastestID, type, parentID, userID, select, populates })
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let conditionObj = {  }
                 conditionObj.$or = [
                     { author: userID },
@@ -326,11 +285,6 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1'];
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID;
                 }else{
@@ -363,12 +317,6 @@ class Model extends BaseModel {
 
                 let conditionObjOrg = { ...conditionObj };
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
-                // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await PCM_PLAN_REPORT_COLL.findById(lastestID);
 					if(!infoData)
