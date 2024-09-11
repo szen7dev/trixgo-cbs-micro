@@ -401,7 +401,7 @@ module.exports = {
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 const {
-                    option, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
+                    option, sortOption, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, prioritys, keyword,
                     limit, lastestID, select, populates, reportID, upcoming
                 } = ctx.params;
@@ -409,7 +409,7 @@ module.exports = {
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getListByFilter({
-                    option, companyID: company._id,
+                    option, sortOption, companyID: company._id,
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, prioritys, keyword,
                     limit, lastestID, select, populates, userID, reportID, upcoming, ctx
