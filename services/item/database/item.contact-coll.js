@@ -169,10 +169,16 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     contractExpire: { type: Date, default: null },
     //_________Ngày bổ nhiệm/miễn nhiệm
     appointDate: { type: Date, default: null },
+    //_________Lương
+    sallary: { type: Number, default: 0 },
     //_________Hệ số lương
     sallaryFactor: { type: Number, default: 1 },
     //_________Phụ cấp
     sallarySubFactor: { type: Number, default: 0 },
+    //_________Lương căn bản (Mức đóng BH)
+    sallaryBasic: { type: Number, default: 0 },
+    //_________Số người phụ thuộc
+    nods: { type: Number, default: 0 },
     //_________Ngày thay đổi lương gần nhất
     changeSallaryDate: { type: Date, default: null },
     /**
@@ -186,8 +192,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     insuranceSign: String, 
     //_________Ngày nộp sổ (Ngày nộp bảo hiểm)
     insuranceDate: { type: Date, default: null },
-    //_________Lương căn bản (Mức đóng BH)
-    sallaryBasic: { type: Number, default: 0 },
     //_________Số tiền đóng BH
     insuranceFee: { type: Number, default: 0 },
     //_________Trừ công đoàn
