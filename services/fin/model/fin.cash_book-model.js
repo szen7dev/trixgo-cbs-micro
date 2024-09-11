@@ -1390,6 +1390,7 @@ class Model extends BaseModel {
                                     company: ObjectID(companyID),
                                     parent: { $exists: true, $ne: null },
                                     assignee: { $exists: true, $ne: null },
+                                    hours: {$gt: 0},
                                     subtype: 1, // Đi làm Thông thường
                                 }
                             },
@@ -1397,6 +1398,7 @@ class Model extends BaseModel {
                                 $project: {
                                     year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                     month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    hours: 1,
                                     subtype: 1,
                                     assignee: 1,
                                 }
