@@ -3,20 +3,16 @@
 const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
-const moment                            = require('moment');
 const ObjectID                          = require('mongoose').Types.ObjectId;
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString, validateParamsObjectID }  = require('../../../tools/utils/utils');
-// const { removeHtmlTag }                 = require('../../../tools/utils/string_utils');
+const { compareTwoTime }  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const { PCM_STATUS_TASK }			    = require('../../../tools/constants');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
-/**
- * import inter-coll, exter-coll
- */
 const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll');
 const PCM_PLAN_TASK_MODEL               = require('../model/subject_pcm.pcm_plan_task').MODEL;
 
@@ -29,8 +25,8 @@ class Model extends BaseModel {
 
     /**
      * Name: insert pcm_plan_report
-     * Author: Depv
-     * Code:
+     * Author: HiepNH
+     * Code: 12/9/2024
      */
     insert({ companyID, projectID, type, name, description, conditionPin, parentID, userID }) {
         // console.log('============Tạo báo cáo động===============')
@@ -90,8 +86,8 @@ class Model extends BaseModel {
 
      /**
      * Name: update pcm_plan_report
-     * Author: Depv
-     * Code:
+     * Author: HiepNH
+     * Code: 12/9/2024
      */
     update({ reportID, name, type, description, userID, select, members, conditionPin, option, taskID, reportsID, reportsRemoveID }) {
         // console.log('============Cập nhật báo cáo động===============')
@@ -379,46 +375,29 @@ class Model extends BaseModel {
                 const validation = validateParamsObjectID({ reportID, userID });
                 if(validation.error) return resolve(validation);
 
-                const getPercentageCompletion = (startTimeX, expiredTimeX) => {
-                    let startTime  = moment(startTimeX);
-                    let endTime    = moment(expiredTimeX);
-                    let toDateTime = moment();
-
-                    let percentageCompletion = Math.round(100*(toDateTime - startTime)/(endTime - startTime));
-                    if(percentageCompletion > 100){
-                        percentageCompletion = 100;
-                    }
-
-                    if(!percentageCompletion){
-                        percentageCompletion = 0;
-                    }
-
-                    if(percentageCompletion == "-Infinity"){
-                        percentageCompletion = 0;
-                    }
-
-                    return percentageCompletion;
-                }
-
                 const infoReport = await PCM_PLAN_REPORT_COLL
                     .findById(reportID)
                     .lean();
 
-                if(!infoReport) {
+                if(!infoReport) 
                     return resolve({
                         error: true,
                         message: 'Report không tồn tại hoặc bạn không có quyền xem report',
                         keyError: 'report_not_exists',
                         status: 400
-                    });
-                }
+                    })
+                
 
                 const dataTaskByCondition = await PCM_PLAN_TASK_MODEL.getListByFilter({
                     ...infoReport.conditionPin,
-                    select: 'name expiredTime startTime percentage assignee note status',
+                    select: 'assignee parent author name actualFinishTime percentage note status amountComment',
                     populates: JSON.stringify({
-                        path: 'assignee',
-                        select: 'bizfullname'
+                        path: 'assignee parent author',
+                        select: 'name sign fullname department',
+                        populate: {
+                            path: 'department',
+                            select: 'name sign',
+                        }
                     }),
                     unlimited: true,
                     userID
@@ -435,36 +414,40 @@ class Model extends BaseModel {
 
                 const listTaskPin = dataTaskByCondition?.data || [];
 
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_13_TaskPin.xlsm')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_export_report.xlsx')))
                     .then(async workbook => {
                         
                         workbook.sheet("Data").row(1).cell(1).value(infoReport.name.toUpperCase());
                         workbook.sheet("Data").row(2).cell(1).value(infoReport.description);
 
-                        let indexExcel = 4;
-
-                        listTaskPin.map((infoTask, index) => {
-                            workbook.sheet("Data").row(indexExcel).cell(1).value(index+1);
-                            workbook.sheet("Data").row(indexExcel).cell(2).value(infoTask.name);
-                            workbook.sheet("Data").row(indexExcel).cell(3).value(infoTask.expiredTime);
-
-                            workbook.sheet("Data").row(indexExcel).cell(4).value(`${infoTask.percentage}/${getPercentageCompletion(infoTask.startTime, infoTask.expiredTime)}`);
-
-                            workbook.sheet("Data").row(indexExcel).cell(5).value(infoTask.assignee?.bizfullname);
-
-                            if (infoTask.note) {
-                                // workbook.sheet("Data").row(indexExcel).cell(8).value(removeHtmlTag(infoTask.note));
-                                workbook.sheet("Data").row(indexExcel).cell(8).value(infoTask.note);
-                            }
-
-                            workbook.sheet("Data").row(indexExcel).cell(9).value(PCM_STATUS_TASK[infoTask.status - 1].text);
-
-                            indexExcel++;
-                        })
+                        let i = 4;
 
                         const now = new Date();
+
+                        listTaskPin.map((item, index) => {
+                            workbook.sheet("Data").row(i).cell(1).value(index+1)
+                            workbook.sheet("Data").row(i).cell(2).value(item.name)
+                            workbook.sheet("Data").row(i).cell(3).value(item?.parent?.name)
+                            workbook.sheet("Data").row(i).cell(4).value(item?.actualFinishTime)
+                            workbook.sheet("Data").row(i).cell(5).value(item.assignee?.fullname)
+                            workbook.sheet("Data").row(i).cell(6).value(item.assignee?.department?.name)
+                            workbook.sheet("Data").row(i).cell(7).value(Number(item.amountComment))
+
+                            if( Number(item.status) != 3 && compareTwoTime(now, item?.actualFinishTime) == 1){
+                                workbook.sheet("Data").row(i).cell(8).value('Quá hạn')
+                            }
+
+                            workbook.sheet("Data").row(i).cell(9).value(PCM_STATUS_TASK[item.status - 1].text)
+                            workbook.sheet("Data").row(i).cell(10).value(item.author?.fullname)
+                            if (item.note) {
+                                workbook.sheet("Data").row(i).cell(11).value(item.note)
+                            }
+
+                            i++;
+                        })
+                        
                         const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `pcm_13_TaskPin${now.getTime()}.xlsm`;
+                        const fileName = `pcm_report${now.getTime()}.xlsx`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                         await workbook.toFileAsync(pathWriteFile);
