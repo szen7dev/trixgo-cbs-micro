@@ -13,7 +13,9 @@ const { PCM_STATUS_TASK }			    = require('../../../tools/constants');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
+const USER_COLL                         = require('../../auth/database/auth.user-coll')
 const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll');
+
 const PCM_PLAN_TASK_MODEL               = require('../model/subject_pcm.pcm_plan_task').MODEL;
 
 
@@ -414,16 +416,24 @@ class Model extends BaseModel {
 
                 const listTaskPin = dataTaskByCondition?.data || [];
 
+                let listAssignee = await USER_COLL.find({_id: {$in: listTaskPin.map(item=>item.assignee._id)}})
+                .select('fullname department')
+                .populate({
+                    path: 'department',
+                    select: 'name sign',
+                })
+
+                // console.log(listAssignee)
+
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_export_report.xlsx')))
                     .then(async workbook => {
                         
                         workbook.sheet("Data").row(1).cell(1).value(infoReport.name.toUpperCase());
                         workbook.sheet("Data").row(2).cell(1).value(infoReport.description);
 
-                        let i = 4;
-
                         const now = new Date();
 
+                        var i = 4;
                         listTaskPin.map((item, index) => {
                             workbook.sheet("Data").row(i).cell(1).value(index+1)
                             workbook.sheet("Data").row(i).cell(2).value(item.name)
@@ -442,6 +452,15 @@ class Model extends BaseModel {
                             if (item.note) {
                                 workbook.sheet("Data").row(i).cell(11).value(item.note)
                             }
+
+                            i++;
+                        })
+
+                        var i = 3;
+                        listAssignee.map((item, index) => {
+                            workbook.sheet("Report").row(i).cell(1).value(index+1)
+                            workbook.sheet("Report").row(i).cell(2).value(item.fullname)
+                            workbook.sheet("Report").row(i).cell(3).value(item.department?.name)
 
                             i++;
                         })
