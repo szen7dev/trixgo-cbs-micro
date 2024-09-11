@@ -1881,9 +1881,9 @@ class Model extends BaseModel {
                                         advance:  Number(data?.__EMPTY_18), 
                                         paid:  Number(data?.__EMPTY_19), 
 
-                                        subAllowance1:  Number(data?.__EMPTY_23),
-                                        pependent:  Number(data?.__EMPTY_24),
-                                        subAllowance2:  Number(data?.__EMPTY_26),
+                                        // subAllowance1:  Number(data?.__EMPTY_23),
+                                        // pependent:  Number(data?.__EMPTY_24),
+                                        // subAllowance2:  Number(data?.__EMPTY_26),
                                     })
     
                                     if(infoAfterUpdate.error){

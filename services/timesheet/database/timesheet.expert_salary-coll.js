@@ -84,7 +84,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
-    //________Phụ cấp tiền ăn
+    //________Tổng phụ cấp
     mealAllowance: {
         type: Number,
         default: 0 
@@ -99,7 +99,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
-    //________Số người phụ thuộc
+    //________Số người phụ thuộc (giảm trừ gia cảnh)
     pependent: {
         type: Number,
         default: 0 
