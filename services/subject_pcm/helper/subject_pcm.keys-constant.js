@@ -7,3 +7,4 @@
  * 4-Giải pháp (task)
  */
 exports.PCM_COMMENT_TYPE = [1, 2, 3, 4];
+exports.PCM_STATUS = ['Khởi tạo','Đang triển khai','Hoàn thành','Treo lại','Chờ người khác giải quyết','Tiếp tục theo dõi'];

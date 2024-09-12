@@ -33,6 +33,7 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
 const { PCM_STATUS_TASK }			            = require('../../../tools/constants');
 const { uploadFileS3 }                          = require('../../../tools/s3');
+const { PCM_STATUS }					            = require('../helper/subject_pcm.keys-constant.js')
 
 /**
  * import inter-coll, exter-coll
@@ -587,7 +588,10 @@ class Model extends BaseModel {
         // })
         return new Promise(async (resolve) => {
             try {
-                let dataUpdate   = {};
+                let dataUpdate   = {
+                    userUpdate: userID,
+                    modifyAt: Date.now(),
+                };
                 let dataAddToset = {};
                 let dataPullAll  = {};
                 let convertStr = '';
@@ -712,7 +716,6 @@ class Model extends BaseModel {
                         convertStr = stringUtils.removeAccents(infoTask.name)
                     }
                     if(description && description != ""){
-                        // convertStr = convertStr + " " + stringUtils.removeAccents(description)
                         convertStr = convertStr + " " + (stringUtils.removeAccents(descriptioncv) || stringUtils.removeAccents(description));
                     }else{
                         convertStr = convertStr + " " + stringUtils.removeAccents(infoTask.description)
@@ -801,14 +804,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                // console.log({convertStr})
                 if(convertStr != ""){
                     dataUpdate.namecv = convertStr
-                }
-
-                //_________userUpdate
-                if(checkObjectIDs(userID)){
-                    dataUpdate.userUpdate = userID;
                 }
 
                 //_________Thêm người liên quan
@@ -839,7 +836,6 @@ class Model extends BaseModel {
                         title: "Thêm người liên quan",
                         content: `đã thêm người liên quan "${str}"`,
                     })
-                    // console.log(listDataRalated)
                 }
 
                 /**
@@ -866,15 +862,27 @@ class Model extends BaseModel {
 
                 /**
                  * Trạng thái công việc
-                 * - Chỉ được update khi trạng thái công việc chưa hoàn thành
                  */
-                if(status && infoTask.status != 3){
-                    dataUpdate.status = status;
+                if(status){
+                    if(infoTask.project.admins.map(item=>item.toString()).includes(userID?.toString())){
+                        dataUpdate.status = status
+                    }else{
+                        if(infoTask.status != 3){
+                            dataUpdate.status = status
+                        }
+                    }
 
                     // Nếu cập nhật sang trạng thái hoàn thành
                     if(status == 3){
                         dataUpdate.percentage = 100
                     }
+
+                    await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                        taskID: `${taskID}`,
+                        type: 3,
+                        title: "Cập nhật trạng thái",
+                        content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
+                    })
                 }
 
                 //_________Hợp đồng
@@ -1221,30 +1229,6 @@ class Model extends BaseModel {
                 }
                 let { name: taskName } = infoAfterUpdate;
 
-                // Cập nhật trạng thái công việc
-                if(status) {
-                    const { author, assignee, related } = infoTask;
-                    const relatedIDs = related?.map(userId => userId.toString());
-                    const receivers = [...new Set([author?.toString(), assignee._id?.toString(), ...relatedIDs])]
-                    const receiversNoti = receivers.filter(userId => userId !== userID.toString());
-
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: receiversNoti,
-                        title: taskName,
-                        description: `${bizfullname} đã cập nhật trạng thái công việc`,
-                        dataSend: {
-                            app: APP_KEYS.PCM_PLAN_TASK,
-                            languageKey: LANGUAGE_KEYS.UPDATE_STATUS_TASK,
-                            mainColl: {
-                                kind: 'pcm_plan_task',
-                                item: { _id: taskID }
-                            }
-                        },
-                        web_url: `/pcm/detail/${taskID}`,
-                        env: ENV_DEVICE_WEB_CBS
-                    })
-                }
-
                 /**
                  * Kích hoạt trong quy trình động
                  * Không can thiệp với Phân loại Thầu và mua sắm
@@ -1293,7 +1277,31 @@ class Model extends BaseModel {
                 /**
                  * XỬ LÝ SOCKET VÀ CLOUD MSS
                  */
-                //1. Socket_CloudMSS_Thêm người liên quan
+                // 1. Cập nhật trạng thái công việc sang hoàn thành
+                if(status && status == 3) {
+                    const { author, assignee, related } = infoTask;
+                    const relatedIDs = related?.map(userId => userId.toString());
+                    const receivers = [...new Set([author?.toString(), assignee._id?.toString(), ...relatedIDs])]
+                    const receiversNoti = receivers.filter(userId => userId !== userID.toString());
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receiversNoti,
+                        title: taskName,
+                        description: `${bizfullname} đã cập nhật trạng thái công việc`,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.UPDATE_STATUS_TASK,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
+                        },
+                        web_url: `/pcm/detail/${taskID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    })
+                }
+
+                // 2. Socket_CloudMSS_Thêm người liên quan
                 if(related && related.length) {
                     const relatedCurrent = infoTask.related.map(item => item.toString());
                     const newRelated = related.filter(item => !relatedCurrent.includes(item));
@@ -1322,7 +1330,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                //2. Socket_CloudMSS_Đồng ý phê duyệt
+                // 3. Socket_CloudMSS_Đồng ý phê duyệt
                 if(isAddSignature) {
                     const { name: taskName, related, assignee, author } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
@@ -1357,42 +1365,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                //3. Socket_CloudMSS_Mở thầu
-                if(isOpenBidding) {
-                    const { name: taskName, related, author } = infoAfterUpdate;
-                    const relatedUsers = related.map(item => item.toString());
-                    const listReceivers = [...relatedUsers, author.toString()];
-                    const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
-
-                    // Cập nhật thông báo cho task (highlight)
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
-                        $addToSet: { news: receivers },
-                        $set: {
-                            modifyAt: new Date()
-                        }
-                    });
-
-                    const amountNoti = await this.getAmountNotification({ userID });
-
-                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-                        users: receivers,
-                        title: taskName,
-                        description: `${bizfullname} đã mở thầu`,
-                        amountNoti: amountNoti?.data?.amountUnreadTask,
-                        dataSend: {
-                            app: APP_KEYS.PCM_PLAN_TASK,
-                            languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
-                            mainColl: {
-                                kind: 'pcm_plan_task',
-                                item: { _id: taskID }
-                            }
-                        },
-                        web_url: `/pcm/detail/${taskID}`,
-                        env: ENV_DEVICE_WEB_CBS
-                    });
-                }
-
-                //4. Socket_CloudMSS_Cập nhật checklist thành công
+                // 4. Socket_CloudMSS_Cập nhật checklist thành công
                 if(infoTask.type === 2 && status === 3) {
                     const { name: taskName, related, assignee, author, parent } = infoAfterUpdate;
                     const relatedUsers = related.map(item => item.toString());
@@ -1423,6 +1396,41 @@ class Model extends BaseModel {
                             }
                         },
                         web_url: `/pcm/detail/${parent}#checklist_${taskID}`,
+                        env: ENV_DEVICE_WEB_CBS
+                    });
+                }
+
+                // 5. Socket_CloudMSS_Mở thầu
+                if(isOpenBidding) {
+                    const { name: taskName, related, author } = infoAfterUpdate;
+                    const relatedUsers = related.map(item => item.toString());
+                    const listReceivers = [...relatedUsers, author.toString()];
+                    const receivers = listReceivers.filter(receiver => receiver !== userID.toString());
+
+                    // Cập nhật thông báo cho task (highlight)
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $addToSet: { news: receivers },
+                        $set: {
+                            modifyAt: new Date()
+                        }
+                    });
+
+                    const amountNoti = await this.getAmountNotification({ userID });
+
+                    ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+                        users: receivers,
+                        title: taskName,
+                        description: `${bizfullname} đã mở thầu`,
+                        amountNoti: amountNoti?.data?.amountUnreadTask,
+                        dataSend: {
+                            app: APP_KEYS.PCM_PLAN_TASK,
+                            languageKey: LANGUAGE_KEYS.OPEN_BIDDING,
+                            mainColl: {
+                                kind: 'pcm_plan_task',
+                                item: { _id: taskID }
+                            }
+                        },
+                        web_url: `/pcm/detail/${taskID}`,
                         env: ENV_DEVICE_WEB_CBS
                     });
                 }
