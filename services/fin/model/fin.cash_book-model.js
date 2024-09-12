@@ -1447,7 +1447,8 @@ class Model extends BaseModel {
 
                                 workbook.sheet("BangLuongUpdate").row(i).cell(12).value(Number(item.punishment))
                                 workbook.sheet("BangLuongUpdate").row(i).cell(13).value(Number(item.insurance))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.other))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.share))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.other)) // Công thức
 
                                 workbook.sheet("BangLuongUpdate").row(i).cell(20).value(Number(item.advance))
                                 workbook.sheet("BangLuongUpdate").row(i).cell(21).value(Number(item.paid))
