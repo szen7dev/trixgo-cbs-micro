@@ -62,9 +62,8 @@ class Model extends BaseModel {
                     });
                 }
 
-                let year = new Date(date).getFullYear()
-                let month = new Date(date).getMonth()
-                // console.log({year,month})
+                // let year = new Date(date).getFullYear()
+                // let month = new Date(date).getMonth()
                 // let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                 //     company: companyID,
                 //     parent: { $exists: false },
@@ -142,7 +141,9 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
-                // Tạo chi tiết lương cho các user đang hoạt động
+                /**
+                 * Tạo chi tiết lương cho các User đang hoạt động
+                 */
                 let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 })
                 .select('fullname department position contacts')
                 .populate({
@@ -191,7 +192,7 @@ class Model extends BaseModel {
                     await this.insertData(dataInsertDetail)
                 }
 
-                // Cập nhật số nhân sự bảng lương
+                // Cập nhật số nhân sự vào Bảng lương
                 await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoAfterInsert._id, {
                     numberOfHuman: Number(listHuman.length)
                 }, { new: true })
@@ -208,8 +209,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, pependent }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, pependent })
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11 }){
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11 })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -275,13 +276,35 @@ class Model extends BaseModel {
                 if(subAllowance1){
                     dataUpdate.subAllowance1 = Number(subAllowance1);
                 }
-
                 if(subAllowance2){
                     dataUpdate.subAllowance2 = Number(subAllowance2);
                 }
-
-                if(pependent){
-                    dataUpdate.pependent = Number(pependent);
+                if(subAllowance3){
+                    dataUpdate.subAllowance3 = Number(subAllowance3);
+                }
+                if(subAllowance4){
+                    dataUpdate.subAllowance4 = Number(subAllowance4);
+                }
+                if(subAllowance5){
+                    dataUpdate.subAllowance5 = Number(subAllowance5);
+                }
+                if(subAllowance6){
+                    dataUpdate.subAllowance6 = Number(subAllowance6);
+                }
+                if(subAllowance7){
+                    dataUpdate.subAllowance7 = Number(subAllowance7);
+                }
+                if(subAllowance8){
+                    dataUpdate.subAllowance8 = Number(subAllowance8);
+                }
+                if(subAllowance9){
+                    dataUpdate.subAllowance9 = Number(subAllowance9);
+                }
+                if(subAllowance10){
+                    dataUpdate.subAllowance10 = Number(subAllowance10);
+                }
+                if(subAllowance11){
+                    dataUpdate.subAllowance11 = Number(subAllowance11);
                 }
 
                 if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){

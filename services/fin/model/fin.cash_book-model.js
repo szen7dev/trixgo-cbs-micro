@@ -1416,7 +1416,6 @@ class Model extends BaseModel {
                                 }
                             }
                         ])
-
                         // console.log(listData1)
 
                          // Modify the workbook.
@@ -1458,6 +1457,18 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuongUpdate").row(i).cell(24).value(`${item?._id}`)   
                                 workbook.sheet("BangLuongUpdate").row(i).cell(25).value(`${item?.human?._id}`)   
                                 workbook.sheet("BangLuongUpdate").row(i).cell(27).value(Number(item?.human?.contacts[0]?.nods))
+
+                                workbook.sheet("BangLuongUpdate").row(i).cell(29).value(Number(item?.subAllowance1))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(30).value(Number(item?.subAllowance2))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(31).value(Number(item?.subAllowance3))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(32).value(Number(item?.subAllowance4))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(33).value(Number(item?.subAllowance5))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(34).value(Number(item?.subAllowance6))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(35).value(Number(item?.subAllowance7))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(36).value(Number(item?.subAllowance8))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(37).value(Number(item?.subAllowance9))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(38).value(Number(item?.subAllowance10))
+                                workbook.sheet("BangLuongUpdate").row(i).cell(39).value(Number(item?.subAllowance11))
                                 
                                 /**
                                  * BangLuongIn
@@ -1892,6 +1903,7 @@ class Model extends BaseModel {
                         // Chỉ Admin ứng dụng mới được cập nhật
                         if(!infoAppUser.error && infoAppUser.data.level == 0){
                             for (const data of dataImportJSON) {
+                                // console.log(data)
                                 if(index > 1 && index <= 101){    
                                     // console.log(data)
                                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
@@ -1917,9 +1929,17 @@ class Model extends BaseModel {
                                         advance:  Number(data?.__EMPTY_18), 
                                         paid:  Number(data?.__EMPTY_19), 
 
-                                        // subAllowance1:  Number(data?.__EMPTY_23),
-                                        // pependent:  Number(data?.__EMPTY_24),
-                                        // subAllowance2:  Number(data?.__EMPTY_26),
+                                        subAllowance1:  Number(data?.__EMPTY_27),
+                                        subAllowance2:  Number(data?.__EMPTY_28),
+                                        subAllowance3:  Number(data?.__EMPTY_29),
+                                        subAllowance4:  Number(data?.__EMPTY_30),
+                                        subAllowance5:  Number(data?.__EMPTY_31),
+                                        subAllowance6:  Number(data?.__EMPTY_32),
+                                        subAllowance7:  Number(data?.__EMPTY_33),
+                                        subAllowance8:  Number(data?.__EMPTY_34),
+                                        subAllowance9:  Number(data?.__EMPTY_35),
+                                        subAllowance10:  Number(data?.__EMPTY_36),
+                                        subAllowance11:  Number(data?.__EMPTY_37),
                                     })
     
                                     if(infoAfterUpdate.error){
@@ -1981,7 +2001,7 @@ class Model extends BaseModel {
     }
 
     /*
-    * Name: Download Template Excel
+    * Name: Export Excel
     * Code: Hiepnh
     * Date: 25/7/2023
     */
