@@ -1418,11 +1418,27 @@ class Model extends BaseModel {
                         ])
                         // console.log(listData1)
 
+                        // Chấm tăng ca (>8h)
+                        let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null },
+                            hours: { $gt: 8 },
+                            $where: `return this.date.getMonth() === ${Number(monthFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
+                        })
+                        .populate({
+                            path: 'assignee',
+                            select:'fullname'
+                        })
+                        .select('name hours unitprice amount status date note')
+                        .sort({date: 1})
+
                          // Modify the workbook.
                          XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx')))
                          .then(async workbook => {
 
                             workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
+
                             var i = 4
                             listData.forEach((item, index) =>{
                                 let tongThu = Number(item.salary + item.onLeaveSalary + item.revenueBonus + item.reward + item.mealAllowance)
@@ -1523,7 +1539,6 @@ class Model extends BaseModel {
                                 i++
                             })
 
-
                             /**
                              * Tổng hợp số công đi làm
                              */
@@ -1558,6 +1573,19 @@ class Model extends BaseModel {
                                 workbook.sheet("TongHop2").row(i).cell(3).value()
                                 workbook.sheet("TongHop2").row(i).cell(4).value(item?.note)
                                 
+                                i++
+                            })
+
+                            var i = 4
+                            listData4.forEach((item, index) =>{
+                                workbook.sheet("TangCa").row(i).cell(1).value(`${item?.assignee?._id}`)
+                                workbook.sheet("TangCa").row(i).cell(2).value(item.date)
+                                workbook.sheet("TangCa").row(i).cell(3).value(item.name)
+                                workbook.sheet("TangCa").row(i).cell(4).value(item?.assignee?.fullname)
+                                workbook.sheet("TangCa").row(i).cell(5).value(Number(item.hours))
+                                workbook.sheet("TangCa").row(i).cell(6).value(Number(item.unitprice))
+                                workbook.sheet("TangCa").row(i).cell(7).value(Number(item.amount))
+                                workbook.sheet("TangCa").row(i).cell(8).value(item?.note)
                                 i++
                             })
                     
@@ -2045,12 +2073,12 @@ class Model extends BaseModel {
                     select:'fullname name unit unitPrice'
                 })
                 .select('name hours unitprice amount status date note')
+                .sort({date: 1})
                 // console.log(listData)
 
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
-                            // company: ObjectID(companyID),
                             parent: ObjectID(parentID),
                             assignee: { $exists: true, $ne: null }
                         }
@@ -2465,6 +2493,22 @@ class Model extends BaseModel {
                         }
                     }
                 ])
+
+                // Chấm tăng ca (>8h)
+                let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                    company: ObjectID(companyID),
+                    parent: { $exists: true, $ne: null },
+                    assignee: { $exists: true, $ne: null },
+                    hours: { $gt: 8 },
+                    $where: `return this.date.getMonth() === ${Number(monthFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
+                })
+                .populate({
+                    path: 'assignee',
+                    select:'fullname'
+                })
+                .select('name hours unitprice amount status date note')
+                .sort({date: 1})
+                // console.log(listData4)
                 
                 let listUser = await USER_COLL.find({_id: {$in: listData2.map(item=>item._id.assignee)}})
                 .select('fullname department position')
@@ -2481,6 +2525,7 @@ class Model extends BaseModel {
                         workbook.sheet("Data1").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         workbook.sheet("Data2").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         workbook.sheet("Data3").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                        workbook.sheet("Data4").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                     }
 
                     var i = 4
@@ -2531,9 +2576,6 @@ class Model extends BaseModel {
                     })
 
                     listData3?.forEach((item, index) => {
-                        // if(item._id.assignee.toString() === "6046bcf1b55525368b11ab91"){
-                        //     console.log(item)
-                        // }
                         for(var i=4; i<=listUser.length + 3; i++){
                             let userID = workbook.sheet("Data1").row(i).cell(5).value();
     
@@ -2557,6 +2599,16 @@ class Model extends BaseModel {
                                 }
                             }
                         }
+                    })
+
+                    var i = 4
+                    listData4.forEach((item, index) =>{
+                        workbook.sheet("Data4").row(i).cell(1).value(item.date)
+                        workbook.sheet("Data4").row(i).cell(2).value(item.name)
+                        workbook.sheet("Data4").row(i).cell(3).value(item?.assignee?.fullname)
+                        workbook.sheet("Data4").row(i).cell(4).value(Number(item.hours))
+                        workbook.sheet("Data4").row(i).cell(5).value(item?.note)
+                        i++
                     })
         
                     const now = new Date();
