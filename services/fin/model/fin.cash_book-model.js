@@ -1548,7 +1548,7 @@ class Model extends BaseModel {
                                     // console.log(userID)
 
                                     if(userID && userID.toString() === item?._id?.assignee.toString()){
-                                        workbook.sheet("PhuCap").row(i).cell(17).value(Number(item.quantity));
+                                        workbook.sheet("PhuCap").row(i).cell(18).value(Number(item.quantity));
                                     }
                                 }
                             })
