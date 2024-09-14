@@ -179,3 +179,21 @@ exports.calculateExpireTime = (currentTimestamp, expireTimestamp, type = 'minute
 
     return expire.diff(current, type);
 }
+
+exports.countDayIndexInMonth = (dayindex, year, month) => {
+    // `month` ở đây là từ 0 đến 11, vì vậy tháng 1 là 0 và tháng 12 là 11.
+    let sundayCount = 0;
+    
+    // Lặp qua tất cả các ngày trong tháng
+    const daysInMonth = new Date(year, month + 1, 0).getDate(); // Lấy số ngày trong tháng
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        // Kiểm tra nếu ngày đó là Chủ nhật (0 là Chủ nhật)
+        if (date.getDay() === dayindex) {
+            sundayCount++;
+        }
+    }
+
+    return sundayCount;
+}
