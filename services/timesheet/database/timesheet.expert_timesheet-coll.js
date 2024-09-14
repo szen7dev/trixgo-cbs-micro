@@ -54,7 +54,6 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Number,
         default: 1
     },
-
     /**
      * Phân loại lễ tết
      * 1-Ngày bình thường

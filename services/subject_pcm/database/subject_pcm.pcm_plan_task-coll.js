@@ -148,6 +148,16 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 16-Ghi danh
      */
     subtype: { type: Number, default: 0 },
+
+    /**
+     * Phân loại trình duyệt
+     * 1. Ngân sách
+     * 2. Nghỉ phép
+     * 3. Báo giá
+     * 4. Sửa chữa
+     * 5. Công nợ
+     */
+    approvalType: { type: Number, default: 1 },
     /**
     /**
      * Upcoming-Sắp diễn ra/tới lượt

@@ -139,8 +139,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx }) {
-        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates })
+    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, approvalType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx }) {
+        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, approvalType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates })
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = {};
@@ -213,9 +213,11 @@ class Model extends BaseModel {
                 if(parentID){
                     infoTaskParent = await PCM_PLAN_TASK_COLL.findById(parentID).lean();
                     dataInsert.subtype = infoTaskParent.subtype;
+                    dataInsert.approvalType = infoTaskParent.approvalType;
                     // dataInsert.upcoming = infoTaskParent.upcoming;
                 }else{
                     dataInsert.subtype = subType;
+                    dataInsert.approvalType = approvalType;
                 }
 
                 // Thời hạn hoàn thành
@@ -574,15 +576,13 @@ class Model extends BaseModel {
      * Author: DePV/MinhNH/HiepNH
      * Code: 8/9/2022
      */
-    update({ typeUpdate,
-        taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
+    update({ taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+        contractID, draft, subType, approvalType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, descriptioncv, ctx
     }){
-        // console.log({ typeUpdate,
-        //     taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        //     contractID, draft, subType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
+        // console.log({ taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
+        //     contractID, draft, subType, approvalType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
         //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, descriptioncv
         // })
@@ -847,6 +847,10 @@ class Model extends BaseModel {
                     if(!subTypes.includes(infoTask.subtype)){
                         dataUpdate.subtype = +subType;
                     }
+                }
+
+                if(approvalType && !isNaN(approvalType)){
+                    dataUpdate.approvalType = +approvalType;
                 }
 
                 if(upcoming && upcoming != ""){
