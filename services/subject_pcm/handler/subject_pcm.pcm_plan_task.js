@@ -56,10 +56,10 @@ module.exports = {
 
 				const { _id: authorID, bizfullname, email, fullname, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
-                const { projectID, groupID, taskID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, amount, vatAmount, contactID, descriptioncv, select, populates } = ctx.params;
+                const { projectID, groupID, taskID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, approvalType, isNotiEmail, amount, vatAmount, contactID, descriptioncv, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, amount, vatAmount, contactID, select, populates, senderMail: { email, fullname }, company, ctx,
+                    projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, approvalType, isNotiEmail, bizfullname, amount, vatAmount, contactID, select, populates, senderMail: { email, fullname }, company, ctx,
                     descriptioncv,
                 });
 
@@ -117,7 +117,7 @@ module.exports = {
                 const {
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountPerHour, assigneeID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                    contractID, draft, subType, approvalType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
                     ontime, quality, usersDeleteID, descriptioncv
@@ -127,7 +127,7 @@ module.exports = {
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
-                    contractID, draft, subType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
+                    contractID, draft, subType, approvalType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
                     links, linksDocs, authorAttachs, assigneeAttachs, percentage, judgement, overdue, score, urgent, difficult, finishTime, punish, approver, timeApproved, isUpdateNews,
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, bizfullname, isAddSignature, isOpenBidding, senderMail: { fullname, email }, unit, unitPrice, quantity, vatAmount,
                     companyOfUser: company._id, milestone, alert, groupID, ontime, quality, fullnameUpdate: fullname, usersDeleteID, descriptioncv, ctx
