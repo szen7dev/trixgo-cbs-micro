@@ -64,6 +64,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
+    //________Số giờ làm thêm
+    hours3: {
+        type: Number,
+        default: 0 
+    },
     //________Lương
     salary: {
         type: Number,
@@ -71,6 +76,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     },
     //________Lương phép
     onLeaveSalary: {
+        type: Number,
+        default: 0 
+    },
+    //________Lương làm thêm
+    overtimeSalary: {
         type: Number,
         default: 0 
     },
