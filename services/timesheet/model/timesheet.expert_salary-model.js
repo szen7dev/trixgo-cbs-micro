@@ -672,9 +672,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    updateValueKpi({
-        expertSalaryID, userID, companyID
-    }){
+    updateValueKpi({ dataUser, expertSalaryID, userID, companyID }){
         return new Promise(async (resolve) => {
             try {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
@@ -717,21 +715,37 @@ class Model extends BaseModel {
                 ])
                 // console.log({listData})
 
-                for(const item of listData){
-                    let salary = 0, onLeaveSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
+                let arr = []
+                listData.forEach(item=>{
+                    let key = item._id.executor;
+                    if (!Array.isArray(arr[key])) {
+                        arr[key] = [];
+                    }
+                    arr[key].push(item)
+                })
 
+                for(const item of dataUser){
+                    let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
+                    
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
-                        human: item._id.executor,
+                        human: item,
                     })
 
                     if(info){
+                        if(arr[item]){
+                            reward = Number(arr[item][0].bonus) * info.convertFactor
+                            punishment = Number(arr[item][0].amount) * info.convertFactor
+                        }else{
+                            reward = info.reward
+                            punishment = info.punishment
+                        }
+                        
                         salary = info.salary
                         onLeaveSalary = info.onLeaveSalary
-                        reward = item.bonus * info.convertFactor // KPI
+                        overtimeSalary = info.overtimeSalary
                         revenueBonus = info.revenueBonus
                         mealAllowance = info.mealAllowance
-                        punishment = item.amount * info.convertFactor // KPI
                         insurance = info.insurance
                         pitax = info.pitax
                         union = info.union
@@ -742,12 +756,13 @@ class Model extends BaseModel {
                         kpiFactor = info.kpiFactor
                     }
 
-                    remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
+                    remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
                     let dataUpdate =  {
                         kpiFactor,
                         salary,
                         onLeaveSalary,
+                        overtimeSalary,
                         reward,
                         revenueBonus,
                         mealAllowance,
@@ -762,8 +777,11 @@ class Model extends BaseModel {
                         remaining
                     }
 
-                   await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    if(info){
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    }
                 }
+
                 return resolve({ error: false, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
@@ -776,9 +794,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    updateValue({
-        expertSalaryID, userID
-    }){
+    updateValue({ dataUser, expertSalaryID, userID }){
         return new Promise(async (resolve) => {
             try {
                 let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
@@ -885,7 +901,6 @@ class Model extends BaseModel {
                     // Danh sách userID trong bảng lương
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                     let dataUser = listData.map(item=>item.human.toString())
-                    // console.log(dataUser)
 
                     // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
                     await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
