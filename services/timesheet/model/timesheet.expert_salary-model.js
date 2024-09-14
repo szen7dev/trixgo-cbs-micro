@@ -213,8 +213,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11 }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11 })
+    update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14 }){
+        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14 })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -309,6 +309,15 @@ class Model extends BaseModel {
                 }
                 if(subAllowance11){
                     dataUpdate.subAllowance11 = Number(subAllowance11);
+                }
+                if(subAllowance12){
+                    dataUpdate.subAllowance12 = Number(subAllowance12);
+                }
+                if(subAllowance13){
+                    dataUpdate.subAllowance13 = Number(subAllowance13);
+                }
+                if(subAllowance14){
+                    dataUpdate.subAllowance14 = Number(subAllowance14);
                 }
 
                 if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
@@ -736,9 +745,6 @@ class Model extends BaseModel {
                         if(arr[item]){
                             reward = Number(arr[item][0].bonus) * info.convertFactor
                             punishment = Number(arr[item][0].amount) * info.convertFactor
-                        }else{
-                            reward = info.reward
-                            punishment = info.punishment
                         }
                         
                         salary = info.salary

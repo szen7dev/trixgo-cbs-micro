@@ -154,6 +154,21 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
+    //________Sub12
+    subAllowance12: {
+        type: Number,
+        default: 0 
+    },
+    //________Sub13
+    subAllowance13: {
+        type: Number,
+        default: 0 
+    },
+    //________Sub14
+    subAllowance14: {
+        type: Number,
+        default: 0 
+    },
 
     //_________Hệ số chuyển đổi KPI (KPI => giá trị)
     convertFactor: {
