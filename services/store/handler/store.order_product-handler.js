@@ -12,7 +12,7 @@ module.exports = {
     /**
      * Name: Insert 
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 15/9/2024
      */
     insert: {
         auth: "required",
@@ -32,7 +32,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { orderID, accountID, customerID, contractID, goodsID, assetsID, name, sign, note, quantity, unitPrice } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -46,8 +46,9 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH
-	 * Func: update Group
+     * Name: Update 
+     * Author: HiepNH
+     * Code: 15/9/2024
 	 */
     update: {
         auth: "required",
@@ -59,7 +60,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { orderProductID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID } = ctx.meta.infoUser;
 
@@ -73,8 +74,9 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH
-	 * Func: remove Group
+     * Name: Remove 
+     * Author: HiepNH
+     * Code: 15/9/2024
 	 */
     remove: {
         auth: "required",
@@ -99,18 +101,14 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH
-	 * Func: getList and getInfo pcm_plan_report
+     * Name: getInfoAndGetList 
+     * Author: HiepNH
+     * Code: 15/9/2024
 	 */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            companyID           : { type: "string", optional: true },
-            fundaID             : { type: "string", optional: true },
-            orderID             : { type: "string", optional: true },
-            fromDate            : { type: "string", optional: true },
-            toDate              : { type: "string", optional: true },
-            salesChannel        : { type: "string", optional: true },
+            orderProductID     : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -122,15 +120,28 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
-                console.log(ctx.params)
+                let { orderProductID, option, status, outin, type, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
                 
-				const { _id: userID } = ctx.meta.infoUser;
+                // console.log('====================')
+                // console.log(ctx.params)
+                
+				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getList({
-                        companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler;
+                if (orderProductID) {
+                    resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getInfo({
+                        orderProductID, userID, select, populates
                     });
-
+                } else {
+                    resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getList({
+                        userID, option, status, outin, type, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey
+                     });
+ 
+                }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -139,51 +150,38 @@ module.exports = {
     },
 
     /**
-     * Name: Danh sách theo phân loại
+     * Name: getListByProperty 
      * Author: HiepNH
-     * Code: 14/10/2022
-     */
+     * Code: 15/9/2024
+	 */
     getListByProperty: {
+        auth: "required",
         params: {
-            fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
-            optionGroup     : { type: "string", optional: true },
-            optionTime      : { type: "string", optional: true },
-            year            : { type: "string", optional: true },
-            fromDate        : { type: "string", optional: true },
-            toDate          : { type: "string", optional: true },
-            
-            //_____________THÔNG SỐ MẶC ĐỊNH________________
-            keyword         : { type: "string", optional: true },
-            limit           : { type: "string", optional: true },
-            lastestID       : { type: "string", optional: true },
-            select          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID,  fromDate, toDate } = ctx.params;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getListByProperty({
-                    option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey, 
-                     userID
-                    });
-             
+                // console.log(ctx.params)
+                
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getListByProperty({ companyID: company._id, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate })
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 8/12/2022
-     */
+     * Name: downloadTemplateExcel 
+     * Author: HiepNH
+     * Code: 15/9/2024
+	 */
     downloadTemplateExcel: {
         auth: 'required',
         params: {
@@ -206,14 +204,13 @@ module.exports = {
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 9/12/2022
-     */
+     * Name: importFromExcel 
+     * Author: HiepNH
+     * Code: 15/9/2024
+	 */
     importFromExcel: {
         auth: 'required',
         params: {
-            // taskID    : { type: 'string', optional: true },
             dataImport: { type: 'string' }
         },
         async handler(ctx) {
@@ -233,10 +230,10 @@ module.exports = {
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 9/12/2022
-     */
+     * Name: exportExcel 
+     * Author: HiepNH
+     * Code: 15/9/2024
+	 */
     exportExcel: {
         auth: 'required',
         params: {

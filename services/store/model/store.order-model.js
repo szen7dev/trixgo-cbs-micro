@@ -212,6 +212,8 @@ class Model extends BaseModel {
             if (!infoAfterUpdate)
                 return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
+            console.log(infoAfterUpdate)
+
             // Cập nhật lại các phần tử con
             await STORE_ORDER_PRODUCT_COLL.updateMany(
                 { 
@@ -330,8 +332,8 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getList({ option, active, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
-      console.log({ option, active, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+  getList({ option, status, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+    //   console.log({ option, status, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
       return new Promise(async (resolve) => {
           try {
               let sortBy;
@@ -429,8 +431,8 @@ class Model extends BaseModel {
                   conditionObj.assets = assetsID;
               }
 
-              if (!isNaN(active) && Number(active) >= 1) {
-                  conditionObj.active = Number(active)
+              if (!isNaN(status) && Number(status) >= 1) {
+                  conditionObj.status = Number(status)
               }
 
               if (!isNaN(outin) && Number(outin) >= 1) {
@@ -531,13 +533,13 @@ class Model extends BaseModel {
               let conditionObj1 = {
                   company: ObjectID(companyID),
                   goods: { $exists: true, $ne: null },
-                  active: 1,
+                  status: 1,
                   outin: 1,
               }
               let conditionObj2 = {
                   company: ObjectID(companyID),
                   goods: { $exists: true, $ne: null },
-                  active: 1,
+                  status: 1,
                   outin: 2,
               }
 
