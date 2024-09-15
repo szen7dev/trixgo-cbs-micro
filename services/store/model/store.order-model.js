@@ -35,6 +35,8 @@ const fs = require("fs");
 const path = require("path");
 const { uploadFileS3 } = require("../../../tools/s3");
 
+const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
+
 class Model extends BaseModel {
   constructor() {
     super(STORE_ORDER_COLL);
@@ -102,6 +104,651 @@ class Model extends BaseModel {
         }
     })
   }
+
+  /**
+   * Name: Update 
+   * Author: Hiepnh
+   * Date: 9/4/2022
+   */
+  update({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice }) {
+      // console.log({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice })
+      const that = this
+      return new Promise(async (resolve) => {
+          try {
+              const infoCashBook = await STORE_ORDER_COLL.findById(cashBookID)
+              .populate('parent')
+              .lean();
+
+              if(!infoCashBook) {
+                  return resolve({
+                      error: true,
+                      message: 'Cashbook không tồn tại',
+                      keyError: "cashbook_not_exists",
+                      status: 400
+                  });
+              }
+
+              //___________Quyền truy cập ứng dụng Nhân sự
+              let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                  appID: "5f52341f880c2f26c8df8c10",
+                  userID
+              })
+
+              let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+
+              if (checkObjectIDs(projectID)) {
+                  dataUpdate.project = projectID;
+              }
+              if (checkObjectIDs(warehouseID)) {
+                
+                  dataUpdate.warehouse = warehouseID;
+              }
+              if (checkObjectIDs(accountID)) {
+                  dataUpdate.account = accountID;
+              }
+              if (checkObjectIDs(customerID)) {
+                  dataUpdate.customer = customerID;
+              }
+              if (checkObjectIDs(contractID)) {
+                  dataUpdate.contract = contractID;
+              }
+              if (checkObjectIDs(goodsID)) {
+                  dataUpdate.goods = goodsID;
+              }
+              if (checkObjectIDs(assetsID)) {
+                  dataUpdate.assets = assetsID;
+              }
+              if (checkObjectIDs(workID)) {
+                  dataUpdate.work = workID;
+              }
+
+              if (name) {
+                  dataUpdate.name = name;
+              }
+
+              if (date) {
+                  dataUpdate.date = date;
+              }
+
+              if (sign) {
+                  dataUpdate.sign = sign;
+              }
+
+              if (!isNaN(outin) && Number(outin) >= 1) {
+                  dataUpdate.outin = Number(outin)
+              }
+
+              if (!isNaN(type) && Number(type) >= 1) {
+                  dataUpdate.type = Number(type)
+              }
+
+              let unitPrice2 = 0
+              if (unitPrice != 0) {
+                  unitPrice2 = Number(unitPrice)
+              }
+              if (quantity) {
+                  dataUpdate.quantity = Number(quantity)
+              }
+              if(unitPrice2 >= 0){
+                  let amount  = Number(quantity * unitPrice2)
+
+                  dataUpdate.unitPrice = unitPrice2
+                  dataUpdate.amount = amount
+              }
+                
+              if (income >= 0) {
+                  dataUpdate.income = income;
+              }
+
+              if (expense >= 0) {
+                  dataUpdate.expense = expense;
+              }
+
+              if (note && note != "") {
+                  dataUpdate.note = note;
+              }
+
+              if (active && !isNaN(active) && Number(active) > 0) {
+                  dataUpdate.active = active;
+              }
+
+              // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
+              if(infoCashBook.parent && infoCashBook.parent.company){
+                  dataUpdate.company = infoCashBook.parent.company
+                  dataUpdate.date = infoCashBook.parent.date
+              }
+              // console.log(dataUpdate)
+
+              const adminsID = [...infoCashBook.admins?.map(item => item.toString()), infoCashBook.userCreate?.toString()];
+
+              if((!infoAppUser.error && infoAppUser.data.level == 0) || adminsID.includes(userID.toString())) {
+                  if(admins && admins.length) {
+                      if(checkObjectIDs(admins)) {
+                          admins = [...new Set(admins)];
+                          dataUpdate.admins = admins;
+                      } else{
+                          dataUpdate.admins = [];
+                      }
+                  }
+
+                  if(members && members.length) {
+                      if(checkObjectIDs(members)) {
+                          members = [...new Set(members)];
+                          dataUpdate.members = members;
+                      } else{
+                          dataUpdate.members = [];
+                      }
+                  }
+              } else{
+                  if(checkObjectIDs(admins)) {
+                      return resolve({
+                          error: true,
+                          message: 'Bạn không có quyền chia sẻ',
+                          keyError: "permission_denined",
+                          status: 403
+                      });
+                  }
+
+                  if(checkObjectIDs(members)) {
+                      return resolve({
+                          error: true,
+                          message: 'Bạn không có quyền chia sẻ',
+                          keyError: "permission_denined",
+                          status: 403
+                      });
+                  }
+              }
+
+              let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+              if (!infoAfterUpdate)
+                  return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+
+              // Cập nhật lại phần tử cha
+              if(checkObjectIDs(infoAfterUpdate.parent)){
+                  await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
+              }
+
+              // Cập nhật lại các phần tử con
+              if(!infoAfterUpdate.parent){
+                  // Trạng thái của phiếu (hủy bỏ hay không)
+                  if (active && !isNaN(active) && Number(active) > 0) {
+                      await STORE_ORDER_COLL.updateMany(
+                          { 
+                              parent: ObjectID(cashBookID),
+                          },
+                          { $set: { "active" : Number(active)} }
+                      )
+                  }
+
+                  // Cập nhật các thuộc tính khác
+                  await STORE_ORDER_COLL.updateMany(
+                      { 
+                          parent: ObjectID(cashBookID),
+                      },
+                      { $set: { 
+                          "project" : infoAfterUpdate.project,
+                          "warehouse" : infoAfterUpdate.warehouse,
+                          "customer" : infoAfterUpdate.customer,
+                          "contract" : infoAfterUpdate.contract,
+                          "outin" : infoAfterUpdate.outin,
+                          "type" : infoAfterUpdate.type,
+                          "date" : infoAfterUpdate.date,
+                      } }
+                  )
+              }
+
+              return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+          } catch (error) {
+              return resolve({ error: true, message: error.message, status: 500 });
+          }
+      })
+  }
+
+  /**
+   * Name  : Cập nhật giá trị khi chi tiết thay đổi 
+   * Code: Hiepnh
+   * Date  : 14/4/2022
+   */
+  updateValue({
+      cashBookID, userID
+  }){
+      return new Promise(async (resolve) => {
+          try {
+              if(!checkObjectIDs(cashBookID))
+                  return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
+              let infoCashBook = await STORE_ORDER_COLL.findById(cashBookID)
+
+              let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+
+              let listData = await STORE_ORDER_COLL.aggregate([
+                  {
+                      $match: {
+                          parent: ObjectID(cashBookID),
+                      }
+                  },
+                  {
+                      $group: {
+                          _id: { },
+                          amount: { $sum: "$amount" },
+                          income: { $sum: "$income" },
+                          expense: { $sum: "$expense" },
+                      }
+                  },
+              ])
+              if(listData && listData.length){
+
+                  let arising = Number(listData[0].income) - Number(listData[0].expense)
+                  let closingBalance = Number(infoCashBook.openingBalance) + Number(arising)
+
+                  dataUpdate.arising = Number(arising)
+                  dataUpdate.closingBalance = Number(closingBalance)
+                  dataUpdate.income = Number(listData[0].income)
+                  dataUpdate.expense = Number(listData[0].expense)
+                  dataUpdate.amount = Number(listData[0].amount)
+              }
+
+              let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+              if(!infoAfterUpdate)
+                  return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
+
+              return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+          } catch (error) {
+              return resolve({ error: true, message: error.message, status: 500 });
+          }
+      })
+  }
+
+  /**
+   * Name: Get info 
+   * Author: Hiepnh
+   * Date: 9/4/2022
+   */
+  getInfo({ cashBookID, select, populates }) {
+      return new Promise(async resolve => {
+          try {
+              if (!checkObjectIDs(cashBookID))
+                  return resolve({ error: true, message: 'param_invalid' });
+
+              if (populates && typeof populates === 'string') {
+                  if (!IsJsonString(populates))
+                      return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                  populates = JSON.parse(populates);
+              } else {
+                  populates = {
+                      path: "",
+                      select: ""
+                  }
+              }
+
+              let infoContractIPC = await STORE_ORDER_COLL.findById(cashBookID)
+                  .select(select)
+                  .populate(populates)
+
+              if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+
+              return resolve({ error: false, data: infoContractIPC });
+          } catch (error) {
+              return resolve({ error: true, message: error.message });
+          }
+      })
+  }
+
+  /**
+   * Name  : Get list 
+   * Author: Hiepnh
+   * Date: 9/4/2022
+   */
+  getList({ option, active, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+      console.log({ option, active, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+      return new Promise(async (resolve) => {
+          try {
+              let sortBy;
+              let conditionObj = {};
+              let keys = ['createAt__-1', '_id__-1'];
+
+              if (limit > 50) {
+                  limit = 50
+              } else {
+                  limit = +limit;
+              }
+
+              if (populates && typeof populates === 'string') {
+                  if (!IsJsonString(populates))
+                      return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                  populates = JSON.parse(populates);
+              } else {
+                  populates = {
+                      path: "",
+                      select: ""
+                  }
+              }
+
+              if (sortKey && typeof sortKey === 'string') {
+                  if (!IsJsonString(sortKey))
+                      return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                  keys = JSON.parse(sortKey);
+              }
+
+              if (checkObjectIDs(parentID)) {
+                  conditionObj.parent = parentID;
+              } else {
+                  if(!option){
+                      // Chỉ hiển thị sổ quỹ mà user là member
+                      // conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
+                      conditionObj.parent = { $exists: false } // Lấy theo công ty
+
+                      // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
+                      if(isCompanyOther === 'true') {
+                          conditionObj.company = {
+                              $nin: [companyOfUser]
+                          }
+                      } else{
+                          conditionObj.company = companyID;
+                      }
+                  }
+                  // Báo cáo chi tiết theo Goods
+                  else{
+                      if(option == 1){
+                          conditionObj.company = companyID
+                          conditionObj.parent = { $exists: true, $ne: null }
+                          conditionObj.goods = { $exists: true, $ne: null }
+                      }
+                  }
+              }
+
+              // if(fromDate && toDate){
+              //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+              //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+              //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+              //         conditionObj.date  = { 
+              //             $gte: moment(startTime).toDate(),
+              //             $lte: moment(endTime).toDate()
+              //         }
+              //     }
+              // }
+
+              if (checkObjectIDs(projectID)) {
+                  conditionObj.project = projectID;
+              }
+
+              if (checkObjectIDs(warehouseID)) {
+                  conditionObj.warehouse = warehouseID;
+              }
+
+              if (checkObjectIDs(accountID)) {
+                  conditionObj.account = accountID;
+              }
+
+              if (checkObjectIDs(customerID)) {
+                  conditionObj.customer = customerID;
+              }
+
+              if (checkObjectIDs(userCreateID)) {
+                  conditionObj.userCreate = userCreateID;
+              }
+
+              if (checkObjectIDs(goodsID)) {
+                  conditionObj.goods = goodsID;
+              }
+
+              if (checkObjectIDs(assetsID)) {
+                  conditionObj.assets = assetsID;
+              }
+
+              if (!isNaN(active) && Number(active) >= 1) {
+                  conditionObj.active = Number(active)
+              }
+
+              if (!isNaN(outin) && Number(outin) >= 1) {
+                  conditionObj.outin = Number(outin)
+              }
+
+              if (!isNaN(type) && Number(type) >= 1) {
+                  conditionObj.type = Number(type)
+              }
+
+              // // Lấy dòng tiền vào ra (có giá trị income > 0)
+              // if(Number(outin) === 1){
+              //     conditionObj.income = { $gt: 0 }
+              // }
+
+              // // Lấy dòng tiền vào ra (có giá trị income > 0)
+              // if(Number(outin) === 2){
+              //     conditionObj.expense = { $gt: 0 }
+              // }
+
+              if (keyword) {
+                  keyword = keyword.split(" ");
+                  keyword = '.*' + keyword.join(".*") + '.*';
+                  conditionObj.name = RegExp(keyword, 'i');
+              }
+              // console.log(conditionObj)
+
+              let conditionObjOrg = { ...conditionObj };
+
+              // PHÂN TRANG KIỂU MỚI
+              if (lastestID && checkObjectIDs(lastestID)) {
+                  let infoData = await STORE_ORDER_COLL.findById(lastestID);
+                  if (!infoData)
+                      return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                  let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                  if (!dataPagingAndSort || dataPagingAndSort.error)
+                      return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                  conditionObj = dataPagingAndSort.data.find;
+                  sortBy = dataPagingAndSort.data.sort;
+              } else {
+                  let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                  sortBy = dataPagingAndSort.data.sort;
+              }
+              // console.log(sortBy)
+
+              let infoDataAfterGet = await STORE_ORDER_COLL.find(conditionObj)
+                  .limit(limit + 1)
+                  .sort(sortBy)
+                  .select(select)
+                  .populate(populates)
+                  .lean();
+
+              if (!infoDataAfterGet)
+                  return resolve({ error: true, message: "Can't get data", status: 403 });
+
+              let nextCursor = null;
+              if (infoDataAfterGet && infoDataAfterGet.length) {
+                  if (infoDataAfterGet.length > limit) {
+                      nextCursor = infoDataAfterGet[limit - 1]._id;
+                      infoDataAfterGet.length = limit;
+                  }
+              }
+
+              let totalRecord = await STORE_ORDER_COLL.count(conditionObjOrg);
+              let totalPage = Math.ceil(totalRecord / limit);
+
+              return resolve({
+                  error: false, data: {
+                      listRecords: infoDataAfterGet,
+                      limit,
+                      totalRecord,
+                      totalPage,
+                      nextCursor,
+                  }, status: 200
+              });
+
+          } catch (error) {
+              return resolve({ error: true, message: error.message, status: 500 });
+          }
+      })
+  }
+
+  /**
+   * Name  : getListByProperty
+   * Author: HiepNH
+   * Date: 2/9/2024
+   */
+  getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate }) {
+      return new Promise(async resolve => {
+          try {
+              /**
+               * BA
+               * 1. Ban đầu query tổng tất cả dữ liệu
+               * 2. Sau bổ sung các phiếu đầu kỳ/kết chuyển số dư
+               */
+              let conditionObj1 = {
+                  company: ObjectID(companyID),
+                  goods: { $exists: true, $ne: null },
+                  active: 1,
+                  outin: 1,
+              }
+              let conditionObj2 = {
+                  company: ObjectID(companyID),
+                  goods: { $exists: true, $ne: null },
+                  active: 1,
+                  outin: 2,
+              }
+
+              // if(fromDate && toDate){
+              //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+              //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+              //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+              //         conditionObj1.date  = { 
+              //             $gte: moment(startTime).toDate(),
+              //             $lte: moment(endTime).toDate()
+              //         }
+              //         conditionObj2.date  = { 
+              //             $gte: moment(startTime).toDate(),
+              //             $lte: moment(endTime).toDate()
+              //         }
+              //     }
+              // }
+
+              if (checkObjectIDs(projectID)) {
+                  conditionObj1.project = ObjectID(projectID);
+                  conditionObj2.project = ObjectID(projectID);
+              }
+
+              if (checkObjectIDs(warehouseID)) {
+                  conditionObj1.warehouse = ObjectID(warehouseID);
+                  conditionObj2.warehouse = ObjectID(warehouseID);
+              }
+
+              if (checkObjectIDs(accountID)) {
+                  conditionObj1.account = ObjectID(accountID);
+                  conditionObj2.account = ObjectID(accountID);
+              }
+
+              if (checkObjectIDs(customerID)) {
+                  conditionObj1.customer = ObjectID(customerID);
+                  conditionObj2.customer = ObjectID(customerID);
+              }
+
+              if (checkObjectIDs(userCreateID)) {
+                  conditionObj1.userCreate = ObjectID(userCreateID);
+                  conditionObj2.userCreate = ObjectID(userCreateID);
+              }
+
+              if (checkObjectIDs(goodsID)) {
+                  conditionObj1.goods = ObjectID(goodsID);
+                  conditionObj2.goods = ObjectID(goodsID);
+              }
+              if (checkObjectIDs(assetsID)) {
+                  conditionObj1.assets = ObjectID(assetsID);
+                  conditionObj2.assets = ObjectID(assetsID);
+              }
+
+              // if (!isNaN(outin) && Number(outin) >= 1) {
+              //     conditionObj1.outin = Number(outin)
+              //     conditionObj2.outin = Number(outin)
+              // }
+
+              if (!isNaN(type) && Number(type) >= 1) {
+                  conditionObj1.type = Number(type)
+                  conditionObj2.type = Number(type)
+              }
+
+              let conditionGroup = {}, conditionPopulate = {}
+
+              conditionGroup = {
+                  _id: { goods: "$goods" },
+                  quantity: { $sum: "$quantity" },
+                  amount: { $sum: "$amount" }
+              }
+              
+              let listData1 = await STORE_ORDER_COLL.aggregate([
+                  {
+                      $match: conditionObj1
+                  },
+                  {
+                      $group: conditionGroup
+                  },
+              ])
+
+              let listData2 = await STORE_ORDER_COLL.aggregate([
+                  {
+                      $match: conditionObj2
+                  },
+                  {
+                      $group: conditionGroup
+                  }
+              ])
+
+              let arr = [...listData1,...listData2]
+
+              let arrCombine = [], arr1 = [], arr2 = []
+              listData1.forEach(item=>{
+                  let key = item._id.goods;
+                  if (!Array.isArray(arr1[key])) {
+                      arr1[key] = [];
+                  }
+                  arr1[key].push(item)
+              })
+
+              listData2.forEach(item=>{
+                  let key = item._id.goods;
+                  if (!Array.isArray(arr2[key])) {
+                      arr2[key] = [];
+                  }
+                  arr2[key].push(item)
+              })
+              // console.log(arr1)
+              // console.log(arr2)
+
+              let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
+              .select('name sign unit')
+
+              listGoods.forEach(item =>{
+                  let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
+
+                  if(arr1[item._id]){
+                      quantityExpense = arr1[item._id][0].quantity
+                      expense = arr1[item._id][0].amount
+                  }
+                  
+                  if(arr2[item._id]){
+                      quantityIncome = arr2[item._id][0].quantity
+                      income = arr2[item._id][0].amount
+                  }
+
+                  arrCombine.push({
+                      _id: item._id,
+                      name: item.name,
+                      unit: item.unit,
+                      quantityIncome: Number(quantityIncome),
+                      income: Number(income),
+                      quantityExpense: Number(quantityExpense),
+                      expense: Number(expense),
+                  })
+              })
+
+              return resolve({ error: false, data: arrCombine })
+          } catch (error) {
+              return resolve({ error: true, message: error.message })
+          }
+      })
+  }
+
 
 }
 
