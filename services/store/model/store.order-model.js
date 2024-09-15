@@ -90,11 +90,11 @@ class Model extends BaseModel {
             let convertStr = ''
             if (name && name != '') {
                 dataInsert.name = name;
-                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                convertStr = convertStr + " " + stringUtils.removeAccents(name)
             }
             if (sign && sign != '') {
                 dataInsert.sign = sign;
-                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                convertStr = convertStr + " " + stringUtils.removeAccents(sign)
             }
             if (note && note != '') {
                 dataInsert.note = note;
@@ -103,6 +103,7 @@ class Model extends BaseModel {
             if(convertStr != ""){
                 dataInsert.namecv = convertStr
             }
+            // console.log(dataInsert)
 
             let infoAfterInsert = await this.insertData(dataInsert);
             if (!infoAfterInsert)
@@ -179,11 +180,11 @@ class Model extends BaseModel {
             let convertStr = ''
             if (name && name != '') {
                 dataUpdate.name = name;
-                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                convertStr = convertStr + " " + stringUtils.removeAccents(name)
             }
             if (sign && sign != '') {
                 dataUpdate.sign = sign;
-                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                convertStr = convertStr + " " + stringUtils.removeAccents(sign)
             }
             if (note && note != '') {
                 dataUpdate.note = note;
