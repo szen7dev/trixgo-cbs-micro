@@ -180,32 +180,32 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 1
     },
-    //________Trừ vi phạm
+    //________Điểm vi phạm
     punishment: {
         type: Number,
         default: 0 
     },
-    //________Trừ bảo hiểm
+    //________Bảo hiểm phải nộp
     insurance: {
         type: Number,
         default: 0 
     },
-    //________Trừ thuế TNCN (Personal income tax)
+    //________Thuế TNCN phải nộp (Personal income tax)
     pitax: {
         type: Number,
         default: 0 
     },
-    //________Trừ công đoàn
+    //________Công đoàn phải nộp
     union: {
         type: Number,
         default: 0 
     },
-    //________Chia sẻ, cho đi
+    //________Trích quỹ tương thân tương ái
     share: {
         type: Number,
         default: 0 
     },
-    //________Trừ khác
+    //________Trả hộ khác
     other: {
         type: Number,
         default: 0 
