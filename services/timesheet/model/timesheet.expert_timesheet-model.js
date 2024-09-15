@@ -94,6 +94,8 @@ class Model extends BaseModel {
                     }
                 }
 
+                // console.log({_________1: unitprice2})
+
                 if(assigneeID){
                     dataInsert.assignee = assigneeID;
                     let infoAssignee = await USER_COLL.findById(assigneeID)
@@ -112,6 +114,8 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                // console.log({_________2: unitprice2})
 
                 if(checkObjectIDs(projectID)){
                     dataInsert.project = projectID;
@@ -159,11 +163,11 @@ class Model extends BaseModel {
                     dataInsert.namecv = convertStr
                 }
 
-                if(unitprice){
+                if(unitprice && unitprice != 0){
                     unitprice2 = Number(unitprice)
                 }
 
-                if(hours){
+                if(hours && hours != 0){
                     hours2 = Number(hours)
                 }
                 
