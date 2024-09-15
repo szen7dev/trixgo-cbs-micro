@@ -39,94 +39,75 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, rating, userID }) {
-        // console.log({ orderID, goodsID, subGoodsID, quantity, unitPrice, note, rating, userID })
+    insert({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, name, note, quantity, unitPrice }) {
+        // console.log({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, name, note, quantity, unitPrice })
+        const that = this
         return new Promise(async resolve => {
             try {
                 /**
-                 * BA
-                 * Bước 1: Khởi tạo đơn hàng
-                 * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
-                 * Bước 3: Tính Chiết khấu, giảm giá => cập nhật giá đơn hàng
-                 * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
+                 * BA-Mục đích
+                 * 1. Tạo sổ quỹ
+                 * 2. Tạo thẻ kho
+                 * 3. Theo dõi công nợ
+                 * 4. Quản lý đơn hàng bán ra
+                 * 5. Đồng bộ doanh thu, nhập xuất với Kế toán
                  */
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                const infoParent = await STORE_ORDER_COLL
+                .findById(orderID)
+                .select('company project warehouse customer contract outin type date')
+                .lean();
+                if(!infoParent)
+                    return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID});
 
-                let infoOrder = await STORE_ORDER_COLL.findById(orderID)
-                if(!infoOrder)
-                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                if (!name)
+                    return resolve({error: true, message: "name invalid", keyError: KEY_ERROR.PARAMS_INVALID});
 
-                // let infoProduct = await STORE_ORDER_PRODUCT_COLL.findById(goodsID)
-                // if(!infoProduct)
-                //     return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-
-                let dataInsert = {
-                    userCreate: userID,
-                    company: infoOrder.company,
-                    funda: infoOrder.funda,
+                let dataInsert = { 
                     order: orderID,
-                    goods: goodsID,
-                    size,
-                    sugar,
-                    ice,
-                    customer: infoOrder.customer,
-                    assignee: infoOrder.assignee,
-                    campaign: infoOrder.campaign,
-                    internal: infoOrder.internal,
-                    area1: infoOrder.area1,
-                    area2: infoOrder.area2,
-                    area3: infoOrder.area3,
-                    seasons: infoOrder.seasons,
-                    shift: infoOrder.shift,
-                    shiftType: infoOrder.shiftType,
-                    business: infoOrder.business,
-                    channel: infoOrder.channel,
-                    salesChannel: infoOrder.salesChannel,
-                    paymentMethod: infoOrder.paymentMethod,
-                    service: infoOrder.service
+                    company: infoParent.company,
+                    project: infoParent.project,
+                    warehouse: infoParent.warehouse,
+                    customer: infoParent.customer,
+                    contract: infoParent.contract,
+                    outin: infoParent.outin,
+                    type: infoParent.type,
+                    date: infoParent.date,
+                    userCreate: userID, 
+                    userCreate: userID, 
+                    admins: [userID], 
+                    members: [userID],
+                    name,
                 }
 
-                if(subGoodsID && checkObjectIDs(subGoodsID)){
-                    dataInsert.subGoods = [...new Set(subGoodsID)];
-                }
-
-                if(rating && !isNaN(rating)){
-                    dataInsert.rating = Number(rating);
-                }
-
-                if(unitPrice && !isNaN(unitPrice)){
-                    dataInsert.unitPrice = Number(unitPrice);
-                    if(quantity && !isNaN(quantity)){
-                        dataInsert.quantity = Number(quantity);
-                        dataInsert.amount = Number(quantity)*Number(unitPrice);
-                    }
-                }
-
-                if(note && note != ""){
+                let convertStr = name
+                if (note && note != '') {
                     dataInsert.note = note;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(convertStr != ""){
+                    dataInsert.namecv = convertStr
+                }
+
+                let unitPrice2 = 0
+                if (unitPrice != 0) {
+                    unitPrice2 = Number(unitPrice)
+                }
+                if (quantity) {
+                    dataInsert.quantity = Number(quantity)
+                }
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity * unitPrice2)
+
+                    dataInsert.unitPrice = unitPrice2
+                    dataInsert.amount = amount
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                /**
-                 * CẬP NHẬT NGUYÊN LIỆU HAO PHÍ VÀO ĐƠN HÀNG
-                 */
-                // const listQuota = await FNB_QUOTA_COLL.find({ product: goodsID })
-                // const orderMaterialAsync = listQuota.map(item => 
-                //     FNB_ORDER_MATERIAL_MODEL.insert({
-                //         orderID,
-                //         goodsID,
-                //         quantityOfProduct: quantity,
-                //         goodsID: item.goods,
-                //         quantity: item.quantity,
-                //         unitPrice: item.unitPrice,
-                //         userID
-                //     })
-                // );
-                // await Promise.all(orderMaterialAsync);
+                // Cập nhật lại thông tin Order
+                await that.updateValue({orderID, userID})
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -136,51 +117,115 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name  : Cập nhật giá trị Order
+     * Code  : HiepNH
+     * Date  : 15/9/2024
+     */
+    updateValue({ orderID, userID }){
+        return new Promise(async (resolve) => {
+            try {    
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                };
+
+                let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $match: {
+                            order: ObjectID(orderID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                if(listData && listData.length){
+                    dataUpdate.amount = Number(listData[0].amount)
+                }
+
+                let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Name: update group
      * Author: Depv
      * Code:
      */
-    update({ goodsID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount  }) {
+    update({ userID, orderProductID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
+        const that = this
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(goodsID))
-                    return resolve({ error: true, message: 'goodsID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(orderProductID))
+                    return resolve({ error: true, message: 'orderProductID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
-
-                if(checkObjectIDs(parentID)){
-                    dataUpdate.parent = parentID;
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                };
+                if (checkObjectIDs(accountID)) {
+                    dataUpdate.account = accountID;
+                }
+                if (checkObjectIDs(customerID)) {
+                    dataUpdate.customer = customerID;
+                }
+                if (checkObjectIDs(contractID)) {
+                    dataUpdate.contract = contractID;
+                }
+                if (checkObjectIDs(goodsID)) {
+                    dataUpdate.goods = goodsID;
+                }
+                if (checkObjectIDs(assetsID)) {
+                    dataUpdate.assets = assetsID;
+                }
+                if (checkObjectIDs(workID)) {
+                    dataUpdate.work = workID;
                 }
 
-                if(name){
-                    dataUpdate.name =name;
+                let convertStr = ''
+                if (name && name != '') {
+                    dataUpdate.name = name;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
                 }
-
-                if(unit && unit != ""){
-                    dataUpdate.unit = unit;
-                }
-
-                if(note && note != ""){
+                if (note && note != '') {
                     dataUpdate.note = note;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
                 }
 
-                if(!isNaN(quantity)){
-                    dataUpdate.quantity = Number(quantity);
+                let unitPrice2 = 0
+                if (unitPrice != 0) {
+                    unitPrice2 = Number(unitPrice)
                 }
-
-                if(!isNaN(unitPrice)){
-                    dataUpdate.unitPrice = Number(unitPrice);
+                if (quantity) {
+                    dataUpdate.quantity = Number(quantity)
                 }
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity * unitPrice2)
 
-                if(!isNaN(amount)){
-                    dataUpdate.amount = Number(amount);
+                    dataUpdate.unitPrice = unitPrice2
+                    dataUpdate.amount = amount
                 }
 
                 console.log({ dataUpdate })
-                let infoAfterUpdate = await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true });
-
+                let infoAfterUpdate = await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(orderProductID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                // Cập nhật lại thông tin Order
+                await that.updateValue({orderID: infoAfterUpdate.order, userID})
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {

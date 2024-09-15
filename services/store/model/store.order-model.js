@@ -5,6 +5,7 @@ const ObjectID = require("mongoose").Types.ObjectId;
 const moment = require("moment");
 
 const { KEY_ERROR } = require("../../../tools/keys");
+const stringUtils					    = require('../../../tools/utils/string_utils');
 const {
   getRequestAPI,
   checkObjectIDs,
@@ -29,6 +30,7 @@ const ITEM__CONTACT_COLL = require("../../item/database/item.contact-coll");
 const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
 const ITEM__DOCTYPE_COLL = require("../../item/database/item.doctype-coll");
 const STORE_ORDER_COLL = require("../database/store.order-coll");
+const STORE_ORDER_PRODUCT_COLL                 = require('../database/store.order_product-coll');
 
 const XlsxPopulate = require("xlsx-populate");
 const fs = require("fs");
@@ -48,7 +50,7 @@ class Model extends BaseModel {
    * Code: 8/9/2024
    */
   insert({ companyID, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note }) {
-    console.log({ companyID, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note })
+    // console.log({ companyID, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note })
     return new Promise(async (resolve) => {
         try {
           if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
@@ -84,14 +86,22 @@ class Model extends BaseModel {
             if (date) {
               dataInsert.date = date;
             }
-            if (name) {
+
+            let convertStr = ''
+            if (name && name != '') {
                 dataInsert.name = name;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
             }
-            if (sign) {
+            if (sign && sign != '') {
                 dataInsert.sign = sign;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
             }
-            if (note) {
+            if (note && note != '') {
                 dataInsert.note = note;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            if(convertStr != ""){
+                dataInsert.namecv = convertStr
             }
 
             let infoAfterInsert = await this.insertData(dataInsert);
@@ -110,194 +120,115 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice }) {
-      // console.log({ cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice })
+  update({ userID, orderID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, members, admins, outin, type, status }) {
+      // console.log({ })
       const that = this
       return new Promise(async (resolve) => {
           try {
-              const infoCashBook = await STORE_ORDER_COLL.findById(cashBookID)
-              .populate('parent')
-              .lean();
+            const infoOrder = await STORE_ORDER_COLL.findById(orderID)
 
-              if(!infoCashBook) {
-                  return resolve({
-                      error: true,
-                      message: 'Cashbook không tồn tại',
-                      keyError: "cashbook_not_exists",
-                      status: 400
-                  });
-              }
+            if(!infoOrder) {
+                return resolve({
+                    error: true,
+                    message: 'Order không tồn tại',
+                    keyError: "order_not_exists",
+                    status: 400
+                });
+            }
 
-              //___________Quyền truy cập ứng dụng Nhân sự
-              let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                  appID: "5f52341f880c2f26c8df8c10",
-                  userID
-              })
+            //___________Quyền truy cập ứng dụng Store
+            let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                appID: "5f52341f880c2f26c8df8c10",
+                userID
+            })
 
-              let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+            let dataUpdate = { 
+                userUpdate: userID, 
+                modifyAt: new Date() 
+            }
 
-              if (checkObjectIDs(projectID)) {
-                  dataUpdate.project = projectID;
-              }
-              if (checkObjectIDs(warehouseID)) {
-                
-                  dataUpdate.warehouse = warehouseID;
-              }
-              if (checkObjectIDs(accountID)) {
-                  dataUpdate.account = accountID;
-              }
-              if (checkObjectIDs(customerID)) {
-                  dataUpdate.customer = customerID;
-              }
-              if (checkObjectIDs(contractID)) {
-                  dataUpdate.contract = contractID;
-              }
-              if (checkObjectIDs(goodsID)) {
-                  dataUpdate.goods = goodsID;
-              }
-              if (checkObjectIDs(assetsID)) {
-                  dataUpdate.assets = assetsID;
-              }
-              if (checkObjectIDs(workID)) {
-                  dataUpdate.work = workID;
-              }
+            if (checkObjectIDs(projectID)) {
+                dataUpdate.project = projectID;
+            }
+            if (checkObjectIDs(warehouseID)) {
+                dataUpdate.warehouse = warehouseID;
+            }
+            if (checkObjectIDs(accountID)) {
+                dataUpdate.account = accountID;
+            }
+            if (checkObjectIDs(customerID)) {
+                dataUpdate.customer = customerID;
+            }
+            if (checkObjectIDs(contractID)) {
+                dataUpdate.contract = contractID;
+            }
+            if (checkObjectIDs(goodsID)) {
+                dataUpdate.goods = goodsID;
+            }
+            if (checkObjectIDs(assetsID)) {
+                dataUpdate.assets = assetsID;
+            }
+            if (checkObjectIDs(workID)) {
+                dataUpdate.work = workID;
+            }
 
-              if (name) {
-                  dataUpdate.name = name;
-              }
+            if (date) {
+                dataUpdate.date = date;
+            }
 
-              if (date) {
-                  dataUpdate.date = date;
-              }
+            let convertStr = ''
+            if (name && name != '') {
+                dataUpdate.name = name;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            if (sign && sign != '') {
+                dataUpdate.sign = sign;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            if (note && note != '') {
+                dataUpdate.note = note;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            if(convertStr != ""){
+                dataUpdate.namecv = convertStr
+            }
 
-              if (sign) {
-                  dataUpdate.sign = sign;
-              }
+            if (!isNaN(outin) && Number(outin) >= 1) {
+                dataUpdate.outin = Number(outin)
+            }
 
-              if (!isNaN(outin) && Number(outin) >= 1) {
-                  dataUpdate.outin = Number(outin)
-              }
+            if (!isNaN(type) && Number(type) >= 1) {
+                dataUpdate.type = Number(type)
+            }
 
-              if (!isNaN(type) && Number(type) >= 1) {
-                  dataUpdate.type = Number(type)
-              }
+            if (status && !isNaN(status) && Number(status) > 0) {
+                dataUpdate.status = status;
+            }
 
-              let unitPrice2 = 0
-              if (unitPrice != 0) {
-                  unitPrice2 = Number(unitPrice)
-              }
-              if (quantity) {
-                  dataUpdate.quantity = Number(quantity)
-              }
-              if(unitPrice2 >= 0){
-                  let amount  = Number(quantity * unitPrice2)
+            // console.log(dataUpdate)
 
-                  dataUpdate.unitPrice = unitPrice2
-                  dataUpdate.amount = amount
-              }
-                
-              if (income >= 0) {
-                  dataUpdate.income = income;
-              }
+            let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
+            if (!infoAfterUpdate)
+                return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
-              if (expense >= 0) {
-                  dataUpdate.expense = expense;
-              }
+            // Cập nhật lại các phần tử con
+            await STORE_ORDER_PRODUCT_COLL.updateMany(
+                { 
+                    order: ObjectID(orderID),
+                },
+                { $set: { 
+                    "status" : infoAfterUpdate.status,
+                    "project" : infoAfterUpdate.project,
+                    "warehouse" : infoAfterUpdate.warehouse,
+                    "customer" : infoAfterUpdate.customer,
+                    "contract" : infoAfterUpdate.contract,
+                    "outin" : infoAfterUpdate.outin,
+                    "type" : infoAfterUpdate.type,
+                    "date" : infoAfterUpdate.date,
+                } }
+            )
 
-              if (note && note != "") {
-                  dataUpdate.note = note;
-              }
-
-              if (active && !isNaN(active) && Number(active) > 0) {
-                  dataUpdate.active = active;
-              }
-
-              // Cập nhật company theo company của parent: áp dụng cho user phân vùng khác thêm sửa mẩu tin
-              if(infoCashBook.parent && infoCashBook.parent.company){
-                  dataUpdate.company = infoCashBook.parent.company
-                  dataUpdate.date = infoCashBook.parent.date
-              }
-              // console.log(dataUpdate)
-
-              const adminsID = [...infoCashBook.admins?.map(item => item.toString()), infoCashBook.userCreate?.toString()];
-
-              if((!infoAppUser.error && infoAppUser.data.level == 0) || adminsID.includes(userID.toString())) {
-                  if(admins && admins.length) {
-                      if(checkObjectIDs(admins)) {
-                          admins = [...new Set(admins)];
-                          dataUpdate.admins = admins;
-                      } else{
-                          dataUpdate.admins = [];
-                      }
-                  }
-
-                  if(members && members.length) {
-                      if(checkObjectIDs(members)) {
-                          members = [...new Set(members)];
-                          dataUpdate.members = members;
-                      } else{
-                          dataUpdate.members = [];
-                      }
-                  }
-              } else{
-                  if(checkObjectIDs(admins)) {
-                      return resolve({
-                          error: true,
-                          message: 'Bạn không có quyền chia sẻ',
-                          keyError: "permission_denined",
-                          status: 403
-                      });
-                  }
-
-                  if(checkObjectIDs(members)) {
-                      return resolve({
-                          error: true,
-                          message: 'Bạn không có quyền chia sẻ',
-                          keyError: "permission_denined",
-                          status: 403
-                      });
-                  }
-              }
-
-              let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
-              if (!infoAfterUpdate)
-                  return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
-              // Cập nhật lại phần tử cha
-              if(checkObjectIDs(infoAfterUpdate.parent)){
-                  await that.updateValue({cashBookID: infoAfterUpdate.parent, userID})
-              }
-
-              // Cập nhật lại các phần tử con
-              if(!infoAfterUpdate.parent){
-                  // Trạng thái của phiếu (hủy bỏ hay không)
-                  if (active && !isNaN(active) && Number(active) > 0) {
-                      await STORE_ORDER_COLL.updateMany(
-                          { 
-                              parent: ObjectID(cashBookID),
-                          },
-                          { $set: { "active" : Number(active)} }
-                      )
-                  }
-
-                  // Cập nhật các thuộc tính khác
-                  await STORE_ORDER_COLL.updateMany(
-                      { 
-                          parent: ObjectID(cashBookID),
-                      },
-                      { $set: { 
-                          "project" : infoAfterUpdate.project,
-                          "warehouse" : infoAfterUpdate.warehouse,
-                          "customer" : infoAfterUpdate.customer,
-                          "contract" : infoAfterUpdate.contract,
-                          "outin" : infoAfterUpdate.outin,
-                          "type" : infoAfterUpdate.type,
-                          "date" : infoAfterUpdate.date,
-                      } }
-                  )
-              }
-
-              return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            return resolve({ error: false, data: infoAfterUpdate, status: 200 });
           } catch (error) {
               return resolve({ error: true, message: error.message, status: 500 });
           }
@@ -310,20 +241,20 @@ class Model extends BaseModel {
    * Date  : 14/4/2022
    */
   updateValue({
-      cashBookID, userID
+      orderID, userID
   }){
       return new Promise(async (resolve) => {
           try {
-              if(!checkObjectIDs(cashBookID))
-                  return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashBookID_invalid" })
-              let infoCashBook = await STORE_ORDER_COLL.findById(cashBookID)
+              if(!checkObjectIDs(orderID))
+                  return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "orderID_invalid" })
+              let infoCashBook = await STORE_ORDER_COLL.findById(orderID)
 
               let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
 
               let listData = await STORE_ORDER_COLL.aggregate([
                   {
                       $match: {
-                          parent: ObjectID(cashBookID),
+                          parent: ObjectID(orderID),
                       }
                   },
                   {
@@ -347,7 +278,7 @@ class Model extends BaseModel {
                   dataUpdate.amount = Number(listData[0].amount)
               }
 
-              let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(cashBookID, dataUpdate, { new: true });
+              let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
               if(!infoAfterUpdate)
                   return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
 
@@ -363,10 +294,10 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getInfo({ cashBookID, select, populates }) {
+  getInfo({ orderID, select, populates }) {
       return new Promise(async resolve => {
           try {
-              if (!checkObjectIDs(cashBookID))
+              if (!checkObjectIDs(orderID))
                   return resolve({ error: true, message: 'param_invalid' });
 
               if (populates && typeof populates === 'string') {
@@ -380,7 +311,7 @@ class Model extends BaseModel {
                   }
               }
 
-              let infoContractIPC = await STORE_ORDER_COLL.findById(cashBookID)
+              let infoContractIPC = await STORE_ORDER_COLL.findById(orderID)
                   .select(select)
                   .populate(populates)
 

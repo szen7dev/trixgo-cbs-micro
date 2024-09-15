@@ -18,7 +18,7 @@ module.exports = {
         auth: "required",
         params: {
             orderID             : { type: "string" },
-            goodsID             : { type: "string" },
+            goodsID             : { type: "string", optional: true  },
             subGoodsID          : { type: "string", optional: true },
             size                : { type: "number", optional: true },
             sugar               : { type: "number", optional: true },
@@ -30,13 +30,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID,  goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, rating } = ctx.params;
+                let { orderID, accountID, customerID, contractID, goodsID, assetsID, name, sign, note, quantity, unitPrice } = ctx.params;
+
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({
-                    orderID, goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, rating, userID
-                });
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, name, sign, note, quantity, unitPrice });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -52,33 +52,18 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
-            mistakeID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            shiftID             : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            appOrderSign        : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            salesChannel        : { type: "number" },
-            paymentMethod       : { type: "number" },
-            shiftType           : { type: "number", optional: true },
-            total               : { type: "number", optional: true },
-            discount            : { type: "number", optional: true },
-            salesoff            : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
-            vatAmount           : { type: "number", optional: true },
+            orderProductID  : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount } = ctx.params;
+                let { orderProductID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice } = ctx.params;
+
+                console.log(ctx.params)
+
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.update({
-                    orderID, userID,
-                    mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount
-                });
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.update({ userID, orderProductID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

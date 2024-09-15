@@ -243,6 +243,7 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     date: { type: Date, default: Date.now },
     //_________Nội dung
     name: String,
+    namecv: String,
     //_________Mã hiệu
     sign: String,
     //_________Ghi chú

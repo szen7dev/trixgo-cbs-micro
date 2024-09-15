@@ -51,31 +51,17 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            cashBookID  : { type: "string" },
-            accountID   : { type: "string", optional: true },
-            customerID  : { type: "string", optional: true },
-            contractID  : { type: "string", optional: true },
-            name        : { type: "string", optional: true },
-            sign        : { type: "string", optional: true },
-            note        : { type: "string", optional: true },
-            date        : { type: "string", optional: true },
-            income      : { type: "number", optional: true },
-            expense     : { type: "number", optional: true },
-            // active      : { type: "number", optional: true },
-            members     : { type: "array", optional: true },
-            admins      : { type: "array", optional: true },
+            orderID  : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, outin, type, quantity, unitPrice } = ctx.params;
-                // console.log(ctx.params)
+                const { orderID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, members, admins, outin, type, status } = ctx.params;
+                console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await STORE_ORDER_MODEL.update({
-                    cashBookID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, income, expense, active, members, admins, userID, outin, type, quantity, unitPrice
-                });
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.update({ userID, orderID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, members, admins, outin, type, status });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -118,7 +104,7 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cashBookID      : { type: "string", optional: true },
+            orderID      : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             accountID       : { type: "string", optional: true },
             customerID      : { type: "string", optional: true },
@@ -137,7 +123,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, active, outin, type, cashBookID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userCreateID, isCompanyOther, keyword, limit, lastestID, populates, select, sortKey, fromDate, toDate
+                let { option, active, outin, type, orderID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userCreateID, isCompanyOther, keyword, limit, lastestID, populates, select, sortKey, fromDate, toDate
                 } = ctx.params;
                 // console.log(ctx.params)
 
@@ -148,9 +134,9 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler;
-                if (cashBookID) {
+                if (orderID) {
                     resultAfterCallHandler = await STORE_ORDER_MODEL.getInfo({
-                        cashBookID, userID, select, populates
+                        orderID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await STORE_ORDER_MODEL.getList({ option, active, outin, type, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userID, userCreateID, isCompanyOther, keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id, fromDate, toDate
