@@ -138,6 +138,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                console.log(ctx.params)
+                
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getList({
@@ -267,7 +269,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.exportExcel2({
+                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.exportExcel({
                     userID, email, companyID, option, month, year, filterParams
                 })
 

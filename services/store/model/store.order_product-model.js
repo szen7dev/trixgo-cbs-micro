@@ -448,7 +448,7 @@ class Model extends BaseModel {
      * Func: Tải excel
      * Date: 4/2/2023
      */
-    exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
+    exportExcel({ companyID, option, year, month, filterParams, email, userID }) {
         // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
