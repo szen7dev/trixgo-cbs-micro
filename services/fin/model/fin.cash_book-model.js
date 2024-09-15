@@ -1670,72 +1670,6 @@ class Model extends BaseModel {
                     }
 
                     /**
-                     * TẢI PHIẾU LƯƠNG
-                     */
-                    if(option == 4){
-                        let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
-                        .populate({
-                            path: 'company human',
-                            select: 'name address fullname contacts position',
-                            populate: ({
-                                path: 'contacts position',
-                                select:'name sign bankAccount bank identity sallaryBasic',
-                                
-                            })
-                        })
-                        // .select('name status date note salary')
-                        // console.log(info.human?.contacts)
-
-                         // Modify the workbook.
-                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_detail.xlsx')))
-                         .then(async workbook => {
-                            
-                            workbook.sheet("Sheet1").row(1).cell(1).value(info.company.name)
-                            workbook.sheet("Sheet1").row(2).cell(1).value(`Địa chỉ: ${info.company?.address}`)
-                            workbook.sheet("Sheet1").row(4).cell(6).value(`Ngày ${moment(info.date).format('DD')} tháng ${moment(info.date).format('MM')} năm ${moment(info.date).format('YYYY')}`);
-
-                            if(info?.human?.contacts.length){
-                                workbook.sheet("Sheet1").row(6).cell(3).value(info?.human.contacts[0]?.sign)     
-                                workbook.sheet("Sheet1").row(7).cell(3).value(info?.human?.fullname)     
-                                workbook.sheet("Sheet1").row(8).cell(3).value(info?.human?.position.name)     
-                                workbook.sheet("Sheet1").row(6).cell(6).value(info?.human.contacts[0]?.sallaryBasic ? Number(info?.human.contacts[0]?.sallaryBasic) : 0)     
-                            }
-
-                            // Lương và phụ cấp
-                            workbook.sheet("Sheet1").row(11).cell(3).value(Number(info.salary))
-                            workbook.sheet("Sheet1").row(12).cell(3).value(Number(info.kpiFactor))
-                            workbook.sheet("Sheet1").row(13).cell(3).value(Number(info.onLeaveSalary))
-                            workbook.sheet("Sheet1").row(14).cell(3).value(Number(info.revenueBonus))
-                            workbook.sheet("Sheet1").row(15).cell(3).value(Number(info.reward))
-                            workbook.sheet("Sheet1").row(16).cell(3).value(Number(info.mealAllowance))
-                            workbook.sheet("Sheet1").row(19).cell(3).value(Number(info.advance))
-                            workbook.sheet("Sheet1").row(20).cell(3).value(Number(info.paid))
-
-                            // Giảm trừ
-                            workbook.sheet("Sheet1").row(11).cell(6).value(Number(info.punishment))
-                            workbook.sheet("Sheet1").row(12).cell(6).value(Number(info.insurance))
-                            workbook.sheet("Sheet1").row(13).cell(6).value(Number(info.pitax))
-                            workbook.sheet("Sheet1").row(14).cell(6).value(Number(info.union))
-                            workbook.sheet("Sheet1").row(15).cell(6).value(Number(info.share))
-                            workbook.sheet("Sheet1").row(16).cell(6).value(Number(info.other))
-
-                            workbook.sheet("Sheet1").row(23).cell(1).value(`Ghi chú: ${info?.note}`);
-
-
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `salary_report${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                            await workbook.toFileAsync(pathWriteFile);
-                            const result = await uploadFileS3(pathWriteFile, fileName);
-
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 });
-                         });
-                    }
-
-                    /**
                      *  BẢNG CÂN ĐỐI TÀI KHOẢN
                      */
                     if(option == 3){
@@ -1931,6 +1865,72 @@ class Model extends BaseModel {
                             fs.unlinkSync(pathWriteFile);
                             return resolve({ error: false, data: result?.Location, status: 200 });
                         });
+                    }
+
+                    /**
+                     * TẢI PHIẾU LƯƠNG
+                     */
+                    if(option == 4){
+                        let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
+                        .populate({
+                            path: 'company human',
+                            select: 'name address fullname contacts position',
+                            populate: ({
+                                path: 'contacts position',
+                                select:'name sign bankAccount bank identity sallaryBasic',
+                                
+                            })
+                        })
+                        // .select('name status date note salary')
+                        // console.log(info.human?.contacts)
+
+                         // Modify the workbook.
+                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_detail.xlsx')))
+                         .then(async workbook => {
+                            
+                            workbook.sheet("Sheet1").row(1).cell(1).value(info.company.name)
+                            workbook.sheet("Sheet1").row(2).cell(1).value(`Địa chỉ: ${info.company?.address}`)
+                            workbook.sheet("Sheet1").row(4).cell(6).value(`Ngày ${moment(info.date).format('DD')} tháng ${moment(info.date).format('MM')} năm ${moment(info.date).format('YYYY')}`);
+
+                            if(info?.human?.contacts.length){
+                                workbook.sheet("Sheet1").row(6).cell(3).value(info?.human.contacts[0]?.sign)     
+                                workbook.sheet("Sheet1").row(7).cell(3).value(info?.human?.fullname)     
+                                workbook.sheet("Sheet1").row(8).cell(3).value(info?.human?.position.name)     
+                                workbook.sheet("Sheet1").row(6).cell(6).value(info?.human.contacts[0]?.sallaryBasic ? Number(info?.human.contacts[0]?.sallaryBasic) : 0)     
+                            }
+
+                            // Lương và phụ cấp
+                            workbook.sheet("Sheet1").row(11).cell(3).value(Number(info.salary))
+                            workbook.sheet("Sheet1").row(12).cell(3).value(Number(info.kpiFactor))
+                            workbook.sheet("Sheet1").row(13).cell(3).value(Number(info.onLeaveSalary))
+                            workbook.sheet("Sheet1").row(14).cell(3).value(Number(info.revenueBonus))
+                            workbook.sheet("Sheet1").row(15).cell(3).value(Number(info.reward))
+                            workbook.sheet("Sheet1").row(16).cell(3).value(Number(info.mealAllowance))
+                            workbook.sheet("Sheet1").row(19).cell(3).value(Number(info.advance))
+                            workbook.sheet("Sheet1").row(20).cell(3).value(Number(info.paid))
+
+                            // Giảm trừ
+                            workbook.sheet("Sheet1").row(11).cell(6).value(Number(info.punishment))
+                            workbook.sheet("Sheet1").row(12).cell(6).value(Number(info.insurance))
+                            workbook.sheet("Sheet1").row(13).cell(6).value(Number(info.pitax))
+                            workbook.sheet("Sheet1").row(14).cell(6).value(Number(info.union))
+                            workbook.sheet("Sheet1").row(15).cell(6).value(Number(info.share))
+                            workbook.sheet("Sheet1").row(16).cell(6).value(Number(info.other))
+
+                            workbook.sheet("Sheet1").row(23).cell(1).value(`Ghi chú: ${info?.note}`);
+
+
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `salary_report${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                         });
                     }
                 }
             } catch (error) {
@@ -2583,10 +2583,10 @@ class Model extends BaseModel {
                 // console.log(listData4)
                 
                 let listUser = await USER_COLL.find({_id: {$in: listData2.map(item=>item._id.assignee)}})
-                .select('fullname department position')
+                .select('fullname department position contacts')
                 .populate({
-                    path:'department position',
-                    select:'name',
+                    path:'department position contacts',
+                    select:'name sallary',
                 })
                 // console.log(listUser)
                 
@@ -2617,6 +2617,10 @@ class Model extends BaseModel {
                             workbook.sheet("Data2").row(i).cell(4).value(`${item.position.name}`)
                             workbook.sheet("Data2").row(i).cell(5).value(`${item._id}`)    
 
+                            if(item?.contacts && item?.contacts?.length){
+                                workbook.sheet("Data2").row(i).cell(38).value(Number(Number(item?.contacts[0].sallary * 12 / 2504).toFixed(0)))
+                            }
+
                             workbook.sheet("Data3").row(i).cell(2).value(`${item.fullname}`).hyperlink(`https://app.trixgo.com/timesheet/mine/${item._id}`)
                             workbook.sheet("Data3").row(i).cell(3).value(`${item.department.name}`)
                             workbook.sheet("Data3").row(i).cell(4).value(`${item.position.name}`)
@@ -2640,7 +2644,7 @@ class Model extends BaseModel {
                                     workbook.sheet("Data1").row(i).cell(j + 5).value(item.quantity);
 
                                     if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                                        workbook.sheet("Data2").row(i).cell(j + 5).value(Number(item.amount)); 
+                                        workbook.sheet("Data2").row(i).cell(j + 5).value(item.quantity != 0 ? Number(item.amount / item.quantity) : ''); 
                                     }
                                 }
                             }
