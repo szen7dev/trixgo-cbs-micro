@@ -12,13 +12,13 @@ module.exports = {
     /**
      * Name: Insert 
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Code: 15/9/2024
      */
     insert: {
         auth: "required",
         params: {
             orderID             : { type: "string" },
-            goodsID             : { type: "string" },
+            goodsID             : { type: "string", optional: true  },
             subGoodsID          : { type: "string", optional: true },
             size                : { type: "number", optional: true },
             sugar               : { type: "number", optional: true },
@@ -30,13 +30,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderID,  goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, rating } = ctx.params;
+                let { orderID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, quantity, unitPrice } = ctx.params;
+
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({
-                    orderID, goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, rating, userID
-                });
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, quantity, unitPrice });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -46,39 +46,25 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH
-	 * Func: update Group
+     * Name: Update 
+     * Author: HiepNH
+     * Code: 15/9/2024
 	 */
     update: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
-            mistakeID           : { type: "string", optional: true },
-            customerID          : { type: "string", optional: true },
-            shiftID             : { type: "string" },
-            name                : { type: "string" },
-            sign                : { type: "string" },
-            appOrderSign        : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            salesChannel        : { type: "number" },
-            paymentMethod       : { type: "number" },
-            shiftType           : { type: "number", optional: true },
-            total               : { type: "number", optional: true },
-            discount            : { type: "number", optional: true },
-            salesoff            : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
-            vatAmount           : { type: "number", optional: true },
+            orderProductID  : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderID, mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount } = ctx.params;
+                let { orderProductID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice } = ctx.params;
+
+                // console.log(ctx.params)
+
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.update({
-                    orderID, userID,
-                    mistakeID, customerID, shiftID, name, sign, appOrderSign, note, shiftType, salesChannel, paymentMethod, total, discount, salesoff, amount, vatAmount
-                });
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.update({ userID, orderProductID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -88,8 +74,9 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH
-	 * Func: remove Group
+     * Name: Remove 
+     * Author: HiepNH
+     * Code: 15/9/2024
 	 */
     remove: {
         auth: "required",
@@ -114,18 +101,14 @@ module.exports = {
     },
 
     /**
-	 * Dev: HiepNH
-	 * Func: getList and getInfo pcm_plan_report
+     * Name: getInfoAndGetList 
+     * Author: HiepNH
+     * Code: 15/9/2024
 	 */
     getInfoAndGetList: {
         auth: "required",
         params: {
-            companyID           : { type: "string", optional: true },
-            fundaID             : { type: "string", optional: true },
-            orderID             : { type: "string", optional: true },
-            fromDate            : { type: "string", optional: true },
-            toDate              : { type: "string", optional: true },
-            salesChannel        : { type: "string", optional: true },
+            orderProductID     : { type: "string", optional: true },
 
             //==============================================
             keyword     : { type: "string", optional: true },
@@ -137,13 +120,28 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                let { orderProductID, option, status, outin, type, companyID, fundaID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                
+                // console.log('====================')
+                // console.log(ctx.params)
+                
+				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getList({
-                        companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler;
+                if (orderProductID) {
+                    resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getInfo({
+                        orderProductID, userID, select, populates
                     });
-
+                } else {
+                    resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getList({
+                        userID, option, status, outin, type, companyID, fundaID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey
+                     });
+ 
+                }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -152,51 +150,38 @@ module.exports = {
     },
 
     /**
-     * Name: Danh sách theo phân loại
+     * Name: getListByProperty 
      * Author: HiepNH
-     * Code: 14/10/2022
-     */
+     * Code: 15/9/2024
+	 */
     getListByProperty: {
+        auth: "required",
         params: {
-            fundasID        : { type: "array", optional: true },
             option          : { type: "string", optional: true },
-            optionGroup     : { type: "string", optional: true },
-            optionTime      : { type: "string", optional: true },
-            year            : { type: "string", optional: true },
-            fromDate        : { type: "string", optional: true },
-            toDate          : { type: "string", optional: true },
-            
-            //_____________THÔNG SỐ MẶC ĐỊNH________________
-            keyword         : { type: "string", optional: true },
-            limit           : { type: "string", optional: true },
-            lastestID       : { type: "string", optional: true },
-            select          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                let { option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID,  fromDate, toDate } = ctx.params;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getListByProperty({
-                    option, optionGroup, optionTime, fundasID, year, fromDate, toDate,
-                     keyword, limit, lastestID, select, populates, sortKey, 
-                     userID
-                    });
-             
+                // console.log(ctx.params)
+                
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getListByProperty({ companyID: company._id, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate })
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error:  true, message: error.message };
+                return { error: true, message: error.message };
             }
         }
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 8/12/2022
-     */
+     * Name: downloadTemplateExcel 
+     * Author: HiepNH
+     * Code: 15/9/2024
+	 */
     downloadTemplateExcel: {
         auth: 'required',
         params: {
@@ -219,14 +204,13 @@ module.exports = {
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 9/12/2022
-     */
+     * Name: importFromExcel 
+     * Author: HiepNH
+     * Code: 15/9/2024
+	 */
     importFromExcel: {
         auth: 'required',
         params: {
-            // taskID    : { type: 'string', optional: true },
             dataImport: { type: 'string' }
         },
         async handler(ctx) {
@@ -246,10 +230,10 @@ module.exports = {
     },
 
     /**
-     * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 9/12/2022
-     */
+     * Name: exportExcel 
+     * Author: HiepNH
+     * Code: 15/9/2024
+	 */
     exportExcel: {
         auth: 'required',
         params: {
@@ -267,7 +251,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.exportExcel2({
+                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.exportExcel({
                     userID, email, companyID, option, month, year, filterParams
                 })
 

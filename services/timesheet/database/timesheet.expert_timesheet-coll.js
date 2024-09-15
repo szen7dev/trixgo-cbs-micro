@@ -56,10 +56,12 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     },
     /**
      * Phân loại lễ tết
-     * 1-Ngày bình thường
-     * 2-Ngày nghỉ phép
-     * 3-Ngày lễ, tết
-     * 4-Ngày công tác
+     * 1-Thông thường
+     * 2-Nghỉ phép
+     * 3-Lễ, tết
+     * 4-Công tác
+     * 5-Du lịch, nghỉ mát
+     * 6-Làm thêm giờ
      */
     subtype: {
         type: Number,

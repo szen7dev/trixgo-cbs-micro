@@ -237,12 +237,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default: 5
     },
-    //_________Trạng thái (1-Hoạt động, 2-Hủy): Sẽ BỎ
-    active: { type: Number, default: 1 },
     //_________Ngày tháng đơn hàng
     date: { type: Date, default: Date.now },
     //_________Nội dung
     name: String,
+    namecv: String,
     //_________Mã hiệu
     sign: String,
     //_________Ghi chú

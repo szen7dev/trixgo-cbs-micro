@@ -5,7 +5,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("store_order_goods", {
+module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
     /**
      * THÔNG TIN PHÂN LOẠI (LẤY TỪ ORDER)
      */
@@ -105,19 +105,18 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_goods", {
      * 3-Đang vận chuyển/giao hàng
      * 4-Giao không thành công
      * 5-Đã giao/Hoàn thành
-     * 6-Đã hủy (cũ là 4)
+     * 6-Hủy bỏ
      * 7-Trả hàng/Hoàn tiền
      */
     status: {
         type: Number,
         default: 5
     },
-    //_________Trạng thái (1-Hoạt động, 2-Hủy): Sẽ BỎ
-    active: { type: Number, default: 1 },
     //_________Ngày tháng
     date: { type: Date, default: Date.now },
     //_________Tên
     name: String,
+    namecv: String,
     //_________Mã hiệu
     sign: String,
     //_________Ghi chú

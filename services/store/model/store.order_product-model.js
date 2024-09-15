@@ -1,24 +1,22 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString, validateParamsObjectID }
-                                        = require('../../../tools/utils/utils');
+const ObjectID                          = require('mongoose').Types.ObjectId;
 const stringUtils					    = require('../../../tools/utils/string_utils');
+const { checkObjectIDs,  IsJsonString}
+                                        = require('../../../tools/utils/utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
-const ObjectID                          = require('mongoose').Types.ObjectId;
+const { template }                      = require('lodash');
+const moment                            = require("moment");
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { template } = require('lodash');
-const moment = require("moment");
-const { getTimeBetween }                       = require('../../../tools/utils/time_utils')
 
-const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
-const STORE_ORDER_COLL                         = require('../database/store.order-coll');
-const STORE_ORDER_PRODUCT_COLL                 = require('../database/store.order_product-coll');
+const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll'); 
+const STORE_ORDER_COLL                  = require('../database/store.order-coll');
+const STORE_ORDER_PRODUCT_COLL          = require('../database/store.order_product-coll');
+const ITEM__GOODS_COLL            		= require('../../item/database/item.goods-coll')
 
 /**
  * import inter-model, exter-model
@@ -39,94 +37,94 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, goodsID, size, sugar, ice, subGoodsID, quantity, unitPrice, note, rating, userID }) {
-        // console.log({ orderID, goodsID, subGoodsID, quantity, unitPrice, note, rating, userID })
+    insert({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
+        // console.log({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice })
+        const that = this
         return new Promise(async resolve => {
             try {
                 /**
-                 * BA
-                 * Bước 1: Khởi tạo đơn hàng
-                 * Bước 2: Thêm sản phẩm vào đơn hàng => cập nhật giá đơn hàng
-                 * Bước 3: Tính Chiết khấu, giảm giá => cập nhật giá đơn hàng
-                 * Bước 4: Khởi tạo nguyên liệu sử dụng cho đơn hàng
+                 * BA-Mục đích
+                 * 1. Tạo sổ quỹ
+                 * 2. Tạo thẻ kho
+                 * 3. Theo dõi công nợ
+                 * 4. Quản lý đơn hàng bán ra
+                 * 5. Đồng bộ doanh thu, nhập xuất với Kế toán
                  */
-                if(!checkObjectIDs(orderID))
-                    return resolve({ error: true, message: 'orderID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                const infoParent = await STORE_ORDER_COLL
+                .findById(orderID)
+                .select('company project warehouse customer contract outin type date')
+                .lean();
+                if(!infoParent)
+                    return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID});
 
-                let infoOrder = await STORE_ORDER_COLL.findById(orderID)
-                if(!infoOrder)
-                    return resolve({ error: true, message: "Đơn hàng không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
+                if (!name)
+                    return resolve({error: true, message: "name invalid", keyError: KEY_ERROR.PARAMS_INVALID});
 
-                // let infoProduct = await STORE_ORDER_PRODUCT_COLL.findById(goodsID)
-                // if(!infoProduct)
-                //     return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
-
-                let dataInsert = {
-                    userCreate: userID,
-                    company: infoOrder.company,
-                    funda: infoOrder.funda,
+                let dataInsert = { 
                     order: orderID,
-                    goods: goodsID,
-                    size,
-                    sugar,
-                    ice,
-                    customer: infoOrder.customer,
-                    assignee: infoOrder.assignee,
-                    campaign: infoOrder.campaign,
-                    internal: infoOrder.internal,
-                    area1: infoOrder.area1,
-                    area2: infoOrder.area2,
-                    area3: infoOrder.area3,
-                    seasons: infoOrder.seasons,
-                    shift: infoOrder.shift,
-                    shiftType: infoOrder.shiftType,
-                    business: infoOrder.business,
-                    channel: infoOrder.channel,
-                    salesChannel: infoOrder.salesChannel,
-                    paymentMethod: infoOrder.paymentMethod,
-                    service: infoOrder.service
+                    company: infoParent.company,
+                    project: infoParent.project,
+                    warehouse: infoParent.warehouse,
+                    customer: infoParent.customer,
+                    contract: infoParent.contract,
+                    outin: infoParent.outin,
+                    type: infoParent.type,
+                    date: infoParent.date,
+                    userCreate: userID, 
+                    userCreate: userID, 
+                    admins: [userID], 
+                    members: [userID],
+                    name,
                 }
 
-                if(subGoodsID && checkObjectIDs(subGoodsID)){
-                    dataInsert.subGoods = [...new Set(subGoodsID)];
+                if (checkObjectIDs(accountID)) {
+                    dataInsert.account = accountID;
+                }
+                if (checkObjectIDs(customerID)) {
+                    dataInsert.customer = customerID;
+                }
+                if (checkObjectIDs(contractID)) {
+                    dataInsert.contract = contractID;
+                }
+                if (checkObjectIDs(goodsID)) {
+                    dataInsert.goods = goodsID;
+                }
+                if (checkObjectIDs(assetsID)) {
+                    dataInsert.assets = assetsID;
+                }
+                if (checkObjectIDs(workID)) {
+                    dataInsert.work = workID;
                 }
 
-                if(rating && !isNaN(rating)){
-                    dataInsert.rating = Number(rating);
-                }
-
-                if(unitPrice && !isNaN(unitPrice)){
-                    dataInsert.unitPrice = Number(unitPrice);
-                    if(quantity && !isNaN(quantity)){
-                        dataInsert.quantity = Number(quantity);
-                        dataInsert.amount = Number(quantity)*Number(unitPrice);
-                    }
-                }
-
-                if(note && note != ""){
+                let convertStr = name
+                if (note && note != '') {
                     dataInsert.note = note;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(convertStr != ""){
+                    dataInsert.namecv = convertStr
+                }
+
+                let unitPrice2 = 0
+                if (unitPrice != 0) {
+                    unitPrice2 = Number(unitPrice)
+                }
+                if (quantity) {
+                    dataInsert.quantity = Number(quantity)
+                }
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity * unitPrice2).toFixed(0)
+
+                    dataInsert.unitPrice = unitPrice2
+                    dataInsert.amount = amount
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                /**
-                 * CẬP NHẬT NGUYÊN LIỆU HAO PHÍ VÀO ĐƠN HÀNG
-                 */
-                // const listQuota = await FNB_QUOTA_COLL.find({ product: goodsID })
-                // const orderMaterialAsync = listQuota.map(item => 
-                //     FNB_ORDER_MATERIAL_MODEL.insert({
-                //         orderID,
-                //         goodsID,
-                //         quantityOfProduct: quantity,
-                //         goodsID: item.goods,
-                //         quantity: item.quantity,
-                //         unitPrice: item.unitPrice,
-                //         userID
-                //     })
-                // );
-                // await Promise.all(orderMaterialAsync);
+                // Cập nhật lại thông tin Order
+                await that.updateValue({orderID, userID})
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -136,51 +134,116 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name  : Cập nhật giá trị Order
+     * Code  : HiepNH
+     * Date  : 15/9/2024
+     */
+    updateValue({ orderID, userID }){
+        return new Promise(async (resolve) => {
+            try {    
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                };
+
+                let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $match: {
+                            order: ObjectID(orderID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                if(listData && listData.length){
+                    dataUpdate.amount = Number(listData[0].amount)
+                }
+
+                let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
      * Name: update group
      * Author: Depv
      * Code:
      */
-    update({ goodsID, userID, parentID, name, sign, unit, note, quantity, unitPrice, amount  }) {
+    update({ userID, orderProductID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
+        const that = this
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(goodsID))
-                    return resolve({ error: true, message: 'goodsID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(orderProductID))
+                    return resolve({ error: true, message: 'orderProductID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                };
 
-                if(checkObjectIDs(parentID)){
-                    dataUpdate.parent = parentID;
+                if (checkObjectIDs(accountID)) {
+                    dataUpdate.account = accountID;
+                }
+                if (checkObjectIDs(customerID)) {
+                    dataUpdate.customer = customerID;
+                }
+                if (checkObjectIDs(contractID)) {
+                    dataUpdate.contract = contractID;
+                }
+                if (checkObjectIDs(goodsID)) {
+                    dataUpdate.goods = goodsID;
+                }
+                if (checkObjectIDs(assetsID)) {
+                    dataUpdate.assets = assetsID;
+                }
+                if (checkObjectIDs(workID)) {
+                    dataUpdate.work = workID;
                 }
 
-                if(name){
-                    dataUpdate.name =name;
+                let convertStr = ''
+                if (name && name != '') {
+                    dataUpdate.name = name;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
                 }
-
-                if(unit && unit != ""){
-                    dataUpdate.unit = unit;
-                }
-
-                if(note && note != ""){
+                if (note && note != '') {
                     dataUpdate.note = note;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
                 }
 
-                if(!isNaN(quantity)){
-                    dataUpdate.quantity = Number(quantity);
+                let unitPrice2 = 0
+                if (unitPrice != 0) {
+                    unitPrice2 = Number(unitPrice)
                 }
-
-                if(!isNaN(unitPrice)){
-                    dataUpdate.unitPrice = Number(unitPrice);
+                if (quantity) {
+                    dataUpdate.quantity = Number(quantity)
                 }
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity * unitPrice2).toFixed(0)
 
-                if(!isNaN(amount)){
-                    dataUpdate.amount = Number(amount);
+                    dataUpdate.unitPrice = unitPrice2
+                    dataUpdate.amount = amount
                 }
+                // console.log({ dataUpdate })
 
-                console.log({ dataUpdate })
-                let infoAfterUpdate = await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true });
-
+                let infoAfterUpdate = await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(orderProductID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                // Cập nhật lại thông tin Order
+                await that.updateValue({orderID: infoAfterUpdate.order, userID})
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -194,10 +257,10 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ goodsID, select, populates={} }) {
+    getInfo({ orderProductID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(goodsID))
+                if(!checkObjectIDs(orderProductID))
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populate
@@ -213,7 +276,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await STORE_ORDER_PRODUCT_COLL.findById(goodsID)
+                let infoPlanGroup = await STORE_ORDER_PRODUCT_COLL.findById(orderProductID)
                                     .select(select)
                                     .populate(populates)
 
@@ -231,12 +294,12 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({ companyID, fundaID, orderID, keyword, limit = 10, lastestID, select, populates, sortKey, userID }) {
-        // console.log({ companyID, keyword, limit, lastestID, select, populates, sortKey, userID })
+    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        // console.log({ option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 10){
-                    limit = 10;
+                if(Number(limit) > 50){
+                    limit = 50;
                 } else{
                     limit = +Number(limit);
                 }
@@ -252,7 +315,10 @@ class Model extends BaseModel {
                     if(fundaID ){
                         conditionObj.funda = ObjectID(fundaID)
                     }else{
-                        conditionObj.company = ObjectID(companyID)
+                        if(option == 1){
+                            conditionObj.company = companyID
+                            conditionObj.goods = { $exists: true, $ne: null }
+                        }
                     }
                 }
 
@@ -263,8 +329,6 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-
-                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
@@ -281,24 +345,53 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(keyword){
+                if (checkObjectIDs(projectID)) {
+                    conditionObj.project = projectID;
+                }
+
+                if (checkObjectIDs(warehouseID)) {
+                    conditionObj.warehouse = warehouseID;
+                }
+
+                if (checkObjectIDs(accountID)) {
+                    conditionObj.account = accountID;
+                }
+
+                if (checkObjectIDs(customerID)) {
+                    conditionObj.customer = customerID;
+                }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj.userCreate = userCreateID;
+                }
+
+                if (checkObjectIDs(goodsID)) {
+                    conditionObj.goods = goodsID;
+                }
+
+                if (checkObjectIDs(assetsID)) {
+                    conditionObj.assets = assetsID;
+                }
+
+                if (!isNaN(status) && Number(status) >= 1) {
+                    conditionObj.status = Number(status)
+                }
+
+                if (!isNaN(outin) && Number(outin) >= 1) {
+                    conditionObj.outin = Number(outin)
+                }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    conditionObj.type = Number(type)
+                }
+
+                if (keyword) {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    const regSearch = new RegExp(keyword, 'i');
-
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    conditionObj.name = RegExp(keyword, 'i');
                 }
-
-                if(select && typeof select === 'string'){
-                    if(!IsJsonString(select))
-                        return resolve({ error: true, message: 'Request params select invalid', status: 400 });
-
-                    select = JSON.parse(select);
-                }
-
+                // console.log(conditionObj)
+                
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
                     let infoData = await STORE_ORDER_PRODUCT_COLL.findById(lastestID);
@@ -349,96 +442,172 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Danh sách theo phân loại
+     * Name  : getListByProperty
      * Author: HiepNH
-     * Code: 24/11/2022
+     * Date: 2/9/2024
      */
-    getListByProperty({ option, optionGroup, optionTime, fundasID, year, fromDate, toDate }) {
-            // console.log({fundasID, fromDate, toDate})
-        return new Promise(async (resolve) => {
+    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate }) {
+        return new Promise(async resolve => {
             try {
-                let duration = getTimeBetween(toDate, fromDate)
-                // console.log({duration:duration/86400})
-                if(Number(duration/86400) > 90){
-                    // return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
-                }else{
-                    let conditionObj = {}
-                    let conditionGroup = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = {"quantity": -1}
-
-                    const validation = validateParamsObjectID({
-                        fundasID            : { value: fundasID, isRequire: false },
-                    });
-                    if(validation.error) return resolve(validation);
-
-                    // Gom nhóm theo đơn vị cơ sở
-                    if(fundasID && fundasID.length ){
-                        let arrFun = fundasID.map(item=>ObjectID(item))
-                        conditionObj.funda = { $in: arrFun }
-                    }
-
-                    // Phân loại theo thời khoảng
-                    if(fromDate && toDate){
-                        conditionObj.createAt = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
-                        }
-                    }
-
-                    /**
-                     * Gom nhóm theo sản phẩm
-                     */
-                    if(option && Number(option) == 1){
-                        conditionGroup = {
-                            _id: { product: "$product" },
-                            quantity: { $sum: "$quantity" },
-                        }
-
-                        conditionPopulate = {
-                            path: '_id.product',
-                            select: '_id name sign',
-                            model: 'fnb_product'
-                        }
-                    }
-
-                    // Danh sách đang triển khai
-                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project : {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
-                                hour : {$hour : "$createAt"},
-                                funda : 1,
-                                order : 1,
-                                product : 1,
-                                quantity : 1,
-                                unitPrice : 1,
-                                amount : 1,
-                            }
-                        },
-                        {
-                            $match: conditionObjYear
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        }
-                    ])
-
-                    if(!isNaN(option) && [1].includes(Number(option))){
-                        await STORE_ORDER_PRODUCT_COLL.populate(listData, conditionPopulate)
-                    }
-
-                    return resolve({ error: false, data: listData })
-                    // return resolve({ error: false, data: [] })
+                /**
+                 * BA
+                 * 1. Ban đầu query tổng tất cả dữ liệu
+                 * 2. Sau bổ sung các phiếu đầu kỳ/kết chuyển số dư
+                 */
+                let conditionObj1 = {
+                    company: ObjectID(companyID),
+                    goods: { $exists: true, $ne: null },
+                    status: 5, // Hoàn thành
+                    outin: 1,
                 }
+                let conditionObj2 = {
+                    company: ObjectID(companyID),
+                    goods: { $exists: true, $ne: null },
+                    status: 5,
+                    outin: 2, // Hoàn thành
+                }
+
+                // if(fromDate && toDate){
+                //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                //         conditionObj1.date  = { 
+                //             $gte: moment(startTime).toDate(),
+                //             $lte: moment(endTime).toDate()
+                //         }
+                //         conditionObj2.date  = { 
+                //             $gte: moment(startTime).toDate(),
+                //             $lte: moment(endTime).toDate()
+                //         }
+                //     }
+                // }
+
+                if (checkObjectIDs(projectID)) {
+                    conditionObj1.project = ObjectID(projectID);
+                    conditionObj2.project = ObjectID(projectID);
+                }
+
+                if (checkObjectIDs(warehouseID)) {
+                    conditionObj1.warehouse = ObjectID(warehouseID);
+                    conditionObj2.warehouse = ObjectID(warehouseID);
+                }
+
+                if (checkObjectIDs(accountID)) {
+                    conditionObj1.account = ObjectID(accountID);
+                    conditionObj2.account = ObjectID(accountID);
+                }
+
+                if (checkObjectIDs(customerID)) {
+                    conditionObj1.customer = ObjectID(customerID);
+                    conditionObj2.customer = ObjectID(customerID);
+                }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj1.userCreate = ObjectID(userCreateID);
+                    conditionObj2.userCreate = ObjectID(userCreateID);
+                }
+
+                if (checkObjectIDs(goodsID)) {
+                    conditionObj1.goods = ObjectID(goodsID);
+                    conditionObj2.goods = ObjectID(goodsID);
+                }
+                if (checkObjectIDs(assetsID)) {
+                    conditionObj1.assets = ObjectID(assetsID);
+                    conditionObj2.assets = ObjectID(assetsID);
+                }
+
+                // if (!isNaN(outin) && Number(outin) >= 1) {
+                //     conditionObj1.outin = Number(outin)
+                //     conditionObj2.outin = Number(outin)
+                // }
+
+                if (!isNaN(type) && Number(type) >= 1) {
+                    conditionObj1.type = Number(type)
+                    conditionObj2.type = Number(type)
+                }
+
+                let conditionGroup = {}, conditionPopulate = {}
+
+                conditionGroup = {
+                    _id: { goods: "$goods" },
+                    quantity: { $sum: "$quantity" },
+                    amount: { $sum: "$amount" }
+                }
+                
+                let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $match: conditionObj1
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                ])
+
+                let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $match: conditionObj2
+                    },
+                    {
+                        $group: conditionGroup
+                    }
+                ])
+
+                // console.log(listData1)
+                // console.log(listData2)
+
+                let arr = [...listData1,...listData2]
+
+                let arrCombine = [], arr1 = [], arr2 = []
+                listData1.forEach(item=>{
+                    let key = item._id.goods;
+                    if (!Array.isArray(arr1[key])) {
+                        arr1[key] = [];
+                    }
+                    arr1[key].push(item)
+                })
+
+                listData2.forEach(item=>{
+                    let key = item._id.goods;
+                    if (!Array.isArray(arr2[key])) {
+                        arr2[key] = [];
+                    }
+                    arr2[key].push(item)
+                })
+                // console.log(arr1)
+                // console.log(arr2)
+
+                let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
+                .select('name sign unit')
+
+                listGoods.forEach(item =>{
+                    let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
+
+                    if(arr1[item._id]){
+                        quantityExpense = arr1[item._id][0].quantity
+                        expense = arr1[item._id][0].amount
+                    }
+                    
+                    if(arr2[item._id]){
+                        quantityIncome = arr2[item._id][0].quantity
+                        income = arr2[item._id][0].amount
+                    }
+
+                    arrCombine.push({
+                        _id: item._id,
+                        name: item.name,
+                        unit: item.unit,
+                        quantityIncome: Number(quantityIncome),
+                        income: Number(income),
+                        quantityExpense: Number(quantityExpense),
+                        expense: Number(expense),
+                    })
+                })
+
+                // console.log(arrCombine)
+
+                return resolve({ error: false, data: arrCombine })
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message })
             }
         })
     }
@@ -448,7 +617,7 @@ class Model extends BaseModel {
      * Func: Tải excel
      * Date: 4/2/2023
      */
-    exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
+    exportExcel({ companyID, option, year, month, filterParams, email, userID }) {
         // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {

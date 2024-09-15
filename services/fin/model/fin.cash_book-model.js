@@ -30,6 +30,8 @@ const FINANCIAL_GENERAL_JOURNAL_COLL     = require('../.../../../accounting/data
 const TIMESHEET__EXPERT_TIMESHEET_COLL   = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL      = require('../../timesheet/database/timesheet.expert_salary-coll')
 const ITEM__GOODS_COLL            		 = require('../../item/database/item.goods-coll')
+const STORE_ORDER_PRODUCT_COLL           = require('../../store/database/store.order_product-coll');
+const STORE_ORDER_COLL                   = require("../../store/database/store.order-coll");
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -2696,8 +2698,8 @@ class Model extends BaseModel {
 
             // Tải Phiếu kho
             else if(option == 5){
-                let infoParent = await FIN__CASH_BOOK_COLL.findById(parentID).select('name sign date')
-                let listData = await FIN__CASH_BOOK_COLL.find({parent: parentID})
+                let infoParent = await STORE_ORDER_COLL.findById(parentID).select('name sign date')
+                let listData = await STORE_ORDER_PRODUCT_COLL.find({order: parentID})
                 .populate({
                     path: 'goods work assets',
                     select:'name unit'

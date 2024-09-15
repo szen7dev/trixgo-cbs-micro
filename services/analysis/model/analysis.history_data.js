@@ -37,9 +37,13 @@ const HUMAN__CONTACT_DOCUMENT_COLL              = require('../../human/database/
 const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL             = require('../../timesheet/database/timesheet.expert_salary-coll')
 const PCM_PLAN_GROUP_COLL            		    = require('../../subject_pcm/database/subject_pcm.pcm_plan_group-coll');
-const e = require('express');
+const FIN__CASH_BOOK_COLL                       = require('../../fin/database/fin.cash_book-coll');
+// const STORE_ORDER_PRODUCT_COLL                  = require('../../store/database/store.order_product-coll');
+// const STORE_ORDER_COLL                          = require("../../store/database/store.order-coll");
 
 const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/model/subject_pcm.pcm_plan_group').MODEL
+const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
+const STORE_ORDER_PRODUCT_MODEL                 = require('../../store/model/store.order_product-model.js').MODEL;
 
 class Model extends BaseModel {
 
@@ -681,6 +685,85 @@ class Model extends BaseModel {
                         return resolve({ error: false, message: "Done", data: {page} })
                     }else{
                         let number = await ITEM__GOODS_COLL.count(conditionObj)
+                        return resolve({ error: false, number: number })
+                    }
+                }
+
+                // Convert Cashbook to Store order/product
+                else if(option == 16){
+                    // let selectObj = '_id name sign unit note amount date'
+
+                    if(companyID && checkObjectIDs(companyID)){
+                        conditionObj.company = ObjectID(companyID)
+                    }
+
+                    conditionObj.parent = { $exists: false }
+                    conditionObj.active = 1 // Chỉ lấy phiếu đã hoàn thành
+
+                    if(!getNumber){
+                        let limit = Number(page * unit)
+                        let listData = await FIN__CASH_BOOK_COLL.find(conditionObj)
+                        .select('_id')
+                        .sort({_id: 1})
+                        .limit(limit)
+                        .lean()
+    
+                        let infoBegin = listData[Number(page - 1)*unit]
+                        let infoEnd = listData.slice(-1)
+
+                        conditionObj._id = { $gte: ObjectID(infoBegin._id), $lte: ObjectID(infoEnd._id)}
+    
+                        let listDataConvert = await FIN__CASH_BOOK_COLL.find(conditionObj)
+                        // .select(selectObj)
+                        .sort({_id: 1})
+                        .lean()
+
+                        // console.log(listDataConvert)
+    
+                        for(const item of listDataConvert){
+                            let listData = await FIN__CASH_BOOK_COLL.find({ parent: item._id })
+                            
+                            // console.log(item)
+                            // Tạo phiếu
+                            let infoOrder = await STORE_ORDER_MODEL.insert({
+                                companyID: item.company, 
+                                userID: item.userCreate, 
+                                outin: item.outin, 
+                                type: item.type, 
+                                projectID: item.project, 
+                                warehouseID: item.warehouse, 
+                                customerID: item.customer, 
+                                contractID: item.contract, 
+                                date: item.date, 
+                                name: item.name, 
+                                sign: item.sign, 
+                                note: item.note 
+                            })
+                            // console.log(infoOrder)
+
+                            // Tạo chi tiết
+                            if(infoOrder){
+                                for(const subitem of listData){
+                                    await STORE_ORDER_PRODUCT_MODEL.insert({ 
+                                        userID: item.userCreate, 
+                                        orderID: infoOrder.data._id, 
+                                        accountID: subitem.account, 
+                                        customerID: subitem.customer, 
+                                        contractID: subitem.contract, 
+                                        goodsID: subitem.goods, 
+                                        assetsID: subitem.assets, 
+                                        name: subitem.name, 
+                                        note: subitem.note, 
+                                        quantity: subitem.quantity, 
+                                        unitPrice: subitem.unitPrice 
+                                    })
+                                }
+                            }
+                        }
+    
+                        return resolve({ error: false, message: "Done", data: {page} })
+                    }else{
+                        let number = await FIN__CASH_BOOK_COLL.count(conditionObj)
                         return resolve({ error: false, number: number })
                     }
                 }
