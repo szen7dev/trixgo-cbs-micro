@@ -37,8 +37,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, name, note, quantity, unitPrice }) {
-        // console.log({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, name, note, quantity, unitPrice })
+    insert({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
+        // console.log({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -77,6 +77,25 @@ class Model extends BaseModel {
                     name,
                 }
 
+                if (checkObjectIDs(accountID)) {
+                    dataInsert.account = accountID;
+                }
+                if (checkObjectIDs(customerID)) {
+                    dataInsert.customer = customerID;
+                }
+                if (checkObjectIDs(contractID)) {
+                    dataInsert.contract = contractID;
+                }
+                if (checkObjectIDs(goodsID)) {
+                    dataInsert.goods = goodsID;
+                }
+                if (checkObjectIDs(assetsID)) {
+                    dataInsert.assets = assetsID;
+                }
+                if (checkObjectIDs(workID)) {
+                    dataInsert.work = workID;
+                }
+
                 let convertStr = name
                 if (note && note != '') {
                     dataInsert.note = note;
@@ -94,7 +113,7 @@ class Model extends BaseModel {
                     dataInsert.quantity = Number(quantity)
                 }
                 if(unitPrice2 >= 0){
-                    let amount  = Number(quantity * unitPrice2)
+                    let amount  = Number(quantity * unitPrice2).toFixed(0)
 
                     dataInsert.unitPrice = unitPrice2
                     dataInsert.amount = amount
@@ -171,6 +190,7 @@ class Model extends BaseModel {
                     userUpdate: userID, 
                     modifyAt: new Date() 
                 };
+
                 if (checkObjectIDs(accountID)) {
                     dataUpdate.account = accountID;
                 }
@@ -211,7 +231,7 @@ class Model extends BaseModel {
                     dataUpdate.quantity = Number(quantity)
                 }
                 if(unitPrice2 >= 0){
-                    let amount  = Number(quantity * unitPrice2)
+                    let amount  = Number(quantity * unitPrice2).toFixed(0)
 
                     dataUpdate.unitPrice = unitPrice2
                     dataUpdate.amount = amount
@@ -274,12 +294,12 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({  option, status, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-        // console.log({ option, status, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword })
+    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        // console.log({ option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 10){
-                    limit = 10;
+                if(Number(limit) > 50){
+                    limit = 50;
                 } else{
                     limit = +Number(limit);
                 }
@@ -292,15 +312,13 @@ class Model extends BaseModel {
                 if(orderID ){
                     conditionObj.order = ObjectID(orderID)
                 }else{
-                    // if(fundaID ){
-                    //     conditionObj.funda = ObjectID(fundaID)
-                    // }else{
-                    //     conditionObj.company = ObjectID(companyID)
-                    // }
-
-                    if(option == 1){
-                        conditionObj.company = companyID
-                        conditionObj.goods = { $exists: true, $ne: null }
+                    if(fundaID ){
+                        conditionObj.funda = ObjectID(fundaID)
+                    }else{
+                        if(option == 1){
+                            conditionObj.company = companyID
+                            conditionObj.goods = { $exists: true, $ne: null }
+                        }
                     }
                 }
 
@@ -311,8 +329,6 @@ class Model extends BaseModel {
 
                     keys = JSON.parse(sortKey);
                 }
-
-                // console.log(conditionObj)
 
                 /**
                  * ĐIỀU KIỆN KHÁC
