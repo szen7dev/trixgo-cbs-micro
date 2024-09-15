@@ -1626,21 +1626,8 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { },
-                                salary: { $sum:"$salary" },
-                                onLeaveSalary: { $sum:"$onLeaveSalary" },
-                                overtimeSalary: { $sum:"$overtimeSalary" },
-                                revenueBonus: { $sum:"$revenueBonus" },
-                                reward: { $sum:"$reward" },
-                                mealAllowance: { $sum:"$mealAllowance" },
-                                punishment: { $sum:"$punishment" },
-                                insurance: { $sum:"$insurance" },
-                                pitax: { $sum:"$pitax" },
-                                union: { $sum:"$union" },
-                                share: { $sum:"$share" },
-                                other: { $sum:"$other" },
-                                advance: { $sum:"$advance" },
-                                paid: { $sum:"$paid" },
-                                remaining: { $sum:"$remaining" },
+                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
+                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
                             }
                         },
                     ])
