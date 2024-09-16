@@ -318,8 +318,8 @@ class Model extends BaseModel {
                 if(subtype && Number(subtype) != Number(infoTimeSheetID.subtype)){
                     dataUpdate.subtype = subtype;
 
-                    // Ngày nghỉ phép, lễ/tết, công tác
-                    if([2,3,4].includes(Number(subtype))){
+                    // Ngày nghỉ phép, lễ/tết, du lịch/nghỉ mát: Lương cơ bản
+                    if([2,3,5].includes(Number(subtype))){
                         let newAssigneeID
                         if(assigneeID){
                             newAssigneeID = assigneeID
