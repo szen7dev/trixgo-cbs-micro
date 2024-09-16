@@ -92,7 +92,7 @@ class Model extends BaseModel {
                         dataInsert.project = infoParent.assignee.department;
                         dataInsert.position = infoParent.assignee.position;
 
-                        if(infoParent.assignee.contacts){
+                        if(infoParent.assignee?.contacts && infoParent.assignee?.contacts[0]?.sallary){
                             unitprice2 = Number(Number(infoParent.assignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
                         }
                     }
@@ -114,7 +114,7 @@ class Model extends BaseModel {
                         dataInsert.project = infoAssignee.department;
                         dataInsert.position = infoAssignee.position;
 
-                        if(infoAssignee.contacts){
+                        if(infoAssignee.contacts && infoAssignee?.contacts[0]?.sallary){
                             unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
                         }
                     }
@@ -128,6 +128,12 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(projectID)){
                     dataInsert.project = projectID;
+                }else{
+                    if(!infoParent || !infoParent.assignee){
+                        let infoUser = await USER_COLL.findById(userCreate)
+                        dataInsert.project = infoUser.department;
+                        dataInsert.position = infoUser.position;
+                    }
                 }
 
                 if(checkObjectIDs(fundaID)){
@@ -296,7 +302,7 @@ class Model extends BaseModel {
                     }
 
                     // Nếu chọn thay đổi người thực hiện
-                    if(checkObjectIDs(assigneeID) && infoAssignee.contacts){
+                    if(checkObjectIDs(assigneeID) && infoAssignee.contacts && infoAssignee.contacts[0]?.sallary){
                         unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
                     }
 

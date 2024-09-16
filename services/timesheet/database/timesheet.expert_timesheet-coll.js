@@ -95,10 +95,10 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         default: 0
     },
 
-    //________Trạng thái (1- Hoàn thành/ 0 Chưa hoàn thành)
+    //________Trạng thái (1-Active|2-Khóa)
     status: {
         type: Number,
-        default: 0
+        default: 1
     },
 
     //_________Người phê duyệt
