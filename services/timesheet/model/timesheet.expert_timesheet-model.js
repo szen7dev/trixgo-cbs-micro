@@ -59,7 +59,10 @@ class Model extends BaseModel {
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
-                    userCreate, name, admins: [userCreate], members: [userCreate]
+                    userCreate, 
+                    name, 
+                    admins: [userCreate], 
+                    members: [userCreate]
                 }
 
                 if(companyID){
@@ -67,9 +70,10 @@ class Model extends BaseModel {
                 }
 
                 let unitprice2 = 0, hours2 = 0
+                let infoParent
 
                 if(checkObjectIDs(parentID)){
-                    let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID)
+                    infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID)
                     .populate({
                         path: 'assignee',
                         select: '_id department position contacts',
@@ -88,7 +92,7 @@ class Model extends BaseModel {
                         dataInsert.project = infoParent.assignee.department;
                         dataInsert.position = infoParent.assignee.position;
 
-                        if(infoParent.assignee.contacts){
+                        if(infoParent.assignee?.contacts && infoParent.assignee?.contacts[0]?.sallary){
                             unitprice2 = Number(Number(infoParent.assignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
                         }
                     }
@@ -98,6 +102,7 @@ class Model extends BaseModel {
 
                 if(assigneeID){
                     dataInsert.assignee = assigneeID;
+
                     let infoAssignee = await USER_COLL.findById(assigneeID)
                     .select('department position contacts')
                     .populate({
@@ -109,9 +114,13 @@ class Model extends BaseModel {
                         dataInsert.project = infoAssignee.department;
                         dataInsert.position = infoAssignee.position;
 
-                        if(infoAssignee.contacts){
+                        if(infoAssignee.contacts && infoAssignee?.contacts[0]?.sallary){
                             unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
                         }
+                    }
+                }else{
+                    if(!infoParent || !infoParent.assignee){
+                        dataInsert.assignee = userCreate;
                     }
                 }
 
@@ -119,6 +128,12 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(projectID)){
                     dataInsert.project = projectID;
+                }else{
+                    if(!infoParent || !infoParent.assignee){
+                        let infoUser = await USER_COLL.findById(userCreate)
+                        dataInsert.project = infoUser.department;
+                        dataInsert.position = infoUser.position;
+                    }
                 }
 
                 if(checkObjectIDs(fundaID)){
@@ -287,7 +302,7 @@ class Model extends BaseModel {
                     }
 
                     // Nếu chọn thay đổi người thực hiện
-                    if(checkObjectIDs(assigneeID) && infoAssignee.contacts){
+                    if(checkObjectIDs(assigneeID) && infoAssignee.contacts && infoAssignee.contacts[0]?.sallary){
                         unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
                     }
 
@@ -340,6 +355,10 @@ class Model extends BaseModel {
                 if(approver){
                     dataUpdate.approver = approver;
                     dataUpdate.timeApprover =  Date.now();
+                }
+
+                if(status){
+                    dataUpdate.status = status;
                 }
 
                 let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]
