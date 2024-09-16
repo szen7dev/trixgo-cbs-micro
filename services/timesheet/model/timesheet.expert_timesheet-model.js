@@ -206,14 +206,9 @@ class Model extends BaseModel {
             const that = this
             try {
                 let infoTimeSheetID = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
-                if(!infoTimeSheetID) {
-                    return resolve({
-                        error: true,
-                        message: 'Timesheet không tồn tại',
-                        keyError: "timesheet_not_exists",
-                        status: 400
-                    })
-                }
+                if(!infoTimeSheetID) 
+                    return resolve({ error: true, message: 'Timesheet không tồn tại', keyError: "timesheet_not_exists", status: 400 })
+                
 
                 //___________Quyền truy cập ứng dụng
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -251,26 +246,18 @@ class Model extends BaseModel {
                 }
                 // console.log({unitprice2})
 
-                if(name && name != ""){
-                    dataUpdate.name = name;
-                }
-
                 if(location && location != ""){
                     dataUpdate.location = location;
                 }
 
-                if(note && note != ""){
-                    dataUpdate.note = note;
-                }
-
-                /**
-                 * Convert to query
-                 */
+                // Convert to query
                 let convertStr = ''
                 if(name && name != ""){
+                    dataUpdate.name = name;
                     convertStr = stringUtils.removeAccents(name)
                 }
                 if(note && note != ""){
+                    dataUpdate.note = note;
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
                 if(convertStr != ""){
@@ -309,47 +296,44 @@ class Model extends BaseModel {
                     dataUpdate.hours = hours2
                     dataUpdate.unitprice = unitprice2
                     dataUpdate.amount = amount
-                }
 
-                if(status){
-                    dataUpdate.status = status;
-                }
-
-                if(subtype && Number(subtype) != Number(infoTimeSheetID.subtype)){
-                    dataUpdate.subtype = subtype;
-
-                    // Ngày nghỉ phép, lễ/tết, du lịch/nghỉ mát: Lương cơ bản
-                    if([2,3,5].includes(Number(subtype))){
-                        let newAssigneeID
-                        if(assigneeID){
-                            newAssigneeID = assigneeID
-                        }else{
-                            newAssigneeID = infoTimeSheetID.assignee
-                        }
-                        // console.log(newAssigneeID)
-
-                        let infoUser = await USER_COLL.findById(newAssigneeID)
-                        .select('contacts')
-                        .populate({
-                            path: 'contacts',
-                            select: 'company sallaryBasic insuranceFee union share'
-                        })
-                        // console.log(infoUser)
-
-                        let unitprice2New = 0
-                        if(infoUser.contacts && infoUser.contacts.length){
-                            for(const contact of infoUser.contacts){
-                                if(contact.company.toString() === infoTimeSheetID.company.toString() && contact.sallaryBasic){
-                                    // Tính toán cho 1 năm 365 ngày - 52 ngày nghỉ (tuần nghỉ 1 ngày)*8h. Tổng lương cơ bản * 12 tháng
-                                    unitprice2New = Number(unitprice2New) + Number(contact.sallaryBasic*12/(8*(365-52)))
+                    if(Number(subtype) != Number(infoTimeSheetID.subtype)){
+                        
+                        dataUpdate.subtype = subtype;
+    
+                        // Ngày nghỉ phép, lễ/tết, du lịch/nghỉ mát: Lương cơ bản
+                        if([2,3,5].includes(Number(subtype))){
+                            let newAssigneeID
+                            if(assigneeID){
+                                newAssigneeID = assigneeID
+                            }else{
+                                newAssigneeID = infoTimeSheetID.assignee
+                            }
+                            // console.log(newAssigneeID)
+    
+                            let infoUser = await USER_COLL.findById(newAssigneeID)
+                            .select('contacts')
+                            .populate({
+                                path: 'contacts',
+                                select: 'company sallaryBasic'
+                            })
+                            // console.log(infoUser)
+    
+                            let unitprice2New = 0
+                            if(infoUser.contacts && infoUser.contacts.length){
+                                for(const contact of infoUser.contacts){
+                                    if(contact.company.toString() === infoTimeSheetID.company.toString() && contact.sallaryBasic){
+                                        // Tính toán cho 1 năm 365 ngày - 52 ngày nghỉ (tuần nghỉ 1 ngày)*8h. Tổng lương cơ bản * 12 tháng
+                                        unitprice2New = Number(unitprice2New) + Number(contact.sallaryBasic*12/(8*(365-52)))
+                                    }
                                 }
                             }
+                            // console.log(unitprice2New)
+    
+                            let amount  = hours * Number(unitprice2New).toFixed(0)
+                            dataUpdate.unitprice = Number(unitprice2New).toFixed(0)
+                            dataUpdate.amount = amount
                         }
-                        // console.log(unitprice2New)
-
-                        let amount  = hours * Number(unitprice2New).toFixed(0)
-                        dataUpdate.unitprice = Number(unitprice2New).toFixed(0)
-                        dataUpdate.amount = amount
                     }
                 }
 
@@ -359,9 +343,6 @@ class Model extends BaseModel {
                 }
 
                 let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]
-                // console.log({admins})
-                // console.log({members})
-                // console.log({adminsID})
 
                 if(adminsID.includes(userID.toString()) || infoAppUser.data.level == 0) {
                     if(admins) {
@@ -400,16 +381,15 @@ class Model extends BaseModel {
                         });
                     }
                 }
-                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
-                if(!infoAfterUpdate) {
+                if(!infoAfterUpdate) 
                     return resolve({
                         error: true,
                         message: "Cannot update",
                         keyError: "cannot_update",
-                    });
-                }
+                    })
+                
 
                 // Cập nhật cho mẩu tin cha
                 if(infoAfterUpdate.parent){
@@ -417,23 +397,22 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật số ngày nghỉ phép trong năm tới hiện tại: USER_COLL
-                if(infoAfterUpdate.parent && subtype == 2){
+                if(infoAfterUpdate.parent && (subtype == 2 || infoTimeSheetID.subtype == 2)){
                     let year = new Date(date).getFullYear()
                     let numberOnLeave = await TIMESHEET__EXPERT_TIMESHEET_COLL.count({ 
                         assignee: infoAfterUpdate.assignee, 
                         subtype: 2,
                         $where: `return this.date.getFullYear() === ${Number(year)}`
                     })
-                    // console.log({numberOnLeave})
                     
                     await USER_COLL.findByIdAndUpdate(infoAfterUpdate.assignee, {
                         numberOnLeave: numberOnLeave
                     }, { new: true })
                 }
 
-                return resolve({ error: false, data: infoAfterUpdate });
+                return resolve({ error: false, data: infoAfterUpdate })
             } catch (error) {
-                return resolve({ error: true, message: error.message });
+                return resolve({ error: true, message: error.message })
             }
         })
     }
