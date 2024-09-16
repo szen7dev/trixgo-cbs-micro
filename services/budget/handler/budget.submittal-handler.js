@@ -54,15 +54,15 @@
      update: {
          auth: "required",
          params: {
-            submitID       : { type: "string" },
+            submitID             : { type: "string" },
              workID              : { type: "string", optional: true },
              name                : { type: "string", optional: true },
              sign                : { type: "string", optional: true },
              unit                : { type: "string", optional: true },
              note                : { type: "string", optional: true },
              plus                : { type: "number", optional: true },
-             quantity            : { type: "number" },
-             unitPrice           : { type: "number" },
+             quantity            : { type: "number", optional: true },
+             unitPrice           : { type: "number", optional: true },
          },
          async handler(ctx) {  
              try {
