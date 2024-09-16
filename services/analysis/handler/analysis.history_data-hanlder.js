@@ -101,7 +101,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { option, companyID, page, unit, getNumber, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, docID, parentID, goodsID } = ctx.params;
+                let { option, companyID, page, unit, getNumber, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, month, year, docID, parentID, goodsID } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -110,7 +110,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await ANALYSIS__HISTORY_DATA_MODEL.convertData({
-                    option, email, userID, companyID, page, unit, getNumber, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, docID, parentID, goodsID
+                    option, email, userID, companyID, page, unit, getNumber, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, month, year, docID, parentID, goodsID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -488,6 +488,8 @@ class Model extends BaseModel {
                     },
                 ])
 
+                // console.log(listData)
+
                 /**
                  * Lương nghỉ phép, lễ tết
                  * - Nghỉ phép: 2
@@ -527,6 +529,8 @@ class Model extends BaseModel {
                     },
                 ])
 
+                // console.log(listData2)
+
                 /**
                  * Lương làm thêm
                  * - Làm thêm: 6
@@ -565,6 +569,8 @@ class Model extends BaseModel {
                     },
                 ])
 
+                // console.log(listData3)
+
                 let arr1 = [], arr2 = [], arr3 = []
                 listData.forEach(item=>{
                     let key = item._id.assignee;
@@ -601,29 +607,24 @@ class Model extends BaseModel {
                         human: item,
                     })
 
+                    // if(item.toString() === '6046bcf1b55525368b11ab9c'){
+                    //     console.log(info)
+                    // }
+
                     if(info){
                         if(arr1[item]){
                             hours1 = Number(arr1[item][0].quantity).toFixed(2)
                             salary = Number(arr1[item][0].amount).toFixed(0)
-                        }else{
-                            hours1 = info.hours1
-                            salary = info.salary
                         }
 
                         if(arr2[item]){
                             hours2 = Number(arr2[item][0].quantity).toFixed(2)
                             onLeaveSalary = Number(arr2[item][0].amount).toFixed(0)
-                        }else{
-                            hours2 = info.hours2
-                            onLeaveSalary = info.onLeaveSalary
                         }
 
                         if(arr3[item]){
                             hours3 = Number(arr3[item][0].quantity).toFixed(2)
                             overtimeSalary = Number(arr3[item][0].amount).toFixed(0)
-                        }else{
-                            hours3 = info.hours3
-                            overtimeSalary = info.overtimeSalary
                         }
             
                         reward = info.reward

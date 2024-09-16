@@ -44,6 +44,7 @@ const FIN__CASH_BOOK_COLL                       = require('../../fin/database/fi
 const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/model/subject_pcm.pcm_plan_group').MODEL
 const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
 const STORE_ORDER_PRODUCT_MODEL                 = require('../../store/model/store.order_product-model.js').MODEL;
+const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model.js').MODEL;
 
 class Model extends BaseModel {
 
@@ -142,7 +143,7 @@ class Model extends BaseModel {
         })
     }
 
-    convertData({ option, companyID, userID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, docID, parentID, goodsID }){
+    convertData({ option, companyID, userID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, month, year, docID, parentID, goodsID }){
         // console.log({ option, companyID, page, unit, getNumber, newPassword })
         const that = this
         return new Promise(async resolve => { 
@@ -689,7 +690,10 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Convert Cashbook to Store order/product
+                /**
+                 * Convert Cashbook to Store order/product
+                 * => Ứng dụng được chuyển từ Kho sang Kế toán
+                 */
                 else if(option == 16){
                     // let selectObj = '_id name sign unit note amount date'
 
@@ -765,6 +769,89 @@ class Model extends BaseModel {
                     }else{
                         let number = await FIN__CASH_BOOK_COLL.count(conditionObj)
                         return resolve({ error: false, number: number })
+                    }
+                }
+
+                /**
+                 * Chuẩn hóa bảng lương về đơn giá quy định của ngày làm việc thông thường
+                 */
+                // else if(option == 17){
+                //     let listHuman = await USER_COLL.find({ company: companyID, status: 1 })
+                //     .select('contacts fullname')
+                //     .populate({
+                //         path: 'contacts',
+                //         select: 'sallary'
+                //     })
+
+                //     for(const item of listHuman){
+                //         if(item.contacts && item.contacts.length){
+                //             let listDataTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                //                 assignee: ObjectID(item._id),
+                //                 subtype: 1,
+                //                 $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                //             })
+                //             // console.log(listDataTimeSheet)
+    
+                //             for(const subitem of listDataTimeSheet){
+
+                //                 // Đang không chuẩn với các đơn giá giao khoán của công nhân
+                //                 if(Number(Number(item.contacts[0].sallary * 12 / 2504)).toFixed(0) != Number(subitem.unitprice)){
+                //                     // console.log({ name:item.fullname, date: subitem.date, unitprice: subitem.unitprice})
+                                    
+                //                     await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
+                //                             userID,
+                //                             expertTimesheetID: subitem._id,
+                //                             hours: subitem.hours,
+                //                             unitprice: Number(Number(item.contacts[0].sallary * 12 / 2504)).toFixed(0)
+                //                     })
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
+
+                 /**
+                 * Chuẩn hóa lại số ngày phép trong năm
+                 */
+                else if(option == 18){
+                    let listHuman = await USER_COLL.find({ company: companyID, status: 1 })
+                    .select('_id fullname numberOnLeave')
+                    
+                    for(const item of listHuman){
+                        let dataOnLeave = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                            {
+                                $match: {
+                                    assignee: ObjectID(item._id),
+                                    subtype: 2,
+                                }
+                            },
+                            {
+                                $project: {
+                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    // month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    hours: 1,
+                                    amount: 1,
+                                    date: 1
+                                }
+                            },
+                            {
+                                $match: {
+                                    year: Number(year)
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: { },
+                                    hours: { $sum: "$hours" },
+                                }
+                            },
+                        ])
+
+                        if(dataOnLeave && dataOnLeave.length){
+                            await USER_COLL.findByIdAndUpdate(item._id, {
+                                numberOnLeave: Number(dataOnLeave[0].hours / 8).toFixed(2)
+                            }, { new: true })
+                        }
                     }
                 }
 
