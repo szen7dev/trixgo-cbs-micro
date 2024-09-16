@@ -57,10 +57,10 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     /**
      * Phân loại lễ tết
      * 1-Thông thường
-     * 2-Nghỉ phép
-     * 3-Lễ, tết
+     * 2-Nghỉ phép: Lương cơ bản
+     * 3-Lễ, tết: Lương cơ bản
      * 4-Công tác
-     * 5-Du lịch, nghỉ mát
+     * 5-Du lịch, nghỉ mát: Lương cơ bản
      * 6-Làm thêm giờ
      */
     subtype: {
