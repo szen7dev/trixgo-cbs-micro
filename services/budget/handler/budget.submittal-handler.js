@@ -67,11 +67,11 @@
          async handler(ctx) {  
              try {
                  await this.validateEntity(ctx.params);
-                 let { submitID, plus, workID, name, sign, note, quantity, unitPrice } = ctx.params;
+                 let { submitID, plus, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice } = ctx.params;
                 
                  const { _id: userID } = ctx.meta.infoUser;
                  let resultAfterCallHandler = await BUDGET__SUBMITTAL_MODEL.update({
-                    submitID, plus, workID, name, sign, note, quantity, unitPrice, userID
+                    submitID, plus, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice, userID
                  });
                  
                  return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

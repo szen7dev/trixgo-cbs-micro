@@ -108,7 +108,7 @@ class Model extends BaseModel {
      * Code: 
      */
     update({ 
-        submitID, userID, plus, workID, name, sign, note, quantity, unitPrice
+        submitID, userID, plus, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice
     }){ 
         const that = this
         return new Promise(async (resolve) => {
@@ -123,6 +123,22 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(workID)){
                     dataUpdate.work = workID
+                }
+
+                if(checkObjectIDs(staffID)){
+                    dataUpdate.staff = staffID
+                }
+
+                if(checkObjectIDs(contactID)){
+                    dataUpdate.contact = contactID
+                }
+
+                if(checkObjectIDs(goodsID)){
+                    dataUpdate.goods = goodsID
+                }
+
+                if(checkObjectIDs(assetsID)){
+                    dataUpdate.assets = assetsID
                 }
 
                 if(plus && [1,2,3].includes(Number(plus))){
