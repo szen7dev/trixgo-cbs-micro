@@ -323,9 +323,22 @@ class Model extends BaseModel {
                     if(fundaID ){
                         conditionObj.funda = ObjectID(fundaID)
                     }else{
+                        // Thẻ kho
                         if(option == 1){
                             conditionObj.company = companyID
                             conditionObj.goods = { $exists: true, $ne: null }
+                        }
+
+                        // Sổ quỹ
+                        if(option == 2){
+                            conditionObj.company = companyID
+                            conditionObj.account = { $exists: true, $ne: null }
+                        }
+
+                        // Công nợ
+                        if(option == 3){
+                            conditionObj.company = companyID
+                            conditionObj.customer = { $exists: true, $ne: null }
                         }
                     }
                 }
