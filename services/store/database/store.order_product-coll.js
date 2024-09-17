@@ -59,8 +59,13 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Schema.Types.ObjectId,
         ref: 'contact'
     },
-    //_________Tài khoản kế toán
+    //_________Tài khoản
     account: {
+        type: Schema.Types.ObjectId,
+        ref: 'account'
+    },
+    //_________Tài khoản đối ứng
+    contra: {
         type: Schema.Types.ObjectId,
         ref: 'account'
     },

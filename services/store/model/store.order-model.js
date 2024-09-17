@@ -137,11 +137,11 @@ class Model extends BaseModel {
                 });
             }
 
-            //___________Quyền truy cập ứng dụng Store
-            let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                appID: "5f52341f880c2f26c8df8c10",
-                userID
-            })
+            // //___________Quyền truy cập ứng dụng Store
+            // let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+            //     appID: "5f52341f880c2f26c8df8c10",
+            //     userID
+            // })
 
             let dataUpdate = { 
                 userUpdate: userID, 
