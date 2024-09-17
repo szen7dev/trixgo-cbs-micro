@@ -155,10 +155,13 @@ class Model extends BaseModel {
                     select: 'company sallaryBasic insuranceFee union share'
                 })
                 for(const item of listHuman){
+                    // if(item._id.toString() === '65a057f41120870012cc60fe'){
+                    //     console.log(item.contacts)
+                    // }
                     let insuranceFee = 0, union = 0, share = 0
                     if(item.contacts && item.contacts.length){
                         for(const contact of item.contacts){
-                            if(contact.company.toString() === companyID.toString() && contact.insuranceFee){
+                            if(contact.company.toString() === companyID.toString()){
                                 insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
                                 union = Number(union) + Number(contact.union)
                                 share = Number(share) + Number(contact.share)
@@ -172,7 +175,7 @@ class Model extends BaseModel {
                         admins: [userCreate],
                         members: [userCreate],
                         human: item._id,
-                        parent: infoAfterInsert._id,
+                        parent: infoAfterInsert._id, // Bảng lương cha
                         company: infoAfterInsert.company,
                         convertFactor: infoAfterInsert.convertFactor,
                         project: item.department,
@@ -196,7 +199,7 @@ class Model extends BaseModel {
                     await this.insertData(dataInsertDetail)
                 }
 
-                // Cập nhật số nhân sự vào Bảng lương
+                // Cập nhật số nhân sự vào Bảng lương cha
                 await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoAfterInsert._id, {
                     numberOfHuman: Number(listHuman.length)
                 }, { new: true })
