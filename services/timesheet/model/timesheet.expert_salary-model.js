@@ -1044,7 +1044,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        option, sortOption, parentID, userID,
+        subtype, salary, onLeaveSalary, overtimeSalary, mealAllowance, punishment, option, sortOption, parentID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID }) {
         // console.log({option, sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
         return new Promise(async (resolve) => {
@@ -1094,14 +1094,46 @@ class Model extends BaseModel {
 				if(checkObjectIDs(parentID)){
                  	conditionObj.parent = parentID
 
-                    // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                    //    // Admin ứng dụng
-                    // }else{
-                    //     let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
-                    //     conditionObj.project = { $in: listDepartment.map(item=>item.id) }
-                    // }
-
                     // Lọc dữ liệu
+                    if(subtype && Number(subtype) > 1){
+                        conditionObj.subtype = Number(subtype)
+                    }
+
+                    if(salary && Number(salary) === 1){
+                        conditionObj.salary = {$gt: 0}
+                    }
+                    if(salary && Number(salary) === 2){
+                        conditionObj.salary = 0
+                    }
+
+                    if(onLeaveSalary && Number(onLeaveSalary) === 1){
+                        conditionObj.onLeaveSalary = {$gt: 0}
+                    }
+                    if(onLeaveSalary && Number(onLeaveSalary) === 2){
+                        conditionObj.onLeaveSalary = 0
+                    }
+
+                    if(overtimeSalary && Number(overtimeSalary) === 1){
+                        conditionObj.overtimeSalary = {$gt: 0}
+                    }
+                    if(overtimeSalary && Number(overtimeSalary) === 2){
+                        conditionObj.overtimeSalary = 0
+                    }
+
+                    if(mealAllowance && Number(mealAllowance) === 1){
+                        conditionObj.mealAllowance = {$gt: 0}
+                    }
+                    if(mealAllowance && Number(mealAllowance) === 2){
+                        conditionObj.mealAllowance = 0
+                    }
+
+                    if(punishment && Number(punishment) === 1){
+                        conditionObj.punishment = {$gt: 0}
+                    }
+                    if(punishment && Number(punishment) === 2){
+                        conditionObj.punishment = 0
+                    }
+
                     if(departmentsID && departmentsID.length){
                         conditionObj.project = { $in: departmentsID }
                     }
