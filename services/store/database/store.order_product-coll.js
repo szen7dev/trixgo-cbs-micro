@@ -87,12 +87,14 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
     outin: { type: Number, default: 1 },
     /**
      * Phân loại
-     * 1. Sổ quỹ
+     * 1. Mặc định
      * 2. Vật tư chính
      * 3. Vật tư phụ
      * 4. Công cụ dụng cụ
      * 5. Hàng hóa/Cấu kiện/Thành phẩm
      * 6. Văn phòng phẩm
+     * 7. Quỹ tiền mặt
+     * 8. Quỹ ngân hàng
      */
     type: {
         type: Number,
