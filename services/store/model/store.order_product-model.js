@@ -37,8 +37,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
-        // console.log({ userID, orderID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice })
+    insert({ userID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
+        // console.log({ userID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -79,6 +79,9 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(accountID)) {
                     dataInsert.account = accountID;
+                }
+                if (checkObjectIDs(contraID)) {
+                    dataInsert.contra = contraID;
                 }
                 if (checkObjectIDs(customerID)) {
                     dataInsert.customer = customerID;
@@ -179,7 +182,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ userID, orderProductID, accountID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
+    update({ userID, orderProductID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -193,6 +196,9 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(accountID)) {
                     dataUpdate.account = accountID;
+                }
+                if (checkObjectIDs(contraID)) {
+                    dataUpdate.contra = contraID;
                 }
                 if (checkObjectIDs(customerID)) {
                     dataUpdate.customer = customerID;
@@ -294,8 +300,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-        // console.log({ option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword })
+    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        // console.log({ option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -355,6 +361,10 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(accountID)) {
                     conditionObj.account = accountID;
+                }
+
+                if (checkObjectIDs(contraID)) {
+                    conditionObj.contra = contraID;
                 }
 
                 if (checkObjectIDs(customerID)) {
@@ -446,7 +456,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 2/9/2024
      */
-    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate }) {
+    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -495,6 +505,11 @@ class Model extends BaseModel {
                 if (checkObjectIDs(accountID)) {
                     conditionObj1.account = ObjectID(accountID);
                     conditionObj2.account = ObjectID(accountID);
+                }
+
+                if (checkObjectIDs(contraID)) {
+                    conditionObj1.contra = ObjectID(contraID);
+                    conditionObj2.contra = ObjectID(contraID);
                 }
 
                 if (checkObjectIDs(customerID)) {
