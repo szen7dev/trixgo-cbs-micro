@@ -1655,6 +1655,7 @@ class Model extends BaseModel {
                                 workbook.sheet("TangCa").row(i).cell(6).value(Number(item.unitprice))
                                 workbook.sheet("TangCa").row(i).cell(7).value(Number(item.amount))
                                 workbook.sheet("TangCa").row(i).cell(8).value(item?.note)
+                                workbook.sheet("TangCa").row(i).cell(15).value(item?.parent?.name)
                                 i++
                             })
                     
