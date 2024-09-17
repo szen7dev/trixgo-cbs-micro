@@ -217,7 +217,7 @@ class Model extends BaseModel {
             if (!infoAfterUpdate)
                 return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
 
-            console.log(infoAfterUpdate)
+            // console.log(infoAfterUpdate)
 
             // Cập nhật lại các phần tử con
             await STORE_ORDER_PRODUCT_COLL.updateMany(
