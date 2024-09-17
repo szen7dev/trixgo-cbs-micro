@@ -17,6 +17,8 @@ const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-co
 const STORE_ORDER_COLL                  = require('../database/store.order-coll');
 const STORE_ORDER_PRODUCT_COLL          = require('../database/store.order_product-coll');
 const ITEM__GOODS_COLL            		= require('../../item/database/item.goods-coll')
+const ITEM__ACCOUNT_COLL            	= require('../../item/database/item.account-coll')
+const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll')
 
 /**
  * import inter-model, exter-model
@@ -466,15 +468,31 @@ class Model extends BaseModel {
                  */
                 let conditionObj1 = {
                     company: ObjectID(companyID),
-                    goods: { $exists: true, $ne: null },
                     status: 5, // Hoàn thành
-                    outin: 1,
+                    outin: 1, // Xuất ra
                 }
                 let conditionObj2 = {
                     company: ObjectID(companyID),
-                    goods: { $exists: true, $ne: null },
-                    status: 5,
-                    outin: 2, // Hoàn thành
+                    status: 5, // Hoàn thành
+                    outin: 2, // Nhập vào
+                }
+
+                // Thẻ kho
+                if(option == 1){
+                    conditionObj1.goods = { $exists: true, $ne: null }
+                    conditionObj2.goods = { $exists: true, $ne: null }
+                }
+
+                // Sổ quỹ
+                else if(option == 2){
+                    conditionObj1.account = { $exists: true, $ne: null }
+                    conditionObj2.account = { $exists: true, $ne: null }
+                }
+
+                // Công nợ
+                else if(option == 3){
+                    conditionObj1.customer = { $exists: true, $ne: null }
+                    conditionObj2.customer = { $exists: true, $ne: null }
                 }
 
                 // if(fromDate && toDate){
@@ -531,11 +549,6 @@ class Model extends BaseModel {
                     conditionObj2.assets = ObjectID(assetsID);
                 }
 
-                // if (!isNaN(outin) && Number(outin) >= 1) {
-                //     conditionObj1.outin = Number(outin)
-                //     conditionObj2.outin = Number(outin)
-                // }
-
                 if (!isNaN(type) && Number(type) >= 1) {
                     conditionObj1.type = Number(type)
                     conditionObj2.type = Number(type)
@@ -543,12 +556,31 @@ class Model extends BaseModel {
 
                 let conditionGroup = {}, conditionPopulate = {}
 
-                conditionGroup = {
-                    _id: { goods: "$goods" },
-                    quantity: { $sum: "$quantity" },
-                    amount: { $sum: "$amount" }
+                // Thẻ kho
+                if(option == 1){
+                    conditionGroup = {
+                        _id: { goods: "$goods" },
+                        quantity: { $sum: "$quantity" },
+                        amount: { $sum: "$amount" }
+                    }
                 }
-                
+
+                // Sổ quỹ
+                else if(option == 2){
+                    conditionGroup = {
+                        _id: { account: "$account" },
+                        amount: { $sum: "$amount" }
+                    }
+                }
+
+                // Công nợ
+                else if(option == 3){
+                    conditionGroup = {
+                        _id: { customer: "$customer" },
+                        amount: { $sum: "$amount" }
+                    }
+                }
+
                 let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                     {
                         $match: conditionObj1
@@ -571,56 +603,154 @@ class Model extends BaseModel {
                 // console.log(listData2)
 
                 let arr = [...listData1,...listData2]
-
                 let arrCombine = [], arr1 = [], arr2 = []
-                listData1.forEach(item=>{
-                    let key = item._id.goods;
-                    if (!Array.isArray(arr1[key])) {
-                        arr1[key] = [];
-                    }
-                    arr1[key].push(item)
-                })
 
-                listData2.forEach(item=>{
-                    let key = item._id.goods;
-                    if (!Array.isArray(arr2[key])) {
-                        arr2[key] = [];
-                    }
-                    arr2[key].push(item)
-                })
+                // Thẻ kho
+                if(option == 1){
+                    listData1.forEach(item=>{
+                        let key = item._id.goods;
+                        if (!Array.isArray(arr1[key])) {
+                            arr1[key] = [];
+                        }
+                        arr1[key].push(item)
+                    })
+    
+                    listData2.forEach(item=>{
+                        let key = item._id.goods;
+                        if (!Array.isArray(arr2[key])) {
+                            arr2[key] = [];
+                        }
+                        arr2[key].push(item)
+                    })
+                }
+
+                // Sổ quỹ
+                else if(option == 2){
+                    listData1.forEach(item=>{
+                        let key = item._id.account;
+                        if (!Array.isArray(arr1[key])) {
+                            arr1[key] = [];
+                        }
+                        arr1[key].push(item)
+                    })
+    
+                    listData2.forEach(item=>{
+                        let key = item._id.account;
+                        if (!Array.isArray(arr2[key])) {
+                            arr2[key] = [];
+                        }
+                        arr2[key].push(item)
+                    })
+                }
+
+                // Công nợ
+                else if(option == 3){
+                    listData1.forEach(item=>{
+                        let key = item._id.customer;
+                        if (!Array.isArray(arr1[key])) {
+                            arr1[key] = [];
+                        }
+                        arr1[key].push(item)
+                    })
+    
+                    listData2.forEach(item=>{
+                        let key = item._id.customer;
+                        if (!Array.isArray(arr2[key])) {
+                            arr2[key] = [];
+                        }
+                        arr2[key].push(item)
+                    })
+                }
+
                 // console.log(arr1)
                 // console.log(arr2)
 
-                let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
-                .select('name sign unit')
+                // Thẻ kho
+                if(option == 1){
+                    let listItem = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
+                    .select('name sign unit')
 
-                listGoods.forEach(item =>{
-                    let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
-
-                    if(arr1[item._id]){
-                        quantityExpense = arr1[item._id][0].quantity
-                        expense = arr1[item._id][0].amount
-                    }
-                    
-                    if(arr2[item._id]){
-                        quantityIncome = arr2[item._id][0].quantity
-                        income = arr2[item._id][0].amount
-                    }
-
-                    arrCombine.push({
-                        _id: item._id,
-                        name: item.name,
-                        unit: item.unit,
-                        quantityIncome: Number(quantityIncome),
-                        income: Number(income),
-                        quantityExpense: Number(quantityExpense),
-                        expense: Number(expense),
+                    listItem.forEach(item =>{
+                        let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
+    
+                        if(arr1[item._id]){
+                            quantityExpense = arr1[item._id][0].quantity
+                            expense = arr1[item._id][0].amount
+                        }
+                        
+                        if(arr2[item._id]){
+                            quantityIncome = arr2[item._id][0].quantity
+                            income = arr2[item._id][0].amount
+                        }
+    
+                        arrCombine.push({
+                            _id: item._id,
+                            name: item.name,
+                            unit: item.unit,
+                            quantityIncome: Number(quantityIncome),
+                            income: Number(income),
+                            quantityExpense: Number(quantityExpense),
+                            expense: Number(expense),
+                        })
                     })
-                })
 
-                // console.log(arrCombine)
+                    return resolve({ error: false, data: arrCombine })
+                }
 
-                return resolve({ error: false, data: arrCombine })
+                // Sổ quỹ
+                else if(option == 2){
+                    let listItem = await ITEM__ACCOUNT_COLL.find({_id: {$in: arr.map(item => item._id.account)}})
+                    .select('name description')
+
+                    listItem.forEach(item =>{
+                        let income = 0, expense = 0
+
+                        if(arr1[item._id]){
+                            expense = arr1[item._id][0].amount
+                        }
+                        
+                        if(arr2[item._id]){
+                            income = arr2[item._id][0].amount
+                        }
+
+                        arrCombine.push({
+                            _id: item._id,
+                            name: item.name,
+                            income: Number(income),
+                            expense: Number(expense),
+                        })
+                    })
+
+                    return resolve({ error: false, data: arrCombine })
+                }
+
+                // Công nợ
+                else if(option == 3){
+                    let listItem = await ITEM__CONTACT_COLL.find({_id: {$in: arr.map(item => item._id.customer)}})
+                    .select('name phone sign')
+
+                    listItem.forEach(item =>{
+                        let income = 0, expense = 0
+
+                        if(arr1[item._id]){
+                            expense = arr1[item._id][0].amount
+                        }
+                        
+                        if(arr2[item._id]){
+                            income = arr2[item._id][0].amount
+                        }
+
+                        arrCombine.push({
+                            _id: item._id,
+                            name: item.name,
+                            income: Number(income),
+                            expense: Number(expense),
+                        })
+                    })
+
+                    return resolve({ error: false, data: arrCombine })
+                }
+                
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
