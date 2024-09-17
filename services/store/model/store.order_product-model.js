@@ -302,8 +302,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
-        // console.log({ option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, orderID, userCreateID, fromDate, toDate, keyword })
+    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+        // console.log({ option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -396,6 +396,10 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(assetsID)) {
                     conditionObj.assets = assetsID;
+                }
+
+                if (checkObjectIDs(workID)) {
+                    conditionObj.work = workID;
                 }
 
                 if (!isNaN(status) && Number(status) >= 1) {
