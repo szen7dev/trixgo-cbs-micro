@@ -19,6 +19,7 @@ const {
   validateParamsObjectID
 }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils')
+const { SALARY_RESET_PERMISSION }       = require('../helper/timesheet.keys-constant')
 
 /**
  * COLLECTIONS
@@ -901,45 +902,53 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({
-        option, salaryID, userID, companyID
+        companyID, userID, email, option, salaryID
     }){
         const that = this
         return new Promise(async (resolve) => {
             try {
-                // ĐỒNG BỘ
-                if(option == 1){
-                    // Danh sách userID trong bảng lương
-                    let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
-                    let dataUser = listData.map(item=>item.human.toString())
+                //___________Quyền truy cập ứng dụng Chấm công
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049cffdebf77b072d1b14",
+                    userID
+                })
 
-                    // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
-                    await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
+                if(infoAppUser.error && infoAppUser.data.level == 0){
+                    /**
+                     * ĐỒNG BỘ BẢNG LƯƠNG
+                     */
+                    if(option == 1){
+                        // Danh sách userID trong bảng lương
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
+                        let dataUser = listData.map(item=>item.human.toString())
 
-                    // Cập nhật KPI vào các chi tiết của Bảng lương
-                    await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
+                        // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
+                        await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
 
-                    // Tổng hợp các chi tiết lương vào Bảng lương: 
-                    await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
+                        // Cập nhật KPI vào các chi tiết của Bảng lương
+                        await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
 
-                    return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
-                }
-                
-                // XÓA
-                else if(option == 2){
-                    //___________Quyền truy cập ứng dụng Nhân sự
-                    let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                        appID: "61e049cffdebf77b072d1b14",
-                        userID
-                    })
+                        // Tổng hợp các chi tiết lương vào Bảng lương: 
+                        await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
 
-                    // Chỉ admin ứng dụng mới được thêm phần tử cha con
-                    if(!infoAppUser.error && infoAppUser.data.level == 0){
-                        await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
-                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
-                        return resolve({ error: false, data: 'Reset thành công' })
-                    }else{
-                        return resolve({ error: false, data: 'Bạn không có quyền Reset' })
+                        return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
                     }
+                    
+                    /**
+                     * XÓA BẢNG LƯƠNG
+                     */
+                    else if(option == 2){
+                        // Chỉ admin ứng dụng mới được thêm phần tử cha con
+                        if(SALARY_RESET_PERMISSION.includes(email)){
+                            await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                            await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                            return resolve({ error: false, data: 'Reset thành công' })
+                        }else{
+                            return resolve({ error: false, data: 'Bạn không có quyền Reset' })
+                        }
+                    }
+                }else{
+                    return resolve({ error: false, data: 'Bạn không có quyền thực hiện' })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
