@@ -915,9 +915,18 @@ class Model extends BaseModel {
 
                 if(infoAppUser.error && infoAppUser.data.level == 0){
                     /**
-                     * ĐỒNG BỘ BẢNG LƯƠNG
+                     * CẬP NHẬT NHÂN SỰ
                      */
                     if(option == 1){
+                       
+
+                        return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
+                    }
+                    
+                    /**
+                     * ĐỒNG BỘ BẢNG LƯƠNG
+                     */
+                    else if(option == 2){
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                         let dataUser = listData.map(item=>item.human.toString())
@@ -937,7 +946,7 @@ class Model extends BaseModel {
                     /**
                      * XÓA BẢNG LƯƠNG
                      */
-                    else if(option == 2){
+                    else if(option == 3){
                         // Chỉ admin ứng dụng mới được thêm phần tử cha con
                         if(SALARY_RESET_PERMISSION.includes(email)){
                             await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
