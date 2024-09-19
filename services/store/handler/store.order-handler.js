@@ -30,6 +30,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { outin, type, fundaID, projectID, warehouseID, customerID, contractID, date, name, sign, note } = ctx.params;
 
+                // console.log(ctx.params)
+
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await STORE_ORDER_MODEL.insert({
