@@ -6,15 +6,12 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
-    /**
-     * THÔNG TIN PHÂN LOẠI (LẤY TỪ ORDER)
-     */
     //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
     },
-    //_________Đơn vị cơ sở/Cửa hàng
+    //_________Đơn vị cơ sở/Cửa hàng***
     funda: {
         type: Schema.Types.ObjectId,
         ref : "funda"
@@ -34,6 +31,9 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Schema.Types.ObjectId,
         ref : "warehouse"
     },
+    /**
+     * PHÂN LOẠI KÊNH/KINH DOANH
+     */
     //_________Lĩnh vực kinh doanh
     business: {
         type: Schema.Types.ObjectId,
@@ -49,12 +49,10 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     },
-    //_________Đơn hàng
-    order: {
-        type: Schema.Types.ObjectId,
-        ref : "store_order"
-    },
-    //_________Mã khách
+    /**
+     * KẾ TOÁN
+     */
+    //_________Mã khách (dùng cho Nợ và có)
     customer: {
         type: Schema.Types.ObjectId,
         ref: 'contact'
@@ -69,20 +67,56 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Schema.Types.ObjectId,
         ref: 'account'
     },
-    //_________Vật tư, thiết bị, công cụ dụng cụ
+    //_________Hàng hóa/Thành phẩm/Nguyên vật liệu/Tài sản
     goods: {
         type: Schema.Types.ObjectId,
         ref : "goods"
+    },
+    //_________Khoản mục phí (báo cáo theo Khoản mục-Dự án)
+    subtype: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
+    //_________Khoản mục phí cha
+    parentSubtype: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
     },
     //_________Tài sản/thiết bị dùng để quản lý sửa chữa, tiêu hao
     assets: {
         type: Schema.Types.ObjectId,
         ref : "goods"
     },
-    //________Link với ngân sách
-    work: {
+    /**
+     * LINK NGÂN SÁCH
+     */   
+    //_________Ngân sách
+    budget: {
         type: Schema.Types.ObjectId,
-        ref : "budget_work"
+        ref: 'budget'
+    },
+    //_________Hạng mục
+    budgetItem: {
+        type: Schema.Types.ObjectId,
+        ref: 'budget_item'
+    },
+    //_________Nhóm
+    budgetGroup: {
+        type: Schema.Types.ObjectId,
+        ref: 'budget_group'
+    },
+    //_________Công việc***sửa lại FE và BE cho phù hợp
+    budgetWork: {
+        type: Schema.Types.ObjectId,
+        ref: 'budget_work'
+    },
+    /**
+     * ĐƠN HÀNG
+     */
+    //_________Đơn hàng
+    order: {
+        type: Schema.Types.ObjectId,
+        ref : "store_order"
     },
     /**
      * Phân loại vào ra
@@ -143,13 +177,13 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Number,
         default : 0
     },
-    /**
-     * Sản phẩm phụ
-     */
-    subGoods: [{
-        type: Schema.Types.ObjectId,
-        ref : "goods"
-    }],
+    // /**
+    //  * Sản phẩm phụ (topping)
+    //  */
+    // subGoods: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref : "goods"
+    // }],
     /**
      * DÀNH CHO ĐỒ UỐNG
      */

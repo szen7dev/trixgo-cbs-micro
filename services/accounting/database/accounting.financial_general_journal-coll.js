@@ -37,12 +37,12 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
         type: Schema.Types.ObjectId,
         ref: 'goods'
     }, 
-    //_________Phân loại khác
+    //_________Khoản mục phí
     subtype: {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     },
-    //_________Phân loại khác (parent)
+    //_________Khoản mục phí cha
     parentSubtype: {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
