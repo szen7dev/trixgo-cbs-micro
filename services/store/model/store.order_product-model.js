@@ -19,6 +19,7 @@ const STORE_ORDER_PRODUCT_COLL          = require('../database/store.order_produ
 const ITEM__GOODS_COLL            		= require('../../item/database/item.goods-coll')
 const ITEM__ACCOUNT_COLL            	= require('../../item/database/item.account-coll')
 const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll')
+const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll')
 const BUDGET_WORK_COLL                  = require('../../budget/database/budget.work-coll')
 
 /**
@@ -55,7 +56,7 @@ class Model extends BaseModel {
                  */
                 const infoParent = await STORE_ORDER_COLL
                 .findById(orderID)
-                .select('company project warehouse customer contract outin type date')
+                .select('company funda project warehouse customer contract outin type date')
                 .lean();
                 if(!infoParent)
                     return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID});
@@ -200,7 +201,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ userID, orderProductID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
+    update({ userID, orderProductID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -244,6 +245,18 @@ class Model extends BaseModel {
                         }
                         if(infoWork.group){
                             dataUpdate.budgetGroup = infoWork.group;
+                        }
+                    }
+                }
+
+                if (checkObjectIDs(subtypeID)) {
+                    dataUpdate.subtype = subtypeID;
+
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoDoctype = await ITEM__DOCTYPE_COLL.findById(subtypeID)
+                    if(infoDoctype){
+                        if(infoDoctype.parent){
+                            dataUpdate.parentSubtype = infoDoctype.parent;
                         }
                     }
                 }

@@ -163,6 +163,10 @@ class Model extends BaseModel {
                 modifyAt: new Date() 
             }
 
+            if (checkObjectIDs(fundaID)) {
+                dataUpdate.funda = fundaID;
+            }
+
             if (checkObjectIDs(projectID)) {
                 dataUpdate.project = projectID;
             }
