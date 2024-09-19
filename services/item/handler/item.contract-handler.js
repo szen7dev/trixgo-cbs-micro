@@ -756,7 +756,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { dataImport } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log(dataImport)
+                console.log(dataImport)
 
                 const resultAfterCallHandler = await ITEM__CONTRACT_MODEL.importFromExcel({
                     companyID: company._id, dataImport, userID
