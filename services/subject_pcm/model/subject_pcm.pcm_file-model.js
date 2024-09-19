@@ -164,7 +164,7 @@ class Model extends BaseModel {
 	 */
     getList({
         companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-        limit = 20, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
+        limit = 20, lastestID, select, populates, isFileOfProject, isSearchFile, isTemplateFile, isXlsxFile, userID, ctx
     }) {
         // console.log({
         //     companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
@@ -177,7 +177,7 @@ class Model extends BaseModel {
                  * - Tìm kiếm file (VIAS)
                  * - Lấy danh sách file của tất cả dự án mà user là member
                  */
-                if(!isFileOfProject && !isSearchFile) {
+                if(!isFileOfProject && !isSearchFile && !isTemplateFile) {
                     if(!companyID && !projectID && !groupID && !taskID) {
                         return resolve({
                             error: true,
@@ -354,6 +354,16 @@ class Model extends BaseModel {
                     conditionObj.task = { $in: tasksID }
                 }
 
+                if(isTemplateFile){
+                    let listTemplateTask = await PCM_PLAN_TASK__COLL.find({ company: companyID, subtype: 17 }).select('_id name')
+                    // console.log(listTemplateTask)
+
+                    conditionObj.task = { $in: listTemplateTask.map(item=>item._id) }
+
+                    if(isXlsxFile){
+                        conditionObj.nameOrg = { $regex: /\.xlsx/ }
+                    }
+                }
                 // console.log('Final==============>conditionObj')
                 // console.log(conditionObj)
 

@@ -275,13 +275,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { parentID, option, year, salaryID } = ctx.params;
+                const { parentID, option, year, salaryID, templateID } = ctx.params;
 				const { _id: userID, company} = ctx.meta.infoUser;
                 // console.log(ctx.params)
                 
                 // console.log({parentID})
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.downloadTemplateExcel({
-                    companyID: company._id, parentID, userID, option, year, salaryID
+                    companyID: company._id, parentID, userID, option, year, salaryID, templateID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
