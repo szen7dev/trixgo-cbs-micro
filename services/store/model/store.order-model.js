@@ -49,8 +49,8 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 8/9/2024
    */
-  insert({ companyID, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note }) {
-    // console.log({ companyID, userID, outin, type, projectID, warehouseID, customerID, contractID, date, name, sign, note })
+  insert({ companyID, userID, outin, type, fundaID, projectID, warehouseID, customerID, contractID, date, name, sign, note }) {
+    // console.log({ companyID, userID, outin, type, fundaID, projectID, warehouseID, customerID, contractID, date, name, sign, note })
     return new Promise(async (resolve) => {
         try {
             if([2,3,4,5,6].includes(Number(type))){
@@ -66,6 +66,16 @@ class Model extends BaseModel {
               userCreate: userID, 
               admins: [userID], 
               members: [userID] 
+            }
+
+            if (checkObjectIDs(fundaID)) {
+                dataInsert.funda = fundaID;
+            }else{
+                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
+                console.log(infoFunda)
+                if(infoFunda){
+                    dataInsert.funda = infoFunda._id;
+                }
             }
 
             if (checkObjectIDs(projectID)) {
@@ -126,7 +136,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ userID, orderID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, members, admins, outin, type, status }) {
+  update({ userID, orderID, fundaID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, date, members, admins, outin, type, status }) {
       // console.log({ })
       const that = this
       return new Promise(async (resolve) => {

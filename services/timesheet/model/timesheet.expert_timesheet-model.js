@@ -540,7 +540,7 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, workID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, assigneeID, humanID, companyID, type, subtype }) {
-        // console.log({ sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type, subtype })
+        console.log({ sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, assigneeID, humanID, companyID, type, subtype })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -618,11 +618,15 @@ class Model extends BaseModel {
                             conditionObj.company = { $exists: false }
                         }
 
+                        console.log(conditionObj)
+
                         conditionObj.parent = { $exists: true, $ne: null }
-                        conditionObj.assignee = assigneeID
+                        conditionObj.assignee = userID
                         if(month & year){
                             conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                         }
+
+                        console.log(conditionObj)
                     }
 
                     // Chi tiết chấm công của Công ty: gom nhóm theo Tháng

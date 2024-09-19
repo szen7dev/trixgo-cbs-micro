@@ -19,6 +19,7 @@ const STORE_ORDER_PRODUCT_COLL          = require('../database/store.order_produ
 const ITEM__GOODS_COLL            		= require('../../item/database/item.goods-coll')
 const ITEM__ACCOUNT_COLL            	= require('../../item/database/item.account-coll')
 const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll')
+const BUDGET_WORK_COLL                  = require('../../budget/database/budget.work-coll')
 
 /**
  * import inter-model, exter-model
@@ -39,8 +40,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
-        // console.log({ userID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice })
+    insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
+        // console.log({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -65,6 +66,7 @@ class Model extends BaseModel {
                 let dataInsert = { 
                     order: orderID,
                     company: infoParent.company,
+                    funda: infoParent.funda,
                     project: infoParent.project,
                     warehouse: infoParent.warehouse,
                     customer: infoParent.customer,
@@ -98,7 +100,21 @@ class Model extends BaseModel {
                     dataInsert.assets = assetsID;
                 }
                 if (checkObjectIDs(workID)) {
-                    dataInsert.work = workID;
+                    dataInsert.budgetWork = workID;
+                    
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoWork = await BUDGET_WORK_COLL.findById(workID)
+                    if(infoWork){
+                        if(infoWork.budget){
+                            dataInsert.budget = infoWork.budget;
+                        }
+                        if(infoWork.item){
+                            dataInsert.budgetItem = infoWork.item;
+                        }
+                        if(infoWork.group){
+                            dataInsert.budgetGroup = infoWork.group;
+                        }
+                    }
                 }
 
                 let convertStr = name
@@ -215,7 +231,21 @@ class Model extends BaseModel {
                     dataUpdate.assets = assetsID;
                 }
                 if (checkObjectIDs(workID)) {
-                    dataUpdate.work = workID;
+                    dataUpdate.budgetWork = workID;
+
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoWork = await BUDGET_WORK_COLL.findById(workID)
+                    if(infoWork){
+                        if(infoWork.budget){
+                            dataUpdate.budget = infoWork.budget;
+                        }
+                        if(infoWork.item){
+                            dataUpdate.budgetItem = infoWork.item;
+                        }
+                        if(infoWork.group){
+                            dataUpdate.budgetGroup = infoWork.group;
+                        }
+                    }
                 }
 
                 let convertStr = ''
