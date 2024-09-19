@@ -39,12 +39,15 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const {
                     keyword, companyID, projectID, groupID, taskID, authorID, type, fromDate, toDate,
-                    limit, lastestID, select, populates, isFileOfProject, isSearchFile
+                    limit, lastestID, select, populates, isFileOfProject, isSearchFile, isTemplateFile, isXlsxFile
                 } = ctx.params;
+
+                // console.log('=====================111111111111111>>>>>>>>>>>>>>>>>>>>')
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await PCM_FILE_MODEL.getList({
                     companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-                    limit, lastestID, select, populates, isFileOfProject, isSearchFile, userID, ctx
+                    limit, lastestID, select, populates, isFileOfProject, isSearchFile, isTemplateFile, isXlsxFile, userID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -136,6 +139,9 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 const { fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates } = ctx.params;
+
+                // console.log('=====================>>>>>>>>>>>>>>>>>>>>')
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await PCM_FILE_MODEL.getListByFilter({
                     fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, keyword, limit, lastestID, select, populates, userID, ctx

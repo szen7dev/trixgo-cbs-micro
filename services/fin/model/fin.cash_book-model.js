@@ -12,9 +12,8 @@ const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 const moment                                            = require('moment');
-const {
-    isValidDate, countDayIndexInMonth
-}                                       = require('../../../tools/utils/time_utils')
+const {isValidDate, countDayIndexInMonth} = require('../../../tools/utils/time_utils')
+const axios = require('axios')
 
 /**
  * import inter-coll, exter-coll
@@ -30,8 +29,9 @@ const FINANCIAL_GENERAL_JOURNAL_COLL     = require('../.../../../accounting/data
 const TIMESHEET__EXPERT_TIMESHEET_COLL   = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL      = require('../../timesheet/database/timesheet.expert_salary-coll')
 const ITEM__GOODS_COLL            		 = require('../../item/database/item.goods-coll')
-const STORE_ORDER_PRODUCT_COLL           = require('../../store/database/store.order_product-coll');
-const STORE_ORDER_COLL                   = require("../../store/database/store.order-coll");
+const STORE_ORDER_PRODUCT_COLL           = require('../../store/database/store.order_product-coll')
+const STORE_ORDER_COLL                   = require("../../store/database/store.order-coll")
+const PCM_FILE__COLL                     = require('../../subject_pcm/database/subject_pcm.pcm_file-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -1075,8 +1075,8 @@ class Model extends BaseModel {
      * Code: Hiepnh
      * Date: 25/7/2023
      */
-    downloadTemplateExcel({ option, companyID, parentID, salaryID, year, userID }) {
-        // console.log({ option, companyID, parentID, salaryID, year, userID })
+    downloadTemplateExcel({ option, companyID, parentID, salaryID, templateID, year, userID }) {
+        console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
         return new Promise(async resolve => {
             try {
                 // let option = 3
@@ -1358,6 +1358,9 @@ class Model extends BaseModel {
                      * TẢI BẢNG LƯƠNG
                      */
                     if(option == 2){
+                        if (!checkObjectIDs(templateID)) 
+                            return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" });
+
                         let conditionObj = {};
                         conditionObj.parent = parentID
         
@@ -1474,8 +1477,24 @@ class Model extends BaseModel {
                         .select('name hours unitprice amount status date note')
                         .sort({date: 1})
 
+                        // Template download data
+                        let templateFile = path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx'))
+                        if (checkObjectIDs(templateID)) {
+                            let infoTemplate = await PCM_FILE__COLL.findById(templateID)
+                            // console.log(infoTemplate)
+
+                            const response = await axios({
+                                url: `https://dntdurzwr12tp.cloudfront.net${infoTemplate?.path}`,
+                                method: 'GET',
+                                responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
+                            })
+
+                            templateFile = response.data
+                        }
+
                          // Modify the workbook.
-                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx')))
+                        //  XlsxPopulate.fromFileAsync(templateFile)
+                            XlsxPopulate.fromDataAsync(templateFile)
                          .then(async workbook => {
 
                             workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
@@ -1526,20 +1545,20 @@ class Model extends BaseModel {
 
                                 workbook.sheet("BangLuongUpdate").row(i).cell(28).value(Number(item?.human?.contacts[0]?.nods))
 
-                                workbook.sheet("BangLuongUpdate").row(i).cell(30).value(Number(item?.subAllowance1))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(31).value(Number(item?.subAllowance2))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(32).value(Number(item?.subAllowance3))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(33).value(Number(item?.subAllowance4))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(34).value(Number(item?.subAllowance5))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(35).value(Number(item?.subAllowance6))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(36).value(Number(item?.subAllowance7))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(37).value(Number(item?.subAllowance8))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(38).value(Number(item?.subAllowance9))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(39).value(Number(item?.subAllowance10))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(40).value(Number(item?.subAllowance11))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(41).value(Number(item?.subAllowance12))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(42).value(Number(item?.subAllowance13))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(43).value(Number(item?.subAllowance14))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(30).value(Number(item?.subAllowance1))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(31).value(Number(item?.subAllowance2))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(32).value(Number(item?.subAllowance3))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(33).value(Number(item?.subAllowance4))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(34).value(Number(item?.subAllowance5))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(35).value(Number(item?.subAllowance6))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(36).value(Number(item?.subAllowance7))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(37).value(Number(item?.subAllowance8))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(38).value(Number(item?.subAllowance9))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(39).value(Number(item?.subAllowance10))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(40).value(Number(item?.subAllowance11))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(41).value(Number(item?.subAllowance12))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(42).value(Number(item?.subAllowance13))
+                                // workbook.sheet("BangLuongUpdate").row(i).cell(43).value(Number(item?.subAllowance14))
                                 
                                 /**
                                  * BangLuongIn
@@ -2193,6 +2212,7 @@ class Model extends BaseModel {
 
                  // Modify the workbook.
                  XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_report.xlsx')))
+                //  XlsxPopulate.fromDataAsync(response.data)
                  .then(async workbook => {
 
                     workbook.sheet("Data").row(2).cell(1).value(infoParent.name)
