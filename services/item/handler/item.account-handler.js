@@ -24,8 +24,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                const { name, description, parentID } = ctx.params;
-                const resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.insert({ companyID: company._id, parentID, name, description, userID });
+                const { parentID, name, description, type, status } = ctx.params;
+                
+                const resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.insert({ companyID: company._id, parentID, name, description, type, status, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -48,9 +49,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID, company } = ctx.meta.infoUser;
-                const { accountID, name, description } = ctx.params;
-                const resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.update({ accountID, name, description, userID });
+				const { _id: userID } = ctx.meta.infoUser;
+                const { accountID, name, description, type, status } = ctx.params;
+
+                const resultAfterCallHandler = await ITEM__ACCOUNT_MODEL.update({ accountID, name, description, type, status, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
