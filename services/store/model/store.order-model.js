@@ -71,8 +71,8 @@ class Model extends BaseModel {
             if (checkObjectIDs(fundaID)) {
                 dataInsert.funda = fundaID;
             }else{
-                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
-                console.log(infoFunda)
+                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
+                // console.log(infoFunda)
                 if(infoFunda){
                     dataInsert.funda = infoFunda._id;
                 }

@@ -35,6 +35,15 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Date,
         default: null
     },
+    /**
+     * Trạng thái đơn
+     * 1-Sử dụng
+     * 2-Hủy
+     */
+    status: {
+        type: Number,
+        default: 1
+    },
     //_________Tên
     name: String,
     //_________Mô tả
