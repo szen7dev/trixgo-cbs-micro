@@ -11,7 +11,7 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
     /**
      * Trạng thái sử dụng
      * - 1: Đang sử dụng
-     * - 0: Không còn sử dụng
+     * - 2: Không còn sử dụng
      */
     status: {
         type: Number,
@@ -22,20 +22,19 @@ module.exports  = DATABASE_MIDDLEWARE("account", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Tên
-    name: String,
-    //_________Mô tả
-    description: String,
     /**
      * Phân loại
      * - 1: Tài khoản thông thường
-     * - 2: Tài khoản công nợ
-     * - 3: Tài khoản hàng hóa
+     * - 2: Tài khoản phục vụ Quỹ
      */
     type: {
         type: Number,
         default: 1
     },
+    //_________Tên
+    name: String,
+    //_________Mô tả
+    description: String,
     //_________Cấu hình hiển thị cho báo cáo quản trị (Đang phát triển)
     showInReportMonth: {
         type: Number,

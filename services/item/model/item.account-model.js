@@ -28,7 +28,7 @@ class Model extends BaseModel {
 	 * Author : Hiepnh
 	 * Date: 03/5/2022
 	 */
-	insert({ companyID, parentID, name, description, userID }){
+	insert({ companyID, parentID, name, description, type, status, userID }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(companyID) || !checkObjectIDs(userID))
@@ -62,6 +62,14 @@ class Model extends BaseModel {
 
                 if(description){
                     dataInsert.description = description;
+                }
+
+                if(type && [1,2].includes(Number(type))){
+                    dataInsert.type = type;
+                }
+
+                if(status && [1,2].includes(Number(status))){
+                    dataInsert.status = status;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -116,7 +124,7 @@ class Model extends BaseModel {
 	 * Author : Hiepnh
 	 * Date: 03/5/2022
 	 */
-	update({ accountID, name, description, userID }){
+	update({ accountID, name, description, type, status, userID }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(accountID))
@@ -144,6 +152,14 @@ class Model extends BaseModel {
 
                 if(description){
                     dataUpdate.description = description;
+                }
+
+                if(type && [1,2].includes(Number(type))){
+                    dataUpdate.type = type;
+                }
+
+                if(status && [1,2].includes(Number(status))){
+                    dataUpdate.status = status;
                 }
 
                 let infoAfterUpdate = await ITEM__ACCOUNT_COLL.findByIdAndUpdate(accountID, dataUpdate, { new: true })
