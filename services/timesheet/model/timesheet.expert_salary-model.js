@@ -904,6 +904,7 @@ class Model extends BaseModel {
     syncData({
         companyID, userID, email, option, salaryID
     }){
+        // console.log({companyID, userID, email, option, salaryID})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -913,12 +914,121 @@ class Model extends BaseModel {
                     userID
                 })
 
-                if(infoAppUser.error && infoAppUser.data.level == 0){
+                // console.log(infoAppUser)
+
+                if(!infoAppUser.error && infoAppUser.data.level == 0){
+                    // console.log('=================Admin==================')
+
                     /**
                      * CẬP NHẬT NHÂN SỰ
                      */
                     if(option == 1){
-                       
+                        console.log('=================11111111111111')
+                        let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
+
+                        let yearFilter = new Date(infoSalary.date).getFullYear()
+                        let monthFilter = new Date(infoSalary.date).getMonth() + 1
+
+                        let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                            {
+                                $match: {
+                                    company: ObjectID(companyID),
+                                    parent: {$exists: true, $ne: null},
+                                    assignee: {$exists: true, $ne: null},
+                                    amount: {$gt: 0},
+                                }
+                            },
+                            {
+                                $project: {
+                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    amount: 1,
+                                    date: 1,
+                                    assignee: 1
+                                }
+                            },
+                            {
+                                $match: {
+                                    year: Number(yearFilter),
+                                    month: Number(monthFilter),
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: { assignee: '$assignee' },
+                                }
+                            },
+                        ])
+
+                        let listData2 = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
+                        // console.log(yearFilter)
+                        // console.log(monthFilter)
+
+                        const A = listData.map(item=>item._id.assignee.toString())
+                        const B = listData2.map(item=>item.human.toString())
+                        // console.log(A)
+                        // console.log(B )
+
+                        // Lấy các phần tử trong A nhưng không có trong B
+                        const result = A.filter(item => !B.includes(item));
+                        // console.log(result);  // Output: [1, 2, 5]
+
+                         /**
+                         * Tạo chi tiết lương cho các User đang hoạt động
+                         */
+                        let listHuman = await AUTH__USER_COLL.find({ _id: {$in: result}, status: 1 })
+                        .select('fullname department position contacts')
+                        .populate({
+                            path: 'contacts',
+                            select: 'company sallaryBasic insuranceFee union share'
+                        })
+                        for(const item of listHuman){
+                            let insuranceFee = 0, union = 0, share = 0
+                            if(item.contacts && item.contacts.length){
+                                for(const contact of item.contacts){
+                                    if(contact.company.toString() === companyID.toString()){
+                                        insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
+                                        union = Number(union) + Number(contact.union)
+                                        share = Number(share) + Number(contact.share)
+                                    }
+                                }
+                            }
+
+                            let dataInsertDetail = {
+                                userCreate: userID,
+                                name: 'Default',
+                                admins: [userID],
+                                members: [userID],
+                                human: item._id,
+                                parent: infoSalary._id, // Bảng lương cha
+                                company: infoSalary.company, // Bảng lương cha
+                                convertFactor: infoSalary.convertFactor,
+                                project: item.department,
+                                position: item.position,
+                                date: infoSalary.date, // Bảng lương cha
+                                type: infoSalary.type, // Bảng lương cha
+                            }
+
+                            if(Number(insuranceFee) > 0){
+                                dataInsertDetail.insurance = Number(insuranceFee)
+                            }
+
+                            if(Number(union) > 0){
+                                dataInsertDetail.union = Number(union)
+                            }
+
+                            if(Number(share) > 0){
+                                dataInsertDetail.share = Number(share)
+                            }
+
+                            await this.insertData(dataInsertDetail)
+                        }
+
+                        // Cập nhật số nhân sự vào Bảng lương cha
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoSalary._id, {
+                            numberOfHuman: Number(infoSalary.numberOfHuman) + Number(listHuman.length)
+                        }, { new: true })
+
 
                         return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
                     }
@@ -927,6 +1037,8 @@ class Model extends BaseModel {
                      * ĐỒNG BỘ BẢNG LƯƠNG
                      */
                     else if(option == 2){
+                        console.log('=================222222222222222222222')
+
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                         let dataUser = listData.map(item=>item.human.toString())
@@ -947,6 +1059,8 @@ class Model extends BaseModel {
                      * XÓA BẢNG LƯƠNG
                      */
                     else if(option == 3){
+                        console.log('=================3333333333333333333333333')
+
                         // Chỉ admin ứng dụng mới được thêm phần tử cha con
                         if(SALARY_RESET_PERMISSION.includes(email)){
                             await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
@@ -956,6 +1070,7 @@ class Model extends BaseModel {
                             return resolve({ error: false, data: 'Bạn không có quyền Reset' })
                         }
                     }
+
                 }else{
                     return resolve({ error: false, data: 'Bạn không có quyền thực hiện' })
                 }
