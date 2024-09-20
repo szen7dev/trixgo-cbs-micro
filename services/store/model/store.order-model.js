@@ -351,8 +351,8 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getList({ option, status, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
-    //   console.log({ option, status, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+  getList({ option, status, arrType, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+    //   console.log({ option, status, arrType, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
       return new Promise(async (resolve) => {
           try {
               let sortBy;
@@ -388,18 +388,7 @@ class Model extends BaseModel {
                   conditionObj.parent = parentID;
               } else {
                   if(!option){
-                      // Chỉ hiển thị sổ quỹ mà user là member
-                      // conditionObj = { members: { $in: [userID] } }  // Lấy theo công ty
-                      conditionObj.parent = { $exists: false } // Lấy theo công ty
-
-                      // Lấy sổ quỹ khác (không thuộc công ty của user hiện tại)
-                      if(isCompanyOther === 'true') {
-                          conditionObj.company = {
-                              $nin: [companyOfUser]
-                          }
-                      } else{
-                          conditionObj.company = companyID;
-                      }
+                    conditionObj.company = companyID;
                   }
                   // Báo cáo chi tiết theo Goods
                   else{
@@ -411,16 +400,23 @@ class Model extends BaseModel {
                   }
               }
 
-              // if(fromDate && toDate){
-              //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
-              //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-              //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-              //         conditionObj.date  = { 
-              //             $gte: moment(startTime).toDate(),
-              //             $lte: moment(endTime).toDate()
-              //         }
-              //     }
-              // }
+              // Chọn nhiều phân loại
+              arrType && arrType.length && (conditionObj.type = { $in: arrType })
+
+              if(fromDate && toDate){
+                  if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                      let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                      let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                      conditionObj.date  = { 
+                          $gte: moment(startTime).toDate(),
+                          $lte: moment(endTime).toDate(),
+                        //   $gte: moment(fromDate).toDate(),
+                        //   $lte: moment(toDate).toDate(),
+                        //   $gte: new Date(fromDate),
+                        //   $lte: new Date(toDate),
+                      }
+                  }
+              }
 
               if (checkObjectIDs(projectID)) {
                   conditionObj.project = projectID;
@@ -477,7 +473,7 @@ class Model extends BaseModel {
                   keyword = '.*' + keyword.join(".*") + '.*';
                   conditionObj.name = RegExp(keyword, 'i');
               }
-              // console.log(conditionObj)
+            //   console.log(conditionObj)
 
               let conditionObjOrg = { ...conditionObj };
 

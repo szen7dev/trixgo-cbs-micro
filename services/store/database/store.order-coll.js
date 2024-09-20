@@ -67,8 +67,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     }],
     /**
      * Phân loại vào ra
-     * 1-Bán ra/Xuất kho
-     * 2-Mua vào/Nhập kho
+     * 1-Bán ra/Xuất kho/Chi ra
+     * 2-Mua vào/Nhập kho/Thu vào
      */
     outin: { type: Number, default: 1 },
     /**

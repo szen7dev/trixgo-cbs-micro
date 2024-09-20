@@ -114,6 +114,7 @@ module.exports = {
             sortKey         : { type: "string", optional: true },
             outin           : { type: "string", optional: true },
             isCompanyOther  : { type: "string", optional: true },
+            arrType         : { type: 'array', optional: true },
 
             // Field mặc định
             keyword         : { type: "string", optional: true },
@@ -125,7 +126,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, status, outin, type, orderID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userCreateID, isCompanyOther, keyword, limit, lastestID, populates, select, sortKey, fromDate, toDate
+                let { option, status, arrType, outin, type, orderID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userCreateID, isCompanyOther, keyword, fromDate, toDate, limit, lastestID, populates, select, sortKey
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -142,7 +143,7 @@ module.exports = {
                         orderID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await STORE_ORDER_MODEL.getList({ option, status, outin, type, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userID, userCreateID, isCompanyOther, keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id, fromDate, toDate
+                    resultAfterCallHandler = await STORE_ORDER_MODEL.getList({ option, status, arrType, outin, type, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userID, userCreateID, isCompanyOther, keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id, fromDate, toDate
                     });
                 }
 
