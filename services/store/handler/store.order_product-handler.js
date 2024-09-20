@@ -177,6 +177,42 @@ module.exports = {
         }
     },
 
+    /*
+     * Name: Gom nhóm theo thuộc tính 
+     * Code: HiepNH
+     * Date: 20/9/2024
+     */
+    getAmountByProperty: {
+        auth: "required",
+        params: {
+            companyID       : { type: "string", optional: true },
+            parentID        : { type: "string", optional: true },
+            accountID       : { type: "string", optional: true },
+            year            : { type: "string", optional: true },
+            option          : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, parentID, accountID, year, option } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getAmountByProperty({
+                    userID, companyID, parentID, accountID, year, option, ctx
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
     /**
      * Name: downloadTemplateExcel 
      * Author: HiepNH

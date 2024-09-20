@@ -14,6 +14,7 @@ const CF_ROUTINGS_STORE = {
 
     //================================FNB_ORDER_PRODUCT=======================================//
     ORDER_PRODUCTS                          : `${BASE_ROUTE}${ORDER_PRODUCT}`,
+    ORDER_PRODUCT_GET_AMOUNT_BY_PROPERTY    : `${BASE_ROUTE}${ORDER_PRODUCT}/get-amount-by-property`,
     ORDER_PRODUCT_GET_LIST_BY_PROPERTY      : `${BASE_ROUTE}${ORDER_PRODUCT}/get-list-by-property`,
     ORDER_PRODUCT_DOWNLOAD_TEMPLATE_EXCEL   : `${BASE_ROUTE}${ORDER_PRODUCT}/download-template-excel`,
     ORDER_PRODUCT_IMPORT_FROM_EXCEL         : `${BASE_ROUTE}${ORDER_PRODUCT}/import-from-excel`,

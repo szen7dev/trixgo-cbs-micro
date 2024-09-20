@@ -10,6 +10,7 @@ const { template }                      = require('lodash');
 const moment                            = require("moment");
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
@@ -816,6 +817,92 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /*
+     * Name: Gom nhóm theo thuộc tính 
+     * Code: HiepNH
+     * Date: 20/9/2024
+     */
+    getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
+        // console.log({ userID, companyID, parentID, accountID, year, option })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * Tham số của option:
+                 * 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
+                 */
+                // let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
+
+                // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
+                if(Number(option) === 1){
+                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
+                        appID: "5dfe4bf251dc622100bb9d8c", // Ứng dụng Quỹ
+                        menuID: "66ecc90fa002e190dc4193b4", // Báo cáo quản trị: 66ecc90fa002e190dc4193b4 // 66ecc9166748e0001242a36c**
+                        type: "1"
+                    })
+
+                    let listDataCompany = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: {
+                                status: 5, // Đã hoàn thành
+                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                company: {$in: listCompany.data.map(item=> ObjectID(item._id.company._id))},
+                                account: { $exists: true, $ne: null }, // Sổ quỹ
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { company: "$company" },
+                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                            }
+                        },
+                    ])
+                    // console.log(listDataCompany)
+
+                    
+                    let listDataAccount = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: {
+                                status: 5, // Đã hoàn thành
+                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                company: ObjectID(companyID),
+                                account: { $exists: true, $ne: null }, // Sổ quỹ
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: {  },
+                                _id: { account: "$account" },
+                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                            }
+                        },
+                    ])
+                    // console.log(listDataAccount)
+
+                    await STORE_ORDER_PRODUCT_COLL.populate(listDataCompany, {
+                        path: '_id.company',
+                        select: '_id name sign image',
+                        model: 'company'
+                    })
+
+                    await STORE_ORDER_PRODUCT_COLL.populate(listDataAccount, {
+                        path: '_id.account',
+                        select: '_id name description',
+                        model: 'account'
+                    })
+
+                    return resolve({ error: false, data: { listDataCompany, listDataAccount } })
+                }
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
 
     /**
      * Dev: HiepNH
