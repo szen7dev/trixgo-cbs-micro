@@ -184,6 +184,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
      * 4-Treo lại
      * 5-Chờ người khác giải quyết
      * 6-Tiếp tục theo dõi
+     * 7-Chưa đủ điều kiện duyệt
+     * 8-Chất lượng kiểm tra không đạt
      */
     status: { type: Number, default: 1 },
     /**

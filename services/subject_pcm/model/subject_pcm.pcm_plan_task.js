@@ -904,15 +904,30 @@ class Model extends BaseModel {
                                 content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
                             })
                         }else{
-                            dataUpdate.status = status
-                            dataUpdate.percentage = 0
+                            // Với 02 thẻ Đánh giá công tác kiểm tra/duyệt
+                            if(status == 7 || status == 8){
+                                if(([2,3,5].includes(infoTask?.subtype) && infoTask?.assignee?._id.toString() === userID.toString())){
+                                    dataUpdate.status = status
+                                    dataUpdate.percentage = 0
 
-                            await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
-                                taskID: `${taskID}`,
-                                type: 3,
-                                title: "Cập nhật trạng thái",
-                                content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
-                            })
+                                    await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                                        taskID: `${taskID}`,
+                                        type: 3,
+                                        title: "Cập nhật trạng thái",
+                                        content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
+                                    })
+                                }
+                            }else{
+                                dataUpdate.status = status
+                                dataUpdate.percentage = 0
+
+                                await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                                    taskID: `${taskID}`,
+                                    type: 3,
+                                    title: "Cập nhật trạng thái",
+                                    content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
+                                })
+                            }
                         }
                     }
                 }
