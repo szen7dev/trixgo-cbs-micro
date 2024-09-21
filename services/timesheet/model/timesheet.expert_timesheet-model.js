@@ -661,14 +661,6 @@ class Model extends BaseModel {
 
                 // Chi tiết chấm công của 1 nhân sự
                 if(type && type == 3){
-                    // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                    //     conditionObj.parent = { $exists: true, $ne: null }
-                    //     conditionObj.assignee = humanID
-                    // }else{
-                    //     // Lấy tạm danh sách Rỗng
-                    //     conditionObj.company = { $exists: false }
-                    // }
-
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = humanID
 
