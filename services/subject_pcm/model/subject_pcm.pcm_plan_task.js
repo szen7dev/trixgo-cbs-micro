@@ -839,7 +839,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Phân loại công việc: 
+                 * TÍNH CHẤT CHỦ ĐỀ 
                  * - Không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
                  */
                 if(subType && !isNaN(subType)){
@@ -865,28 +865,56 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * Trạng thái công việc
+                 * TRẠNG THÁI CÔNG VIỆC
                  */
                 if(status){
+                    // Admin dự án được cập nhật mọi trạng thái
                     if(infoTask.project.admins.map(item=>item.toString()).includes(userID?.toString())){
                         dataUpdate.status = status
+
+                        if(status == 3){
+                            dataUpdate.percentage = 100
+                        }else{
+                            dataUpdate.percentage = 0
+                        }
+
+                        await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                            taskID: `${taskID}`,
+                            type: 3,
+                            title: "Cập nhật trạng thái",
+                            content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
+                        })
                     }else{
-                        if(infoTask.status != 3){
+                        /**
+                         * Trạng thái Hoàn Thành
+                         * Chỉ người Duyệt (với Yêu cầu phê duyệt/Thanh toán/Chi phí/Nghiệm thu chất lượng)
+                         * Chỉ người Giao việc với các việc khác còn lại
+                         */
+                        if(status == 3){
+                            if(([0,1,4,6,7,7,9,10,11].includes(infoTask?.subtype) && infoTask?.author.toString() === userID.toString()) ||
+                            ([2,3,5].includes(infoTask?.subtype) && infoTask?.assignee?._id.toString() === userID.toString())){
+                                dataUpdate.status = status
+                                dataUpdate.percentage = 100
+                            }
+
+                            await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                                taskID: `${taskID}`,
+                                type: 3,
+                                title: "Cập nhật trạng thái",
+                                content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
+                            })
+                        }else{
                             dataUpdate.status = status
+                            dataUpdate.percentage = 0
+
+                            await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
+                                taskID: `${taskID}`,
+                                type: 3,
+                                title: "Cập nhật trạng thái",
+                                content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
+                            })
                         }
                     }
-
-                    // Nếu cập nhật sang trạng thái hoàn thành
-                    if(status == 3){
-                        dataUpdate.percentage = 100
-                    }
-
-                    await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
-                        taskID: `${taskID}`,
-                        type: 3,
-                        title: "Cập nhật trạng thái",
-                        content: `đã cập nhật trạng thái sang ${PCM_STATUS[Number(status)-1]}`,
-                    })
                 }
 
                 //_________Hợp đồng
@@ -1056,6 +1084,8 @@ class Model extends BaseModel {
                             dataUpdate.status = 3
                         }
                     }else{
+
+                        // Việc thông khác/khác còn lại thì người tạo việc ký sẽ Hoàn thành
                         if(userID.toString() === infoTask.author?.toString()){
                             dataUpdate.approver = userID
                             dataUpdate.timeApproved = Date.now()
@@ -1234,49 +1264,49 @@ class Model extends BaseModel {
                 let { name: taskName } = infoAfterUpdate;
 
                 /**
-                 * Kích hoạt trong quy trình động
+                 * KÍCH HOẠT QUY TRÌNH ĐỘNG: TẠM BỎ
                  * Không can thiệp với Phân loại Thầu và mua sắm
                  */
-                if(status && status == 3 && ![4].includes(infoTask.subtype)){
-                    // Cập nhật công việc này về trạng thái Mặc định
-                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
-                        { upcoming: 1 }, 
-                        { new: true })
+                // if(status && status == 3 && ![4].includes(infoTask.subtype)){
+                //     // Cập nhật công việc này về trạng thái Mặc định
+                //     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
+                //         { upcoming: 1 }, 
+                //         { new: true })
 
-                    // Nếu công việc cha là Quy trình động thì kích hoạt công việc kế tiếp
-                    if(infoAfterUpdate.parent){
-                        let infoParentTask = await PCM_PLAN_TASK_COLL.findById(infoAfterUpdate?.parent)
-                        if(infoParentTask.upcoming == 2){
+                //     // Nếu công việc cha là Quy trình động thì kích hoạt công việc kế tiếp
+                //     if(infoAfterUpdate.parent){
+                //         let infoParentTask = await PCM_PLAN_TASK_COLL.findById(infoAfterUpdate?.parent)
+                //         if(infoParentTask.upcoming == 2){
 
-                            let nextSubTaskID, isLastestElement = 0;
-                            let listSubTasks = await PCM_PLAN_TASK_COLL.find({parent: infoAfterUpdate?.parent}).sort({ actualFinishTime: 1 }).select('_id name upcoming actualFinishTime')
+                //             let nextSubTaskID, isLastestElement = 0;
+                //             let listSubTasks = await PCM_PLAN_TASK_COLL.find({parent: infoAfterUpdate?.parent}).sort({ actualFinishTime: 1 }).select('_id name upcoming actualFinishTime')
 
-                            listSubTasks?.forEach((item, index) => {
+                //             listSubTasks?.forEach((item, index) => {
 
-                                // Kiểm tra lấy phần tử có ID là taskID
-                                if(item._id.toString() === taskID.toString()){
-                                    if(Number(index) === Number(listSubTasks.length - 1)){
-                                        isLastestElement = 1
-                                    }else{
-                                        nextSubTaskID = listSubTasks[Number(index + 1)]._id
-                                    }
-                                }
-                            })
+                //                 // Kiểm tra lấy phần tử có ID là taskID
+                //                 if(item._id.toString() === taskID.toString()){
+                //                     if(Number(index) === Number(listSubTasks.length - 1)){
+                //                         isLastestElement = 1
+                //                     }else{
+                //                         nextSubTaskID = listSubTasks[Number(index + 1)]._id
+                //                     }
+                //                 }
+                //             })
 
-                            if(isLastestElement === 1){
-                                // Cập nhật trạng thái quy trình động cho phần tử cha
-                                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate?.parent,
-                                { upcoming: 1 }, 
-                                { new: true })
-                            }else{
-                                // Cập nhật trạng thái quy trình động cho phần tử tiếp theo
-                                await PCM_PLAN_TASK_COLL.findByIdAndUpdate(nextSubTaskID,
-                                { upcoming: 1 }, 
-                                { new: true })
-                            }
-                        }
-                    }
-                }
+                //             if(isLastestElement === 1){
+                //                 // Cập nhật trạng thái quy trình động cho phần tử cha
+                //                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate?.parent,
+                //                 { upcoming: 1 }, 
+                //                 { new: true })
+                //             }else{
+                //                 // Cập nhật trạng thái quy trình động cho phần tử tiếp theo
+                //                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(nextSubTaskID,
+                //                 { upcoming: 1 }, 
+                //                 { new: true })
+                //             }
+                //         }
+                //     }
+                // }
 
                 /**
                  * XỬ LÝ SOCKET VÀ CLOUD MSS
