@@ -1885,7 +1885,12 @@ class Model extends BaseModel {
                 let listDepartment = await ITEM__DEPARTMENT_COLL.find({ company: companyID }).select('name').limit(500)
                 let listPosition = await ITEM__POSITION_COLL.find({ company: companyID }).select('name').limit(500)
                 let listDoctype = await ITEM__DOCTYPE_COLL.find({ company: companyID }).select('name').limit(500)
-                let listUser = await USER_COLL.find({ company: companyID }).select('fullname').limit(500)
+                let listUser = await USER_COLL.find({ company: companyID })
+                .populate({
+                    path: 'department position',
+                    select: '_id  name',
+                })
+                .select('fullname').limit(500)
                 let listFunda = await ITEM__FUNDA_COLL.find({ company: companyID }).select('name').limit(500)
                 let listContract = await ITEM__CONTRACT_COLL.find({ company: companyID }).select('name sign').limit(500)
                 let listArea = await ITEM__AREA_COLL.find({ level: 3 }).select('name parent')
@@ -2017,6 +2022,12 @@ class Model extends BaseModel {
                         listUser?.forEach((item, index) => {
                             workbook.sheet("DanhMuc").row(i).cell(27).value(`${item._id}`);
                             workbook.sheet("DanhMuc").row(i).cell(28).value(`${item.fullname}`)
+
+                            workbook.sheet("Temp").row(i).cell(2).value(`${item._id}`);
+                            workbook.sheet("Temp").row(i).cell(3).value(`${item.fullname}`)
+                            workbook.sheet("Temp").row(i).cell(4).value(`${item.department.name}`)
+                            workbook.sheet("Temp").row(i).cell(5).value(`${item.position.name}`)
+
                             i++
                         })
 

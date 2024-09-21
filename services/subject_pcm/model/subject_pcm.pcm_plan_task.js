@@ -1933,14 +1933,14 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật trạng thái triển khai
-                // if(status == 1 && assignee.toString() == userID.toString()){
-                //     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
-                //         {
-                //             $set: {
-                //                 status: 2
-                //             }
-                //         }, { new: true })
-                // }
+                if(status == 1 && assignee.toString() == userID.toString()){
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
+                        {
+                            $set: {
+                                status: 2
+                            }
+                        }, { new: true })
+                }
 
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                     .select(select)
