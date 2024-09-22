@@ -143,19 +143,23 @@ class Model extends BaseModel {
                     dataInsert.namecv = convertStr
                 }
 
-                let unitPrice2 = 0
-                if (unitPrice != 0) {
+                let unitPrice2 = 0, quantity2 = 1
+                if (unitPrice != 0 && !isNaN(unitPrice)) {
                     unitPrice2 = Number(unitPrice)
                 }
-                if (quantity) {
-                    dataInsert.quantity = Number(quantity)
+                if (quantity && !isNaN(quantity)) {
+                    quantity2 = Number(quantity)
                 }
-                if(unitPrice2 >= 0){
-                    let amount  = Number(quantity * unitPrice2).toFixed(0)
+                // console.log({quantity2, unitPrice2})
 
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity2 * unitPrice2).toFixed(0)
+
+                    dataInsert.quantity = quantity2
                     dataInsert.unitPrice = unitPrice2
                     dataInsert.amount = amount
                 }
+                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -305,9 +309,10 @@ class Model extends BaseModel {
                 if (unitPrice != 0) {
                     unitPrice2 = Number(unitPrice)
                 }
-                if (quantity) {
+                if (quantity && !isNaN(quantity)) {
                     dataUpdate.quantity = Number(quantity)
                 }
+
                 if(unitPrice2 >= 0){
                     let amount  = Number(quantity * unitPrice2).toFixed(0)
 
