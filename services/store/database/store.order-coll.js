@@ -66,6 +66,14 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         ref: 'user'
     }],
     /**
+     * Link tới phiếu
+     * Sử dụng để tính giá xuất theo Nhập (linkID) xuất đích danh
+     */
+    link: {
+        type: Schema.Types.ObjectId,
+        ref: "store_order"
+    },
+    /**
      * Phân loại vào ra
      * 1-Bán ra/Xuất kho/Chi ra
      * 2-Mua vào/Nhập kho/Thu vào
