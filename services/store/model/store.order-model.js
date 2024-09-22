@@ -360,7 +360,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getList({ option, status, arrType, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = {}, sortKey, isCompanyOther, fromDate, toDate }) {
+  getList({ option, status, arrType, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = '{"path":"assignee funda project contract warehouse customer userCreate userUpdate parent link","select":"fullname name sign phone"}', sortKey, isCompanyOther, fromDate, toDate }) {
     //   console.log({ option, status, arrType, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
       return new Promise(async (resolve) => {
           try {
