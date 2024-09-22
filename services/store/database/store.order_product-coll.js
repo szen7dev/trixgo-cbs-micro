@@ -248,6 +248,15 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         default : 0
     },
     /**
+     * Check kiểm
+     * 1-Khởi tạo
+     * 2-Checked
+     */
+    checked: {
+        type: Number,
+        default: 1
+    },
+    /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
     userCreate: {
