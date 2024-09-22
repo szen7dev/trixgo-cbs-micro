@@ -364,7 +364,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         // console.log({ option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
@@ -461,7 +461,11 @@ class Model extends BaseModel {
                 }
 
                 if (checkObjectIDs(workID)) {
-                    conditionObj.work = workID;
+                    conditionObj.budgetWork = workID;
+                }
+
+                if (checkObjectIDs(subtypeID)) {
+                    conditionObj.subtype = subtypeID;
                 }
 
                 if (!isNaN(status) && Number(status) >= 1) {
@@ -537,7 +541,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 2/9/2024
      */
-    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate }) {
+    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -623,9 +627,20 @@ class Model extends BaseModel {
                     conditionObj1.goods = ObjectID(goodsID);
                     conditionObj2.goods = ObjectID(goodsID);
                 }
+
                 if (checkObjectIDs(assetsID)) {
                     conditionObj1.assets = ObjectID(assetsID);
                     conditionObj2.assets = ObjectID(assetsID);
+                }
+
+                if (checkObjectIDs(workID)) {
+                    conditionObj1.budgetWork = ObjectID(workID);
+                    conditionObj2.budgetWork = ObjectID(workID);
+                }
+
+                if (checkObjectIDs(subtypeID)) {
+                    conditionObj1.subtype = ObjectID(subtypeID);
+                    conditionObj2.subtype = ObjectID(subtypeID);
                 }
 
                 if (!isNaN(type) && Number(type) >= 1) {
