@@ -120,7 +120,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderProductID, option, status, outin, type, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { orderProductID, option, status, outin, type, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
                 
                 // console.log('====================')
                 // console.log(ctx.params)
@@ -138,7 +138,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getList({
-                        userID, option, status, outin, type, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey
+                        userID, option, status, outin, type, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey
                      });
  
                 }
@@ -162,13 +162,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, userCreateID,  fromDate, toDate } = ctx.params;
+                let { option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate } = ctx.params;
 
                 // console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getListByProperty({ companyID: company._id, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate })
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getListByProperty({ companyID: company._id, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
