@@ -42,8 +42,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice }) {
-        // console.log({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, name, note, quantity, unitPrice })
+    insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice }) {
+        // console.log({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -83,6 +83,9 @@ class Model extends BaseModel {
                     name,
                 }
 
+                if (checkObjectIDs(fundaID)) {
+                    dataInsert.funda = fundaID;
+                }
                 if (checkObjectIDs(accountID)) {
                     dataInsert.account = accountID;
                 }
@@ -115,6 +118,18 @@ class Model extends BaseModel {
                         }
                         if(infoWork.group){
                             dataInsert.budgetGroup = infoWork.group;
+                        }
+                    }
+                }
+
+                if (checkObjectIDs(subtypeID)) {
+                    dataInsert.subtype = subtypeID;
+
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoDoctype = await ITEM__DOCTYPE_COLL.findById(subtypeID)
+                    if(infoDoctype){
+                        if(infoDoctype.parent){
+                            dataInsert.parentSubtype = infoDoctype.parent;
                         }
                     }
                 }
@@ -202,7 +217,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ userID, orderProductID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice }) {
+    update({ userID, orderProductID, fundaID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -214,6 +229,9 @@ class Model extends BaseModel {
                     modifyAt: new Date() 
                 };
 
+                if (checkObjectIDs(fundaID)) {
+                    dataUpdate.funda = fundaID;
+                }
                 if (checkObjectIDs(accountID)) {
                     dataUpdate.account = accountID;
                 }
