@@ -24,6 +24,7 @@ module.exports.APP_KEYS = {
     WORKSHOP:"61e049e7fdebf77b072d1b15",
     DATAHUB: "60390cb12b367a1cdd9f3fb2",
     FNB: "60390cb12b367a1cdd9f3fb2",
+    STORE: "5f52341f880c2f26c8df8c10",
 }
 
 exports.KEY_ERROR  = {

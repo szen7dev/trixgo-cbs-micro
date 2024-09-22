@@ -110,6 +110,7 @@ const getPathByApp = (params) => {
         APP_KEYS.HUMAN,
         APP_KEYS.DATAHUB,
         APP_KEYS.FNB,
+        APP_KEYS.STORE,
     ];
     const PROJECTS = [APP_KEYS.PCM_PLAN_TASK, APP_KEYS.DOCUMENT];
     const GROUPS = [APP_KEYS.PCM_PLAN_TASK];
@@ -167,6 +168,10 @@ const getPathByApp = (params) => {
             break;
         case APP_KEYS.FNB:
             appName = 'FNB';
+            pathS3 += `/${companyID}`;
+            break;
+        case APP_KEYS.STORE:
+            appName = 'STORE';
             pathS3 += `/${companyID}`;
             break;
         default:
@@ -236,8 +241,9 @@ const getPathS3 = ({
     let pathS3 = '';
     let newFileName = '';
 
-    let currentDate = moment(new Date()).format('YYYYMMDD')
-    let currentTime = moment(new Date()).format('HHmmss')
+    // let currentDate = moment(new Date()).format('YYYYMMDD')
+    // let currentTime = moment(new Date()).format('HHmmss')
+
     if (['in-project'].includes(typeUpload)) {
         const result = getPathByType({
             typeUpload, companyID, projectID

@@ -139,7 +139,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ userID, orderID, fundaID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status }) {
+  update({ userID, orderID, filesID, fundaID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status }) {
       // console.log({ })
       const that = this
       return new Promise(async (resolve) => {
@@ -164,6 +164,10 @@ class Model extends BaseModel {
             let dataUpdate = { 
                 userUpdate: userID, 
                 modifyAt: new Date() 
+            }
+
+            if (checkObjectIDs(filesID)) {
+                dataUpdate.$addToSet = { files: filesID };
             }
 
             if (checkObjectIDs(fundaID)) {
