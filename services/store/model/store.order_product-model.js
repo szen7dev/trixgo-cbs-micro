@@ -217,7 +217,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ userID, orderProductID, fundaID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice }) {
+    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -228,6 +228,10 @@ class Model extends BaseModel {
                     userUpdate: userID, 
                     modifyAt: new Date() 
                 };
+
+                if (checkObjectIDs(filesID)) {
+                    dataUpdate.$addToSet = { files: filesID };
+                }
 
                 if (checkObjectIDs(fundaID)) {
                     dataUpdate.funda = fundaID;
@@ -278,6 +282,10 @@ class Model extends BaseModel {
                             dataUpdate.parentSubtype = infoDoctype.parent;
                         }
                     }
+                }
+                
+                if (checked && !isNaN(checked) && Number(checked) > 0) {
+                    dataUpdate.checked = checked;
                 }
 
                 let convertStr = ''

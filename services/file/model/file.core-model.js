@@ -23,7 +23,7 @@ class Model extends BaseModel {
      * 8/ get list with list fileID with status
      */
 
-    insert({ appID, companyID, projectID, groupID, nameOrg, name, path, size, mimeType, type, userID, ctx }) {
+    insert({ appID, companyID, projectID, groupID, nameOrg, name, path, size, mimeType, type, userID }) {
         return new Promise(async (resolve) => {
             try {
                 /**
