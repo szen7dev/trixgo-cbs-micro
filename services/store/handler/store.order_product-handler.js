@@ -121,7 +121,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { orderProductID, option, status, outin, type, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { orderProductID, option, status, outin, type, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
                 
                 // console.log('====================')
                 // console.log(ctx.params)
@@ -139,7 +139,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getList({
-                        userID, option, status, outin, type, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey
+                        userID, option, status, outin, type, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit, lastestID, select, populates, sortKey
                      });
  
                 }
