@@ -37,9 +37,9 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID }){
-        // console.log('333333333333333')
-        // console.log({ companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID })
+	insert({ projectID, companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID }){
+        // console.log('1111111111111111')
+        // console.log({ projectID, companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")
@@ -59,9 +59,14 @@ class Model extends BaseModel {
                     dataInsert.author = userID
                 }
 
+                if(projectID && checkObjectIDs(projectID)){
+                    dataInsert.project = projectID;
+                }
+
                 if(parentID && checkObjectIDs(parentID)){
                     let infoParent = await ITEM__GOODS_COLL.findById(parentID);
                     dataInsert.parent = parentID;
+                    dataInsert.project = infoParent.project;
                     dataInsert.level = infoParent.level + 1;
                 }
 
@@ -161,7 +166,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID }){
+	update({ projectID, goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(goodsID))
@@ -181,6 +186,10 @@ class Model extends BaseModel {
                         images: imagesID,
                     }
                 }
+
+                // if(projectID && checkObjectIDs(projectID)){
+                //     dataUpdate.project = projectID;
+                // }
 
                 if(name && name != ""){
                     dataUpdate.name = name;
@@ -356,7 +365,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, parentID, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
+        companyID, projectID, parentID, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
         keyword, limit = 10, lastestID, select, populates = {}, sortDirection = '-1' }) {
         return new Promise(async (resolve) => {
             try {
@@ -415,6 +424,10 @@ class Model extends BaseModel {
 
                 if(companyID && checkObjectIDs(companyID)){
                     conditionObj.company = companyID;
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = projectID;
                 }
 
                 // Chỉ lấy danh sách cha hoặc con
