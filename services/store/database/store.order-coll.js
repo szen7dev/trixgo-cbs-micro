@@ -22,6 +22,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
+    //_________Gói thầu
+    package: {
+        type: Schema.Types.ObjectId,
+        ref : "document_package",
+    },
     //_________Hợp đồng
     contract: {
         type: Schema.Types.ObjectId,

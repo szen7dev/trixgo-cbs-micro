@@ -53,6 +53,7 @@ class Model extends BaseModel {
 
                 let dataInsert = { 
                     userCreate: userID, 
+                    company: infoProject?.data?.company, 
                     area: infoProject?.data?.area, 
                     client: infoProject.data.company, 
                     admins: [userID], 
@@ -210,8 +211,15 @@ class Model extends BaseModel {
 
                 // Thông tin dự án
                 let infoPlan = await DOCUMENT__PACKAGE_COLL.findById(packageID)
+                .populate({
+                    path: 'project',
+                    select: 'name company'
+                })
                 if (!infoPlan)
                     return resolve({ error: true, message: 'Can not get info', status: 400 })
+
+                // Fix lỗi không tạo company trước đây
+                dataUpdate.company = infoPlan.project.company;
 
                 if (checkObjectIDs(fieldID)) {
                     dataUpdate.field = fieldID;
@@ -325,11 +333,11 @@ class Model extends BaseModel {
                  * CẬP NHẬT THÔNG TIN LẠI VỀ DỰ ÁN
                  */
                 // Tính toán số lượng, giá trị
-                let infoCal = await that.getAmountByObject({ userID, projectID: infoPlan.project })
+                let infoCal = await that.getAmountByObject({ userID, projectID: infoPlan.project._id })
                 // Cập nhật vào thông tin dự án
                 if(infoCal){
                     let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_UPDATE}`, {
-                        departmentID: `${infoPlan.project}`,
+                        departmentID: `${infoPlan.project._id}`,
                         numberOfPackage: infoCal.data.numberOfPackage, 
                         numberOfUnexecutedPackage: infoCal.data.numberOfUnexecutedPackage, 
                         numberOfExecutedPackage: infoCal.data.numberOfExecutedPackage, 
@@ -404,15 +412,24 @@ class Model extends BaseModel {
 	 * Func: Lấy danh sách gói thầu
 	 * Date: 26/10/2021
 	 */
-    getListPackage({ departmentID, parentID, status, userID, lastestID, isShowAll, keyword, limit = 10, select, populates = {}}){
+    getListPackage({ companyID, departmentID, parentID, status, userID, lastestID, isShowAll, keyword, limit = 10, select, populates = {}}){
+        // console.log({ companyID, departmentID, parentID, status, userID, lastestID, isShowAll })
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(departmentID))
-                    return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
+                // if(!checkObjectIDs(departmentID))
+                //     return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
 
-                let conditionObj = { members: { $in: [userID] }, project: departmentID };
+                let conditionObj = { 
+                    members: { $in: [userID] }
+                }
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
+
+                if(departmentID && checkObjectIDs(departmentID)) {
+                    conditionObj.project = departmentID;
+                }else{
+                    conditionObj.company = companyID;
+                }
 
                 // Nếu có trường này thì lấy tất cả group trong dự án mà mình có thể không là members
                 if(isShowAll == "1"){
@@ -456,6 +473,7 @@ class Model extends BaseModel {
                     ]
                 }
                 // console.log(conditionObj)
+
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await DOCUMENT__PACKAGE_COLL.findById(lastestID);

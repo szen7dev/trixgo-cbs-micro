@@ -182,18 +182,21 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: userID } = ctx.meta.infoUser;
-                const { isShowAll, packageID, lastestID, departmentID, parentID, status, keyword, select, populates, limit } = ctx.params;
-                let resultAfterCallHandler;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                const { isShowAll, packageID, lastestID, departmentID, parentID, status, keyword, select, populates, limit } = ctx.params
                 
+                
+                let resultAfterCallHandler;
                 if(packageID){
                     resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getInfo({
                         packageID, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await DOCUMENT__PACKAGE_MODEL.getListPackage({
-                        isShowAll, departmentID, parentID, status, userID, lastestID, keyword, select, populates, limit
+                        isShowAll, companyID: company._id, departmentID, parentID, status, userID, lastestID, keyword, select, populates, limit
                     });
+
+                    // console.log(resultAfterCallHandler)
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

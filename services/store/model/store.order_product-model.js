@@ -57,7 +57,7 @@ class Model extends BaseModel {
                  */
                 const infoParent = await STORE_ORDER_COLL
                 .findById(orderID)
-                .select('company funda project warehouse customer contract outin type date')
+                .select('company funda project package warehouse customer contract outin type date')
                 .lean();
                 if(!infoParent)
                     return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID});
@@ -70,6 +70,7 @@ class Model extends BaseModel {
                     company: infoParent.company,
                     funda: infoParent.funda,
                     project: infoParent.project,
+                    package: infoParent.package,
                     warehouse: infoParent.warehouse,
                     customer: infoParent.customer,
                     contract: infoParent.contract,
