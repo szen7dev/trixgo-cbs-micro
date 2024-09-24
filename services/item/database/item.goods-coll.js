@@ -127,6 +127,10 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     },
     //_________Định mức chuyển đổi
     convertQuantity: { type: Number, default: 1 },
+    //_________Số lượng
+    quantity: { type: Number, default: 1 },
+    //_________Trọng lượng
+    weight: { type: Number, default: 0 },
     //______Mục đích sử dụng (1-Chung, 2-Đơn hàng)
     usage: {
         type: Number,

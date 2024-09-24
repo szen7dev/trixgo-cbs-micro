@@ -22,8 +22,13 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref : "department"
     },
-    //_________Gói thầu
+    //_________Gói thầu giao
     package: {
+        type: Schema.Types.ObjectId,
+        ref : "document_package",
+    },
+    //_________Gói thầu nhận
+    toPackage: {
         type: Schema.Types.ObjectId,
         ref : "document_package",
     },
@@ -32,8 +37,13 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
-    //_________Kho bãi
+    //_________Kho bãi (kho của công ty)
     warehouse: {
+        type: Schema.Types.ObjectId,
+        ref : "warehouse"
+    },
+    //_________Kho bãi giao đi (kho của đối tác sẽ nhận)
+    toWarehouse: {
         type: Schema.Types.ObjectId,
         ref : "warehouse"
     },
