@@ -57,7 +57,7 @@ class Model extends BaseModel {
                  */
                 const infoParent = await STORE_ORDER_COLL
                 .findById(orderID)
-                .select('company funda project warehouse customer contract outin type date')
+                .select('company funda project package warehouse customer contract outin type date')
                 .lean();
                 if(!infoParent)
                     return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID});
@@ -70,6 +70,7 @@ class Model extends BaseModel {
                     company: infoParent.company,
                     funda: infoParent.funda,
                     project: infoParent.project,
+                    package: infoParent.package,
                     warehouse: infoParent.warehouse,
                     customer: infoParent.customer,
                     contract: infoParent.contract,
@@ -99,7 +100,12 @@ class Model extends BaseModel {
                     dataInsert.contract = contractID;
                 }
                 if (checkObjectIDs(goodsID)) {
+                    let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
                     dataInsert.goods = goodsID;
+
+                    if(infoGoods && infoGoods.parent){
+                        dataInsert.parentGoods = infoGoods.parent;
+                    }
                 }
                 if (checkObjectIDs(assetsID)) {
                     dataInsert.assets = assetsID;
@@ -252,9 +258,18 @@ class Model extends BaseModel {
                 if (checkObjectIDs(contractID)) {
                     dataUpdate.contract = contractID;
                 }
+
                 if (checkObjectIDs(goodsID)) {
+                    let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
                     dataUpdate.goods = goodsID;
+
+                    if(infoGoods && infoGoods.parent){
+                        dataUpdate.parentGoods = infoGoods.parent;
+                    }else{
+                        dataUpdate.parentGoods = null;
+                    }
                 }
+
                 if (checkObjectIDs(assetsID)) {
                     dataUpdate.assets = assetsID;
                 }

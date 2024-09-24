@@ -72,6 +72,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Schema.Types.ObjectId,
         ref : "goods"
     },
+    //_________Phân loại cha
+    parentGoods: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
+    },
     //_________Khoản mục phí (báo cáo theo Khoản mục-Dự án)
     subtype: {
         type: Schema.Types.ObjectId,

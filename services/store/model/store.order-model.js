@@ -49,8 +49,8 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 8/9/2024
    */
-  insert({ companyID, userID, outin, type, fundaID, projectID, warehouseID, customerID, contractID, date, name, sign, note, linkID }) {
-    // console.log({ companyID, userID, outin, type, fundaID, projectID, warehouseID, customerID, contractID, date, name, sign, note })
+  insert({ companyID, userID, outin, type, fundaID, projectID, packageID, warehouseID, customerID, contractID, date, name, sign, note, linkID }) {
+    // console.log({ companyID, userID, outin, type, fundaID, projectID, packageID, warehouseID, customerID, contractID, date, name, sign, note })
     return new Promise(async (resolve) => {
         try {
             if([2,3,4,5,6].includes(Number(type))){
@@ -80,6 +80,9 @@ class Model extends BaseModel {
 
             if (checkObjectIDs(projectID)) {
                 dataInsert.project = projectID;
+            }
+            if (checkObjectIDs(packageID)) {
+                dataInsert.package = packageID;
             }
             if (checkObjectIDs(warehouseID)) {
                 dataInsert.warehouse = warehouseID;
@@ -139,7 +142,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ userID, orderID, filesID, fundaID, projectID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status }) {
+  update({ userID, orderID, filesID, fundaID, projectID, packageID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status }) {
       // console.log({ })
       const that = this
       return new Promise(async (resolve) => {
@@ -175,6 +178,9 @@ class Model extends BaseModel {
             }
             if (checkObjectIDs(projectID)) {
                 dataUpdate.project = projectID;
+            }
+            if (checkObjectIDs(packageID)) {
+                dataUpdate.package = packageID;
             }
             if (checkObjectIDs(warehouseID)) {
                 dataUpdate.warehouse = warehouseID;
