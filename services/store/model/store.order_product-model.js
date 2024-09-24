@@ -265,6 +265,8 @@ class Model extends BaseModel {
 
                     if(infoGoods && infoGoods.parent){
                         dataUpdate.parentGoods = infoGoods.parent;
+                    }else{
+                        dataUpdate.parentGoods = null;
                     }
                 }
 
