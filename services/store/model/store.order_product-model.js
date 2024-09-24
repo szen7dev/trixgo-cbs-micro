@@ -100,7 +100,12 @@ class Model extends BaseModel {
                     dataInsert.contract = contractID;
                 }
                 if (checkObjectIDs(goodsID)) {
+                    let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
                     dataInsert.goods = goodsID;
+
+                    if(infoGoods && infoGoods.parent){
+                        dataInsert.parentGoods = infoGoods.parent;
+                    }
                 }
                 if (checkObjectIDs(assetsID)) {
                     dataInsert.assets = assetsID;
@@ -253,9 +258,16 @@ class Model extends BaseModel {
                 if (checkObjectIDs(contractID)) {
                     dataUpdate.contract = contractID;
                 }
+
                 if (checkObjectIDs(goodsID)) {
+                    let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
                     dataUpdate.goods = goodsID;
+
+                    if(infoGoods && infoGoods.parent){
+                        dataUpdate.parentGoods = infoGoods.parent;
+                    }
                 }
+
                 if (checkObjectIDs(assetsID)) {
                     dataUpdate.assets = assetsID;
                 }
