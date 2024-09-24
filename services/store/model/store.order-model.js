@@ -49,8 +49,8 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 8/9/2024
    */
-  insert({ companyID, userID, outin, type, fundaID, projectID, packageID, warehouseID, customerID, contractID, date, name, sign, note, linkID }) {
-    // console.log({ companyID, userID, outin, type, fundaID, projectID, packageID, warehouseID, customerID, contractID, date, name, sign, note })
+  insert({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID }) {
+    // console.log({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note })
     return new Promise(async (resolve) => {
         try {
             if([2,3,4,5,6].includes(Number(type))){
@@ -84,8 +84,14 @@ class Model extends BaseModel {
             if (checkObjectIDs(packageID)) {
                 dataInsert.package = packageID;
             }
+            if (checkObjectIDs(toPackageID)) {
+                dataInsert.toPackage = toPackageID;
+            }
             if (checkObjectIDs(warehouseID)) {
                 dataInsert.warehouse = warehouseID;
+            }
+            if (checkObjectIDs(toWarehouseID)) {
+                dataInsert.toWarehouse = toWarehouseID;
             }
             if (checkObjectIDs(customerID)) {
                 dataInsert.customer = customerID;
@@ -142,7 +148,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ userID, orderID, filesID, fundaID, projectID, packageID, warehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status }) {
+  update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status }) {
       // console.log({ })
       const that = this
       return new Promise(async (resolve) => {
@@ -182,8 +188,14 @@ class Model extends BaseModel {
             if (checkObjectIDs(packageID)) {
                 dataUpdate.package = packageID;
             }
+            if (checkObjectIDs(toPackageID)) {
+                dataUpdate.toPackage = toPackageID;
+            }
             if (checkObjectIDs(warehouseID)) {
                 dataUpdate.warehouse = warehouseID;
+            }
+            if (checkObjectIDs(toWarehouseID)) {
+                dataUpdate.toWarehouse = toWarehouseID;
             }
             if (checkObjectIDs(accountID)) {
                 dataUpdate.account = accountID;
@@ -245,7 +257,6 @@ class Model extends BaseModel {
             let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
             if (!infoAfterUpdate)
                 return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-
             // console.log(infoAfterUpdate)
 
             // Cập nhật lại các phần tử con
@@ -256,7 +267,10 @@ class Model extends BaseModel {
                 { $set: { 
                     "status" : infoAfterUpdate.status,
                     "project" : infoAfterUpdate.project,
+                    "package" : infoAfterUpdate.package,
+                    "toPackage" : infoAfterUpdate.toPackage,
                     "warehouse" : infoAfterUpdate.warehouse,
+                    "toWarehouse" : infoAfterUpdate.toWarehouse,
                     "customer" : infoAfterUpdate.customer,
                     "contract" : infoAfterUpdate.contract,
                     "outin" : infoAfterUpdate.outin,
@@ -366,8 +380,8 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getList({ option, status, arrType, outin, type, userID, companyID, projectID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = '{"path":"assignee funda project contract warehouse customer userCreate userUpdate parent link","select":"fullname name sign phone image"}', sortKey, isCompanyOther, fromDate, toDate }) {
-    //   console.log({ option, status, arrType, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+  getList({ option, status, arrType, outin, type, userID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = '{"path":"assignee funda project contract warehouse customer userCreate userUpdate parent link","select":"fullname name sign phone image"}', sortKey, isCompanyOther, fromDate, toDate }) {
+    //   console.log({ option, status, arrType, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, projectID, packageID, toPackageID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
       return new Promise(async (resolve) => {
           try {
               let sortBy;
@@ -436,6 +450,14 @@ class Model extends BaseModel {
               if (checkObjectIDs(projectID)) {
                   conditionObj.project = projectID;
               }
+
+              if (checkObjectIDs(packageID)) {
+                conditionObj.package = packageID;
+            }
+
+            if (checkObjectIDs(toPackageID)) {
+                conditionObj.toPackage = toPackageID;
+            }
 
               if (checkObjectIDs(warehouseID)) {
                   conditionObj.warehouse = warehouseID;
@@ -546,174 +568,6 @@ class Model extends BaseModel {
           }
       })
   }
-
-  /**
-   * Name  : getListByProperty
-   * Author: HiepNH
-   * Date: 2/9/2024
-   */
-//   getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, fromDate, toDate }) {
-//       return new Promise(async resolve => {
-//           try {
-//               /**
-//                * BA
-//                * 1. Ban đầu query tổng tất cả dữ liệu
-//                * 2. Sau bổ sung các phiếu đầu kỳ/kết chuyển số dư
-//                */
-//               let conditionObj1 = {
-//                   company: ObjectID(companyID),
-//                   goods: { $exists: true, $ne: null },
-//                   status: 5,
-//                   outin: 1,
-//               }
-//               let conditionObj2 = {
-//                   company: ObjectID(companyID),
-//                   goods: { $exists: true, $ne: null },
-//                   status: 5,
-//                   outin: 2,
-//               }
-
-//               // if(fromDate && toDate){
-//               //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
-//               //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-//               //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-//               //         conditionObj1.date  = { 
-//               //             $gte: moment(startTime).toDate(),
-//               //             $lte: moment(endTime).toDate()
-//               //         }
-//               //         conditionObj2.date  = { 
-//               //             $gte: moment(startTime).toDate(),
-//               //             $lte: moment(endTime).toDate()
-//               //         }
-//               //     }
-//               // }
-
-//               if (checkObjectIDs(projectID)) {
-//                   conditionObj1.project = ObjectID(projectID);
-//                   conditionObj2.project = ObjectID(projectID);
-//               }
-
-//               if (checkObjectIDs(warehouseID)) {
-//                   conditionObj1.warehouse = ObjectID(warehouseID);
-//                   conditionObj2.warehouse = ObjectID(warehouseID);
-//               }
-
-//               if (checkObjectIDs(accountID)) {
-//                   conditionObj1.account = ObjectID(accountID);
-//                   conditionObj2.account = ObjectID(accountID);
-//               }
-
-//               if (checkObjectIDs(customerID)) {
-//                   conditionObj1.customer = ObjectID(customerID);
-//                   conditionObj2.customer = ObjectID(customerID);
-//               }
-
-//               if (checkObjectIDs(userCreateID)) {
-//                   conditionObj1.userCreate = ObjectID(userCreateID);
-//                   conditionObj2.userCreate = ObjectID(userCreateID);
-//               }
-
-//               if (checkObjectIDs(goodsID)) {
-//                   conditionObj1.goods = ObjectID(goodsID);
-//                   conditionObj2.goods = ObjectID(goodsID);
-//               }
-//               if (checkObjectIDs(assetsID)) {
-//                   conditionObj1.assets = ObjectID(assetsID);
-//                   conditionObj2.assets = ObjectID(assetsID);
-//               }
-
-//               // if (!isNaN(outin) && Number(outin) >= 1) {
-//               //     conditionObj1.outin = Number(outin)
-//               //     conditionObj2.outin = Number(outin)
-//               // }
-
-//               if (!isNaN(type) && Number(type) >= 1) {
-//                   conditionObj1.type = Number(type)
-//                   conditionObj2.type = Number(type)
-//               }
-
-//               let conditionGroup = {}, conditionPopulate = {}
-
-//               conditionGroup = {
-//                   _id: { goods: "$goods" },
-//                   quantity: { $sum: "$quantity" },
-//                   amount: { $sum: "$amount" }
-//               }
-              
-//               let listData1 = await STORE_ORDER_COLL.aggregate([
-//                   {
-//                       $match: conditionObj1
-//                   },
-//                   {
-//                       $group: conditionGroup
-//                   },
-//               ])
-
-//               let listData2 = await STORE_ORDER_COLL.aggregate([
-//                   {
-//                       $match: conditionObj2
-//                   },
-//                   {
-//                       $group: conditionGroup
-//                   }
-//               ])
-
-//               let arr = [...listData1,...listData2]
-
-//               let arrCombine = [], arr1 = [], arr2 = []
-//               listData1.forEach(item=>{
-//                   let key = item._id.goods;
-//                   if (!Array.isArray(arr1[key])) {
-//                       arr1[key] = [];
-//                   }
-//                   arr1[key].push(item)
-//               })
-
-//               listData2.forEach(item=>{
-//                   let key = item._id.goods;
-//                   if (!Array.isArray(arr2[key])) {
-//                       arr2[key] = [];
-//                   }
-//                   arr2[key].push(item)
-//               })
-//               // console.log(arr1)
-//               // console.log(arr2)
-
-//               let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
-//               .select('name sign unit')
-
-//               listGoods.forEach(item =>{
-//                   let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
-
-//                   if(arr1[item._id]){
-//                       quantityExpense = arr1[item._id][0].quantity
-//                       expense = arr1[item._id][0].amount
-//                   }
-                  
-//                   if(arr2[item._id]){
-//                       quantityIncome = arr2[item._id][0].quantity
-//                       income = arr2[item._id][0].amount
-//                   }
-
-//                   arrCombine.push({
-//                       _id: item._id,
-//                       name: item.name,
-//                       unit: item.unit,
-//                       quantityIncome: Number(quantityIncome),
-//                       income: Number(income),
-//                       quantityExpense: Number(quantityExpense),
-//                       expense: Number(expense),
-//                   })
-//               })
-
-//               return resolve({ error: false, data: arrCombine })
-//           } catch (error) {
-//               return resolve({ error: true, message: error.message })
-//           }
-//       })
-//   }
-
-
 }
 
 exports.MODEL = new Model();

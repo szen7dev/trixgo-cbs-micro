@@ -37,9 +37,9 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID }){
+	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID }){
         // console.log('1111111111111111')
-        // console.log({ projectID, companyID, parentID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID })
+        // console.log({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")
@@ -80,6 +80,14 @@ class Model extends BaseModel {
 
                 if(!isNaN(duration)){
                     dataInsert.duration = Number(duration);
+                }
+
+                if(!isNaN(quantity)){
+                    dataInsert.quantity = Number(quantity);
+                }
+
+                if(!isNaN(weight)){
+                    dataInsert.weight = Number(weight);
                 }
 
                 if(!isNaN(unitprice)){
@@ -166,7 +174,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ projectID, goodsID, name, sign, unit, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID }){
+	update({ projectID, goodsID, name, sign, unit, quantity, weight, unitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(goodsID))
@@ -205,6 +213,14 @@ class Model extends BaseModel {
 
                 if(!isNaN(duration)){
                     dataUpdate.duration = Number(duration);
+                }
+
+                if(!isNaN(quantity)){
+                    dataUpdate.quantity = Number(quantity);
+                }
+
+                if(!isNaN(weight)){
+                    dataUpdate.weight = Number(weight);
                 }
 
                 if(!isNaN(unitprice)){

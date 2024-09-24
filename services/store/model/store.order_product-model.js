@@ -42,8 +42,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice }) {
-        // console.log({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice })
+    insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice }) {
+        // console.log({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -57,7 +57,7 @@ class Model extends BaseModel {
                  */
                 const infoParent = await STORE_ORDER_COLL
                 .findById(orderID)
-                .select('company funda project package warehouse customer contract outin type date')
+                .select('company funda project package toPackage warehouse customer contract outin type date')
                 .lean();
                 if(!infoParent)
                     return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID});
@@ -71,7 +71,9 @@ class Model extends BaseModel {
                     funda: infoParent.funda,
                     project: infoParent.project,
                     package: infoParent.package,
+                    toPackage: infoParent.toPackage,
                     warehouse: infoParent.warehouse,
+                    toWarehouse: infoParent.toWarehouse,
                     customer: infoParent.customer,
                     contract: infoParent.contract,
                     outin: infoParent.outin,
@@ -158,6 +160,10 @@ class Model extends BaseModel {
                 }
                 // console.log({quantity2, unitPrice2})
 
+                if (weight && !isNaN(weight)) {
+                    dataInsert.weight = weight
+                }
+
                 if(unitPrice2 >= 0){
                     let amount  = Number(quantity2 * unitPrice2).toFixed(0)
 
@@ -227,7 +233,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, unitPrice }) {
+    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -328,6 +334,10 @@ class Model extends BaseModel {
                     dataUpdate.quantity = Number(quantity)
                 }
 
+                if (weight && !isNaN(weight)) {
+                    dataUpdate.weight = weight
+                }
+
                 if(unitPrice2 >= 0){
                     let amount  = Number(quantity * unitPrice2).toFixed(0)
 
@@ -392,8 +402,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
-        // console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
+    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
+        // console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -460,6 +470,14 @@ class Model extends BaseModel {
                     conditionObj.project = projectID;
                 }
 
+                if (checkObjectIDs(packageID)) {
+                    conditionObj.package = packageID;
+                }
+
+                if (checkObjectIDs(toPackageID)) {
+                    conditionObj.toPackage = toPackageID;
+                }
+
                 if (checkObjectIDs(warehouseID)) {
                     conditionObj.warehouse = warehouseID;
                 }
@@ -482,6 +500,10 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(goodsID)) {
                     conditionObj.goods = goodsID;
+                }
+
+                if (checkObjectIDs(parentGoodsID)) {
+                    conditionObj.parentGoods = parentGoodsID;
                 }
 
                 if (checkObjectIDs(assetsID)) {
