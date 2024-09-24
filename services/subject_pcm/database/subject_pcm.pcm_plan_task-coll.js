@@ -130,33 +130,34 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_plan_task", {
     /**
      * Tính chất
      * 0-Việc thông thường
-     * 1-Yêu cầu thông tin
-     * 2-Yêu cầu phê duyệt
-     * 3-Thanh toán/Chi phí
-     * 4-Đấu thầu (lựa chọn nhà thầu)
-     * 5-Nghiệm thu chất lượng
-     * 6-Yêu cầu sửa chữa
-     * 7-Yêu cầu thay đổi
-     * 8-Yêu cầu thực hiện
+     * 1-Đề nghị cấp thông tin
+     * 2-Đề nghị phê duyệt'
+     * 3-Thanh toán
+     * 4-Thầu và mua sắm
+     * 5-Nghiệm thu
+     * 6-Đề nghị sửa chữa
+     * 7-Đề nghị thay đổi
+     * 8-Đề nghị thực hiện
      * 9-Báo cáo
-     * 10-Tiến độ
-     * 11-Biên bản họp
+     * 10-Tiến độ, kế hoạch
+     * 11-Họp
      * 12-Hóa đơn
      * 13-Đăng bài quảng bá sản phẩm được hệ thống duyệt
      * 14-Thông báo mời thầu
      * 15-Thông báo từ hệ thống
      * 16-Ghi danh
-     * 17-Template
+     * 17-Biểu mẫu
      */
     subtype: { type: Number, default: 0 },
 
     /**
      * Phân loại trình duyệt
-     * 1. Ngân sách
-     * 2. Nghỉ phép
-     * 3. Báo giá
-     * 4. Sửa chữa
-     * 5. Công nợ
+     * 1. Thông thường
+     * 2. Ngân sách
+     * 3. Công nợ
+     * 4. Báo giá
+     * 5. Sửa chữa
+     * 6. Nghỉ phép
      */
     approvalType: { type: Number, default: 1 },
     /**
