@@ -1445,12 +1445,6 @@ class Model extends BaseModel {
 
     /**
 	 * Dev: MinhVH
-	 * Func: Xóa comment
-	 * Date: 22/02/2022
-	 */
-
-    /**
-	 * Dev: MinhVH
 	 * Func: Thông tin comment
 	 * Date: 22/02/2022
 	 */
@@ -1507,7 +1501,7 @@ class Model extends BaseModel {
 	 */
     getList({
         taskID, contractID, projectID, parentID, isHaveImage, type, official,
-        limit = 10, lastestID, sortKey, select, populates, authorID, isGetReaction = 'true', switchType
+        limit = 10, lastestID, sortKey, select, populates = '{"path":"author lastestReplyID files images task receivers","select":"_id bizfullname fullname phone email position image name nameOrg description path mimeType size author type parent content files images amountCommentReply amountReaction createAt task company project group receivers","populate":{"path":"author position lastestReplyID files images task receivers","select":"_id bizfullname image name nameOrg description path mimeType size author type parent content files images amountCommentReply amountReaction createAt task company project group receivers"}}', authorID, isGetReaction = 'true', switchType
     }) {
         // console.log('==============GET LIST COMMENT=============')
         // console.log({
@@ -1573,16 +1567,10 @@ class Model extends BaseModel {
                      */
                     if(infoTask.subtype === 4 && infoTask?.openedStatus === 0) {
                         let relatedArr = infoTask.related.map(item => item.toString());
-                        // console.log(relatedArr)
-
-                        // console.log(authorID !== infoTask.assignee?.toString())
-                        // console.log(relatedArr.includes(authorID))
 
                         if(authorID !== infoTask.assignee?.toString() || relatedArr.includes(authorID)){
                             conditionObj.official = false;
                         }
-
-                        // console.log(conditionObj)
                     }
 
 					conditionObj.task = taskID;
@@ -1730,6 +1718,7 @@ class Model extends BaseModel {
 	 * Date: 22/02/2022
 	 */
 	searchCommentById({ taskID, commentID, projectID, switchType = 'TASK', select, populates, authorID }){
+        console.log({ taskID, commentID, projectID, switchType, select, populates, authorID })
 		return new Promise(async resolve => {
 			try {
 				if(!checkObjectIDs([commentID, authorID])) {
@@ -1845,7 +1834,7 @@ class Model extends BaseModel {
 	 * Func: Danh sách comment tìm kiếm theo các chủ đề được quyền truy cập
 	 * Date: 19/8/2022
 	 */
-	searchCommentBySubject({ sortKey, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 10, unlimit, lastestID, select, populates = {} }){
+	searchCommentBySubject({ sortKey, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit = 10, unlimit, lastestID, select, populates = '{"path":"author task project","select":"_id name fullname image createAt related sign"}' }){
         // console.log('=================searchCommentBySubjectt================')
         // console.log({ sortKey, fromDate, toDate, authorsID, companyOfAuthorsID, projectsID, official, userID, keyword, limit, unlimit, lastestID, select, populates })
 		return new Promise(async resolve => {
