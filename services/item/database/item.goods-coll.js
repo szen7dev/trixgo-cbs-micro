@@ -13,7 +13,12 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Đơn vị cơ sở/Cửa hàng
+    //_________Dự án
+    project: {
+        type: Schema.Types.ObjectId,
+        ref: "department"
+    },
+    //_________Đơn vị cơ sở/Cửa hàng được quyền truy cập
     fundas: [{
         type: Schema.Types.ObjectId,
         ref : "funda"

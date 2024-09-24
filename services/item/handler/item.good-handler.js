@@ -32,7 +32,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { companyID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, duration, usage, authorID } = ctx.params;
+                const { projectID, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, duration, usage, authorID } = ctx.params;
                 // console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
@@ -45,7 +45,7 @@ module.exports = {
 
                 // console.log('22222222222222222222')
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ companyID: company._id, parentID, convertID, convertQuantity, status, duration, usage, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, authorID });
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ projectID, companyID: company._id, parentID, convertID, convertQuantity, status, duration, usage, name, sign, unit, unitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, authorID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -111,7 +111,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { goodsID, companyID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
+                let { goodsID, companyID, projectID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
+
+                // console.log(ctx.params)
 
                 const infoUser = ctx?.meta?.infoUser;
 
@@ -126,7 +128,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getList({
-                        companyID, parentID, fundaID, type, isParent, status, usage, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer, sortDirection
+                        companyID, projectID, parentID, fundaID, type, isParent, status, usage, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer, sortDirection
                     });
                 }
 
