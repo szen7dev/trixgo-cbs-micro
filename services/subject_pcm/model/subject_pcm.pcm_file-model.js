@@ -164,7 +164,7 @@ class Model extends BaseModel {
 	 */
     getList({
         companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
-        limit = 20, lastestID, select, populates, isFileOfProject, isSearchFile, isTemplateFile, isXlsxFile, userID, ctx
+        limit = 20, lastestID, select, populates='{"path":"author task project","select":"_id name fullname image createAt related sign subtype"}', isFileOfProject, isSearchFile, isTemplateFile, isXlsxFile, userID, ctx
     }) {
         // console.log({
         //     companyID, projectID, groupID, taskID, authorID, keyword, type, fromDate, toDate,
@@ -438,7 +438,7 @@ class Model extends BaseModel {
 	 */
     getListByFilter({
         companyOfAuthorsID, authorsID, projectsID, fromDate, toDate, keyword,
-        limit = 20, lastestID, select, populates, userID
+        limit = 20, lastestID, select, populates='{"path":"author task project","select":"_id name fullname image createAt related sign subtype"}', userID
     }) {
         // console.log('=================>>>>>>>>>>>>>>Tìm kiếm dữ liệu File================')
         // console.log({
