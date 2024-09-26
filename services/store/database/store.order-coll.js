@@ -440,6 +440,18 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default : 0
     },
+    //_________Người phê duyệt
+    approver:{
+        type: Schema.Types.ObjectId,
+        ref: "user"
+    },
+    //_________Thời điểm phê duyệt
+    timeApproved: { type: Date, default: null },
+    //_________Ký duyệt xác nhận
+    signatures: [{
+        type: Schema.Types.ObjectId,
+        ref: "signature"
+    }],
     //_________File/ảnh đính kèm
     files: [{
         type: Schema.Types.ObjectId,

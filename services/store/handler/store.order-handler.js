@@ -30,7 +30,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -58,12 +58,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status } = ctx.params;
+                const { orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status, isAddSignature } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await STORE_ORDER_MODEL.update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status });
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status, isAddSignature, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

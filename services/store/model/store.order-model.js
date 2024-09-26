@@ -21,6 +21,7 @@ const { RANGE_BASE_PAGINATION_V2 } = require("../../../tools/cursor_base/playgro
 const { CF_DOMAIN_SERVICES } = require("../../gateway/helper/domain.constant");
 const { CF_ACTIONS_ANALYSIS }  = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO } = require("../../zalo_oa/helper/zalo.actions");
+const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 
 /**s
  * import inter-coll, exter-coll
@@ -148,7 +149,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status }) {
+  update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status, isAddSignature, ctx }) {
       // console.log({ })
       const that = this
       return new Promise(async (resolve) => {
@@ -164,16 +165,12 @@ class Model extends BaseModel {
                 });
             }
 
-            // //___________Quyền truy cập ứng dụng Store
-            // let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-            //     appID: "5f52341f880c2f26c8df8c10",
-            //     userID
-            // })
-
             let dataUpdate = { 
                 userUpdate: userID, 
                 modifyAt: new Date() 
             }
+
+            let dataAddToset = {};
 
             if (checkObjectIDs(filesID)) {
                 dataUpdate.$addToSet = { files: filesID };
@@ -250,6 +247,31 @@ class Model extends BaseModel {
 
             if (status && !isNaN(status) && Number(status) > 0) {
                 dataUpdate.status = status;
+            }
+
+             /**
+                 * KÝ XÁC NHẬN
+                 */
+             if(isAddSignature) {
+                const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
+                    companyID: infoOrder?.company?.toString(),
+                    projectID: infoOrder?.project?._id?.toString(),
+                    coll: {
+                        kind: 'store_order',
+                        item: orderID
+                    }
+                });
+                if(infoSignature.error) return resolve(infoSignature);
+
+                const { _id } = infoSignature.data;
+                dataAddToset = { ...dataAddToset, signatures: _id }
+
+                dataUpdate.approver = userID
+                dataUpdate.timeApproved = Date.now()
+            }
+
+            if(dataAddToset){
+                dataUpdate.$addToSet = dataAddToset;
             }
 
             // console.log(dataUpdate)
