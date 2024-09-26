@@ -177,6 +177,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     sallarySubFactor: { type: Number, default: 0 },
     //_________Lương căn bản (Mức đóng BH)
     sallaryBasic: { type: Number, default: 0 },
+    //_________Số ngày được nghỉ phép tối đa trong năm
+    numberOnLeave: { type: Number, default: 12 },
     //_________Số người phụ thuộc
     nods: { type: Number, default: 0 },
     //_________Ngày thay đổi lương gần nhất
