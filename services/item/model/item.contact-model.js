@@ -76,9 +76,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ option, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee, ctx
+    insert({ option, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee, ctx
     }) {
-        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee })
+        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee })
         return new Promise(async resolve => {
             try {
                 /**
@@ -328,6 +328,10 @@ class Model extends BaseModel {
                     dataInsert.sallaryBasic = sallaryBasic;
                 }
 
+                if (sallaryBasic) {
+                    dataInsert.numberOnLeave = numberOnLeave;
+                }
+
                 if (insuranceFee) {
                     dataInsert.insuranceFee = insuranceFee;
                 }
@@ -541,9 +545,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers }) {
+    update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers }) {
         // console.log('================THAM BIẾN CẬP NHẬT DANH BẠ=================')
-        // console.log({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers})
+        // console.log({contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers})
         return new Promise(async (resolve) => {
             try {
                 //___________Xác thực số điện thoại
@@ -788,6 +792,10 @@ class Model extends BaseModel {
 
                 if (sallaryBasic) {
                     dataUpdate.sallaryBasic = sallaryBasic;
+                }
+
+                if (numberOnLeave) {
+                    dataUpdate.numberOnLeave = numberOnLeave;
                 }
 
                 if (insuranceFee) {
