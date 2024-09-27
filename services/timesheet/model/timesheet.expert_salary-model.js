@@ -1056,20 +1056,20 @@ class Model extends BaseModel {
                     }
                     
                     /**
-                     * XÓA BẢNG LƯƠNG
+                     * XÓA BẢNG LƯƠNG: TẠM KHÓA CHỨC NĂNG NÀY
                      */
-                    else if(option == 3){
-                        console.log('=================3333333333333333333333333')
+                    // else if(option == 3){
+                    //     // console.log('=================3333333333333333333333333')
 
-                        // Chỉ admin ứng dụng mới được thêm phần tử cha con
-                        if(SALARY_RESET_PERMISSION.includes(email)){
-                            await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
-                            await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
-                            return resolve({ error: false, data: 'Reset thành công' })
-                        }else{
-                            return resolve({ error: false, data: 'Bạn không có quyền Reset' })
-                        }
-                    }
+                    //     // Chỉ admin ứng dụng mới được thêm phần tử cha con
+                    //     if(SALARY_RESET_PERMISSION.includes(email)){
+                    //         await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                    //         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                    //         return resolve({ error: false, data: 'Reset thành công' })
+                    //     }else{
+                    //         return resolve({ error: false, data: 'Bạn không có quyền Reset' })
+                    //     }
+                    // }
 
                 }else{
                     return resolve({ error: false, data: 'Bạn không có quyền thực hiện' })
