@@ -6,6 +6,8 @@ exports.PCM_STATUS_TASK = [
     { value: 5, text: 'Chờ người khác giải quyết', class: 'tajic-status-btn-waiting', backgroud: '4d4dff', key: 'waiting_on_someone_else' },
     { value: 6, text: 'Tiếp tục theo dõi', class: 'tajic-status-btn-follow-up', backgroud: '5bc0de', key: 'follow_up' },
     { value: 7, text: 'Khóa đóng', class: 'tajic-status-btn-follow-up', backgroud: '5bc0de', key: 'follow_up' },
+    { value: 8, text: 'Chưa đủ điều kiện duyệt', class: 'tajic-status-btn-follow-up', backgroud: 'f6bb29', key: 'follow_up' },
+    { value: 9, text: 'Chất lượng kiểm tra không đạt', class: 'tajic-status-btn-follow-up', backgroud: 'ffb3b3', key: 'follow_up' },
 ]
 
 exports.INSURANCE_STATUS = [
