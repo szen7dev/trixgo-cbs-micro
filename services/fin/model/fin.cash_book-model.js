@@ -1358,8 +1358,8 @@ class Model extends BaseModel {
                      * TẢI BẢNG LƯƠNG
                      */
                     if(option == 2){
-                        if (!checkObjectIDs(templateID)) 
-                            return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" });
+                        // if (!checkObjectIDs(templateID)) 
+                        //     return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" });
 
                         let conditionObj = {};
                         conditionObj.parent = parentID
@@ -1378,7 +1378,7 @@ class Model extends BaseModel {
                             select:'fullname name contacts',
                             populate: ({
                                 path: 'contacts',
-                                select:'sallaryBasic bankAccount bank identity nods',
+                                select:'sallaryBasic share bankAccount bank identity nods name',
                                 
                             })
                         })
@@ -1463,22 +1463,23 @@ class Model extends BaseModel {
                         // console.log(listData2)
 
                         // Chấm tăng ca (>8h)
-                        let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
-                            company: ObjectID(companyID),
-                            parent: { $exists: true, $ne: null },
-                            assignee: { $exists: true, $ne: null },
-                            hours: { $gt: 8 },
-                            $where: `return this.date.getMonth() === ${Number(monthFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
-                        })
-                        .populate({
-                            path: 'assignee',
-                            select:'fullname'
-                        })
-                        .select('name hours unitprice amount status date note')
-                        .sort({date: 1})
+                        // let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                        //     company: ObjectID(companyID),
+                        //     parent: { $exists: true, $ne: null },
+                        //     assignee: { $exists: true, $ne: null },
+                        //     hours: { $gt: 8 },
+                        //     $where: `return this.date.getMonth() === ${Number(monthFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
+                        // })
+                        // .populate({
+                        //     path: 'assignee',
+                        //     select:'fullname'
+                        // })
+                        // .select('name hours unitprice amount status date note')
+                        // .sort({date: 1})
 
                         // Template download data
-                        let templateFile = path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx'))
+                        let templateFile
+                        let templateFile1 = path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx'))
                         if (checkObjectIDs(templateID)) {
                             let infoTemplate = await PCM_FILE__COLL.findById(templateID)
                             // console.log(infoTemplate)
@@ -1493,8 +1494,8 @@ class Model extends BaseModel {
                         }
 
                          // Modify the workbook.
-                        //  XlsxPopulate.fromFileAsync(templateFile)
-                            XlsxPopulate.fromDataAsync(templateFile)
+                         XlsxPopulate.fromFileAsync(templateFile1)
+                            // XlsxPopulate.fromDataAsync(templateFile)
                          .then(async workbook => {
 
                             workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
@@ -1530,8 +1531,19 @@ class Model extends BaseModel {
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) // Công thức
 
                                 // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
-                                if(item?.human?.contacts?.length && Number(item?.human?.contacts[0]?.share) != 0){
+                                // console.log({_________:Number(item?.human?.contacts[0]?.share)})
+                                // if(item?.human?._id.toString() === "65a057f51120870012cc6125"){
+                                //     console.log({_________:item?.human?.contacts[0]})
+                                //     console.log(Number(item?.human?.contacts[0]?.share))
+                                //     console.log(Number(item.share))
+                                // }
+                                if(Number(item?.human?.contacts[0]?.share) > 0){
+                                    // console.log({_________:item?.human?.contacts[0]?.name})
+                                    // console.log({_________:Number(item?.human?.contacts[0]?.share)})
+                                    // console.log({_________:Number(item?.share)})
                                     workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+                                }else{
+                                    // console.log({_________:workbook.sheet("BangLuongUpdate").row(i).cell(17).value()})
                                 }
 
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(18).value(Number(item.other)) // Công thức
@@ -1614,7 +1626,7 @@ class Model extends BaseModel {
                                     let userID = workbook.sheet("PhuCap").row(i).cell(1).value()
 
                                     if(userID && userID.toString() === item?._id?.assignee.toString()){
-                                        workbook.sheet("PhuCap").row(i).cell(21).value(Number(item.quantity));
+                                        workbook.sheet("PhuCap").row(i).cell(29).value(Number(item.quantity));
                                     }
                                 }
                             })
@@ -1627,7 +1639,7 @@ class Model extends BaseModel {
                                     let userID = workbook.sheet("PhuCap").row(i).cell(1).value()
 
                                     if(userID && userID.toString() === item?._id?.assignee.toString()){
-                                        workbook.sheet("PhuCap").row(i).cell(23).value(Number(item.quantity));
+                                        workbook.sheet("PhuCap").row(i).cell(30).value(Number(item.quantity));
                                     }
                                 }
                             })
@@ -1655,19 +1667,19 @@ class Model extends BaseModel {
                                 i++
                             })
 
-                            var i = 4
-                            listData4.forEach((item, index) =>{
-                                workbook.sheet("TangCa").row(i).cell(1).value(`${item?.assignee?._id}`)
-                                workbook.sheet("TangCa").row(i).cell(2).value(item.date)
-                                workbook.sheet("TangCa").row(i).cell(3).value(item.name)
-                                workbook.sheet("TangCa").row(i).cell(4).value(item?.assignee?.fullname)
-                                workbook.sheet("TangCa").row(i).cell(5).value(Number(item.hours))
-                                workbook.sheet("TangCa").row(i).cell(6).value(Number(item.unitprice))
-                                workbook.sheet("TangCa").row(i).cell(7).value(Number(item.amount))
-                                workbook.sheet("TangCa").row(i).cell(8).value(item?.note)
-                                workbook.sheet("TangCa").row(i).cell(15).value(item?.parent?.name)
-                                i++
-                            })
+                            // var i = 4
+                            // listData4.forEach((item, index) =>{
+                            //     workbook.sheet("TangCa").row(i).cell(1).value(`${item?.assignee?._id}`)
+                            //     workbook.sheet("TangCa").row(i).cell(2).value(item.date)
+                            //     workbook.sheet("TangCa").row(i).cell(3).value(item.name)
+                            //     workbook.sheet("TangCa").row(i).cell(4).value(item?.assignee?.fullname)
+                            //     workbook.sheet("TangCa").row(i).cell(5).value(Number(item.hours))
+                            //     workbook.sheet("TangCa").row(i).cell(6).value(Number(item.unitprice))
+                            //     workbook.sheet("TangCa").row(i).cell(7).value(Number(item.amount))
+                            //     workbook.sheet("TangCa").row(i).cell(8).value(item?.note)
+                            //     workbook.sheet("TangCa").row(i).cell(15).value(item?.parent?.name)
+                            //     i++
+                            // })
                     
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';

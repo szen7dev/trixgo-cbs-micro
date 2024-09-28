@@ -968,7 +968,7 @@ class Model extends BaseModel {
                                 conditionObj.funda = { $in: arrFun };
                             }
                         }else{
-                            return resolve({ error: true, message: 'Bạn phải chọn cơ sở', status: 500 })
+                            return resolve({ error: true, message: ' cơ sở', status: 500 })
                         }
     
                         // Phân loại theo thời khoảng
