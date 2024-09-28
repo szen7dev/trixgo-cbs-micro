@@ -2006,15 +2006,13 @@ class Model extends BaseModel {
                         // Chỉ Admin ứng dụng mới được cập nhật
                         if(!infoAppUser.error && infoAppUser.data.level == 0){
                             for (const data of dataImportJSON) {
-                                // console.log(data)
+                                console.log(data)
                                 if(index > 1 && index <= 101){    
                                     // console.log(data)
                                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                                        expertSalaryID: data?.__EMPTY_23, 
                                         admins: [userID], 
                                         members: [userID], 
                                         userID, 
-                                        note: data?.__EMPTY_22, 
                                         kpiFactor:  1, // SET mặc định cứng, sau điều chỉnh ở đây nếu phát triển hệ số này
                                         salary:  Number(data?.__EMPTY_4), 
                                         onLeaveSalary:  Number(data?.__EMPTY_5), 
@@ -2033,6 +2031,8 @@ class Model extends BaseModel {
 
                                         advance:  Number(data?.__EMPTY_19), 
                                         paid:  Number(data?.__EMPTY_20), 
+                                        note: data?.__EMPTY_22,
+                                        expertSalaryID: data?.__EMPTY_23, 
 
                                         // Phụ cấp
                                         subAllowance1:  Number(data?.__EMPTY_27),
