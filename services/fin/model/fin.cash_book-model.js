@@ -1358,8 +1358,8 @@ class Model extends BaseModel {
                      * TẢI BẢNG LƯƠNG
                      */
                     if(option == 2){
-                        // if (!checkObjectIDs(templateID)) 
-                        //     return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" });
+                        if (!checkObjectIDs(templateID)) 
+                            return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" });
 
                         let conditionObj = {};
                         conditionObj.parent = parentID
@@ -1478,8 +1478,8 @@ class Model extends BaseModel {
                         // .sort({date: 1})
 
                         // Template download data
-                        let templateFile
-                        let templateFile1 = path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx'))
+                        let templateFile = path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx'))
+                        let templateFile1
                         if (checkObjectIDs(templateID)) {
                             let infoTemplate = await PCM_FILE__COLL.findById(templateID)
                             // console.log(infoTemplate)
@@ -1490,12 +1490,12 @@ class Model extends BaseModel {
                                 responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
                             })
 
-                            templateFile = response.data
+                            templateFile1 = response.data
                         }
 
                          // Modify the workbook.
-                        //  XlsxPopulate.fromFileAsync(templateFile1)
-                        XlsxPopulate.fromDataAsync(templateFile)
+                        //  XlsxPopulate.fromFileAsync(templateFile)
+                        XlsxPopulate.fromDataAsync(templateFile1)
                          .then(async workbook => {
 
                             workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
@@ -1531,19 +1531,11 @@ class Model extends BaseModel {
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) // Công thức
 
                                 // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
-                                // console.log({_________:Number(item?.human?.contacts[0]?.share)})
-                                // if(item?.human?._id.toString() === "65a057f51120870012cc6125"){
-                                //     console.log({_________:item?.human?.contacts[0]})
-                                //     console.log(Number(item?.human?.contacts[0]?.share))
-                                //     console.log(Number(item.share))
-                                // }
                                 if(Number(item?.human?.contacts[0]?.share) > 0){
-                                    // console.log({_________:item?.human?.contacts[0]?.name})
-                                    // console.log({_________:Number(item?.human?.contacts[0]?.share)})
-                                    // console.log({_________:Number(item?.share)})
                                     workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
                                 }else{
                                     // console.log({_________:workbook.sheet("BangLuongUpdate").row(i).cell(17).value()})
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(17).style("fill", "d9ead3");
                                 }
 
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(18).value(Number(item.other)) // Công thức
