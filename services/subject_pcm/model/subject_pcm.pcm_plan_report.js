@@ -436,7 +436,7 @@ class Model extends BaseModel {
                         var i = 4;
                         listTaskPin.map((item, index) => {
                             workbook.sheet("Data").row(i).cell(1).value(index+1)
-                            workbook.sheet("Data").row(i).cell(2).value(item.name)
+                            workbook.sheet("Data").row(i).cell(2).value(item.name).hyperlink(`https://app.trixgo.com/pcm/detail/${item._id}`)
                             workbook.sheet("Data").row(i).cell(3).value(item?.parent?.name)
                             workbook.sheet("Data").row(i).cell(4).value(item?.actualFinishTime)
                             workbook.sheet("Data").row(i).cell(5).value(item.assignee?.fullname)
