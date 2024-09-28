@@ -909,7 +909,7 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 20/9/2024
      */
-    getAmountByProperty({ userID, companyID, parentID, accountID, year, month, option, ctx }){
+    getAmountByProperty({ userID, companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate, ctx }){
         // console.log({ userID, companyID, parentID, accountID, year, month, option })
         return new Promise(async resolve => {
             try {
@@ -918,7 +918,7 @@ class Model extends BaseModel {
                  * Tham số của option:
                  * 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
                  */
-                // let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
+                let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
 
                 // Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị: QUỸ
                 if(Number(option) === 1){
@@ -1059,6 +1059,102 @@ class Model extends BaseModel {
     
                         return resolve({ error: false, data: listData })
                     }
+                }
+
+                // Báo cáo Khoản mục phí
+                else if(Number(option) === 3){
+
+                    // Xét cho Tiền mặt và ngân hàng
+
+                    // Xét cho Thẻ kho
+
+                    if (checkObjectIDs(subtypeID)) {
+                        conditionObj = {
+                            status: 5, // Đã hoàn thành
+                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                            company: ObjectID(companyID),
+                            account: { $exists: true, $ne: null }, // Sổ quỹ
+                            subtype: ObjectID(subtypeID),
+                            project: { $project: true, $ne: null },
+                        }
+                    }else{
+                        conditionObj = {
+                            status: 5, // Đã hoàn thành
+                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                            company: ObjectID(companyID),
+                            account: { $exists: true, $ne: null }, // Sổ quỹ
+                            project: { $project: true, $ne: null },
+                        }
+                    }
+
+                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { project: "$project" },
+                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                            }
+                        },
+                    ])
+
+                    await STORE_ORDER_PRODUCT_COLL.populate(listData, {
+                        path: '_id.project',
+                        select: '_id name sign',
+                        model: 'department'
+                    })
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Báo cáo Dự án
+                else if(Number(option) === 4){
+
+                    // Xét cho Tiền mặt và ngân hàng
+
+                    // Xét cho Thẻ kho
+
+                    if (checkObjectIDs(projectID)) {
+                        conditionObj = {
+                            status: 5, // Đã hoàn thành
+                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                            company: ObjectID(companyID),
+                            account: { $exists: true, $ne: null }, // Sổ quỹ
+                            subtype: { $exists: true, $ne: null },
+                            project: ObjectID(projectID)
+                        }
+                    }else{
+                        conditionObj = {
+                            status: 5, // Đã hoàn thành
+                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                            company: ObjectID(companyID),
+                            account: { $exists: true, $ne: null }, // Sổ quỹ
+                            subtype: { $exists: true, $ne: null },
+                        }
+                    }
+
+                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { subtype: "$subtype" },
+                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                            }
+                        },
+                    ])
+
+                    await STORE_ORDER_PRODUCT_COLL.populate(listData, {
+                        path: '_id.subtype',
+                        select: '_id name sign',
+                        model: 'doctype'
+                    })
+
+                    return resolve({ error: false, data: listData })
                 }
 
             } catch (error) {
