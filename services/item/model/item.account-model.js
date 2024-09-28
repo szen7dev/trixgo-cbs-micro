@@ -224,9 +224,7 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {},
         status, type, level
     }) {
-        // console.log( {option, companyID, parentID, arrNames, isListParentOfListChilds,
-        //     keyword, limit, lastestID, select, populates,
-        //     status, type, level})
+        // console.log( {option, companyID, parentID, arrNames, isListParentOfListChilds, keyword, limit, lastestID, select, populates, status, type, level })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){

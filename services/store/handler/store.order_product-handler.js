@@ -195,7 +195,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, parentID, accountID, year, month, option } = ctx.params;
+                let { companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -204,7 +204,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getAmountByProperty({
-                    userID, companyID, parentID, accountID, year, month, option, ctx
+                    userID, companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
