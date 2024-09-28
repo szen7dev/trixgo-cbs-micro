@@ -909,8 +909,8 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 20/9/2024
      */
-    getAmountByProperty({ userID, companyID, parentID, accountID, year, option, ctx }){
-        // console.log({ userID, companyID, parentID, accountID, year, option })
+    getAmountByProperty({ userID, companyID, parentID, accountID, year, month, option, ctx }){
+        // console.log({ userID, companyID, parentID, accountID, year, month, option })
         return new Promise(async resolve => {
             try {
                 /**
@@ -920,7 +920,7 @@ class Model extends BaseModel {
                  */
                 // let conditionObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
 
-                // 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
+                // Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị: QUỸ
                 if(Number(option) === 1){
                     let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
                         appID: "5dfe4bf251dc622100bb9d8c", // Ứng dụng Quỹ
@@ -959,7 +959,6 @@ class Model extends BaseModel {
                         },
                         {
                             $group: {
-                                _id: {  },
                                 _id: { account: "$account" },
                                 total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
                                 total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
@@ -981,6 +980,85 @@ class Model extends BaseModel {
                     })
 
                     return resolve({ error: false, data: { listDataCompany, listDataAccount } })
+                }
+
+                // Báo cáo Biểu đồ theo năm, tháng: QUỸ
+                else if(Number(option) === 2){
+                    let yearFilter = new Date().getFullYear()
+                    let monthFilter = new Date().getMonth() + 1
+                    // console.log({yearFilter})
+                    // console.log({monthFilter})
+
+                    if(!month){
+                        let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                $match: {
+                                    status: 5, // Đã hoàn thành
+                                    type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                    company: ObjectID(companyID),
+                                    account: { $exists: true, $ne: null }, // Sổ quỹ
+                                }
+                            },
+                            {
+                                $project: {
+                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    outin: 1,
+                                    amount: 1,
+                                }
+                            },
+                            {
+                                $match: {
+                                    year: Number(yearFilter),
+                                    month: Number(monthFilter),
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: { month: "$month" },
+                                    total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                    total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                                }
+                            },
+                        ])
+    
+                        return resolve({ error: false, data: listData })
+                    }else{
+                        let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                $match: {
+                                    status: 5, // Đã hoàn thành
+                                    type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                    company: ObjectID(companyID),
+                                    account: { $exists: true, $ne: null }, // Sổ quỹ
+                                }
+                            },
+                            {
+                                $project: {
+                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    amount: 1,
+                                    outin: 1,
+                                }
+                            },
+                            {
+                                $match: {
+                                    year: Number(yearFilter),
+                                    month: Number(monthFilter),
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: { day: "$day" },
+                                    total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                    total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                                }
+                            },
+                        ])
+    
+                        return resolve({ error: false, data: listData })
+                    }
                 }
 
             } catch (error) {
