@@ -1543,22 +1543,8 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuongUpdate").row(i).cell(25).value(`${item?._id}`)   
                                 workbook.sheet("BangLuongUpdate").row(i).cell(26).value(`${item?.human?._id}`)  
 
+                                // Giảm trừ gia cảnh
                                 workbook.sheet("BangLuongUpdate").row(i).cell(28).value(Number(item?.human?.contacts[0]?.nods))
-
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(30).value(Number(item?.subAllowance1))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(31).value(Number(item?.subAllowance2))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(32).value(Number(item?.subAllowance3))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(33).value(Number(item?.subAllowance4))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(34).value(Number(item?.subAllowance5))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(35).value(Number(item?.subAllowance6))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(36).value(Number(item?.subAllowance7))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(37).value(Number(item?.subAllowance8))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(38).value(Number(item?.subAllowance9))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(39).value(Number(item?.subAllowance10))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(40).value(Number(item?.subAllowance11))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(41).value(Number(item?.subAllowance12))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(42).value(Number(item?.subAllowance13))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(43).value(Number(item?.subAllowance14))
                                 
                                 /**
                                  * BangLuongIn
@@ -2048,20 +2034,29 @@ class Model extends BaseModel {
                                         advance:  Number(data?.__EMPTY_19), 
                                         paid:  Number(data?.__EMPTY_20), 
 
-                                        subAllowance1:  Number(data?.__EMPTY_28),
-                                        subAllowance2:  Number(data?.__EMPTY_29),
-                                        subAllowance3:  Number(data?.__EMPTY_30),
-                                        subAllowance4:  Number(data?.__EMPTY_31),
-                                        subAllowance5:  Number(data?.__EMPTY_32),
-                                        subAllowance6:  Number(data?.__EMPTY_33),
-                                        subAllowance7:  Number(data?.__EMPTY_34),
-                                        subAllowance8:  Number(data?.__EMPTY_35),
-                                        subAllowance9:  Number(data?.__EMPTY_36),
-                                        subAllowance10:  Number(data?.__EMPTY_37),
-                                        subAllowance11:  Number(data?.__EMPTY_38),
-                                        subAllowance12:  Number(data?.__EMPTY_39),
-                                        subAllowance13:  Number(data?.__EMPTY_40),
-                                        subAllowance14:  Number(data?.__EMPTY_41),
+                                        // Phụ cấp
+                                        subAllowance1:  Number(data?.__EMPTY_27),
+                                        subAllowance2:  Number(data?.__EMPTY_28),
+                                        subAllowance3:  Number(data?.__EMPTY_29),
+                                        subAllowance4:  Number(data?.__EMPTY_30),
+                                        subAllowance5:  Number(data?.__EMPTY_31),
+                                        subAllowance6:  Number(data?.__EMPTY_32),
+                                        subAllowance7:  Number(data?.__EMPTY_33),
+                                        subAllowance8:  Number(data?.__EMPTY_34),
+                                        subAllowance9:  Number(data?.__EMPTY_35),
+                                        subAllowance10:  Number(data?.__EMPTY_36),
+                                        subAllowance11:  Number(data?.__EMPTY_37),
+                                        subAllowance12:  Number(data?.__EMPTY_38),
+                                        subAllowance13:  Number(data?.__EMPTY_39),
+                                        subAllowance14:  Number(data?.__EMPTY_40),
+                                        subAllowance15:  Number(data?.__EMPTY_41),
+                                        subAllowance16:  Number(data?.__EMPTY_42),
+                                        subAllowance17:  Number(data?.__EMPTY_43),
+                                        subAllowance18:  Number(data?.__EMPTY_44),
+                                        subAllowance19:  Number(data?.__EMPTY_45),
+                                        subAllowance20:  Number(data?.__EMPTY_46),
+                                        subAllowance21:  Number(data?.__EMPTY_47),
+                                        subAllowance22:  Number(data?.__EMPTY_48),
                                     })
     
                                     if(infoAfterUpdate.error){
