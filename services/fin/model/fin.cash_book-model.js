@@ -1534,7 +1534,7 @@ class Model extends BaseModel {
                                 if(Number(item?.human?.contacts[0]?.share) > 0){
                                     workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
                                 }else{
-                                    // console.log({_________:workbook.sheet("BangLuongUpdate").row(i).cell(17).value()})
+                                    console.log({_________:workbook.sheet("BangLuongUpdate").row(i).cell(17).value()})
                                     workbook.sheet("BangLuongUpdate").row(i).cell(17).style("fill", "d9ead3");
                                 }
 
