@@ -1494,8 +1494,8 @@ class Model extends BaseModel {
                         }
 
                          // Modify the workbook.
-                         XlsxPopulate.fromFileAsync(templateFile1)
-                            // XlsxPopulate.fromDataAsync(templateFile)
+                        //  XlsxPopulate.fromFileAsync(templateFile1)
+                        XlsxPopulate.fromDataAsync(templateFile)
                          .then(async workbook => {
 
                             workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
@@ -2023,7 +2023,7 @@ class Model extends BaseModel {
                         // Chỉ Admin ứng dụng mới được cập nhật
                         if(!infoAppUser.error && infoAppUser.data.level == 0){
                             for (const data of dataImportJSON) {
-                                console.log(data)
+                                // console.log(data)
                                 if(index > 1 && index <= 101){    
                                     // console.log(data)
                                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
