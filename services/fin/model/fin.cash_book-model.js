@@ -2023,7 +2023,7 @@ class Model extends BaseModel {
                         // Chỉ Admin ứng dụng mới được cập nhật
                         if(!infoAppUser.error && infoAppUser.data.level == 0){
                             for (const data of dataImportJSON) {
-                                console.log(data)
+                                // console.log(data)
                                 if(index > 1 && index <= 101){    
                                     // console.log(data)
                                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
