@@ -1494,8 +1494,8 @@ class Model extends BaseModel {
                         }
 
                          // Modify the workbook.
-                         XlsxPopulate.fromFileAsync(templateFile1)
-                            // XlsxPopulate.fromDataAsync(templateFile)
+                        //  XlsxPopulate.fromFileAsync(templateFile1)
+                        XlsxPopulate.fromDataAsync(templateFile)
                          .then(async workbook => {
 
                             workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
