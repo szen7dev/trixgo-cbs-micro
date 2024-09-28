@@ -1076,7 +1076,7 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     downloadTemplateExcel({ option, companyID, parentID, salaryID, templateID, year, userID }) {
-        console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
+        // console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
         return new Promise(async resolve => {
             try {
                 // let option = 3
@@ -1528,7 +1528,12 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuongUpdate").row(i).cell(14).value(Number(item.insurance))
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) // Công thức
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) // Công thức
-                                workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+
+                                // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
+                                if(item?.human?.contacts?.length && Number(item?.human?.contacts[0]?.share) != 0){
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+                                }
+
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(18).value(Number(item.other)) // Công thức
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(19).value(Number(tongGiamTru)) //
 
@@ -2006,15 +2011,13 @@ class Model extends BaseModel {
                         // Chỉ Admin ứng dụng mới được cập nhật
                         if(!infoAppUser.error && infoAppUser.data.level == 0){
                             for (const data of dataImportJSON) {
-                                // console.log(data)
+                                console.log(data)
                                 if(index > 1 && index <= 101){    
                                     // console.log(data)
                                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                                        expertSalaryID: data?.__EMPTY_23, 
                                         admins: [userID], 
                                         members: [userID], 
                                         userID, 
-                                        note: data?.__EMPTY_22, 
                                         kpiFactor:  1, // SET mặc định cứng, sau điều chỉnh ở đây nếu phát triển hệ số này
                                         salary:  Number(data?.__EMPTY_4), 
                                         onLeaveSalary:  Number(data?.__EMPTY_5), 
@@ -2033,6 +2036,8 @@ class Model extends BaseModel {
 
                                         advance:  Number(data?.__EMPTY_19), 
                                         paid:  Number(data?.__EMPTY_20), 
+                                        note: data?.__EMPTY_22,
+                                        expertSalaryID: data?.__EMPTY_23, 
 
                                         // Phụ cấp
                                         subAllowance1:  Number(data?.__EMPTY_27),
