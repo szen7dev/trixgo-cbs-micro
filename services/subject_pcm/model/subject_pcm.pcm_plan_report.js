@@ -453,6 +453,8 @@ class Model extends BaseModel {
                                 workbook.sheet("Data").row(i).cell(11).value(item.note)
                             }
 
+                            workbook.sheet("Data").row(i).cell(12).value(`https://app.trixgo.com/pcm/detail/${item._id}`)
+
                             i++;
                         })
 
