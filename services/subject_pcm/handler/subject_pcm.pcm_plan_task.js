@@ -56,10 +56,10 @@ module.exports = {
 
 				const { _id: authorID, bizfullname, email, fullname, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
-                const { projectID, groupID, taskID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, approvalType, isNotiEmail, amount, vatAmount, contactID, descriptioncv, select, populates } = ctx.params;
+                const { projectID, groupID, taskID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, amount, vatAmount, contactID, descriptioncv, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, approvalType, isNotiEmail, bizfullname, amount, vatAmount, contactID, select, populates, senderMail: { email, fullname }, company, ctx,
+                    projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, amount, vatAmount, contactID, select, populates, senderMail: { email, fullname }, company, ctx,
                     descriptioncv,
                 });
 
