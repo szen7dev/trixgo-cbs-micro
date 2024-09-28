@@ -1076,7 +1076,7 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     downloadTemplateExcel({ option, companyID, parentID, salaryID, templateID, year, userID }) {
-        console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
+        // console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
         return new Promise(async resolve => {
             try {
                 // let option = 3
@@ -1528,7 +1528,12 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuongUpdate").row(i).cell(14).value(Number(item.insurance))
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) // Công thức
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) // Công thức
-                                workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+
+                                // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
+                                if(item?.human?.contacts?.length && Number(item?.human?.contacts[0]?.share) != 0){
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+                                }
+
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(18).value(Number(item.other)) // Công thức
                                 // workbook.sheet("BangLuongUpdate").row(i).cell(19).value(Number(tongGiamTru)) //
 
