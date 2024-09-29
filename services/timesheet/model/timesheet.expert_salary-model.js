@@ -1208,7 +1208,7 @@ class Model extends BaseModel {
 
                 const result = await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({
                     _id: { $in: arraysRemove },
-                    userCreate: userID,
+                    // userCreate: userID,
                     // $or: [
                     //     { userCreate: userID },
                     //     { admins: { $in: [userID] } }
