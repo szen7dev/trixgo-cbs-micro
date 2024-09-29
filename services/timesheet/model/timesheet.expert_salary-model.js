@@ -1204,38 +1204,51 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Yêu cầu không hợp lệ', status: 200 });
                 }
 
-                let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(arraysRemove[0])
-
-                const result = await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({
-                    _id: { $in: arraysRemove },
-                    // userCreate: userID,
-                    // $or: [
-                    //     { userCreate: userID },
-                    //     { admins: { $in: [userID] } }
-                    // ]
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049cffdebf77b072d1b14",
+                    userID
                 })
 
-                if(result.deletedCount !== arraysRemove.length) {
+                if(!infoAppUser.error && infoAppUser.data.level == 0){
+                    let info = await TIMESHEET__EXPERT_SALARY_COLL.findById(arraysRemove[0])
+
+                    const result = await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({
+                        _id: { $in: arraysRemove },
+                        // userCreate: userID,
+                        // $or: [
+                        //     { userCreate: userID },
+                        //     { admins: { $in: [userID] } }
+                        // ]
+                    })
+
+                    if(result.deletedCount !== arraysRemove.length) {
+                        return resolve({
+                            error: true,
+                            message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
+                            status: 200
+                        });
+                    }
+
+                    // Cập nhật số nhân sự bảng lương
+                    if(info && info.parent){
+                        let numberOfHuman = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: info?.parent})
+                        if(numberOfHuman){
+                            await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info?.parent, {
+                                userUpdate: userID,
+                                modifyAt: Date.now(),
+                                numberOfHuman
+                            }, { new: true })
+                        }
+                    }
+
+                    return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });
+                }else{
                     return resolve({
                         error: true,
                         message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
                         status: 200
                     });
                 }
-
-                // Cập nhật số nhân sự bảng lương
-                if(info && info.parent){
-                    let numberOfHuman = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: info?.parent})
-                    if(numberOfHuman){
-                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info?.parent, {
-                            userUpdate: userID,
-                            modifyAt: Date.now(),
-                            numberOfHuman
-                        }, { new: true })
-                    }
-                }
-
-                return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
