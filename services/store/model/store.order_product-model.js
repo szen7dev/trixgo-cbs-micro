@@ -235,7 +235,7 @@ class Model extends BaseModel {
      * Code:
      */
     update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice }) {
-        console.log({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice })
+        // console.log({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -405,7 +405,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
-        console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
+        // console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -1160,13 +1160,13 @@ class Model extends BaseModel {
                         let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
     
                         if(arr1[item._id]){
-                            planExpense = arr1[item._id][0].total1
-                            planIncome = arr1[item._id][0].total2
+                            planIncome = arr1[item._id][0].total1
+                            planExpense = arr1[item._id][0].total2
                         }
                         
                         if(arr2[item._id]){
-                            realExpense = arr2[item._id][0].total1
-                            realIncome = arr2[item._id][0].total2
+                            realIncome = arr2[item._id][0].total1
+                            realExpense = arr2[item._id][0].total2
                         }
     
                         arrCombine.push({
