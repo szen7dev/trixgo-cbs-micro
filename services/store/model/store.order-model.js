@@ -367,7 +367,8 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getInfo({ orderID, select, populates }) {
+  getInfo({ orderID, select, populates = '{"path":"assignee project userCreate userUpdate members admins files signatures","select":"_id fullname bizfullname name sign image path nameOrg author createAt size","populate":{"path":"author","select":"_id fullname email phone image signature"}}' }) {
+    // console.log({orderID, select, populates})
       return new Promise(async resolve => {
           try {
               if (!checkObjectIDs(orderID))
@@ -384,13 +385,13 @@ class Model extends BaseModel {
                   }
               }
 
-              let infoContractIPC = await STORE_ORDER_COLL.findById(orderID)
+              let info = await STORE_ORDER_COLL.findById(orderID)
                   .select(select)
                   .populate(populates)
 
-              if (!infoContractIPC) return resolve({ error: true, message: 'cannot_get' });
+              if (!info) return resolve({ error: true, message: 'cannot_get' });
 
-              return resolve({ error: false, data: infoContractIPC });
+              return resolve({ error: false, data: info });
           } catch (error) {
               return resolve({ error: true, message: error.message });
           }

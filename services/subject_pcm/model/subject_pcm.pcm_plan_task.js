@@ -1915,7 +1915,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ option, taskID, companyID, userID, select, populates, ctx }){
+    getInfo({ option, taskID, companyID, userID, select, populates }){
         // console.log({ taskID, userID, select, populates })
         return new Promise(async resolve => {
             try {
@@ -1940,7 +1940,7 @@ class Model extends BaseModel {
                 }
 
                 let { author, assignee, related, group, viewedUsers, status, subtype } = infoTaskForCheck;
-                if([0,1,2,3,4,5,6,7,8,9,10,11,12].includes(subtype)){
+                if([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17].includes(subtype)){
                     let isAuthor = false;
                     let isAssignee = false;
                     let isRelated = false;

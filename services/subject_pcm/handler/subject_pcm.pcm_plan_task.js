@@ -341,19 +341,18 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
+                
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
-                        taskID, userID, select, populates, ctx
-                    });
-
-                    // console.log(resultAfterCallHandler)
+                        taskID, userID, select, populates
+                    })
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
                         option, userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                         keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming, isMileStone, ctx
-                    });
+                    })
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
