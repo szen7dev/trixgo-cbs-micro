@@ -146,7 +146,7 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
     outin: { type: Number, default: 1 },
     /**
      * Phân loại
-     * 1. Mặc định
+     * 1. Mặc định (sử dụng làm kế hoạch)
      * 2. Vật tư chính
      * 3. Vật tư phụ
      * 4. Công cụ dụng cụ
