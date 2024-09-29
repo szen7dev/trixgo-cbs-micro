@@ -14,6 +14,7 @@ const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-co
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
+const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll'); 
 const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll'); 
 const STORE_ORDER_COLL                  = require('../database/store.order-coll');
 const STORE_ORDER_PRODUCT_COLL          = require('../database/store.order_product-coll');
@@ -404,7 +405,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
-        // console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
+        console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -417,7 +418,6 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__1', '_id__1'];
 
-                // Gom nhóm theo đơn vị cơ sở
                 if(orderID ){
                     conditionObj.order = ObjectID(orderID)
                 }else{
@@ -434,6 +434,7 @@ class Model extends BaseModel {
                         if(option == 2){
                             conditionObj.company = companyID
                             conditionObj.account = { $exists: true, $ne: null }
+                            conditionObj.type = {$in: [7, 8]}
                         }
 
                         // Công nợ
@@ -604,12 +605,13 @@ class Model extends BaseModel {
                 let conditionObj1 = {
                     company: ObjectID(companyID),
                     status: 5, // Hoàn thành
-                    outin: 1, // Xuất ra
+                    outin: 1, // Xuất ra (Thu tiền)
                 }
+
                 let conditionObj2 = {
                     company: ObjectID(companyID),
                     status: 5, // Hoàn thành
-                    outin: 2, // Nhập vào
+                    outin: 2, // Nhập vào (Chi tiền)
                 }
 
                 // Thẻ kho
@@ -622,6 +624,9 @@ class Model extends BaseModel {
                 else if(option == 2){
                     conditionObj1.account = { $exists: true, $ne: null }
                     conditionObj2.account = { $exists: true, $ne: null }
+
+                    conditionObj1.type = {$in: [7, 8]}
+                    conditionObj2.type = {$in: [7, 8]}
                 }
 
                 // Công nợ
@@ -853,12 +858,12 @@ class Model extends BaseModel {
                     listItem.forEach(item =>{
                         let income = 0, expense = 0
 
-                        if(arr1[item._id]){
-                            expense = arr1[item._id][0].amount
+                        if(arr2[item._id]){
+                            expense = arr2[item._id][0].amount
                         }
                         
-                        if(arr2[item._id]){
-                            income = arr2[item._id][0].amount
+                        if(arr1[item._id]){
+                            income = arr1[item._id][0].amount
                         }
 
                         arrCombine.push({
@@ -1103,7 +1108,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    let listDataPan = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: conditionPlanObj
                         },
@@ -1116,7 +1121,7 @@ class Model extends BaseModel {
                         },
                     ])
 
-                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: conditionObj
                         },
@@ -1129,19 +1134,68 @@ class Model extends BaseModel {
                         },
                     ])
 
-                    await STORE_ORDER_PRODUCT_COLL.populate(listDataPan, {
-                        path: '_id.project',
-                        select: '_id name sign',
-                        model: 'department'
+                    let arr = [...listData1,...listData2]
+                    let arrCombine = [], arr1 = [], arr2 = []
+                    
+                    listData1.forEach(item=>{
+                        let key = item._id.project;
+                        if (!Array.isArray(arr1[key])) {
+                            arr1[key] = [];
+                        }
+                        arr1[key].push(item)
+                    })
+    
+                    listData2.forEach(item=>{
+                        let key = item._id.project;
+                        if (!Array.isArray(arr2[key])) {
+                            arr2[key] = [];
+                        }
+                        arr2[key].push(item)
                     })
 
-                    await STORE_ORDER_PRODUCT_COLL.populate(listData, {
-                        path: '_id.project',
-                        select: '_id name sign',
-                        model: 'department'
+                    let listItem = await ITEM__DEPARTMENT_COLL.find({_id: {$in: arr.map(item => item._id.project)}})
+                    .select('name sign description unit')
+
+                    listItem.forEach(item =>{
+                        let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
+    
+                        if(arr1[item._id]){
+                            planExpense = arr1[item._id][0].total1
+                            planIncome = arr1[item._id][0].total2
+                        }
+                        
+                        if(arr2[item._id]){
+                            realExpense = arr2[item._id][0].total1
+                            realIncome = arr2[item._id][0].total2
+                        }
+    
+                        arrCombine.push({
+                            _id: item._id,
+                            name: item.name,
+                            sign: item.sign,
+                            description: item.description,
+                            unit: item.unit,
+                            planIncome: Number(planIncome),
+                            planExpense: Number(planExpense),
+                            realIncome: Number(realIncome),
+                            realExpense: Number(realExpense),
+                        })
                     })
 
-                    return resolve({ error: false, data: { listDataPan, listData } })
+                    // await STORE_ORDER_PRODUCT_COLL.populate(listDataPan, {
+                    //     path: '_id.project',
+                    //     select: '_id name sign',
+                    //     model: 'department'
+                    // })
+
+                    // await STORE_ORDER_PRODUCT_COLL.populate(listData, {
+                    //     path: '_id.project',
+                    //     select: '_id name sign',
+                    //     model: 'department'
+                    // })
+
+                    // return resolve({ error: false, data: { listDataPan, listData } })
+                    return resolve({ error: false, data: arrCombine })
                 }
 
                 // Báo cáo Dự án
