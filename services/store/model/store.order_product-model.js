@@ -1134,6 +1134,9 @@ class Model extends BaseModel {
                         },
                     ])
 
+                    let arr = [...listData1,...listData2]
+                    let arrCombine = [], arr1 = [], arr2 = []
+                    
                     listData1.forEach(item=>{
                         let key = item._id.project;
                         if (!Array.isArray(arr1[key])) {
@@ -1149,9 +1152,6 @@ class Model extends BaseModel {
                         }
                         arr2[key].push(item)
                     })
-
-                    let arr = [...listData1,...listData2]
-                    let arrCombine = [], arr1 = [], arr2 = []
 
                     let listItem = await ITEM__DEPARTMENT_COLL.find({_id: {$in: arr.map(item => item._id.project)}})
                     .select('name sign description unit')
