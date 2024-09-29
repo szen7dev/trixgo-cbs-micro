@@ -938,23 +938,18 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                //___________Quyền truy cập ứng dụng Chấm công
+                //___________Quyền truy cập ứng dụng
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
                     appID: "61e049cffdebf77b072d1b14",
                     userID
                 })
 
-                // console.log(infoAppUser)
-
                 if(!infoAppUser.error && infoAppUser.data.level == 0){
-                    // console.log('=================Admin==================')
 
                     /**
                      * CẬP NHẬT NHÂN SỰ
                      */
                     if(option == 1){
-                        // console.log('=================11111111111111')
-                        // console.log(SALARY_RESET_PERMISSION.includes(email))
                         if(SALARY_RESET_PERMISSION.includes(email)){
                             
                             let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
@@ -1073,8 +1068,6 @@ class Model extends BaseModel {
                      * ĐỒNG BỘ BẢNG LƯƠNG
                      */
                     else if(option == 2){
-                        // console.log('=================222222222222222222222')
-
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                         let dataUser = listData.map(item=>item.human.toString())
@@ -1095,8 +1088,6 @@ class Model extends BaseModel {
                      * XÓA BẢNG LƯƠNG: TẠM KHÓA CHỨC NĂNG NÀY
                      */
                     // else if(option == 3){
-                    //     // console.log('=================3333333333333333333333333')
-
                     //     // Chỉ admin ứng dụng mới được thêm phần tử cha con
                     //     if(SALARY_RESET_PERMISSION.includes(email)){
                     //         await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
@@ -1110,8 +1101,6 @@ class Model extends BaseModel {
                     /* COPY BẢNG LƯƠNG SANG BẢNG LƯƠNG MỚI
                     */
                     else if(option == 4){
-                    //    console.log('=================444444444444444444444')
-
                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
 
                        let listHuman = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.human)}})
