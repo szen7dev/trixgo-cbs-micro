@@ -928,7 +928,7 @@ class Model extends BaseModel {
     syncData({
         companyID, userID, email, option, salaryID
     }){
-        // console.log({companyID, userID, email, option, salaryID})
+        console.log({companyID, userID, email, option, salaryID})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -948,7 +948,9 @@ class Model extends BaseModel {
                      */
                     if(option == 1){
                         console.log('=================11111111111111')
+                        console.log(SALARY_RESET_PERMISSION.includes(email))
                         if(SALARY_RESET_PERMISSION.includes(email)){
+                            
                             let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
 
                             let yearFilter = new Date(infoSalary.date).getFullYear()
@@ -1057,7 +1059,7 @@ class Model extends BaseModel {
 
                             return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
                         }else{
-                            return resolve({ error: false, data: 'Bạn không có quyền cập nhật' })
+                            return resolve({ error: true, message: 'Bạn không có quyền cập nhật' })
                         }
                     }
                     
@@ -1095,7 +1097,7 @@ class Model extends BaseModel {
                     //         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
                     //         return resolve({ error: false, data: 'Reset thành công' })
                     //     }else{
-                    //         return resolve({ error: false, data: 'Bạn không có quyền Reset' })
+                    //         return resolve({ error: true, message: 'Bạn không có quyền Reset' })
                     //     }
                     // }
 
