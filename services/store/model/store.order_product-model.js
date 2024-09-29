@@ -368,6 +368,7 @@ class Model extends BaseModel {
      * Code:
      */
     getInfo({ orderProductID, select, populates={} }) {
+        // console.log(populates)
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderProductID))
@@ -386,13 +387,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoPlanGroup = await STORE_ORDER_PRODUCT_COLL.findById(orderProductID)
+                let info = await STORE_ORDER_PRODUCT_COLL.findById(orderProductID)
                                     .select(select)
                                     .populate(populates)
 
-                if (!infoPlanGroup) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
+                if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED });
 
-                return resolve({ error: false, data: infoPlanGroup });
+                return resolve({ error: false, data: info });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
