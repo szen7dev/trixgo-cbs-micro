@@ -953,7 +953,6 @@ class Model extends BaseModel {
                         },
                     ])
                     // console.log(listDataCompany)
-
                     
                     let listDataAccount = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
@@ -1075,7 +1074,7 @@ class Model extends BaseModel {
                         conditionPlanObj = {
                             status: 5, // Đã hoàn thành
                             type: 1,
-                            company: ObjectID(companyID),
+                            // company: ObjectID(companyID),
                             subtype: ObjectID(subtypeID),
                             project: { $exists: true, $ne: null },
                         }
@@ -1093,7 +1092,7 @@ class Model extends BaseModel {
                         conditionObj = {
                             status: 5, // Đã hoàn thành
                             type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            company: ObjectID(companyID),
+                            // company: ObjectID(companyID),
                             subtype: ObjectID(subtypeID),
                             account: { $exists: true, $ne: null }, // Sổ quỹ
                             project: { $exists: true, $ne: null },
@@ -1182,23 +1181,10 @@ class Model extends BaseModel {
                         })
                     })
 
-                    // await STORE_ORDER_PRODUCT_COLL.populate(listDataPan, {
-                    //     path: '_id.project',
-                    //     select: '_id name sign',
-                    //     model: 'department'
-                    // })
-
-                    // await STORE_ORDER_PRODUCT_COLL.populate(listData, {
-                    //     path: '_id.project',
-                    //     select: '_id name sign',
-                    //     model: 'department'
-                    // })
-
-                    // return resolve({ error: false, data: { listDataPan, listData } })
                     return resolve({ error: false, data: arrCombine })
                 }
 
-                // Báo cáo Dự án
+                // Báo cáo Khoản mục của dự án cụ thể
                 else if(Number(option) === 4){
 
                     // Kế hoạch
@@ -1206,7 +1192,8 @@ class Model extends BaseModel {
                         conditionPlanObj = {
                             status: 5, // Đã hoàn thành
                             type: 1,
-                            company: ObjectID(companyID),
+                            outin: 2, // Chi phí
+                            // company: ObjectID(companyID),
                             project: ObjectID(projectID),
                             subtype: { $exists: true, $ne: null },
                         }
@@ -1214,6 +1201,7 @@ class Model extends BaseModel {
                         conditionPlanObj = {
                             status: 5, // Đã hoàn thành
                             type: 1,
+                            outin: 2, // Chi phí
                             company: ObjectID(companyID),
                             subtype: { $exists: true, $ne: null },
                         }
@@ -1224,7 +1212,8 @@ class Model extends BaseModel {
                         conditionObj = {
                             status: 5, // Đã hoàn thành
                             type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            company: ObjectID(companyID),
+                            outin: 2, // Chi phí
+                            // company: ObjectID(companyID),
                             project: ObjectID(projectID),
                             account: { $exists: true, $ne: null }, // Sổ quỹ
                             subtype: { $exists: true, $ne: null },
@@ -1233,13 +1222,14 @@ class Model extends BaseModel {
                         conditionObj = {
                             status: 5, // Đã hoàn thành
                             type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                            outin: 2, // Chi phí
                             company: ObjectID(companyID),
                             account: { $exists: true, $ne: null }, // Sổ quỹ
                             subtype: { $exists: true, $ne: null },
                         }
                     }
 
-                    let listDataPan = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: conditionPlanObj
                         },
@@ -1252,7 +1242,7 @@ class Model extends BaseModel {
                         },
                     ])
 
-                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: conditionObj
                         },
@@ -1265,19 +1255,55 @@ class Model extends BaseModel {
                         },
                     ])
 
-                    await STORE_ORDER_PRODUCT_COLL.populate(listDataPan, {
-                        path: '_id.subtype',
-                        select: '_id name sign',
-                        model: 'doctype'
+                    let arr = [...listData1,...listData2]
+                    let arrCombine = [], arr1 = [], arr2 = []
+                    
+                    listData1.forEach(item=>{
+                        let key = item._id.subtype;
+                        if (!Array.isArray(arr1[key])) {
+                            arr1[key] = [];
+                        }
+                        arr1[key].push(item)
+                    })
+    
+                    listData2.forEach(item=>{
+                        let key = item._id.subtype;
+                        if (!Array.isArray(arr2[key])) {
+                            arr2[key] = [];
+                        }
+                        arr2[key].push(item)
                     })
 
-                    await STORE_ORDER_PRODUCT_COLL.populate(listData, {
-                        path: '_id.subtype',
-                        select: '_id name sign',
-                        model: 'doctype'
+                    let listItem = await ITEM__DOCTYPE_COLL.find({_id: {$in: arr.map(item => item._id.subtype)}})
+                    .select('name sign description unit')
+
+                    listItem.forEach(item =>{
+                        let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
+    
+                        if(arr1[item._id]){
+                            planIncome = arr1[item._id][0].total1
+                            planExpense = arr1[item._id][0].total2
+                        }
+                        
+                        if(arr2[item._id]){
+                            realIncome = arr2[item._id][0].total1
+                            realExpense = arr2[item._id][0].total2
+                        }
+    
+                        arrCombine.push({
+                            _id: item._id,
+                            name: item.name,
+                            sign: item.sign,
+                            description: item.description,
+                            unit: item.unit,
+                            planIncome: Number(planIncome),
+                            planExpense: Number(planExpense),
+                            realIncome: Number(realIncome),
+                            realExpense: Number(realExpense),
+                        })
                     })
 
-                    return resolve({ error: false, data: { listDataPan, listData } })
+                    return resolve({ error: false, data: arrCombine })
                 }
 
             } catch (error) {
