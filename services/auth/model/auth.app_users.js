@@ -104,29 +104,21 @@ class Model extends BaseModel {
     }
 
     getList({ appID, companyID,
-        limit = 10, lastestID, select, populates = {} }) { 
+        limit = 50, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }else{
                     limit = +limit
                 }
 
-                // let today = new Date();
-                let conditionObj = {
-                };
+                let conditionObj = { };
 
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
                 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
                 if(appID){
                     conditionObj.app = appID;
                 }
@@ -147,11 +139,6 @@ class Model extends BaseModel {
                     }
                 }
                
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 let conditionObjOrg = { ...conditionObj };
                 // PHÂN TRANG KIỂU MỚI
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -208,7 +195,7 @@ class Model extends BaseModel {
      * Code  : 
      */
     getListAppOfUser({ userID,
-        limit = 10, lastestID, select, populates = {} }) { 
+        limit = 50, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
                 let today = new Date();
@@ -219,8 +206,8 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
                 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 }
 
                 if(userID){
