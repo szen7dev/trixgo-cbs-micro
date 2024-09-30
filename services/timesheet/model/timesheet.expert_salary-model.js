@@ -957,36 +957,36 @@ class Model extends BaseModel {
                             let yearFilter = new Date(infoSalary.date).getFullYear()
                             let monthFilter = new Date(infoSalary.date).getMonth() + 1
 
-                            let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                                {
-                                    $match: {
-                                        company: ObjectID(companyID),
-                                        parent: {$exists: true, $ne: null},
-                                        assignee: {$exists: true, $ne: null},
-                                        amount: {$gt: 0},
-                                    }
-                                },
-                                {
-                                    $project: {
-                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                        amount: 1,
-                                        date: 1,
-                                        assignee: 1
-                                    }
-                                },
-                                {
-                                    $match: {
-                                        year: Number(yearFilter),
-                                        month: Number(monthFilter),
-                                    }
-                                },
-                                {
-                                    $group: {
-                                        _id: { assignee: '$assignee' },
-                                    }
-                                },
-                            ])
+                            // let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                            //     {
+                            //         $match: {
+                            //             company: ObjectID(companyID),
+                            //             parent: {$exists: true, $ne: null},
+                            //             assignee: {$exists: true, $ne: null},
+                            //             amount: {$gt: 0},
+                            //         }
+                            //     },
+                            //     {
+                            //         $project: {
+                            //             year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            //             month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            //             amount: 1,
+                            //             date: 1,
+                            //             assignee: 1
+                            //         }
+                            //     },
+                            //     {
+                            //         $match: {
+                            //             year: Number(yearFilter),
+                            //             month: Number(monthFilter),
+                            //         }
+                            //     },
+                            //     {
+                            //         $group: {
+                            //             _id: { assignee: '$assignee' },
+                            //         }
+                            //     },
+                            // ])
 
                             let listData2 = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
                             // console.log(yearFilter)
@@ -995,9 +995,11 @@ class Model extends BaseModel {
                             let A = [] 
                             if(arrUser && arrUser.length){
                                 A = arrUser.map(item=>item.toString())
-                            }else{
-                                A = listData.map(item=>item._id.assignee.toString())
                             }
+                            
+                            // else{
+                            //     A = listData.map(item=>item._id.assignee.toString())
+                            // }
 
                             let B = listData2.map(item=>item.human.toString())
                             // console.log(A)
