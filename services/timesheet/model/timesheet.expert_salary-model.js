@@ -932,7 +932,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({
-        companyID, userID, email, option, salaryID
+        companyID, userID, email, option, salaryID, arrUser
     }){
         // console.log({companyID, userID, email, option, salaryID})
         const that = this
@@ -992,14 +992,20 @@ class Model extends BaseModel {
                             // console.log(yearFilter)
                             // console.log(monthFilter)
 
-                            const A = listData.map(item=>item._id.assignee.toString())
-                            const B = listData2.map(item=>item.human.toString())
+                            let A = [] 
+                            if(arrUser && arrUser.length){
+                                A = arrUser.map(item=>item.toString())
+                            }else{
+                                A = listData.map(item=>item._id.assignee.toString())
+                            }
+
+                            let B = listData2.map(item=>item.human.toString())
                             // console.log(A)
                             // console.log(B )
 
                             // Lấy các phần tử trong A nhưng không có trong B
                             const result = A.filter(item => !B.includes(item));
-                            // console.log(result);  // Output: [1, 2, 5]
+                            // console.log(result);
 
                             /**
                              * Tạo chi tiết lương cho các User đang hoạt động
