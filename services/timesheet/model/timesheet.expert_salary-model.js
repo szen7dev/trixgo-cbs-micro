@@ -954,8 +954,8 @@ class Model extends BaseModel {
                             
                             let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
 
-                            let yearFilter = new Date(infoSalary.date).getFullYear()
-                            let monthFilter = new Date(infoSalary.date).getMonth() + 1
+                            // let yearFilter = new Date(infoSalary.date).getFullYear()
+                            // let monthFilter = new Date(infoSalary.date).getMonth() + 1
 
                             // let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                             //     {
@@ -1257,19 +1257,23 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertSalaryID, userID, select, populates, ctx }) {
+    getInfo({ expertSalaryID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(expertSalaryID))
-                    return resolve({ error: true, message: 'Request params expertSalaryID invalid', status: 400 });
+                // Record Traffic
+                // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                 // populates
-                 if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                //     appID: "61e049cffdebf77b072d1b14",
+                //     userID
+                // })
+                
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				}else{
+                    populates = JSON.parse(populates);
+                }else{
                     populates = {
                         path: "",
                         select: ""
@@ -1281,12 +1285,9 @@ class Model extends BaseModel {
                 .populate(populates)
 
                 if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+                    return resolve({ error: true, message: "can't_get_info", status: 403 })
 
-                // Record Traffic
-                // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                return resolve({ error: false, data: infoAterGet, status: 200 });
+                return resolve({ error: false, data: infoAterGet, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -1346,67 +1347,91 @@ class Model extends BaseModel {
                     }
                 }
 
-				if(checkObjectIDs(parentID)){
-                 	conditionObj.parent = parentID
-
-                    // Lọc dữ liệu
-                    if(subtype && Number(subtype) > 1){
-                        conditionObj.subtype = Number(subtype)
+				if(checkObjectIDs(parentID)){                    
+                    let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID)
+                    let checkPermission = 1 // Không có quyền
+                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e049cffdebf77b072d1b14",
+                        userID
+                    })
+                    if(infoParent.userCreate.toString() === userID.toString()){
+                        checkPermission = Number(checkPermission) + 1
+                    }
+                    if(infoParent.admins.includes(userID)){
+                        checkPermission = Number(checkPermission) + 1
+                    }
+                    if(infoParent.members.includes(userID)){
+                        checkPermission = Number(checkPermission) + 1
+                    }
+                    if((!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0)){
+                        checkPermission = Number(checkPermission) + 1
                     }
 
-                    if(salary && Number(salary) === 1){
-                        conditionObj.salary = {$gt: 0}
-                    }
-                    if(salary && Number(salary) === 2){
-                        conditionObj.salary = 0
-                    }
+                    if(checkPermission >= 2){
 
-                    if(onLeaveSalary && Number(onLeaveSalary) === 1){
-                        conditionObj.onLeaveSalary = {$gt: 0}
-                    }
-                    if(onLeaveSalary && Number(onLeaveSalary) === 2){
-                        conditionObj.onLeaveSalary = 0
-                    }
+                        conditionObj.parent = parentID
 
-                    if(overtimeSalary && Number(overtimeSalary) === 1){
-                        conditionObj.overtimeSalary = {$gt: 0}
-                    }
-                    if(overtimeSalary && Number(overtimeSalary) === 2){
-                        conditionObj.overtimeSalary = 0
-                    }
+                        // Lọc dữ liệu
+                        if(subtype && Number(subtype) > 1){
+                            conditionObj.subtype = Number(subtype)
+                        }
 
-                    if(mealAllowance && Number(mealAllowance) === 1){
-                        conditionObj.mealAllowance = {$gt: 0}
-                    }
-                    if(mealAllowance && Number(mealAllowance) === 2){
-                        conditionObj.mealAllowance = 0
-                    }
+                        if(salary && Number(salary) === 1){
+                            conditionObj.salary = {$gt: 0}
+                        }
+                        if(salary && Number(salary) === 2){
+                            conditionObj.salary = 0
+                        }
 
-                    if(punishment && Number(punishment) === 1){
-                        conditionObj.punishment = {$gt: 0}
-                    }
-                    if(punishment && Number(punishment) === 2){
-                        conditionObj.punishment = 0
-                    }
+                        if(onLeaveSalary && Number(onLeaveSalary) === 1){
+                            conditionObj.onLeaveSalary = {$gt: 0}
+                        }
+                        if(onLeaveSalary && Number(onLeaveSalary) === 2){
+                            conditionObj.onLeaveSalary = 0
+                        }
 
-                    if(departmentsID && departmentsID.length){
-                        conditionObj.project = { $in: departmentsID }
-                    }
+                        if(overtimeSalary && Number(overtimeSalary) === 1){
+                            conditionObj.overtimeSalary = {$gt: 0}
+                        }
+                        if(overtimeSalary && Number(overtimeSalary) === 2){
+                            conditionObj.overtimeSalary = 0
+                        }
 
-                    if(positionsID && positionsID.length){
-                        conditionObj.position = { $in: positionsID }
-                    }
+                        if(mealAllowance && Number(mealAllowance) === 1){
+                            conditionObj.mealAllowance = {$gt: 0}
+                        }
+                        if(mealAllowance && Number(mealAllowance) === 2){
+                            conditionObj.mealAllowance = 0
+                        }
 
-                    if(keyword){
-                        keyword = keyword.split(" ");
-                        keyword = '.*' + keyword.join(".*") + '.*';
+                        if(punishment && Number(punishment) === 1){
+                            conditionObj.punishment = {$gt: 0}
+                        }
+                        if(punishment && Number(punishment) === 2){
+                            conditionObj.punishment = 0
+                        }
 
-                        let listUser = await AUTH__USER_COLL.find({company:companyID, fullname: new RegExp(keyword, 'i')})
-                        .select('_id fullname')
-                        .limit(20)
-                        // console.log(listUser)
+                        if(departmentsID && departmentsID.length){
+                            conditionObj.project = { $in: departmentsID }
+                        }
 
-                        conditionObj.human = {$in: listUser.map(item=>item._id)}
+                        if(positionsID && positionsID.length){
+                            conditionObj.position = { $in: positionsID }
+                        }
+
+                        if(keyword){
+                            keyword = keyword.split(" ");
+                            keyword = '.*' + keyword.join(".*") + '.*';
+
+                            let listUser = await AUTH__USER_COLL.find({company:companyID, fullname: new RegExp(keyword, 'i')})
+                            .select('_id fullname')
+                            .limit(20)
+
+                            conditionObj.human = {$in: listUser.map(item=>item._id)}
+                        }
+                    }else{
+                        // Trả về dữ liệu rỗng (BE)
+                        conditionObj.company = { $exists: false } 
                     }
 				}else{
                     if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
@@ -1437,7 +1462,7 @@ class Model extends BaseModel {
                     conditionObj.human = userID
                     conditionObj.parent = { $exists: true, $ne: null }
                 }
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 

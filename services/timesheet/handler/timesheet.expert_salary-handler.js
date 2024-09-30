@@ -184,7 +184,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(expertSalaryID){
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getInfo({
-                        expertSalaryID, userID, select, populates, ctx
+                        expertSalaryID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.getList({

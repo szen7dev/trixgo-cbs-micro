@@ -1359,331 +1359,365 @@ class Model extends BaseModel {
                      */
                     if(option == 2){
                         if (!checkObjectIDs(templateID)) 
-                            return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" });
+                            return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" })
 
-                        let conditionObj = {};
-                        conditionObj.parent = parentID
-        
                         let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID)
-                        .select('name status date note salary')
-                        
-                        // Danh sách các phòng ban mà user được quyền truy cập
-                        let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
-                        let listPosition = await ITEM__POSITION_COLL.find({company:companyID}).select('_id name')                        
+                        .select('name status date note salary userCreate admins members')
 
-                        // Bảng lương
-                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
-                        .populate({
-                            path: 'human project position',
-                            select:'fullname name contacts',
-                            populate: ({
-                                path: 'contacts',
-                                select:'sallaryBasic share bankAccount bank identity nods name',
-                                
-                            })
+                        let checkPermission = 1 // Không có quyền
+                        let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                            appID: "61e049cffdebf77b072d1b14",
+                            userID
                         })
-                        .sort({project: 1})
-
-                        // Tổng hợp chấm công trong tháng
-                        let yearFilter = new Date(infoParent.date).getFullYear()
-                        let monthFilter = new Date(infoParent.date).getMonth() + 1
-                        // console.log({yearFilter,monthFilter})
-
-                        let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                            {
-                                $match: {
-                                    company: ObjectID(companyID),
-                                    parent: { $exists: true, $ne: null },
-                                    assignee: { $exists: true, $ne: null },
-                                    hours: {$gt: 0}, // Khối lượng
-                                    amount: {$gt: 0}, // Thành tiền
-                                    subtype: 1, // Đi làm Thông thường
-                                }
-                            },
-                            {
-                                $project: {
-                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    amount: 1,
-                                    hours: 1,
-                                    subtype: 1,
-                                    assignee: 1,
-                                }
-                            },
-                            {
-                                $match: {
-                                    year: Number(yearFilter),
-                                    month: Number(monthFilter),
-                                }
-                            },
-                            {
-                                $group: {
-                                    _id: { assignee: '$assignee' },
-                                    quantity: { $sum: 1 },
-                                }
-                            }
-                        ])
-                        // console.log(listData1)
-
-                        // Lấy các ngày chủ nhật đi làm
-                        let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                            {
-                                $match: {
-                                    company: ObjectID(companyID),
-                                    parent: { $exists: true, $ne: null },
-                                    assignee: { $exists: true, $ne: null },
-                                    hours: {$gt: 0},
-                                    subtype: 1, // Đi làm Thông thường
-                                }
-                            },
-                            {
-                                $project: {
-                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    dayOfWeek: { $dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    hours: 1,
-                                    subtype: 1,
-                                    assignee: 1,
-                                }
-                            },
-                            {
-                                $match: {
-                                    year: Number(yearFilter),
-                                    month: Number(monthFilter),
-                                    dayOfWeek: 1,
-                                }
-                            },
-                            {
-                                $group: {
-                                    _id: { assignee: '$assignee' },
-                                    quantity: { $sum: 1 },
-                                }
-                            }
-                        ])
-                        // console.log(listData2)
-
-                        // Chấm tăng ca (>8h)
-                        // let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
-                        //     company: ObjectID(companyID),
-                        //     parent: { $exists: true, $ne: null },
-                        //     assignee: { $exists: true, $ne: null },
-                        //     hours: { $gt: 8 },
-                        //     $where: `return this.date.getMonth() === ${Number(monthFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
-                        // })
-                        // .populate({
-                        //     path: 'assignee',
-                        //     select:'fullname'
-                        // })
-                        // .select('name hours unitprice amount status date note')
-                        // .sort({date: 1})
-
-                        // Template download data
-                        let templateFile = path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx'))
-                        let templateFile1
-                        if (checkObjectIDs(templateID)) {
-                            let infoTemplate = await PCM_FILE__COLL.findById(templateID)
-                            // console.log(infoTemplate)
-
-                            const response = await axios({
-                                url: `https://dntdurzwr12tp.cloudfront.net${infoTemplate?.path}`,
-                                method: 'GET',
-                                responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
-                            })
-
-                            templateFile1 = response.data
+                        if(infoParent.userCreate.toString() === userID.toString()){
+                            checkPermission = Number(checkPermission) + 1
+                        }
+                        if(infoParent.admins.includes(userID)){
+                            checkPermission = Number(checkPermission) + 1
+                        }
+                        if(infoParent.members.includes(userID)){
+                            checkPermission = Number(checkPermission) + 1
+                        }
+                        if((!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0)){
+                            checkPermission = Number(checkPermission) + 1
                         }
 
-                         // Modify the workbook.
-                        //  XlsxPopulate.fromFileAsync(templateFile)
-                        XlsxPopulate.fromDataAsync(templateFile1)
-                         .then(async workbook => {
+                        if(checkPermission >= 2){
 
-                            workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
-                            workbook.sheet("BangLuongIn").row(1).cell(1).value(infoParent.name)
-                            workbook.sheet("PhuCap").row(2).cell(23).value(countDayIndexInMonth(0, yearFilter, Number(monthFilter - 1)))
+                            let conditionObj = {parent: parentID}
+                            
+                            // Danh sách các phòng ban mà user được quyền truy cập
+                            let listDepartment = await ITEM__DEPARTMENT_COLL.find({company:companyID, members: { $in: [userID] }}).select('_id name')
+                            let listPosition = await ITEM__POSITION_COLL.find({company:companyID}).select('_id name')                        
 
-                            var i = 4
-                            listData.forEach((item, index) =>{
-                                let tongThu = Number(item.salary + item.onLeaveSalary + item.overtimeSalary + item.revenueBonus + item.reward + item.mealAllowance)
-                                let tongGiamTru = Number(item.punishment + item.insurance + item.pitax + item.union + item.share + item.other)
-
-                                workbook.sheet("BangLuongUpdate").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(2).value(item?.human?.fullname)
-                                workbook.sheet("BangLuongUpdate").row(i).cell(3).value(item?.project?.name)
-                                workbook.sheet("BangLuongUpdate").row(i).cell(4).value(item?.position?.name)
-
-                                if(item?.human?.contacts?.length){
-                                    workbook.sheet("BangLuongUpdate").row(i).cell(5).value(Number(item?.human?.contacts[0]?.sallaryBasic))     
-                                }
-
-                                workbook.sheet("BangLuongUpdate").row(i).cell(6).value(Number(item.salary))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(7).value(Number(item.onLeaveSalary))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(8).value(Number(item.overtimeSalary))
-
-                                workbook.sheet("BangLuongUpdate").row(i).cell(9).value(Number(item.revenueBonus))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(10).value(Number(item.reward))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(11).value(Number(item.mealAllowance)) // Công thức
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(12).value(Number(item.tongThu)) // Công thức
-
-                                workbook.sheet("BangLuongUpdate").row(i).cell(13).value(Number(item.punishment))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(14).value(Number(item.insurance))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) // Công thức
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) // Công thức
-
-                                // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
-                                if(Number(item?.human?.contacts[0]?.share) > 0){
-                                    workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
-                                }else{
-                                    console.log({_________:workbook.sheet("BangLuongUpdate").row(i).cell(17).value()})
-                                    workbook.sheet("BangLuongUpdate").row(i).cell(17).style("fill", "d9ead3");
-                                }
-
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(18).value(Number(item.other)) // Công thức
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(19).value(Number(tongGiamTru)) //
-
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(20).value(Number(tongThu - tongGiamTru)) //
-
-                                workbook.sheet("BangLuongUpdate").row(i).cell(21).value(Number(item.advance))
-                                workbook.sheet("BangLuongUpdate").row(i).cell(22).value(Number(item.paid))
-                                // workbook.sheet("BangLuongUpdate").row(i).cell(23).value(Number(item.remaining)) //
-
-                                workbook.sheet("BangLuongUpdate").row(i).cell(24).value(item?.note)
-
-                                workbook.sheet("BangLuongUpdate").row(i).cell(25).value(`${item?._id}`)   
-                                workbook.sheet("BangLuongUpdate").row(i).cell(26).value(`${item?.human?._id}`)  
-
-                                // Giảm trừ gia cảnh
-                                workbook.sheet("BangLuongUpdate").row(i).cell(28).value(Number(item?.human?.contacts[0]?.nods))
-                                
-                                /**
-                                 * BangLuongIn
-                                 * - Phục vụ in ấn, trình ký duyệt
-                                 */
-                                workbook.sheet("BangLuongIn").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("BangLuongIn").row(i).cell(2).value(item?.human?.fullname)
-                                workbook.sheet("BangLuongIn").row(i).cell(3).value(item?.project?.name)
-                                workbook.sheet("BangLuongIn").row(i).cell(4).value(item?.position?.name)
-
-                                if(item?.human?.contacts?.length){
-                                    workbook.sheet("BangLuongIn").row(i).cell(5).value(Number(item?.human?.contacts[0]?.sallaryBasic))     
-                                }
-
-                                workbook.sheet("BangLuongIn").row(i).cell(6).value(Number(item.salary))
-                                workbook.sheet("BangLuongIn").row(i).cell(7).value(Number(item.onLeaveSalary))
-                                workbook.sheet("BangLuongIn").row(i).cell(8).value(Number(item.overtimeSalary))
-
-                                workbook.sheet("BangLuongIn").row(i).cell(9).value(Number(item.revenueBonus))
-                                workbook.sheet("BangLuongIn").row(i).cell(10).value(Number(item.reward))
-                                workbook.sheet("BangLuongIn").row(i).cell(11).value(Number(item.mealAllowance))
-                                workbook.sheet("BangLuongIn").row(i).cell(12).value(Number(tongThu)) //
-
-                                workbook.sheet("BangLuongIn").row(i).cell(13).value(Number(item.punishment))
-                                workbook.sheet("BangLuongIn").row(i).cell(14).value(Number(item.insurance))
-                                workbook.sheet("BangLuongIn").row(i).cell(15).value(Number(item.pitax))
-                                workbook.sheet("BangLuongIn").row(i).cell(16).value(Number(item.union))
-                                workbook.sheet("BangLuongIn").row(i).cell(17).value(Number(item.share))
-                                workbook.sheet("BangLuongIn").row(i).cell(18).value(Number(item.other))
-                                workbook.sheet("BangLuongIn").row(i).cell(19).value(Number(tongGiamTru)) //
-
-                                workbook.sheet("BangLuongIn").row(i).cell(20).value(Number(tongThu - tongGiamTru)) //
-
-                                workbook.sheet("BangLuongIn").row(i).cell(21).value(Number(item.advance))
-                                workbook.sheet("BangLuongIn").row(i).cell(22).value(Number(item.paid))
-                                workbook.sheet("BangLuongIn").row(i).cell(23).value(Number(item.remaining)) //
-
-                                workbook.sheet("BangLuongIn").row(i).cell(24).value(item?.note)
-
-                                /**
-                                 * BangLuongPay
-                                 * - Bảng lương phục vụ thanh toán, chuyển khoản
-                                 */
-                                workbook.sheet("BangLuongPay").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("BangLuongPay").row(i).cell(2).value(item?.human?.fullname.slice(0, -4))
-                                workbook.sheet("BangLuongPay").row(i).cell(4).value(Number(item.remaining))
-
-                                if(item?.human?.contacts?.length){
-                                    workbook.sheet("BangLuongPay").row(i).cell(3).value(item?.human?.contacts[0]?.identity)     
-                                    workbook.sheet("BangLuongPay").row(i).cell(5).value(item?.human?.contacts[0]?.bankAccount) 
-                                    workbook.sheet("BangLuongPay").row(i).cell(6).value(item?.human?.contacts[0]?.bank)     
-                                }
-                                
-                                i++
+                            // Bảng lương
+                            let listData = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
+                            .populate({
+                                path: 'human project position',
+                                select:'fullname name contacts',
+                                populate: ({
+                                    path: 'contacts',
+                                    select:'sallaryBasic share bankAccount bank identity nods name',
+                                    
+                                })
                             })
+                            .sort({project: 1})
 
-                            /**
-                             * Tổng hợp số công đi làm
-                             */
-                            listData1.forEach((item, index) =>{
-                                for(var i=3; i<=300; i++){
-                                    let userID = workbook.sheet("PhuCap").row(i).cell(1).value()
+                            // Tổng hợp chấm công trong tháng
+                            let yearFilter = new Date(infoParent.date).getFullYear()
+                            let monthFilter = new Date(infoParent.date).getMonth() + 1
+                            // console.log({yearFilter,monthFilter})
 
-                                    if(userID && userID.toString() === item?._id?.assignee.toString()){
-                                        workbook.sheet("PhuCap").row(i).cell(29).value(Number(item.quantity));
+                            let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                                {
+                                    $match: {
+                                        company: ObjectID(companyID),
+                                        parent: { $exists: true, $ne: null },
+                                        assignee: { $exists: true, $ne: null },
+                                        hours: {$gt: 0}, // Khối lượng
+                                        amount: {$gt: 0}, // Thành tiền
+                                        subtype: 1, // Đi làm Thông thường
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        amount: 1,
+                                        hours: 1,
+                                        subtype: 1,
+                                        assignee: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(yearFilter),
+                                        month: Number(monthFilter),
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { assignee: '$assignee' },
+                                        quantity: { $sum: 1 },
                                     }
                                 }
-                            })
+                            ])
+                            // console.log(listData1)
 
-                            /**
-                             * Tổng hợp số công đi làm Chủ nhật
-                             */
-                            listData2.forEach((item, index) =>{
-                                for(var i=3; i<=300; i++){
-                                    let userID = workbook.sheet("PhuCap").row(i).cell(1).value()
-
-                                    if(userID && userID.toString() === item?._id?.assignee.toString()){
-                                        workbook.sheet("PhuCap").row(i).cell(30).value(Number(item.quantity));
+                            // Lấy các ngày chủ nhật đi làm
+                            let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                                {
+                                    $match: {
+                                        company: ObjectID(companyID),
+                                        parent: { $exists: true, $ne: null },
+                                        assignee: { $exists: true, $ne: null },
+                                        hours: {$gt: 0},
+                                        subtype: 1, // Đi làm Thông thường
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        dayOfWeek: { $dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        hours: 1,
+                                        subtype: 1,
+                                        assignee: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(yearFilter),
+                                        month: Number(monthFilter),
+                                        dayOfWeek: 1,
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { assignee: '$assignee' },
+                                        quantity: { $sum: 1 },
                                     }
                                 }
-                            })
+                            ])
+                            // console.log(listData2)
 
-                            /**
-                             * Tổng hợp lương
-                             */
-                            var i = 3
-                            listDepartment.forEach((item, index) =>{
-                                workbook.sheet("TongHop1").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("TongHop1").row(i).cell(2).value(item?.name)
-                                workbook.sheet("TongHop1").row(i).cell(3).value()
-                                workbook.sheet("TongHop1").row(i).cell(4).value(item?.note)
-                                
-                                i++
-                            })
-
-                            var i = 3
-                            listPosition.forEach((item, index) =>{
-                                workbook.sheet("TongHop2").row(i).cell(1).value(Number(index + 1))
-                                workbook.sheet("TongHop2").row(i).cell(2).value(item?.name)
-                                workbook.sheet("TongHop2").row(i).cell(3).value()
-                                workbook.sheet("TongHop2").row(i).cell(4).value(item?.note)
-                                
-                                i++
-                            })
-
-                            // var i = 4
-                            // listData4.forEach((item, index) =>{
-                            //     workbook.sheet("TangCa").row(i).cell(1).value(`${item?.assignee?._id}`)
-                            //     workbook.sheet("TangCa").row(i).cell(2).value(item.date)
-                            //     workbook.sheet("TangCa").row(i).cell(3).value(item.name)
-                            //     workbook.sheet("TangCa").row(i).cell(4).value(item?.assignee?.fullname)
-                            //     workbook.sheet("TangCa").row(i).cell(5).value(Number(item.hours))
-                            //     workbook.sheet("TangCa").row(i).cell(6).value(Number(item.unitprice))
-                            //     workbook.sheet("TangCa").row(i).cell(7).value(Number(item.amount))
-                            //     workbook.sheet("TangCa").row(i).cell(8).value(item?.note)
-                            //     workbook.sheet("TangCa").row(i).cell(15).value(item?.parent?.name)
-                            //     i++
+                            // Chấm tăng ca (>8h)
+                            // let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                            //     company: ObjectID(companyID),
+                            //     parent: { $exists: true, $ne: null },
+                            //     assignee: { $exists: true, $ne: null },
+                            //     hours: { $gt: 8 },
+                            //     $where: `return this.date.getMonth() === ${Number(monthFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
                             // })
-                    
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `salary_report${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+                            // .populate({
+                            //     path: 'assignee',
+                            //     select:'fullname'
+                            // })
+                            // .select('name hours unitprice amount status date note')
+                            // .sort({date: 1})
 
-                            await workbook.toFileAsync(pathWriteFile);
-                            const result = await uploadFileS3(pathWriteFile, fileName);
+                            // Template download data
+                            let templateFile = path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx'))
+                            let templateFile1
+                            if (checkObjectIDs(templateID)) {
+                                let infoTemplate = await PCM_FILE__COLL.findById(templateID)
+                                // console.log(infoTemplate)
 
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 });
-                         });
+                                const response = await axios({
+                                    url: `https://dntdurzwr12tp.cloudfront.net${infoTemplate?.path}`,
+                                    method: 'GET',
+                                    responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
+                                })
+
+                                templateFile1 = response.data
+                            }
+
+                            // Modify the workbook.
+                            //  XlsxPopulate.fromFileAsync(templateFile)
+                            XlsxPopulate.fromDataAsync(templateFile1)
+                            .then(async workbook => {
+
+                                workbook.sheet("BangLuongUpdate").row(1).cell(1).value(infoParent.name)
+                                workbook.sheet("BangLuongIn").row(1).cell(1).value(infoParent.name)
+                                workbook.sheet("PhuCap").row(2).cell(23).value(countDayIndexInMonth(0, yearFilter, Number(monthFilter - 1)))
+
+                                var i = 4
+                                listData.forEach((item, index) =>{
+                                    let tongThu = Number(item.salary + item.onLeaveSalary + item.overtimeSalary + item.revenueBonus + item.reward + item.mealAllowance)
+                                    let tongGiamTru = Number(item.punishment + item.insurance + item.pitax + item.union + item.share + item.other)
+
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(2).value(item?.human?.fullname)
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(3).value(item?.project?.name)
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(4).value(item?.position?.name)
+
+                                    if(item?.human?.contacts?.length){
+                                        workbook.sheet("BangLuongUpdate").row(i).cell(5).value(Number(item?.human?.contacts[0]?.sallaryBasic))     
+                                    }
+
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(6).value(Number(item.salary))
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(7).value(Number(item.onLeaveSalary))
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(8).value(Number(item.overtimeSalary))
+
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(9).value(Number(item.revenueBonus))
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(10).value(Number(item.reward))
+                                    // workbook.sheet("BangLuongUpdate").row(i).cell(11).value(Number(item.mealAllowance)) // Công thức
+                                    // workbook.sheet("BangLuongUpdate").row(i).cell(12).value(Number(item.tongThu)) // Công thức
+
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(13).value(Number(item.punishment))
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(14).value(Number(item.insurance))
+                                    // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) // Công thức
+                                    // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) // Công thức
+
+                                    // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
+                                    if(Number(item?.human?.contacts[0]?.share) > 0){
+                                        workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+                                    }else{
+                                        // console.log({_________:workbook.sheet("BangLuongUpdate").row(i).cell(17).value()})
+                                        workbook.sheet("BangLuongUpdate").row(i).cell(17).style("fill", "d9ead3");
+                                    }
+
+                                    // workbook.sheet("BangLuongUpdate").row(i).cell(18).value(Number(item.other)) // Công thức
+                                    // workbook.sheet("BangLuongUpdate").row(i).cell(19).value(Number(tongGiamTru)) //
+
+                                    // workbook.sheet("BangLuongUpdate").row(i).cell(20).value(Number(tongThu - tongGiamTru)) //
+
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(21).value(Number(item.advance))
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(22).value(Number(item.paid))
+                                    // workbook.sheet("BangLuongUpdate").row(i).cell(23).value(Number(item.remaining)) //
+
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(24).value(item?.note)
+
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(25).value(`${item?._id}`)   
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(26).value(`${item?.human?._id}`)  
+
+                                    // Giảm trừ gia cảnh
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(28).value(Number(item?.human?.contacts[0]?.nods))
+                                    
+                                    /**
+                                     * BangLuongIn
+                                     * - Phục vụ in ấn, trình ký duyệt
+                                     */
+                                    workbook.sheet("BangLuongIn").row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet("BangLuongIn").row(i).cell(2).value(item?.human?.fullname)
+                                    workbook.sheet("BangLuongIn").row(i).cell(3).value(item?.project?.name)
+                                    workbook.sheet("BangLuongIn").row(i).cell(4).value(item?.position?.name)
+
+                                    if(item?.human?.contacts?.length){
+                                        workbook.sheet("BangLuongIn").row(i).cell(5).value(Number(item?.human?.contacts[0]?.sallaryBasic))     
+                                    }
+
+                                    workbook.sheet("BangLuongIn").row(i).cell(6).value(Number(item.salary))
+                                    workbook.sheet("BangLuongIn").row(i).cell(7).value(Number(item.onLeaveSalary))
+                                    workbook.sheet("BangLuongIn").row(i).cell(8).value(Number(item.overtimeSalary))
+
+                                    workbook.sheet("BangLuongIn").row(i).cell(9).value(Number(item.revenueBonus))
+                                    workbook.sheet("BangLuongIn").row(i).cell(10).value(Number(item.reward))
+                                    workbook.sheet("BangLuongIn").row(i).cell(11).value(Number(item.mealAllowance))
+                                    workbook.sheet("BangLuongIn").row(i).cell(12).value(Number(tongThu)) //
+
+                                    workbook.sheet("BangLuongIn").row(i).cell(13).value(Number(item.punishment))
+                                    workbook.sheet("BangLuongIn").row(i).cell(14).value(Number(item.insurance))
+                                    workbook.sheet("BangLuongIn").row(i).cell(15).value(Number(item.pitax))
+                                    workbook.sheet("BangLuongIn").row(i).cell(16).value(Number(item.union))
+                                    workbook.sheet("BangLuongIn").row(i).cell(17).value(Number(item.share))
+                                    workbook.sheet("BangLuongIn").row(i).cell(18).value(Number(item.other))
+                                    workbook.sheet("BangLuongIn").row(i).cell(19).value(Number(tongGiamTru)) //
+
+                                    workbook.sheet("BangLuongIn").row(i).cell(20).value(Number(tongThu - tongGiamTru)) //
+
+                                    workbook.sheet("BangLuongIn").row(i).cell(21).value(Number(item.advance))
+                                    workbook.sheet("BangLuongIn").row(i).cell(22).value(Number(item.paid))
+                                    workbook.sheet("BangLuongIn").row(i).cell(23).value(Number(item.remaining)) //
+
+                                    workbook.sheet("BangLuongIn").row(i).cell(24).value(item?.note)
+
+                                    /**
+                                     * BangLuongPay
+                                     * - Bảng lương phục vụ thanh toán, chuyển khoản
+                                     */
+                                    workbook.sheet("BangLuongPay").row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet("BangLuongPay").row(i).cell(2).value(item?.human?.fullname.slice(0, -4))
+                                    workbook.sheet("BangLuongPay").row(i).cell(4).value(Number(item.remaining))
+
+                                    if(item?.human?.contacts?.length){
+                                        workbook.sheet("BangLuongPay").row(i).cell(3).value(item?.human?.contacts[0]?.identity)     
+                                        workbook.sheet("BangLuongPay").row(i).cell(5).value(item?.human?.contacts[0]?.bankAccount) 
+                                        workbook.sheet("BangLuongPay").row(i).cell(6).value(item?.human?.contacts[0]?.bank)     
+                                    }
+                                    
+                                    i++
+                                })
+
+                                /**
+                                 * Tổng hợp số công đi làm
+                                 */
+                                listData1.forEach((item, index) =>{
+                                    for(var i=3; i<=300; i++){
+                                        let userID = workbook.sheet("PhuCap").row(i).cell(1).value()
+
+                                        if(userID && userID.toString() === item?._id?.assignee.toString()){
+                                            workbook.sheet("PhuCap").row(i).cell(29).value(Number(item.quantity));
+                                        }
+                                    }
+                                })
+
+                                /**
+                                 * Tổng hợp số công đi làm Chủ nhật
+                                 */
+                                listData2.forEach((item, index) =>{
+                                    for(var i=3; i<=300; i++){
+                                        let userID = workbook.sheet("PhuCap").row(i).cell(1).value()
+
+                                        if(userID && userID.toString() === item?._id?.assignee.toString()){
+                                            workbook.sheet("PhuCap").row(i).cell(30).value(Number(item.quantity));
+                                        }
+                                    }
+                                })
+
+                                /**
+                                 * Tổng hợp lương
+                                 */
+                                var i = 3
+                                listDepartment.forEach((item, index) =>{
+                                    workbook.sheet("TongHop1").row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet("TongHop1").row(i).cell(2).value(item?.name)
+                                    workbook.sheet("TongHop1").row(i).cell(3).value()
+                                    workbook.sheet("TongHop1").row(i).cell(4).value(item?.note)
+                                    
+                                    i++
+                                })
+
+                                var i = 3
+                                listPosition.forEach((item, index) =>{
+                                    workbook.sheet("TongHop2").row(i).cell(1).value(Number(index + 1))
+                                    workbook.sheet("TongHop2").row(i).cell(2).value(item?.name)
+                                    workbook.sheet("TongHop2").row(i).cell(3).value()
+                                    workbook.sheet("TongHop2").row(i).cell(4).value(item?.note)
+                                    
+                                    i++
+                                })
+
+                                // var i = 4
+                                // listData4.forEach((item, index) =>{
+                                //     workbook.sheet("TangCa").row(i).cell(1).value(`${item?.assignee?._id}`)
+                                //     workbook.sheet("TangCa").row(i).cell(2).value(item.date)
+                                //     workbook.sheet("TangCa").row(i).cell(3).value(item.name)
+                                //     workbook.sheet("TangCa").row(i).cell(4).value(item?.assignee?.fullname)
+                                //     workbook.sheet("TangCa").row(i).cell(5).value(Number(item.hours))
+                                //     workbook.sheet("TangCa").row(i).cell(6).value(Number(item.unitprice))
+                                //     workbook.sheet("TangCa").row(i).cell(7).value(Number(item.amount))
+                                //     workbook.sheet("TangCa").row(i).cell(8).value(item?.note)
+                                //     workbook.sheet("TangCa").row(i).cell(15).value(item?.parent?.name)
+                                //     i++
+                                // })
+                        
+                                const now = new Date();
+                                const filePath = '../../../files/temporary_uploads/';
+                                const fileName = `salary_report${now.getTime()}.xlsx`;
+                                const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                                await workbook.toFileAsync(pathWriteFile);
+                                const result = await uploadFileS3(pathWriteFile, fileName);
+
+                                fs.unlinkSync(pathWriteFile);
+                                return resolve({ error: false, data: result?.Location, status: 200 })
+                            })
+                        }else{
+                            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/Book1.xlsx')))
+                            .then(async workbook => {
+                                const now = new Date();
+                                const filePath = '../../../files/temporary_uploads/';
+                                const fileName = `Book1${now.getTime()}.xlsx`;
+                                const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                                await workbook.toFileAsync(pathWriteFile);
+                                const result = await uploadFileS3(pathWriteFile, fileName);
+
+                                fs.unlinkSync(pathWriteFile);
+                                return resolve({ error: false, data: result?.Location, status: 200 })
+                            })
+                        }
                     }
 
                     /**
