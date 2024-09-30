@@ -486,6 +486,8 @@ class Model extends BaseModel {
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
 
+                // console.log({month,year})
+
                 /**
                  * Lương
                  * - Thông thường: 1
@@ -503,8 +505,10 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
+                            // year : {$year : "$date"},
+                            // month : {$month : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             date: 1,
                             assignee: 1,
                             hours: 1,
@@ -525,7 +529,6 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-
                 // console.log(listData)
 
                 /**
@@ -544,8 +547,10 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
+                            // year : {$year : "$date"},
+                            // month : {$month : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             date: 1,
                             assignee: 1,
                             hours: 1,
@@ -566,7 +571,6 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-
                 // console.log(listData2)
 
                 /**
@@ -584,8 +588,10 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            year : {$year : "$date"},
-                            month : {$month : "$date"},
+                            // year : {$year : "$date"},
+                            // month : {$month : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             date: 1,
                             assignee: 1,
                             hours: 1,
@@ -606,7 +612,6 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-
                 // console.log(listData3)
 
                 let arr1 = [], arr2 = [], arr3 = []
@@ -636,6 +641,7 @@ class Model extends BaseModel {
 
                 // console.log(arr1)
                 // console.log(arr2)
+                // console.log(arr3)
 
                 for(const item of dataUser){
                     let hours1 = 0, hours2 = 0, hours3 = 0, salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
@@ -736,8 +742,10 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
+                            // year : {$year : "$createAt"},
+                            // month : {$month : "$createAt"},
+                            year : {$year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
                             executor: 1,
                             amount: 1,
                             bonus: 1
@@ -1079,6 +1087,9 @@ class Model extends BaseModel {
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                         let dataUser = listData.map(item=>item.human.toString())
+
+                        // console.log(listData)
+                        // console.log(dataUser)
 
                         // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
                         await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
@@ -1462,7 +1473,7 @@ class Model extends BaseModel {
                     conditionObj.human = userID
                     conditionObj.parent = { $exists: true, $ne: null }
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
