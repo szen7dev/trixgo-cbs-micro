@@ -150,7 +150,6 @@ class Model extends BaseModel {
    * Date: 9/4/2022
    */
   update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status, isAddSignature, ctx }) {
-      // console.log({ })
       const that = this
       return new Promise(async (resolve) => {
           try {
@@ -173,7 +172,7 @@ class Model extends BaseModel {
             let dataAddToset = {};
 
             if (checkObjectIDs(filesID)) {
-                dataUpdate.$addToSet = { files: filesID };
+                dataAddToset = { files: filesID };
             }
 
             if (checkObjectIDs(fundaID)) {
@@ -250,8 +249,8 @@ class Model extends BaseModel {
             }
 
              /**
-                 * KÝ XÁC NHẬN
-                 */
+             * KÝ XÁC NHẬN
+             */
              if(isAddSignature) {
                 const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
                     companyID: infoOrder?.company?.toString(),
