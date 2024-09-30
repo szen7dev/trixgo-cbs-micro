@@ -138,7 +138,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+				
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                // if(!companyID){
+                //     companyID = company._id
+                // }
 
                 let resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.getList({
                         companyID, fundaID, orderID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID

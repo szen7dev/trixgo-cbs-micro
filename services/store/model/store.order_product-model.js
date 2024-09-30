@@ -415,7 +415,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {}
+                let conditionObj = { company: companyID }
                 let sortBy;
                 let keys	 = ['createAt__1', '_id__1'];
 
