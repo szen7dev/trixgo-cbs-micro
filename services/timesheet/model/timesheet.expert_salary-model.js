@@ -1472,6 +1472,7 @@ class Model extends BaseModel {
                 if(option && option == 1){
                     conditionObj.human = userID
                     conditionObj.parent = { $exists: true, $ne: null }
+                    delete conditionObj.$or;
                 }
                 // console.log(conditionObj)
 
