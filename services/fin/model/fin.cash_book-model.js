@@ -1934,6 +1934,7 @@ class Model extends BaseModel {
                         })
                         // .select('name status date note salary')
                         // console.log(info.human?.contacts)
+                        // console.log(info)
 
                          // Modify the workbook.
                          XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_detail.xlsx')))
@@ -1952,13 +1953,26 @@ class Model extends BaseModel {
 
                             // Lương và phụ cấp
                             workbook.sheet("Sheet1").row(11).cell(3).value(Number(info.salary))
-                            workbook.sheet("Sheet1").row(12).cell(3).value(Number(info.kpiFactor))
-                            workbook.sheet("Sheet1").row(13).cell(3).value(Number(info.onLeaveSalary))
+                            workbook.sheet("Sheet1").row(12).cell(3).value(Number(info.onLeaveSalary))
+                            workbook.sheet("Sheet1").row(13).cell(3).value(Number(info.overtimeSalary))
                             workbook.sheet("Sheet1").row(14).cell(3).value(Number(info.revenueBonus))
                             workbook.sheet("Sheet1").row(15).cell(3).value(Number(info.reward))
                             workbook.sheet("Sheet1").row(16).cell(3).value(Number(info.mealAllowance))
-                            workbook.sheet("Sheet1").row(19).cell(3).value(Number(info.advance))
-                            workbook.sheet("Sheet1").row(20).cell(3).value(Number(info.paid))
+                            workbook.sheet("Sheet1").row(17).cell(3).value(Number(info?.subAllowance1))
+                            workbook.sheet("Sheet1").row(18).cell(3).value(Number(info?.subAllowance2))
+                            workbook.sheet("Sheet1").row(19).cell(3).value(Number(info?.subAllowance3))
+                            workbook.sheet("Sheet1").row(20).cell(3).value(Number(info?.subAllowance4))
+                            workbook.sheet("Sheet1").row(21).cell(3).value(Number(info?.subAllowance5))
+                            workbook.sheet("Sheet1").row(22).cell(3).value(Number(info?.subAllowance6))
+                            workbook.sheet("Sheet1").row(23).cell(3).value(Number(info?.subAllowance7))
+                            workbook.sheet("Sheet1").row(24).cell(3).value(Number(info?.subAllowance8))
+                            workbook.sheet("Sheet1").row(25).cell(3).value(Number(info?.subAllowance9))
+                            workbook.sheet("Sheet1").row(26).cell(3).value(Number(info?.subAllowance10))
+                            workbook.sheet("Sheet1").row(27).cell(3).value(Number(info?.subAllowance11))
+                            workbook.sheet("Sheet1").row(28).cell(3).value(Number(info?.subAllowance12))
+                            workbook.sheet("Sheet1").row(29).cell(3).value(Number(info?.subAllowance13))
+                            workbook.sheet("Sheet1").row(30).cell(3).value(Number(info?.subAllowance14))
+                            workbook.sheet("Sheet1").row(31).cell(3).value(Number(info?.subAllowance15))
 
                             // Giảm trừ
                             workbook.sheet("Sheet1").row(11).cell(6).value(Number(info.punishment))
@@ -1967,9 +1981,17 @@ class Model extends BaseModel {
                             workbook.sheet("Sheet1").row(14).cell(6).value(Number(info.union))
                             workbook.sheet("Sheet1").row(15).cell(6).value(Number(info.share))
                             workbook.sheet("Sheet1").row(16).cell(6).value(Number(info.other))
+                            workbook.sheet("Sheet1").row(17).cell(6).value(Number(info?.subAllowance16))
+                            workbook.sheet("Sheet1").row(18).cell(6).value(Number(info?.subAllowance17))
+                            workbook.sheet("Sheet1").row(19).cell(6).value(Number(info?.subAllowance18))
+                            workbook.sheet("Sheet1").row(20).cell(6).value(Number(info?.subAllowance19))
+                            workbook.sheet("Sheet1").row(21).cell(6).value(Number(info?.subAllowance20))
+                            workbook.sheet("Sheet1").row(22).cell(6).value(Number(info?.subAllowance21))
+                            workbook.sheet("Sheet1").row(23).cell(6).value(Number(info?.subAllowance22))
 
-                            workbook.sheet("Sheet1").row(23).cell(1).value(`Ghi chú: ${info?.note}`);
-
+                            workbook.sheet("Sheet1").row(34).cell(3).value(Number(info.advance))
+                            workbook.sheet("Sheet1").row(35).cell(3).value(Number(info.paid))
+                            workbook.sheet("Sheet1").row(38).cell(1).value(`Ghi chú: ${info?.note}`);
 
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
