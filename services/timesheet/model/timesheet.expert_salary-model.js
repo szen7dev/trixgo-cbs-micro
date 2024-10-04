@@ -1106,15 +1106,15 @@ class Model extends BaseModel {
                     }
                     
                     // XÓA BẢNG LƯƠNG: TẠM KHÓA CHỨC NĂNG NÀY
-                    else if(option == 3){
-                        if(SALARY_RESET_PERMISSION.includes(email)){
-                            await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
-                            await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
-                            return resolve({ error: false, data: 'Reset thành công' })
-                        }else{
-                            return resolve({ error: true, message: 'Bạn không có quyền Reset' })
-                        }
-                    }
+                    // else if(option == 3){
+                    //     if(SALARY_RESET_PERMISSION.includes(email)){
+                    //         await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                    //         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                    //         return resolve({ error: false, data: 'Reset thành công' })
+                    //     }else{
+                    //         return resolve({ error: true, message: 'Bạn không có quyền Reset' })
+                    //     }
+                    // }
 
                     // COPY BẢNG LƯƠNG SANG BẢNG LƯƠNG MỚI
                     else if(option == 4){
