@@ -940,9 +940,9 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({
-        companyID, userID, email, option, salaryID, arrUser
+        companyID, userID, email, option, salaryID, orderID, arrUser
     }){
-        // console.log({companyID, userID, email, option, salaryID})
+        console.log({companyID, userID, email, option, salaryID, orderID})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -1189,7 +1189,13 @@ class Model extends BaseModel {
 
                             return resolve({ error: false, message: 'Copy thành công', status: 200 })
                        }
-                   }
+                    }
+
+                    // Copy phiếu Order
+                    else if(option == 5){
+                        console.log({salaryID, orderID})
+                        console.log('111111111111111111111111111')
+                    }
 
                 }else{
                     return resolve({ error: false, data: 'Bạn không có quyền thực hiện' })
