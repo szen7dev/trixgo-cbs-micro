@@ -32,7 +32,13 @@ const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.depa
 const e = require('express');
 // const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 
+const STORE_ORDER_COLL                  = require("../../store/database/store.order-coll");
+const STORE_ORDER_PRODUCT_COLL          = require('../../store/database/store.order_product-coll');
+
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
+
+const STORE_ORDER_MODEL = require('../../store/model/store.order-model.js').MODEL;
+const STORE_ORDER_PRODUCT_MODEL = require('../../store/model/store.order_product-model.js').MODEL;
 
 // let dataTF = {
 //     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
@@ -1193,12 +1199,58 @@ class Model extends BaseModel {
 
                     // Copy phiếu Order
                     else if(option == 5){
-                        console.log({salaryID, orderID})
-                        console.log('111111111111111111111111111')
+                        let infoOldOrder = await STORE_ORDER_COLL.findById(orderID)
+                        if(infoOldOrder){
+                            let infoNewOrder = await STORE_ORDER_MODEL.insert({
+                                companyID, 
+                                userID, 
+                                outin: infoOldOrder.outin, 
+                                type: infoOldOrder.type, 
+                                fundaID: infoOldOrder.funda, 
+                                projectID: infoOldOrder.project, 
+                                packageID: infoOldOrder.package, 
+                                toPackageID: infoOldOrder.toPackage,
+                                warehouseID: infoOldOrder.warehouse, 
+                                toWarehouseID: infoOldOrder.toWarehouse, 
+                                customerID: infoOldOrder.customer, 
+                                contractID: infoOldOrder.contract, 
+                                name: `Copy ${infoOldOrder.name}` 
+                            })
+
+                            if(infoNewOrder){
+                                let listProduct = await STORE_ORDER_PRODUCT_COLL.find({order: orderID})
+                                for(const item of listProduct){
+                                    await STORE_ORDER_PRODUCT_MODEL.insert({
+                                        userID, 
+                                        fundaID: item.funda, 
+                                        orderID: infoNewOrder.data._id, //
+                                        accountID: item.account, 
+                                        contraID: item.contra, 
+                                        customerID: item.customer, 
+                                        contractID: item.contract, 
+                                        goodsID: item.goods, 
+                                        assetsID: item.assets, 
+                                        workID: item.budgetWork, //
+                                        subtypeID: item.subtype, 
+                                        name: item.name, 
+                                        note: item.note, 
+                                        quantity: item.quantity, 
+                                        weight: item.weight, 
+                                        unitPrice: item.unitPrice 
+                                    })
+                                }
+
+                                return resolve({ error: false, message: 'Sao chép thành công' })
+                            }else{
+                                return resolve({ error: false, message: 'Sao chép thành công' })
+                            }
+                        }else{
+                            return resolve({ error: true, message: 'Sao chép thất bại' })
+                        }
                     }
 
                 }else{
-                    return resolve({ error: false, data: 'Bạn không có quyền thực hiện' })
+                    return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
