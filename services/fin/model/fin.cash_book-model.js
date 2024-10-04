@@ -1995,7 +1995,7 @@ class Model extends BaseModel {
 
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `salary_report${now.getTime()}.xlsx`;
+                            const fileName = `salary_detail${now.getTime()}.xlsx`;
                             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                             await workbook.toFileAsync(pathWriteFile);
@@ -2018,7 +2018,7 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     importFromExcel({ option, companyID, parentID, dataImport, userID }) {
-        // console.log({option, companyID, parentID, userID})
+        // console.log({option, companyID, parentID, dataImport, userID})
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(parentID))
@@ -2067,13 +2067,28 @@ class Model extends BaseModel {
                             userID
                         })
 
+                        // Kiểm tra chỉ cho Update chi tiết lương thuộc Bảng lương đang xét
+                        let listDataSalary = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: parentID}).select('name')
+                        let arrID = listDataSalary.map(item=>item._id.toString())
+
+                        let checkErr = 0, i = 0;
+
+                        for(const item of dataImportJSON){
+                           
+                            if(i > 1 && i <= 101){  
+                                if(!arrID.includes(item?.__EMPTY_23.toString())){
+                                    checkErr ++
+                                }
+                            }
+
+                            i ++
+                        }
+
                         // console.log(dataImportJSON)
                         // Chỉ Admin ứng dụng mới được cập nhật
-                        if(!infoAppUser.error && infoAppUser.data.level == 0){
+                        if(checkErr == 0 && !infoAppUser.error && infoAppUser.data.level == 0){
                             for (const data of dataImportJSON) {
-                                // console.log(data)
                                 if(index > 1 && index <= 101){    
-                                    // console.log(data)
                                     let infoAfterUpdate = await TIMESHEET__EXPERT_SALARY_MODEL.update({
                                         admins: [userID], 
                                         members: [userID], 
@@ -2134,7 +2149,7 @@ class Model extends BaseModel {
             
                             return resolve({ error: false, message: "import success" });
                         }else{
-                            return resolve({ error: true, message: "import field" });
+                            return resolve({ error: true, message: "Bạn không có quyền | Nhầm ID chi tiết lương: Kiểm tra lại" });
                         }
                     }
 
