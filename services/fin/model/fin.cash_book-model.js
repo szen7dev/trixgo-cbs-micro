@@ -1995,7 +1995,7 @@ class Model extends BaseModel {
 
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `salary_report${now.getTime()}.xlsx`;
+                            const fileName = `salary_detail${now.getTime()}.xlsx`;
                             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                             await workbook.toFileAsync(pathWriteFile);
