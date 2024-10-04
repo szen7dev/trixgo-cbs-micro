@@ -948,7 +948,7 @@ class Model extends BaseModel {
     syncData({
         companyID, userID, email, option, salaryID, orderID, arrUser
     }){
-        console.log({companyID, userID, email, option, salaryID, orderID})
+        // console.log({companyID, userID, email, option, salaryID, orderID})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -960,9 +960,7 @@ class Model extends BaseModel {
 
                 if(!infoAppUser.error && infoAppUser.data.level == 0){
 
-                    /**
-                     * CẬP NHẬT NHÂN SỰ
-                     */
+                    // CẬP NHẬT NHÂN SỰ
                     if(option == 1){
                         if(SALARY_RESET_PERMISSION.includes(email)){
                             
@@ -1086,9 +1084,7 @@ class Model extends BaseModel {
                         }
                     }
                     
-                    /**
-                     * ĐỒNG BỘ BẢNG LƯƠNG
-                     */
+                    // ĐỒNG BỘ BẢNG LƯƠNG
                     else if(option == 2){
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
@@ -1109,22 +1105,18 @@ class Model extends BaseModel {
                         return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
                     }
                     
-                    /**
-                     * XÓA BẢNG LƯƠNG: TẠM KHÓA CHỨC NĂNG NÀY
-                     */
-                    // else if(option == 3){
-                    //     // Chỉ admin ứng dụng mới được thêm phần tử cha con
-                    //     if(SALARY_RESET_PERMISSION.includes(email)){
-                    //         await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
-                    //         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
-                    //         return resolve({ error: false, data: 'Reset thành công' })
-                    //     }else{
-                    //         return resolve({ error: true, message: 'Bạn không có quyền Reset' })
-                    //     }
-                    // }
+                    // XÓA BẢNG LƯƠNG: TẠM KHÓA CHỨC NĂNG NÀY
+                    else if(option == 3){
+                        if(SALARY_RESET_PERMISSION.includes(email)){
+                            await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                            await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                            return resolve({ error: false, data: 'Reset thành công' })
+                        }else{
+                            return resolve({ error: true, message: 'Bạn không có quyền Reset' })
+                        }
+                    }
 
-                    /* COPY BẢNG LƯƠNG SANG BẢNG LƯƠNG MỚI
-                    */
+                    // COPY BẢNG LƯƠNG SANG BẢNG LƯƠNG MỚI
                     else if(option == 4){
                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
 
@@ -1197,7 +1189,7 @@ class Model extends BaseModel {
                        }
                     }
 
-                    // Copy phiếu Order
+                    // COPY PHIẾU
                     else if(option == 5){
                         let infoOldOrder = await STORE_ORDER_COLL.findById(orderID)
                         if(infoOldOrder){
