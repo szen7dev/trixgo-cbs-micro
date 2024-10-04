@@ -127,18 +127,18 @@ module.exports = {
      */
     syncData: {
         params: {
-            salaryID : { type: "string" },
+            salaryID : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, salaryID, arrUser } = ctx.params;
+                let { option, salaryID, orderID, arrUser } = ctx.params;
                 // console.log(ctx.params)
 
 				const { _id: userID, company, email } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.syncData({
-                    userID, companyID: company._id, email, option, salaryID, arrUser
+                    userID, companyID: company._id, email, option, salaryID, orderID, arrUser
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
