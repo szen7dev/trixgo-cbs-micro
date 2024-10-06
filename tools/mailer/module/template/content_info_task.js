@@ -70,9 +70,10 @@ exports.infoTaskContent = ({ content, comments }) => {
         <p>${txtAuthorTask}: <img src="${linkServerS3}/files/db/users/${taskAuthorImage}" style="width: 32px !important;height: 32px !important;border-radius: 50%;"> <b style="color: #385898;">${taskAuthorName}</b></p>
         <p>Application/Ứng dụng: <b>PCM/Quản lý dự án/công việc</b></p>
         <p><i><a href="https://app.trixgo.com/pcm/detail/${content.infoTask._id}" style="text-decoration:underline;display: inline-block;background: #4267b2;color: #fff;padding: 5px 10px;">See it on Web/Xem trên Web</a></i></p>
-        <p><i><a href="https://app.trixgo.com/mobile/pcm/${content.infoTask._id}" style="text-decoration:underline;display: inline-block;background: #4267b2;color: #fff;padding: 5px 10px;">See it on Mobile/Xem trên Mobile</a></i></p>
         <hr>
         <p><i>This email is sent from TRIXGO. <span style="color: orange;">Please click Star (*)</span> to receive other important email relate to you</i></p>
         <p><i>Email này được gửi từ hệ thống TRIXGO. <span style="color: orange;">Vui lòng bấm Star (*)</span> để nhận được các email quan trọng khác liên quan tới bạn</i></p>
     </td>`
+
+    // <p><i><a href="https://app.trixgo.com/mobile/pcm/${content.infoTask._id}" style="text-decoration:underline;display: inline-block;background: #4267b2;color: #fff;padding: 5px 10px;">See it on Mobile/Xem trên Mobile</a></i></p>
 }

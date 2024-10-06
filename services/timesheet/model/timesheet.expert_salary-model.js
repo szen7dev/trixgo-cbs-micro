@@ -1209,8 +1209,12 @@ class Model extends BaseModel {
                                 name: `Copy ${infoOldOrder.name}` 
                             })
 
+                            // console.log(infoNewOrder)
+
                             if(infoNewOrder){
                                 let listProduct = await STORE_ORDER_PRODUCT_COLL.find({order: orderID})
+                                // console.log(listProduct)
+
                                 for(const item of listProduct){
                                     await STORE_ORDER_PRODUCT_MODEL.insert({
                                         userID, 
