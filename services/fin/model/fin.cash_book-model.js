@@ -1549,9 +1549,9 @@ class Model extends BaseModel {
                                     workbook.sheet("BangLuongUpdate").row(i).cell(14).value(Number(item.insurance))
 
                                     // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) //
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) //
 
-                                    workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) //
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share)) //
 
                                     // // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
                                     // if(Number(item?.human?.contacts[0]?.share) > 0){
