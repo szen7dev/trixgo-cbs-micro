@@ -1541,30 +1541,32 @@ class Model extends BaseModel {
 
                                     workbook.sheet("BangLuongUpdate").row(i).cell(9).value(Number(item.revenueBonus))
                                     workbook.sheet("BangLuongUpdate").row(i).cell(10).value(Number(item.reward))
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(11).value(Number(item.mealAllowance)) // Công thức
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(12).value(Number(item.tongThu)) // Công thức
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(11).value(Number(item.mealAllowance)) // Công thức
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(12).value(Number(item.tongThu)) // Công thức
 
                                     workbook.sheet("BangLuongUpdate").row(i).cell(13).value(Number(item.punishment))
                                     workbook.sheet("BangLuongUpdate").row(i).cell(14).value(Number(item.insurance))
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) // Công thức
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) // Công thức
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) // Công thức
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) // Công thức
 
-                                    // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
-                                    if(Number(item?.human?.contacts[0]?.share) > 0){
-                                        workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
-                                    }else{
-                                        // console.log({_________:workbook.sheet("BangLuongUpdate").row(i).cell(17).value()})
-                                        workbook.sheet("BangLuongUpdate").row(i).cell(17).style("fill", "d9ead3");
-                                    }
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
 
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(18).value(Number(item.other)) // Công thức
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(19).value(Number(tongGiamTru)) //
+                                    // // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
+                                    // if(Number(item?.human?.contacts[0]?.share) > 0){
+                                    //     workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+                                    // }else{
+                                    //     // console.log({_________:workbook.sheet("BangLuongUpdate").row(i).cell(17).value()})
+                                    //     workbook.sheet("BangLuongUpdate").row(i).cell(17).style("fill", "d9ead3");
+                                    // }
 
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(20).value(Number(tongThu - tongGiamTru)) //
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(18).value(Number(item.other)) // Công thức
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(19).value(Number(tongGiamTru)) //
+
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(20).value(Number(tongThu - tongGiamTru)) //
 
                                     workbook.sheet("BangLuongUpdate").row(i).cell(21).value(Number(item.advance))
                                     workbook.sheet("BangLuongUpdate").row(i).cell(22).value(Number(item.paid))
-                                    // workbook.sheet("BangLuongUpdate").row(i).cell(23).value(Number(item.remaining)) //
+                                    workbook.sheet("BangLuongUpdate").row(i).cell(23).value(Number(item.remaining)) //
 
                                     workbook.sheet("BangLuongUpdate").row(i).cell(24).value(item?.note)
 
@@ -1611,6 +1613,29 @@ class Model extends BaseModel {
                                     workbook.sheet("BangLuongIn").row(i).cell(23).value(Number(item.remaining)) //
 
                                     workbook.sheet("BangLuongIn").row(i).cell(24).value(item?.note)
+
+                                    workbook.sheet("BangLuongIn").row(i).cell(29).value(Number(item.subAllowance1)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(30).value(Number(item.subAllowance2)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(31).value(Number(item.subAllowance3)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(32).value(Number(item.subAllowance4)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(33).value(Number(item.subAllowance5)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(34).value(Number(item.subAllowance6)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(35).value(Number(item.subAllowance7)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(36).value(Number(item.subAllowance8)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(37).value(Number(item.subAllowance9)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(38).value(Number(item.subAllowance10)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(39).value(Number(item.subAllowance11)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(40).value(Number(item.subAllowance12)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(41).value(Number(item.subAllowance13)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(42).value(Number(item.subAllowance14)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(43).value(Number(item.subAllowance15)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(44).value(Number(item.subAllowance16)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(45).value(Number(item.subAllowance17)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(46).value(Number(item.subAllowance18)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(47).value(Number(item.subAllowance19)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(48).value(Number(item.subAllowance20)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(49).value(Number(item.subAllowance21)) 
+                                    workbook.sheet("BangLuongIn").row(i).cell(50).value(Number(item.subAllowance22))  
 
                                     /**
                                      * BangLuongPay
