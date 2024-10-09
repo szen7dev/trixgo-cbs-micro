@@ -222,7 +222,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22 }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22 })
+        console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22 })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -285,70 +285,70 @@ class Model extends BaseModel {
                     dataUpdate.kpiFactor = Number(kpiFactor);
                 }
 
-                if(subAllowance1){
+                if(!isNaN(subAllowance1)){
                     dataUpdate.subAllowance1 = Number(subAllowance1);
                 }
-                if(subAllowance2){
+                if(!isNaN(subAllowance2)){
                     dataUpdate.subAllowance2 = Number(subAllowance2);
                 }
-                if(subAllowance3){
+                if(!isNaN(subAllowance3)){
                     dataUpdate.subAllowance3 = Number(subAllowance3);
                 }
-                if(subAllowance4){
+                if(!isNaN(subAllowance4)){
                     dataUpdate.subAllowance4 = Number(subAllowance4);
                 }
-                if(subAllowance5){
+                if(!isNaN(subAllowance5)){
                     dataUpdate.subAllowance5 = Number(subAllowance5);
                 }
-                if(subAllowance6){
+                if(!isNaN(subAllowance6)){
                     dataUpdate.subAllowance6 = Number(subAllowance6);
                 }
-                if(subAllowance7){
+                if(!isNaN(subAllowance7)){
                     dataUpdate.subAllowance7 = Number(subAllowance7);
                 }
-                if(subAllowance8){
+                if(!isNaN(subAllowance8)){
                     dataUpdate.subAllowance8 = Number(subAllowance8);
                 }
-                if(subAllowance9){
+                if(!isNaN(subAllowance9)){
                     dataUpdate.subAllowance9 = Number(subAllowance9);
                 }
-                if(subAllowance10){
+                if(!isNaN(subAllowance10)){
                     dataUpdate.subAllowance10 = Number(subAllowance10);
                 }
-                if(subAllowance11){
+                if(!isNaN(subAllowance11)){
                     dataUpdate.subAllowance11 = Number(subAllowance11);
                 }
-                if(subAllowance12){
+                if(!isNaN(subAllowance12)){
                     dataUpdate.subAllowance12 = Number(subAllowance12);
                 }
-                if(subAllowance13){
+                if(!isNaN(subAllowance13)){
                     dataUpdate.subAllowance13 = Number(subAllowance13);
                 }
-                if(subAllowance14){
+                if(!isNaN(subAllowance14)){
                     dataUpdate.subAllowance14 = Number(subAllowance14);
                 }
-                if(subAllowance15){
+                if(!isNaN(subAllowance15)){
                     dataUpdate.subAllowance15 = Number(subAllowance15);
                 }
-                if(subAllowance16){
+                if(!isNaN(subAllowance16)){
                     dataUpdate.subAllowance16 = Number(subAllowance16);
                 }
-                if(subAllowance17){
+                if(!isNaN(subAllowance17)){
                     dataUpdate.subAllowance17 = Number(subAllowance17);
                 }
-                if(subAllowance18){
+                if(!isNaN(subAllowance18)){
                     dataUpdate.subAllowance18 = Number(subAllowance18);
                 }
-                if(subAllowance19){
+                if(!isNaN(subAllowance19)){
                     dataUpdate.subAllowance19 = Number(subAllowance19);
                 }
-                if(subAllowance20){
+                if(!isNaN(subAllowance20)){
                     dataUpdate.subAllowance20 = Number(subAllowance20);
                 }
-                if(subAllowance21){
+                if(!isNaN(subAllowance21)){
                     dataUpdate.subAllowance21 = Number(subAllowance21);
                 }
-                if(subAllowance22){
+                if(!isNaN(subAllowance22)){
                     dataUpdate.subAllowance22 = Number(subAllowance22);
                 }
 
