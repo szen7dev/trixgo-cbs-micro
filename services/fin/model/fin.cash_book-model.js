@@ -1781,8 +1781,6 @@ class Model extends BaseModel {
 
                                         if(userID && userID.toString() === item?._id?.assignee.toString()){
                                             workbook.sheet("PhuCap").row(i).cell(29).value(Number(item.quantity));
-                                        }else{
-                                            workbook.sheet("PhuCap").row(i).cell(29).value(Number(0));
                                         }
                                     }
                                 })
@@ -1796,8 +1794,6 @@ class Model extends BaseModel {
 
                                         if(userID && userID.toString() === item?._id?.assignee.toString()){
                                             workbook.sheet("PhuCap").row(i).cell(30).value(Number(item.quantity));
-                                        }else{
-                                            workbook.sheet("PhuCap").row(i).cell(30).value(Number(0));
                                         }
                                     }
                                 })
