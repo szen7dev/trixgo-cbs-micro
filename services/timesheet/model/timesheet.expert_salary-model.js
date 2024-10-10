@@ -166,7 +166,7 @@ class Model extends BaseModel {
                     let insuranceFee = 0, union = 0, share = 0
                     if(item.contacts && item.contacts.length){
                         for(const contact of item.contacts){
-                            if(contact.company.toString() === companyID.toString()){
+                            if(contact.company && contact.company.toString() === companyID.toString()){
                                 insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
                                 union = Number(union) + Number(contact.union)
                                 share = Number(share) + Number(contact.share)
@@ -285,70 +285,70 @@ class Model extends BaseModel {
                     dataUpdate.kpiFactor = Number(kpiFactor);
                 }
 
-                if(subAllowance1){
+                if(!isNaN(subAllowance1)){
                     dataUpdate.subAllowance1 = Number(subAllowance1);
                 }
-                if(subAllowance2){
+                if(!isNaN(subAllowance2)){
                     dataUpdate.subAllowance2 = Number(subAllowance2);
                 }
-                if(subAllowance3){
+                if(!isNaN(subAllowance3)){
                     dataUpdate.subAllowance3 = Number(subAllowance3);
                 }
-                if(subAllowance4){
+                if(!isNaN(subAllowance4)){
                     dataUpdate.subAllowance4 = Number(subAllowance4);
                 }
-                if(subAllowance5){
+                if(!isNaN(subAllowance5)){
                     dataUpdate.subAllowance5 = Number(subAllowance5);
                 }
-                if(subAllowance6){
+                if(!isNaN(subAllowance6)){
                     dataUpdate.subAllowance6 = Number(subAllowance6);
                 }
-                if(subAllowance7){
+                if(!isNaN(subAllowance7)){
                     dataUpdate.subAllowance7 = Number(subAllowance7);
                 }
-                if(subAllowance8){
+                if(!isNaN(subAllowance8)){
                     dataUpdate.subAllowance8 = Number(subAllowance8);
                 }
-                if(subAllowance9){
+                if(!isNaN(subAllowance9)){
                     dataUpdate.subAllowance9 = Number(subAllowance9);
                 }
-                if(subAllowance10){
+                if(!isNaN(subAllowance10)){
                     dataUpdate.subAllowance10 = Number(subAllowance10);
                 }
-                if(subAllowance11){
+                if(!isNaN(subAllowance11)){
                     dataUpdate.subAllowance11 = Number(subAllowance11);
                 }
-                if(subAllowance12){
+                if(!isNaN(subAllowance12)){
                     dataUpdate.subAllowance12 = Number(subAllowance12);
                 }
-                if(subAllowance13){
+                if(!isNaN(subAllowance13)){
                     dataUpdate.subAllowance13 = Number(subAllowance13);
                 }
-                if(subAllowance14){
+                if(!isNaN(subAllowance14)){
                     dataUpdate.subAllowance14 = Number(subAllowance14);
                 }
-                if(subAllowance15){
+                if(!isNaN(subAllowance15)){
                     dataUpdate.subAllowance15 = Number(subAllowance15);
                 }
-                if(subAllowance16){
+                if(!isNaN(subAllowance16)){
                     dataUpdate.subAllowance16 = Number(subAllowance16);
                 }
-                if(subAllowance17){
+                if(!isNaN(subAllowance17)){
                     dataUpdate.subAllowance17 = Number(subAllowance17);
                 }
-                if(subAllowance18){
+                if(!isNaN(subAllowance18)){
                     dataUpdate.subAllowance18 = Number(subAllowance18);
                 }
-                if(subAllowance19){
+                if(!isNaN(subAllowance19)){
                     dataUpdate.subAllowance19 = Number(subAllowance19);
                 }
-                if(subAllowance20){
+                if(!isNaN(subAllowance20)){
                     dataUpdate.subAllowance20 = Number(subAllowance20);
                 }
-                if(subAllowance21){
+                if(!isNaN(subAllowance21)){
                     dataUpdate.subAllowance21 = Number(subAllowance21);
                 }
-                if(subAllowance22){
+                if(!isNaN(subAllowance22)){
                     dataUpdate.subAllowance22 = Number(subAllowance22);
                 }
 
@@ -1106,15 +1106,22 @@ class Model extends BaseModel {
                     }
                     
                     // XÓA BẢNG LƯƠNG: TẠM KHÓA CHỨC NĂNG NÀY
-                    // else if(option == 3){
-                    //     if(SALARY_RESET_PERMISSION.includes(email)){
-                    //         await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
-                    //         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
-                    //         return resolve({ error: false, data: 'Reset thành công' })
-                    //     }else{
-                    //         return resolve({ error: true, message: 'Bạn không có quyền Reset' })
-                    //     }
-                    // }
+                    else if(option == 3){
+                        if(SALARY_RESET_PERMISSION.includes(email)){
+                            let numberDetail = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: salaryID})
+                            // console.log({numberDetail})
+                            if(numberDetail == 0){
+                                // console.log('=======================')
+                                await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                                await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                                return resolve({ error: false, data: 'Hành động thành công' })
+                            }else{
+                                return resolve({ error: true, message: 'Hành động thất bại' })
+                            }
+                        }else{
+                            return resolve({ error: true, message: 'Hành động thất bại' })
+                        }
+                    }
 
                     // COPY BẢNG LƯƠNG SANG BẢNG LƯƠNG MỚI
                     else if(option == 4){
