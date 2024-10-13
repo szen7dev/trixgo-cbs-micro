@@ -80,6 +80,8 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     note: String, 
     //_________Đơn giá nhập
     unitprice: { type: Number, default: 0 },
+    //_________Đơn giá niêm Yết
+    listedUnitprice: { type: Number, default: 0 },
     //_________Đơn giá xuất bán
     sellingUnitprice: { type: Number, default: 0 },
     //_________Số lượng đã bán ra
