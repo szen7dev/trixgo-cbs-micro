@@ -11,6 +11,7 @@ const CF_ACTIONS_STORE= {
    ORDER_INSERT                                    : `${BASE_ACTIONS}_${ORDER}_INSERT`,
    ORDER_UPDATE                                    : `${BASE_ACTIONS}_${ORDER}_UPDATE`,
    ORDER_REMOVE                                    : `${BASE_ACTIONS}_${ORDER}_REMOVE`,
+   ORDER_INSERT_FULL                                : `${BASE_ACTIONS}_${ORDER}_INSERT_FULL`,
    ORDER_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${ORDER}_GET_INFO_AND_GET_LIST`,
    ORDER_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${ORDER}_GET_LIST_BY_PROPERTY`,
    ORDER_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${ORDER}_DOWNLOAD_TEMPLATE_EXCEL`,

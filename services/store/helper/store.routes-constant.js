@@ -7,6 +7,7 @@ const CF_ROUTINGS_STORE = {
 
     //================================FNB_ORDER=======================================//
     ORDERS                                  : `${BASE_ROUTE}${ORDER}`,
+    ORDER_INSERT_FULL                       : `${BASE_ROUTE}${ORDER}/insert-full`,
     ORDER_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}${ORDER}/get-list-by-property`,
     ORDER_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${ORDER}/download-template-excel`,
     ORDER_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${ORDER}/import-from-excel`,

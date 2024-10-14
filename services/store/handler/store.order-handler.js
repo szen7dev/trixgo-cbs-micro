@@ -43,6 +43,42 @@ module.exports = {
                 return { error: true, message: error.message };
             }
         }
+
+    },
+
+    insertFull: {
+        auth: "required",
+        params: {
+            accountID: { type: "string", optional: true },
+            customerID: { type: "string", optional: true },
+            contractID: { type: "string", optional: true },
+            name: { type: "string" },
+            sign: { type: "string", optional: true },
+            note: { type: "string", optional: true },
+            date: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { companyID, outin, type, businessID, channelID, fundaID, shiftID, customerID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, products } = ctx.params;
+
+                // console.log(ctx.params)
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler = await STORE_ORDER_MODEL.insertFull({
+                    companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, products
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
     },
 
     /**
