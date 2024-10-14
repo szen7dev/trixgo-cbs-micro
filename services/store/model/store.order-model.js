@@ -39,6 +39,7 @@ const path = require("path");
 const { uploadFileS3 } = require("../../../tools/s3");
 
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
+const STORE_ORDER_PRODUCT_MODEL         = require('../model/store.order_product-model.js').MODEL
 
 class Model extends BaseModel {
   constructor() {
@@ -136,6 +137,149 @@ class Model extends BaseModel {
             let infoAfterInsert = await this.insertData(dataInsert);
             if (!infoAfterInsert)
                 return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
+            return resolve({ error: false, data: infoAfterInsert, status: 200 });
+        } catch (error) {
+            return resolve({ error: true, message: error.message, status: 500 });
+        }
+    })
+  }
+
+insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, products }) {
+    return new Promise(async (resolve) => {
+        try {
+            // if([2,3,4,5,6].includes(Number(type))){
+            //     if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
+            //         return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
+            // }else{
+            //     if (!checkObjectIDs(projectID) ||!checkObjectIDs(customerID) ||!name)
+            //         return resolve({error: true, message: "projectID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
+            // }
+
+            if (
+                !checkObjectIDs(fundaID) ||
+                // !checkObjectIDs(customerID) ||
+                // !checkObjectIDs(shiftID) ||
+                !name
+              )
+                return resolve({
+                  error: true,
+                  message: "fundaID|customerID|shiftID|name invalid",
+                  keyError: KEY_ERROR.PARAMS_INVALID,
+                });
+
+            // let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID);
+            // if (!infoFunda)
+            //     return resolve({ error: true, message: "cannot_get_infoFunda" });
+
+            let dataInsert = {
+                company: companyID,
+                // funda: fundaID,
+                // customer: customerID,
+                // shift: shiftID,
+                name,
+                sign,
+                paymentMethod,
+                // name: `${name}-C${Number(numberOfOrder + 1)}`,
+                // sign: `C${Number(numberOfOrder + 1)}`,
+                amount: Number(total - discount - salesoff - credit),
+                total: Number(total),
+                userCreate: userID,
+            };
+
+            if (checkObjectIDs(fundaID)) {
+                dataInsert.funda = fundaID;
+            }else{
+                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
+                // console.log(infoFunda)
+                if(infoFunda){
+                    dataInsert.funda = infoFunda._id;
+                }
+            }
+
+            if (checkObjectIDs(businessID)) {
+                dataInsert.business = businessID;
+            }
+            if (checkObjectIDs(channelID)) {
+                dataInsert.channel = channelID;
+            }
+            if (checkObjectIDs(voucherID)) {
+                dataInsert.voucher = voucherID;
+            }
+            // if (checkObjectIDs(warehouseID)) {
+            //     dataInsert.warehouse = warehouseID;
+            // }
+            // if (checkObjectIDs(toWarehouseID)) {
+            //     dataInsert.toWarehouse = toWarehouseID;
+            // }
+            if (checkObjectIDs(customerID)) {
+                dataInsert.customer = customerID;
+            }
+            if (checkObjectIDs(shiftID)) {
+                dataInsert.shift = shiftID;
+            }
+
+            if (!isNaN(outin) && Number(outin) >= 1) {
+              dataInsert.outin = Number(outin)
+            }
+            if (!isNaN(type) && Number(type) >= 1) {
+                dataInsert.type = Number(type)
+            }
+
+            if (date) {
+              dataInsert.date = date;
+            }
+
+            let convertStr = ''
+            if (name && name != '') {
+                dataInsert.name = name;
+                convertStr = convertStr + " " + stringUtils.removeAccents(name)
+            }
+            if (sign && sign != '') {
+                dataInsert.sign = sign;
+                convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+            }
+            if (note && note != '') {
+                dataInsert.note = note;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            if(convertStr != ""){
+                dataInsert.namecv = convertStr
+            }
+            // console.log(dataInsert)
+
+            let infoAfterInsert = await this.insertData(dataInsert);
+            if (!infoAfterInsert)
+                return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
+            // console.log(infoAfterInsert)
+            const orderID = infoAfterInsert._id
+
+            if (products && products.length) {
+                const productsAsync = products.map((item) => {
+                const dataInsertProduct = {
+                    userID, 
+                    fundaID: infoAfterInsert.funda, 
+                    orderID, 
+                    // accountID, 
+                    // contraID, 
+                    customerID, 
+                    // contractID, 
+                    goodsID: item.productID, 
+                    // assetsID, 
+                    // workID, 
+                    // subtypeID, 
+                    name: item.name, 
+                    note: item.note, 
+                    quantity: Number(item.quantity), 
+                    unitPrice: Number(item.unitPrice),
+                }
+
+                    return STORE_ORDER_PRODUCT_MODEL.insert(dataInsertProduct)
+                })
+
+                await Promise.all(productsAsync)
+            }
 
             return resolve({ error: false, data: infoAfterInsert, status: 200 });
         } catch (error) {
