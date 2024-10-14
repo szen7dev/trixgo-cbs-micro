@@ -145,7 +145,7 @@ class Model extends BaseModel {
     })
   }
 
-insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, products }) {
+insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
         try {
             // if([2,3,4,5,6].includes(Number(type))){
@@ -228,6 +228,25 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
 
             if (date) {
               dataInsert.date = date;
+            }
+
+            if (buyerName && buyerName != '') {
+                dataInsert.buyerName = buyerName;
+            }
+            if (buyerPhone && buyerPhone != '') {
+                dataInsert.buyerPhone = buyerPhone;
+            }
+            if (buyerEmail && buyerEmail != '') {
+                dataInsert.buyerEmail = buyerEmail;
+            }
+            if (recipientName && recipientName != '') {
+                dataInsert.recipientName = recipientName;
+            }
+            if (recipientPhone && recipientPhone != '') {
+                dataInsert.recipientPhone = recipientPhone;
+            }
+            if (recipientAddress && recipientAddress != '') {
+                dataInsert.recipientAddress = recipientAddress;
             }
 
             let convertStr = ''

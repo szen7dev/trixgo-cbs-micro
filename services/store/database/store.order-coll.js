@@ -271,6 +271,18 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     sign: String,
     //_________Ghi chú
     note: String,
+    //_________
+    buyerName: String,
+    //_________
+    buyerPhone: String,
+    //_________
+    buyerEmail: String,
+    //_________
+    recipientName: String,
+    //_________
+    recipientPhone: String,
+    //_________
+    recipientAddress: String,
     /**
      * QUẢN LÝ LỖI
      */
