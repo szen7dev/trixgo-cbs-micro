@@ -157,7 +157,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  getList({ type, companyID, menuID, keyword, limit, lastestID, select, populates = {}, sortKey }) {
+  getList({ type, companyID, menuID, slug, keyword, limit, lastestID, select, populates = {}, sortKey }) {
       return new Promise(async (resolve) => {
           try {
               let sortBy;
@@ -192,7 +192,16 @@ class Model extends BaseModel {
               if (checkObjectIDs(menuID)) {
                 conditionObj.menu = menuID;
               } else {
-                conditionObj.company = companyID;
+                if(slug && slug != ''){
+                    let infoMenu = await MEDIA_MENU_COLL.findOne({ company: companyID, slug: slug.trim() });
+                    if(infoMenu){
+                        conditionObj.menu = infoMenu._id;
+                    }else{
+                        conditionObj.company = companyID;
+                    }
+                }else{
+                    conditionObj.company = companyID;
+                }
               }
 
               if (!isNaN(type)) {

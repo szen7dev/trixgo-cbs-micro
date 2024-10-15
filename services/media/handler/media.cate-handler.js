@@ -116,7 +116,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, cateID, menuID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { type, cateID, menuID, slug, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
                 console.log(ctx.params)
 
@@ -128,7 +128,7 @@ module.exports = {
                         cateID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await MEDIA_CATE_MODEL.getList({ type, companyID: company._id, menuID, keyword, limit, lastestID, select, populates, sortKey });
+                    resultAfterCallHandler = await MEDIA_CATE_MODEL.getList({ type, companyID: company._id, menuID, slug, keyword, limit, lastestID, select, populates, sortKey });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
