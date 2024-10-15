@@ -14,6 +14,10 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
         type: Schema.Types.ObjectId,
         ref: "media_menu"
     },
+    childs: [{
+        type: Schema.Types.ObjectId,
+        ref: "media_menu"
+    }],
     //_________Level
     level: {
         type: Number,
@@ -23,11 +27,6 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
     name: String,
     //_________Slug/URL
     slug: String,
-    //_________Icon
-    image: {
-        type: String,
-        defautl: 'icon-bullet.svg'
-    },
     //_________Thứ tự để hiển thị giữa các menu cùng cấp
     order: {
         type: Number,
