@@ -36,17 +36,17 @@ class Model extends BaseModel {
             let dataInsert = { 
               company: companyID,
               userCreate: userID, 
-              menuID
+              menu: menuID
             }
 
             if (checkObjectIDs(postID)) {
                 dataInsert.post = postID;
                 dataInsert.type = Number(1)
-            }
-
-            if (checkObjectIDs(productID)) {
-                dataInsert.product = productID;
-                dataInsert.type = Number(2)
+            }else{
+                if (checkObjectIDs(productID)) {
+                    dataInsert.product = productID;
+                    dataInsert.type = Number(2)
+                }
             }
 
             let infoAfterInsert = await this.insertData(dataInsert);
