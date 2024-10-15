@@ -17,6 +17,8 @@ const MEDIA__FILE_HANDLER    			= require('./handler/media.file-handler');
 const MEDIA__COMMENT_HANDLER    		= require('./handler/media.comment-handler');
 const MEDIA__REACTION_HANDLER    		= require('./handler/media.reaction-handler');
 const MEDIA__REACTION_COMMENT_HANDLER	= require('./handler/media.reaction_comment-handler');
+const MEDIA__MENU_HANDLER				= require('./handler/media.menu-handler');
+const MEDIA__CATE_HANDLER				= require('./handler/media.cate-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
@@ -28,6 +30,8 @@ module.exports = {
 		DbService('media_reaction_file'),  
 		DbService('media_reaction_comment'),
 		DbService('media_comment'),  
+		DbService('media_menu'),  
+		DbService('media_cate'),  
 		CacheCleaner([CF_DOMAIN_SERVICES.MEDIA])
     ],
 
@@ -112,6 +116,18 @@ module.exports = {
 		[CF_ACTIONS_MEDIA.REACTION_COMMENT_MEDIA] 		            	: MEDIA__REACTION_COMMENT_HANDLER.reactionCommentMedia,
 		[CF_ACTIONS_MEDIA.REACTION_COMMENT_FILE] 		            	: MEDIA__REACTION_COMMENT_HANDLER.reactionCommentFile,
 		[CF_ACTIONS_MEDIA.GET_LIST_REACTION_COMMENT]					: MEDIA__REACTION_COMMENT_HANDLER.getListReactionComment,
+
+		//========================================== MEDIA_MENU ==============================================//
+		[CF_ACTIONS_MEDIA.MENU_INSERT]									: MEDIA__MENU_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.MENU_UPDATE]									: MEDIA__MENU_HANDLER.update,
+		[CF_ACTIONS_MEDIA.MENU_REMOVE]									: MEDIA__MENU_HANDLER.remove,
+		[CF_ACTIONS_MEDIA.MENU_GET_INFO_AND_GET_LIST]					: MEDIA__MENU_HANDLER.getInfoAndGetList,
+
+		//========================================== MEDIA_CATE ==============================================//
+		[CF_ACTIONS_MEDIA.CATE_INSERT]									: MEDIA__CATE_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.CATE_UPDATE]									: MEDIA__CATE_HANDLER.update,
+		[CF_ACTIONS_MEDIA.CATE_REMOVE]									: MEDIA__CATE_HANDLER.remove,
+		[CF_ACTIONS_MEDIA.CATE_GET_INFO_AND_GET_LIST]					: MEDIA__CATE_HANDLER.getInfoAndGetList,
 	},
 
 	/**
@@ -148,4 +164,4 @@ module.exports = {
 	async stopped() {
 
 	}
-};
+}

@@ -1,6 +1,8 @@
 const BASE_ROUTE = '/medias';
 const COMMENTS = '/comments';
 const REACTIONS = '/reactions';
+const MENU      = '/menu';
+const CATE      = '/cate';
 
 const CF_ROUTINGS_MEDIA = {
     ORIGIN_APP: BASE_ROUTE,
@@ -22,6 +24,13 @@ const CF_ROUTINGS_MEDIA = {
 
     COMMENT_MEDIA     		                    : `${BASE_ROUTE}${COMMENTS}`,
     COMMENT_FILE     		                    : `${BASE_ROUTE}${COMMENTS}/file`,
+
+    
+    //================================MEDIA_MENU=======================================//
+    MENU                                        : `${BASE_ROUTE}${MENU}`,
+
+    //================================MEDIA_CATE=======================================//
+    CATE                                        : `${BASE_ROUTE}${CATE}`,
 }
 
 exports.CF_ROUTINGS_MEDIA = CF_ROUTINGS_MEDIA;
