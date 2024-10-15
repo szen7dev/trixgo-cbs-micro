@@ -4,7 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("media_menu", {
-    //_________Công ty/Chủ đầu tư  
+    //_________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
