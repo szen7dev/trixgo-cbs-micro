@@ -24,14 +24,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { name, slug, order } = ctx.params;
+                let { parentID, name, slug, order } = ctx.params;
 
                 console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await MEDIA_MENU_MODEL.insert({
-                    companyID: company._id, userID, name, slug, order
+                    companyID: company._id, userID, parentID, name, slug, order
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })

@@ -27,7 +27,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 8/9/2024
    */
-  insert({ companyID, userID, name, order }) {
+  insert({ companyID, userID, parentID, name, order }) {
     return new Promise(async (resolve) => {
         try {
             if(!name || name == "")
@@ -50,9 +50,22 @@ class Model extends BaseModel {
                 dataInsert.order = Number(order)
             }
 
+            if(parentID && checkObjectIDs(parentID)){
+                let infoParent = await MEDIA_MENU_COLL.findById(parentID);
+                dataInsert.parent = parentID;
+                dataInsert.level = infoParent.level + 1;
+            }
+
             let infoAfterInsert = await this.insertData(dataInsert);
             if (!infoAfterInsert)
                 return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
+            //______Cập nhật cho phần tử cha
+            if(parentID && checkObjectIDs(parentID)){
+                await MEDIA_MENU_COLL.findByIdAndUpdate(parentID, { 
+                    $addToSet: { childs: infoAfterInsert._id } 
+                }, { new: true });
+            }
 
             return resolve({ error: false, data: infoAfterInsert, status: 200 });
         } catch (error) {
