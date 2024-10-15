@@ -194,6 +194,7 @@ class Model extends BaseModel {
               } else {
                 if(slug && slug != ''){
                     let infoMenu = await MEDIA_MENU_COLL.findOne({ company: companyID, slug: slug.trim() });
+                    // console.log(infoMenu)
                     if(infoMenu){
                         conditionObj.menu = infoMenu._id;
                     }else{
@@ -207,6 +208,8 @@ class Model extends BaseModel {
               if (!isNaN(type)) {
                   conditionObj.type = Number(type)
               }
+
+            //   console.log(conditionObj)
 
               let conditionObjOrg = { ...conditionObj };
 
