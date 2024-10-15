@@ -1,5 +1,7 @@
 const BASE_ACTIONS = 'ACT_MEDIA';
 const COMMENT      = 'COMMENT';
+const MENU      = 'MENU';
+const CATE      = 'CATE';
 
 const CF_ACTIONS_MEDIA = {
 	/**
@@ -10,9 +12,24 @@ const CF_ACTIONS_MEDIA = {
 	DELETE_MEDIA                  			     : `${BASE_ACTIONS}_DELETE`,
 	INFO_MEDIA                  			          : `${BASE_ACTIONS}_INFO`,
 	LIST_MEDIA                  			          : `${BASE_ACTIONS}_LIST`,
-
 	UPDATE_VIEW_MEDIA                  		     : `${BASE_ACTIONS}_UPDATE_VIEW_MEDIA`,
 	LIST_SEEN_MEDIA                  			     : `${BASE_ACTIONS}_LIST_SEEN_MEDIA`,
+
+     /**
+     * MENU
+     */
+	MENU_INSERT                		               : `${BASE_ACTIONS}_${MENU}_INSERT`,
+	MENU_UPDATE                 			          : `${BASE_ACTIONS}_${MENU}_UPDATE`,
+	MENU_REMOVE                			          : `${BASE_ACTIONS}_${MENU}_REMOVE`,
+	MENU_GET_INFO_AND_GET_LIST                        : `${BASE_ACTIONS}_${MENU}_GET_INFO_AND_GET_LIST`,
+
+     /**
+     * CATE
+     */
+	CATE_INSERT                		               : `${BASE_ACTIONS}_${CATE}_INSERT`,
+	CATE_UPDATE                 			          : `${BASE_ACTIONS}_${CATE}_UPDATE`,
+	CATE_REMOVE                			          : `${BASE_ACTIONS}_${CATE}_REMOVE`,
+	CATE_GET_INFO_AND_GET_LIST                        : `${BASE_ACTIONS}_${CATE}_GET_INFO_AND_GET_LIST`,
 
      /**
       * FILE MEDIA
@@ -36,10 +53,8 @@ const CF_ACTIONS_MEDIA = {
      */
     REACTION_MEDIA                              	     : `${BASE_ACTIONS}_REACTION_MEDIA`,
     GET_LIST_REACTION_MEDIA                     	     : `${BASE_ACTIONS}_GET_LIST_REACTION_MEDIA`,
-
     REACTION_FILE               		        	     : `${BASE_ACTIONS}_REACTION_FILE`,
     GET_LIST_REACTION_FILE     		        	     : `${BASE_ACTIONS}_GET_LIST_REACTION_FILE`,
-
     REACTION_COMMENT_MEDIA                             : `${BASE_ACTIONS}_${COMMENT}_REACTION_MEDIA`,
     REACTION_COMMENT_FILE                              : `${BASE_ACTIONS}_${COMMENT}_REACTION_FILE`,
     GET_LIST_REACTION_COMMENT                     	: `${BASE_ACTIONS}_${COMMENT}_GET_LIST_REACTION`,
@@ -51,7 +66,6 @@ const CF_ACTIONS_MEDIA = {
     GET_INFO_AND_GET_LIST_COMMENT_MEDIA                : `${BASE_ACTIONS}_${COMMENT}_GET_INFO_AND_GET_LIST_COMMENT_MEDIA`,
     UPDATE_COMMENT_MEDIA	                    	     : `${BASE_ACTIONS}_${COMMENT}_UPDATE_COMMENT_MEDIA`,
     DELETE_COMMENT_MEDIA	                    	     : `${BASE_ACTIONS}_${COMMENT}_DELETE_COMMENT_MEDIA`,
-
     INSERT_COMMENT_FILE                                : `${BASE_ACTIONS}_${COMMENT}_INSERT_COMMENT_FILE`,
     GET_INFO_AND_GET_LIST_COMMENT_FILE                 : `${BASE_ACTIONS}_${COMMENT}_GET_INFO_AND_GET_LIST_COMMENT_FILE`,
     UPDATE_COMMENT_FILE	                    	     : `${BASE_ACTIONS}_${COMMENT}_UPDATE_COMMENT_FILE`,

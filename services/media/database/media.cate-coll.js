@@ -1,9 +1,9 @@
 "use strict";
 
-const DATABASE_MIDDLEWARE   = require('../../../../tools/db/database.middleware');
+const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("media_menu_cate", {
+module.exports  = DATABASE_MIDDLEWARE("media_cate", {
     menu_item: {
         type: Schema.Types.ObjectId,
         ref : "media_menu"

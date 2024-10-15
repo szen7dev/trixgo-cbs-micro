@@ -1,6 +1,6 @@
 "use strict";
 
-const DATABASE_MIDDLEWARE   = require('../../../../tools/db/database.middleware');
+const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("media_menu", {
