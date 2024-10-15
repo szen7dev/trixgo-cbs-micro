@@ -19,7 +19,7 @@ module.exports = {
         params: {
             name: { type: "string" },
             slug: { type: "string", optional: true },
-            order: { type: "number", optional: true },
+            order: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -53,7 +53,7 @@ module.exports = {
             menuID  : { type: "string" },
             name: { type: "string" },
             slug: { type: "string", optional: true },
-            order: { type: "number", optional: true },
+            order: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {

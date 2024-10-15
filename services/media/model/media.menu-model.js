@@ -3,23 +3,13 @@
 const BaseModel = require("../../../tools/db/base_model");
 const ObjectID = require("mongoose").Types.ObjectId;
 const moment = require("moment");
-
 const { KEY_ERROR } = require("../../../tools/keys");
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const {
-  getRequestAPI,
   checkObjectIDs,
   IsJsonString,
-  validateParamsObjectID,
 } = require("../../../tools/utils/utils");
-const {
-  compareTwoTime,
-  isValidDate,
-  getTimeBetween,
-} = require("../../../tools/utils/time_utils");
 const { RANGE_BASE_PAGINATION_V2 } = require("../../../tools/cursor_base/playground/index");
-const { CF_DOMAIN_SERVICES } = require("../../gateway/helper/domain.constant");
-const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 
 /**s
  * import inter-coll, exter-coll
@@ -37,18 +27,24 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 8/9/2024
    */
-  insert({ companyID, userID, name, slug, order }) {
+  insert({ companyID, userID, name, order }) {
     return new Promise(async (resolve) => {
         try {
+            if(!name || name == "")
+                return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
+
+            // Kiểm tra tên tồn tại trong công ty hay chưa
+            let checkName = await MEDIA_MENU_COLL.findOne({ company: companyID, name: name.trim() });
+            if(checkName)
+                return resolve({ error: true, message: "name_existed" });
+
             let dataInsert = { 
               company: companyID,
               userCreate: userID,
               name,
             }
 
-            if (slug && slug != '') {
-                dataInsert.slug = slug;
-            }
+            dataInsert.slug = stringUtils.getSlugAccents(name)
 
             if (!isNaN(order)) {
                 dataInsert.order = Number(order)
@@ -73,7 +69,8 @@ class Model extends BaseModel {
   update({ userID, menuID, name, slug, order }) {
       return new Promise(async (resolve) => {
           try {
-            const info = await MEDIA_MENU_COLL.findById(menuID)
+            // Kiểm tra xem tên có bị trùng hay không
+            let info = await MEDIA_MENU_COLL.findById(menuID);
             if(!info) {
                 return resolve({
                     error: true,
@@ -83,6 +80,16 @@ class Model extends BaseModel {
                 });
             }
 
+            let checkName = await MEDIA_MENU_COLL.findOne({
+                company: info.company,
+                name: name.trim(),
+                _id: {
+                    $ne: menuID
+                }
+                });
+            if(checkName)
+                return resolve({ error: true, message: "name_existed" });
+
             let dataUpdate = { 
                 userUpdate: userID, 
                 modifyAt: new Date() 
@@ -90,10 +97,7 @@ class Model extends BaseModel {
 
             if (name && name != '') {
                 dataUpdate.name = name;
-            }
-
-            if (slug && slug != '') {
-                dataUpdate.slug = slug;
+                dataUpdate.slug = stringUtils.getSlugAccents(name)
             }
 
             if (!isNaN(order)) {
