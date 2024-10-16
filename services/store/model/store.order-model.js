@@ -598,20 +598,13 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
                   keys = JSON.parse(sortKey);
               }
 
-              if (checkObjectIDs(parentID)) {
-                  conditionObj.parent = parentID;
-              } else {
-                  if(!option){
-                    conditionObj.company = companyID;
-                  }
-                  // Báo cáo chi tiết theo Goods
-                  else{
-                      if(option == 1){
-                          conditionObj.company = companyID
-                          conditionObj.parent = { $exists: true, $ne: null }
-                          conditionObj.goods = { $exists: true, $ne: null }
-                      }
-                  }
+              if(!option){
+                conditionObj.company = companyID;
+              }else{
+                    // Đơn hàng của userID đang truy cập
+                    if(option == 1){
+                        conditionObj.userCreate = userID
+                    }
               }
 
               // Chọn nhiều phân loại
