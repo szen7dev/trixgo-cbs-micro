@@ -181,6 +181,10 @@ class Model extends BaseModel {
                 // Cập nhật lại thông tin Order
                 await that.updateValue({orderID, userID})
 
+                await STORE_ORDER_COLL.findByIdAndUpdate(orderID, { 
+                    $addToSet: { products: infoAfterInsert._id } 
+                }, { new: true });
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });

@@ -283,6 +283,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     recipientPhone: String,
     //_________
     recipientAddress: String,
+    //_________Product
+    products : [{
+        type   : Schema.Types.ObjectId,
+        ref: 'store_order_product'
+    }],
     /**
      * QUẢN LÝ LỖI
      */
