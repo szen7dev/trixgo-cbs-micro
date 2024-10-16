@@ -143,7 +143,6 @@ module.exports = {
         auth: "required",
         params: {
             orderID         : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
             accountID       : { type: "string", optional: true },
             customerID      : { type: "string", optional: true },
             contractID      : { type: "string", optional: true },
@@ -162,7 +161,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, status, arrType, outin, type, orderID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userCreateID, isCompanyOther, keyword, fromDate, toDate, limit, lastestID, populates, select, sortKey
+                let { option, status, arrType, outin, type, orderID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, userCreateID, isCompanyOther, keyword, fromDate, toDate, limit, lastestID, populates, select, sortKey
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -179,7 +178,7 @@ module.exports = {
                         orderID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await STORE_ORDER_MODEL.getList({ option, status, arrType, outin, type, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, parentID, userID, userCreateID, isCompanyOther, keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id, fromDate, toDate
+                    resultAfterCallHandler = await STORE_ORDER_MODEL.getList({ option, status, arrType, outin, type, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, contractID, userID, userCreateID, isCompanyOther, keyword, limit, lastestID, select, populates, sortKey, companyOfUser: company._id, fromDate, toDate
                     });
                 }
 
