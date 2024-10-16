@@ -1663,7 +1663,7 @@ class Model extends BaseModel {
     
                                         // workbook.sheet("BangLuongDienGiai").row(i).cell(15).value(Number(item.pitax)) //
     
-                                        workbook.sheet("BangLuongDienGiai").row(i).cell(16).value(Number(item.union)) //
+                                        // workbook.sheet("BangLuongDienGiai").row(i).cell(16).value(Number(item.union)) //
                                         workbook.sheet("BangLuongDienGiai").row(i).cell(17).value(Number(item.share)) //
     
                                         // workbook.sheet("BangLuongDienGiai").row(i).cell(18).value(Number(item.other)) // Công thức
