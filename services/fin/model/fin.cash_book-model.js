@@ -1543,6 +1543,10 @@ class Model extends BaseModel {
                                     workbook.sheet("BangLuongIn").range("Z4:Z1000").clear();
                                 }
 
+                                if( workbook.sheet("PhuCap")){
+                                    workbook.sheet("PhuCap").range("AC4:AD1000").clear();
+                                }
+
                                 workbook.sheet("BangLuongPay").range("A4:F1000").clear();
                                 workbook.sheet("PhuCap").row(2).cell(23).value(countDayIndexInMonth(0, yearFilter, Number(monthFilter - 1)))
 
