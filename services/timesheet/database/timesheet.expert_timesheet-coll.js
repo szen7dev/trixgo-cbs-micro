@@ -49,7 +49,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     namecv: String,
     //_________Địa chỉ theo google map
     location: String,
-    //________Phân loại: 1 quản lý, 2 sản xuất
+    /**
+     * Phân loại
+     * 1 quản lý
+     * 2 sản xuất
+     */
     type: {
         type: Number,
         default: 1
