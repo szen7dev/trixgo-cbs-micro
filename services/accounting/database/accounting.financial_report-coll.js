@@ -5,12 +5,20 @@ const Schema                = require('mongoose').Schema;
 
 /**
  * BÁO CÁO
+ * 1. Tạo báo cáo
+ * 2. Dựa vào cơ sở và ngày tháng => ra được doanh thu và chi phí
+ * 3. Từ đó ra được báo cáo lãi lỗ
  */
 module.exports  = DATABASE_MIDDLEWARE("financial_report", {
     //_________Công ty      
     company: {
         type: Schema.Types.ObjectId,
         ref: 'company'
+    },
+    //_________Phần tử cha
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref : "financial_report"
     },
     //_________Cơ sở     
     funda: [{
