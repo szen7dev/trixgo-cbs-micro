@@ -1588,7 +1588,7 @@ class Model extends BaseModel {
                                         // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) //
 
                                         if(infoParent.type == 1){
-                                            workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union))
+                                            // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union))
                                             workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
                                         }else{
                                             // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union))
@@ -1673,7 +1673,7 @@ class Model extends BaseModel {
                                         // workbook.sheet("BangLuongDienGiai").row(i).cell(15).value(Number(item.pitax)) //
                                         
                                         if(infoParent.type == 1){
-                                            workbook.sheet("BangLuongDienGiai").row(i).cell(16).value(Number(item.union))
+                                            // workbook.sheet("BangLuongDienGiai").row(i).cell(16).value(Number(item.union))
                                             workbook.sheet("BangLuongDienGiai").row(i).cell(17).value(Number(item.share))
                                         }else{
                                             // workbook.sheet("BangLuongDienGiai").row(i).cell(16).value(Number(item.union))
