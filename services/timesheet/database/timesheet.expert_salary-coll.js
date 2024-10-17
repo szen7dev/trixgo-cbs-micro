@@ -34,7 +34,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type   : Schema.Types.ObjectId,
         ref: 'user'
     }],
-    //________Phân loại
+    /**
+     * Phân loại
+     * 1 quản lý
+     * 2 sản xuất
+     */
     type: {
         type: Number,
         default: 1
