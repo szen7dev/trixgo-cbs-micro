@@ -13,10 +13,10 @@ module.exports  = DATABASE_MIDDLEWARE("financial_report", {
         ref: 'company'
     },
     //_________Cơ sở     
-    funda: {
+    funda: [{
         type: Schema.Types.ObjectId,
         ref: 'funda'
-    },
+    }],
     //_________Từ ngày
     fromDate: { type: Date, default: Date.now },
     //_________Tới ngày
