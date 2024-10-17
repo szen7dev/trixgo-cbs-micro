@@ -1513,8 +1513,8 @@ class Model extends BaseModel {
                             }
 
                             // Modify the workbook.
-                             XlsxPopulate.fromFileAsync(templateFile)
-                            // XlsxPopulate.fromDataAsync(templateFile1)
+                            //  XlsxPopulate.fromFileAsync(templateFile)
+                            XlsxPopulate.fromDataAsync(templateFile1)
                             .then(async workbook => {
                                 // Xóa các dữ liệu cũ để thay thế mới
                                 if( workbook.sheet("BangLuongUpdate")){
