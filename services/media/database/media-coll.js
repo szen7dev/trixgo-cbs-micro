@@ -38,7 +38,8 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type: String,
 		default: ''
     },
-
+    //_________Slug/URL
+    slug: String,
     /**
      * Loại bài viết
      * 1: Bài viết công ty (Thành viên trong công ty)
