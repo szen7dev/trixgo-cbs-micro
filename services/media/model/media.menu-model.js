@@ -4,7 +4,7 @@ const BaseModel = require("../../../tools/db/base_model");
 const ObjectID = require("mongoose").Types.ObjectId;
 const moment = require("moment");
 const { KEY_ERROR } = require("../../../tools/keys");
-const stringUtils					    = require('../../../tools/utils/string_utils');
+const stringUtils				    = require('../../../tools/utils/string_utils');
 const {
   checkObjectIDs,
   IsJsonString,

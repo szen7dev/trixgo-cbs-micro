@@ -23,6 +23,7 @@ const { ENV_DEVICE_WEB_CBS } 					= require('../../notification/helper/notificat
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString, isEmptyObject } = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 				= require('../../../tools/cursor_base/playground/index');
+const stringUtils					    		= require('../../../tools/utils/string_utils');
 
 /**
  * COLLECTIONS
@@ -76,11 +77,17 @@ class Model extends BaseModel {
 					})
 				}
 
+				let checkName = await MEDIA_COLL.findOne({ company: companyID, title: title.trim() });
+				if(checkName)
+					return resolve({ error: true, message: "name_existed" });
+
 				dataInsert = {
 					author: authorID,
 					title,
 					content
 				}
+
+				dataInsert.slug = stringUtils.getSlugAccents(title)
 
 				switch (type) {
 					case 'company':
@@ -438,7 +445,22 @@ class Model extends BaseModel {
 					});
 				}
 
-				title && (dataUpdate.title = title);
+				let checkName = await MEDIA_COLL.findOne({
+					company: infoMedia.company,
+					title: title.trim(),
+					_id: {
+						$ne: mediaID
+					}
+					});
+				if(checkName)
+					return resolve({ error: true, message: "title_existed" });
+
+				// title && (dataUpdate.title = title);
+				if (title && title != '') {
+					dataUpdate.title = title;
+					dataUpdate.slug = stringUtils.getSlugAccents(title)
+				}
+
 				content && (dataUpdate.content = content);
 
 				switch (type) {
