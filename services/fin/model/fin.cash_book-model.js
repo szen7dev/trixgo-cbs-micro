@@ -1362,7 +1362,7 @@ class Model extends BaseModel {
                             return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" })
 
                         let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID)
-                        .select('name status date note salary userCreate admins members')
+                        .select('type name status date note salary userCreate admins members')
 
                         let checkPermission = 1 // Không có quyền
                         let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -1513,8 +1513,8 @@ class Model extends BaseModel {
                             }
 
                             // Modify the workbook.
-                            //  XlsxPopulate.fromFileAsync(templateFile)
-                            XlsxPopulate.fromDataAsync(templateFile1)
+                             XlsxPopulate.fromFileAsync(templateFile)
+                            // XlsxPopulate.fromDataAsync(templateFile1)
                             .then(async workbook => {
                                 // Xóa các dữ liệu cũ để thay thế mới
                                 if( workbook.sheet("BangLuongUpdate")){
@@ -1522,7 +1522,9 @@ class Model extends BaseModel {
 
                                     workbook.sheet("BangLuongUpdate").range("A4:J1000").clear();
                                     workbook.sheet("BangLuongUpdate").range("M4:N1000").clear();
-                                    workbook.sheet("BangLuongUpdate").range("Q4:Q1000").clear();
+                                    if(infoParent.type == 1){
+                                        workbook.sheet("BangLuongUpdate").range("Q4:Q1000").clear();
+                                    }
                                     workbook.sheet("BangLuongUpdate").range("U4:V1000").clear();
                                     workbook.sheet("BangLuongUpdate").range("X4:Z1000").clear();
                                     // workbook.sheet("BangLuongUpdate").range("AB4:AX1000").clear();
@@ -1532,7 +1534,9 @@ class Model extends BaseModel {
 
                                     workbook.sheet("BangLuongDienGiai").range("A4:J1000").clear();
                                     workbook.sheet("BangLuongDienGiai").range("M4:N1000").clear();
-                                    workbook.sheet("BangLuongDienGiai").range("Q4:Q1000").clear();
+                                    if(infoParent.type == 1){
+                                        workbook.sheet("BangLuongDienGiai").range("Q4:Q1000").clear();
+                                    }
                                     workbook.sheet("BangLuongDienGiai").range("U4:V1000").clear();
                                     workbook.sheet("BangLuongDienGiai").range("X4:Z1000").clear();
                                 }
@@ -1583,8 +1587,13 @@ class Model extends BaseModel {
 
                                         // workbook.sheet("BangLuongUpdate").row(i).cell(15).value(Number(item.pitax)) //
 
-                                        workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union)) //
-                                        workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share)) //
+                                        if(infoParent.type == 1){
+                                            workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union))
+                                            workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+                                        }else{
+                                            // workbook.sheet("BangLuongUpdate").row(i).cell(16).value(Number(item.union))
+                                            // workbook.sheet("BangLuongUpdate").row(i).cell(17).value(Number(item.share))
+                                        }
 
                                         // // Quỹ tương thân chỉ đổ dữ liệu có sẵn nếu Nhân sự khai báo > 0, không thì sẽ để tính theo công thức
                                         // if(Number(item?.human?.contacts[0]?.share) > 0){
@@ -1662,9 +1671,14 @@ class Model extends BaseModel {
                                         workbook.sheet("BangLuongDienGiai").row(i).cell(14).value(Number(item.insurance))
     
                                         // workbook.sheet("BangLuongDienGiai").row(i).cell(15).value(Number(item.pitax)) //
-    
-                                        // workbook.sheet("BangLuongDienGiai").row(i).cell(16).value(Number(item.union)) //
-                                        workbook.sheet("BangLuongDienGiai").row(i).cell(17).value(Number(item.share)) //
+                                        
+                                        if(infoParent.type == 1){
+                                            workbook.sheet("BangLuongDienGiai").row(i).cell(16).value(Number(item.union))
+                                            workbook.sheet("BangLuongDienGiai").row(i).cell(17).value(Number(item.share))
+                                        }else{
+                                            // workbook.sheet("BangLuongDienGiai").row(i).cell(16).value(Number(item.union))
+                                            // workbook.sheet("BangLuongDienGiai").row(i).cell(17).value(Number(item.share))
+                                        }
     
                                         // workbook.sheet("BangLuongDienGiai").row(i).cell(18).value(Number(item.other)) // Công thức
                                         // workbook.sheet("BangLuongDienGiai").row(i).cell(19).value(Number(tongGiamTru)) // Công thức
