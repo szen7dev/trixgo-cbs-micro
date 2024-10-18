@@ -317,7 +317,6 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
       return new Promise(async (resolve) => {
           try {
             const infoOrder = await STORE_ORDER_COLL.findById(orderID)
-
             if(!infoOrder) {
                 return resolve({
                     error: true,
@@ -435,7 +434,6 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
             if(dataAddToset){
                 dataUpdate.$addToSet = dataAddToset;
             }
-
             // console.log(dataUpdate)
 
             let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
@@ -453,13 +451,13 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
                     "project" : infoAfterUpdate.project,
                     "package" : infoAfterUpdate.package,
                     "toPackage" : infoAfterUpdate.toPackage,
-                    "warehouse" : infoAfterUpdate.warehouse,
-                    "toWarehouse" : infoAfterUpdate.toWarehouse,
-                    "customer" : infoAfterUpdate.customer,
-                    "contract" : infoAfterUpdate.contract,
                     "outin" : infoAfterUpdate.outin,
                     "type" : infoAfterUpdate.type,
                     "date" : infoAfterUpdate.date,
+                    "warehouse" : infoAfterUpdate.warehouse,
+                    "toWarehouse" : infoAfterUpdate.toWarehouse,
+                    // "customer" : infoAfterUpdate.customer, // Không update ở đây => vì khi copy phiếu/sửa => bị chạy hết theo phiếu
+                    // "contract" : infoAfterUpdate.contract, // Không update ở đây => vì khi copy phiếu/sửa => bị chạy hết theo phiếu
                 } }
             )
 
