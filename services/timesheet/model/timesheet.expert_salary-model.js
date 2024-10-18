@@ -1219,7 +1219,6 @@ class Model extends BaseModel {
                                 contractID: infoOldOrder.contract, 
                                 name: `Copy ${infoOldOrder.name}` 
                             })
-
                             // console.log(infoNewOrder)
 
                             if(infoNewOrder){
