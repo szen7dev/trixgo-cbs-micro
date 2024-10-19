@@ -182,10 +182,17 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
                 paymentMethod,
                 // name: `${name}-C${Number(numberOfOrder + 1)}`,
                 // sign: `C${Number(numberOfOrder + 1)}`,
-                amount: Number(total - discount - salesoff - credit),
+                // amount: Number(total - discount),
+                // amount: Number(total - discount - salesoff - credit),
                 total: Number(total),
                 userCreate: userID,
             };
+
+            let amount = 0
+            if(!isNaN(discount)){
+                amount = Number(total - discount)
+            }
+            dataInsert.amount = amount
 
             if (checkObjectIDs(fundaID)) {
                 dataInsert.funda = fundaID;
