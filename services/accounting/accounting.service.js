@@ -19,18 +19,21 @@ const { CF_ACTIONS_ACCOUNTING } 	    				= require('./helper/accounting.actions-
  */
 const ACCOUNTING__FINANCIAL_VOUCHER_HANDLER       	    = require('./handler/accounting.financial_voucher-handler');
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER     = require('./handler/accounting.financial_general_journal-handler');
+const ACCOUNTING__FINANCIAL_REPORT_HANDLER     			= require('./handler/accounting.financial_report-handler');
 
 /**
  * COLLECTIONS
  */
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL				= require('./database/accounting.financial_voucher-coll');
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL		= require('./database/accounting.financial_general_journal-coll');
+const ACCOUNTING__FINANCIAL_REPORT_COLL					= require('./database/accounting.financial_report-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.ACCOUNTING,
 	mixins: [
 		DbService(ACCOUNTING__FINANCIAL_VOUCHER_COLL),
 		DbService(ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL),
+		DbService(ACCOUNTING__FINANCIAL_REPORT_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.ACCOUNTING])
     ],
 
@@ -69,6 +72,13 @@ module.exports = {
 		[CF_ACTIONS_ACCOUNTING.JOURNAL_GET_LIST_BY_PROPERTY]		 		: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER.getListByProperty,
 		[CF_ACTIONS_ACCOUNTING.JOURNAL_EXPORT_EXCEL]		 				: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER.exportExcel,
 		[CF_ACTIONS_ACCOUNTING.JOURNAL_ANALYSE_PRIME_COST]		 			: ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_HANDLER.analysePrimeCostOfAllVouchers,
+
+		//==========================================  REPORT  ==================================
+		[CF_ACTIONS_ACCOUNTING.REPORT_INSERT] 								: ACCOUNTING__FINANCIAL_REPORT_HANDLER.insert,
+		[CF_ACTIONS_ACCOUNTING.REPORT_UPDATE] 								: ACCOUNTING__FINANCIAL_REPORT_HANDLER.update,
+		[CF_ACTIONS_ACCOUNTING.REPORT_REMOVE] 								: ACCOUNTING__FINANCIAL_REPORT_HANDLER.remove,
+		[CF_ACTIONS_ACCOUNTING.REPORT_GET_INFO_AND_GET_LIST] 				: ACCOUNTING__FINANCIAL_REPORT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_ACCOUNTING.REPORT_GET_LIST_BY_PROPERTY]		 			: ACCOUNTING__FINANCIAL_REPORT_HANDLER.getListByProperty,
 	},
 
 	/**

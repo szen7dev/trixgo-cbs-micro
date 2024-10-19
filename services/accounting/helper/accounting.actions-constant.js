@@ -5,6 +5,7 @@ const BASE_ACTIONS = 'ACT_ACCOUNTING';
  */
  const VOUCHER  = 'VOUCHER';
  const JOURNAL  = 'JOURNAL';
+ const REPORT  = 'REPORT';
 
 const CF_ACTIONS_ACCOUNTING = {
     /**
@@ -30,6 +31,15 @@ const CF_ACTIONS_ACCOUNTING = {
     JOURNAL_GET_LIST_BY_PROPERTY	 : `${BASE_ACTIONS}_${JOURNAL}_GET_LIST_BY_PROPERTY`,
     JOURNAL_EXPORT_EXCEL             : `${BASE_ACTIONS}_${JOURNAL}_EXPORT_EXCEL`,
     JOURNAL_ANALYSE_PRIME_COST       : `${BASE_ACTIONS}_${JOURNAL}_ANALYSE_PRIME_COST`,
+    
+    /**
+    * REPORT
+    */
+    REPORT_INSERT                                    : `${BASE_ACTIONS}_${REPORT}_INSERT`,
+    REPORT_UPDATE                                    : `${BASE_ACTIONS}_${REPORT}_UPDATE`,
+    REPORT_REMOVE                                    : `${BASE_ACTIONS}_${REPORT}_REMOVE`,
+    REPORT_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${REPORT}_GET_INFO_AND_GET_LIST`,
+    REPORT_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${REPORT}_GET_LIST_BY_PROPERTY`,
 }
 
 exports.CF_ACTIONS_ACCOUNTING = CF_ACTIONS_ACCOUNTING;
