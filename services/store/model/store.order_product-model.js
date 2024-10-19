@@ -81,7 +81,6 @@ class Model extends BaseModel {
                     type: infoParent.type,
                     date: infoParent.date,
                     userCreate: userID, 
-                    userCreate: userID, 
                     admins: [userID], 
                     members: [userID],
                     name,
