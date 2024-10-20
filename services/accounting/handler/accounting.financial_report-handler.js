@@ -65,6 +65,34 @@ module.exports = {
             }
         }
     },
+    
+    /**
+     * Name: syncData
+     * Author: HiepNH
+     * Code: 22/3/2024
+     */
+    syncData: {
+        params: {
+            salaryID : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, docID, arrFunda } = ctx.params;
+                console.log(ctx.params)
+
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.syncData({
+                    userID, companyID: company._id, option, docID, arrFunda
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
 
     /**
      * Name: Remove 

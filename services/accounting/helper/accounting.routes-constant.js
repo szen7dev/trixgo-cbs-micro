@@ -4,7 +4,7 @@ const BASE_ROUTE = '/accounting';
  */
 const VOUCHER           = '/vouchers';
 const JOURNAL           = '/journals';
-const REPORT           = '/journals';
+const REPORT           = '/reports';
 
 const CF_ROUTINGS_ACCOUNTING = {
     ORIGIN_APP: BASE_ROUTE,
@@ -27,6 +27,7 @@ const CF_ROUTINGS_ACCOUNTING = {
     //================================REPORT=======================================//
     REPORT                           : `${BASE_ROUTE}${REPORT}`,
     REPORT_GET_LIST_BY_PROPERTY      : `${BASE_ROUTE}${REPORT}/get-list-by-property`,
+    REPORT_SYNC_DATA                 : `${BASE_ROUTE}${REPORT}/sync-data`,
 }
 
 exports.CF_ROUTINGS_ACCOUNTING = CF_ROUTINGS_ACCOUNTING;

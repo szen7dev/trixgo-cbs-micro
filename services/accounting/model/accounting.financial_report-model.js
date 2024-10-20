@@ -18,9 +18,9 @@ const ITEM__ACCOUNT_COLL                            = require('../../item/databa
 const ITEM__DOCTYPE_COLL                            = require('../../item/database/item.doctype-coll')
 const ITEM_FUNDA_COLL                               = require('../../item/database/item.funda-coll')
 const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
-const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
-const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
-const ACCOUNTING__FINANCIAL_REPORT_COLL             = require('../database/accounting.financial_report-coll')
+const FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
+const FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
+const FINANCIAL_REPORT_COLL             = require('../database/accounting.financial_report-coll')
 
 
 /**
@@ -34,7 +34,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 class Model extends BaseModel {
 
     constructor() {
-        super(ACCOUNTING__FINANCIAL_REPORT_COLL);
+        super(FINANCIAL_REPORT_COLL);
     }
 
     /**
@@ -43,10 +43,10 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ userID, companyID, parentID, fundaID, name, note, fromDate, toDate, revenue, expense, profit }) {
-        const that = this
+        // const that = this
         return new Promise(async resolve => {
             try {
-                if (!name || name != '')
+                if (!name || name == '')
                     return resolve({error: true, message: "name invalid", keyError: KEY_ERROR.PARAMS_INVALID});
 
                 let dataInsert = { 
@@ -83,7 +83,7 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
                
-                console.log(dataInsert)
+                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -92,7 +92,7 @@ class Model extends BaseModel {
                 // // Cập nhật lại thông tin Order
                 // await that.updateValue({orderID, userID})
 
-                // await ACCOUNTING__FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderID, { 
+                // await FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderID, { 
                 //     $addToSet: { products: infoAfterInsert._id } 
                 // }, { new: true });
 
@@ -116,7 +116,7 @@ class Model extends BaseModel {
                     modifyAt: new Date() 
                 };
 
-                let listData = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                let listData = await FINANCIAL_REPORT_COLL.aggregate([
                     {
                         $match: {
                             order: ObjectID(orderID),
@@ -133,7 +133,7 @@ class Model extends BaseModel {
                     dataUpdate.amount = Number(listData[0].amount)
                 }
 
-                let infoAfterUpdate = await ACCOUNTING__FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
+                let infoAfterUpdate = await FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
 
@@ -263,7 +263,7 @@ class Model extends BaseModel {
                 }
                 // console.log({ dataUpdate })
 
-                let infoAfterUpdate = await ACCOUNTING__FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderProductID, dataUpdate, { new: true })
+                let infoAfterUpdate = await FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderProductID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
@@ -275,6 +275,176 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message })
             }
         });
+    }
+
+        /**
+     * Name: Đồng bộ data
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
+    syncData({
+        companyID, userID, option, docID, arrFunda
+    }){
+        // const that = this
+        return new Promise(async (resolve) => {
+            try {
+                let info = await FINANCIAL_REPORT_COLL.findById(docID)
+                // console.log(info)
+
+                let listFunda = arrFunda.map(item=>ObjectID(item))
+
+                let conditionDebitObj1 = {funda : {$in : listFunda }}
+                let conditionCreditObj1 = {funda : {$in : listFunda }}
+                let conditionDebitObj2 = {funda : {$in : listFunda }}
+                let conditionCreditObj2 = {funda : {$in : listFunda }}
+                let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                let arrRevenueID = [], arrExpenseID = []
+
+                let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } })
+                .select('_id')
+                // .sort({name: 1})
+
+                let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } })
+                .select('_id')
+                // .sort({name: 1})
+
+                if(listAcc1){
+                    arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
+                }
+                if(listAcc2){
+                    arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
+                }
+                // console.log(arrRevenueID)
+                // console.log(arrExpenseID)
+
+                conditionDebitObj1.debit = {
+                    $in: arrRevenueID
+                }
+                conditionCreditObj1.credit = {
+                    $in: arrRevenueID
+                }
+
+                conditionDebitObj2.debit = {
+                    $in: arrExpenseID
+                }
+                conditionCreditObj2.credit = {
+                    $in: arrExpenseID
+                }
+
+                conditionProject = {
+                    forward: '$forward',
+                    cancel: '$cancel',
+                    funda: 1,
+                    date: 1,
+                    amount: 1,
+                    customerDebit: 1,
+                    customerCredit: 1,
+                    debit: 1,
+                    credit: 1
+                }
+
+                conditionMatch = {
+                    "forward": 0,
+                    "cancel": 0,
+                    "date": {
+                        $gte: moment(info.fromDate).toDate(),
+                        $lte: moment(info.toDate).toDate(),
+                    }
+                }
+
+                conditionGroupDebit = {
+                    _id: { funda: "$funda" },
+                    amount: { $sum: "$amount" }
+                }
+                conditionGroupCredit = {
+                    _id: { funda: "$funda" },
+                    amount: { $sum: "$amount" }
+                }
+                // console.log(conditionDebitObj)
+                // console.log(conditionCreditObj)
+                // console.log(conditionProject)
+                // console.log(conditionMatch)
+
+                let revenue = 0, expense = 0
+
+                let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj1
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj1
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+
+                let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj2
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj2
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+
+                return resolve({ error: false, data: { listData1, listData2 } })
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
     }
 
     /**
@@ -302,7 +472,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let info = await ACCOUNTING__FINANCIAL_REPORT_COLL.findById(orderProductID)
+                let info = await FINANCIAL_REPORT_COLL.findById(orderProductID)
                                     .select(select)
                                     .populate(populates)
 
@@ -457,7 +627,7 @@ class Model extends BaseModel {
                 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await ACCOUNTING__FINANCIAL_REPORT_COLL.findById(lastestID);
+                    let infoData = await FINANCIAL_REPORT_COLL.findById(lastestID);
                     if(!infoData)
                         return resolve({ error: true, message: "Can't get info last message", status: 400 });
 
@@ -471,7 +641,7 @@ class Model extends BaseModel {
                     sortBy                = dataPagingAndSort.data.sort;
                 }
 
-                let infoDataAfterGet = await ACCOUNTING__FINANCIAL_REPORT_COLL.find(conditionObj)
+                let infoDataAfterGet = await FINANCIAL_REPORT_COLL.find(conditionObj)
                     .limit(limit+1)
                     .sort(sortBy)
                     .select(select)
@@ -488,7 +658,7 @@ class Model extends BaseModel {
                         infoDataAfterGet.length = limit;
                     }
                 }
-                let totalRecord = await ACCOUNTING__FINANCIAL_REPORT_COLL.count(conditionObjOrg);
+                let totalRecord = await FINANCIAL_REPORT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
 
                 return resolve({ error: false, data: {
@@ -648,7 +818,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let listData1 = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                let listData1 = await FINANCIAL_REPORT_COLL.aggregate([
                     {
                         $match: conditionObj1
                     },
@@ -657,7 +827,7 @@ class Model extends BaseModel {
                     },
                 ])
 
-                let listData2 = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                let listData2 = await FINANCIAL_REPORT_COLL.aggregate([
                     {
                         $match: conditionObj2
                     },
@@ -851,7 +1021,7 @@ class Model extends BaseModel {
                         type: "1"
                     })
 
-                    let listDataCompany = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                    let listDataCompany = await FINANCIAL_REPORT_COLL.aggregate([
                         {
                             $match: {
                                 status: 5, // Đã hoàn thành
@@ -870,7 +1040,7 @@ class Model extends BaseModel {
                     ])
                     // console.log(listDataCompany)
                     
-                    let listDataAccount = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                    let listDataAccount = await FINANCIAL_REPORT_COLL.aggregate([
                         {
                             $match: {
                                 status: 5, // Đã hoàn thành
@@ -889,13 +1059,13 @@ class Model extends BaseModel {
                     ])
                     // console.log(listDataAccount)
 
-                    await ACCOUNTING__FINANCIAL_REPORT_COLL.populate(listDataCompany, {
+                    await FINANCIAL_REPORT_COLL.populate(listDataCompany, {
                         path: '_id.company',
                         select: '_id name sign image',
                         model: 'company'
                     })
 
-                    await ACCOUNTING__FINANCIAL_REPORT_COLL.populate(listDataAccount, {
+                    await FINANCIAL_REPORT_COLL.populate(listDataAccount, {
                         path: '_id.account',
                         select: '_id name description',
                         model: 'account'
@@ -912,7 +1082,7 @@ class Model extends BaseModel {
                     // console.log({monthFilter})
 
                     if(!month){
-                        let listData = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                        let listData = await FINANCIAL_REPORT_COLL.aggregate([
                             {
                                 $match: {
                                     status: 5, // Đã hoàn thành
@@ -946,7 +1116,7 @@ class Model extends BaseModel {
     
                         return resolve({ error: false, data: listData })
                     }else{
-                        let listData = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                        let listData = await FINANCIAL_REPORT_COLL.aggregate([
                             {
                                 $match: {
                                     status: 5, // Đã hoàn thành
@@ -1023,7 +1193,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    let listData1 = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                    let listData1 = await FINANCIAL_REPORT_COLL.aggregate([
                         {
                             $match: conditionPlanObj
                         },
@@ -1036,7 +1206,7 @@ class Model extends BaseModel {
                         },
                     ])
 
-                    let listData2 = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                    let listData2 = await FINANCIAL_REPORT_COLL.aggregate([
                         {
                             $match: conditionObj
                         },
@@ -1145,7 +1315,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    let listData1 = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                    let listData1 = await FINANCIAL_REPORT_COLL.aggregate([
                         {
                             $match: conditionPlanObj
                         },
@@ -1158,7 +1328,7 @@ class Model extends BaseModel {
                         },
                     ])
 
-                    let listData2 = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                    let listData2 = await FINANCIAL_REPORT_COLL.aggregate([
                         {
                             $match: conditionObj
                         },
@@ -1331,7 +1501,7 @@ class Model extends BaseModel {
                     }
                     // console.log(conditionObj)
 
-                    let listData  = await ACCOUNTING__FINANCIAL_REPORT_COLL.find(conditionObj)
+                    let listData  = await FINANCIAL_REPORT_COLL.find(conditionObj)
                     .populate({
                         path: "campaignType",
                         select: "name",
@@ -1356,7 +1526,7 @@ class Model extends BaseModel {
                     .sort({createAt: -1})
                     // console.log(listData)
 
-                    let listData2 = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                    let listData2 = await FINANCIAL_REPORT_COLL.aggregate([
                             {
                                 $match: {
                                     order: {$in: listData.map(item => ObjectID(item._id))}
@@ -1387,11 +1557,11 @@ class Model extends BaseModel {
                         model: 'funda'
                     }
 
-                    await ACCOUNTING__FINANCIAL_REPORT_COLL.populate(listData2, conditionPopulate1)
-                    await ACCOUNTING__FINANCIAL_REPORT_COLL.populate(listData2, conditionPopulate2)
+                    await FINANCIAL_REPORT_COLL.populate(listData2, conditionPopulate1)
+                    await FINANCIAL_REPORT_COLL.populate(listData2, conditionPopulate2)
                     // console.log(listData2)
 
-                    let listData3 = await ACCOUNTING__FINANCIAL_REPORT_COLL.aggregate([
+                    let listData3 = await FINANCIAL_REPORT_COLL.aggregate([
                         {
                             $match: {
                                 order: {$in: listData.map(item => ObjectID(item._id))}
@@ -1409,7 +1579,7 @@ class Model extends BaseModel {
                             }
                         }
                     ])
-                    await ACCOUNTING__FINANCIAL_REPORT_COLL.populate(listData3, conditionPopulate1)
+                    await FINANCIAL_REPORT_COLL.populate(listData3, conditionPopulate1)
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))

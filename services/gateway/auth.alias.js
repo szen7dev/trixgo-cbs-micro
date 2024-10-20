@@ -1521,6 +1521,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_ACCOUNTING.REPORT_GET_LIST_BY_PROPERTY}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REPORT_GET_LIST_BY_PROPERTY}`],
 
+		[`POST ${CF_ROUTINGS_ACCOUNTING.REPORT_SYNC_DATA}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REPORT_SYNC_DATA}`],
+
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//
