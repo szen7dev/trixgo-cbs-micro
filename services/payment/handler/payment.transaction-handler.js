@@ -15,7 +15,8 @@ const {
   neo_ClientSecret,
   neo_Url,
   neo_ReturnUrl,
-  client_Url
+  client_Url_Payment_Success,
+  client_Url_Payment_Failed,
 } = require('../helper/payment.keys-constant');
 
 /**
@@ -91,6 +92,7 @@ module.exports = {
             orderdata           : { type: "object", optional: true },
             currency            : { type: "string", optional: true },
             locale              : { type: "string", optional: true },
+            userID              : { type: "string", optional: true },
             callbackURL         : { type: "string", optional: true },
         },
         async handler(ctx) {
@@ -129,9 +131,9 @@ module.exports = {
                   "neo_MerchantTxnID": tx._id.toString(),
                   "neo_OrderID": orderID,
                   "neo_OrderInfo": orderDescription,
-                  // "neo_PaymentMethod": ["WALLET","ATM","CC","QR"],
-                  "neo_PaymentMethod": ["QR"],
-                  "neo_ReturnURL": callbackURL,
+                  "neo_PaymentMethod": ["WALLET","ATM","CC","QR"],
+                  // "neo_PaymentMethod": ["QR"],
+                  "neo_ReturnURL": callbackURL || neo_ReturnUrl,
                   "neo_Title": "Payment",
                   "neo_Version": "1",
                 }
@@ -155,6 +157,7 @@ module.exports = {
                   data: neoxResponse.data
                 };
             } catch (error) {
+              console.error({ error })
                 return { error: true, message: error.message };
             }
         }
@@ -196,7 +199,7 @@ module.exports = {
                   return redirectToUrl({
                     ctx,
                     query: { err: true, msg: 'Transaction invalid' },
-                    url: `${client_Url}/payment-error`
+                    url: client_Url_Payment_Failed
                   })
                 }
 
@@ -204,7 +207,7 @@ module.exports = {
                   return redirectToUrl({
                     ctx,
                     query: { err: true, msg: neo_ResponseCode },
-                    url: `${client_Url}/payment-error`
+                    url: client_Url_Payment_Failed
                   })
                 }
 
@@ -221,7 +224,7 @@ module.exports = {
                     orderID: neo_OrderID,
                     txID: neo_MerchantTxnID,
                   },
-                  url: `${client_Url}/payment-success`
+                  url: client_Url_Payment_Success
                 })
             } catch (error) {
                 return redirectToUrl({

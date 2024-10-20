@@ -4,7 +4,7 @@ const DbService                	    	= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    = require("../../tools/mixins/cache.cleaner.mixin");
 const { CF_DOMAIN_SERVICES } 		    = require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_PAYMENT } 	        = require('./helper/payment.actions-constant');
-const PAYMENT__TRANSACTION_HANLDER      = require('./handler/payment.transaction-hanlder');
+const PAYMENT__TRANSACTION_HANLDER      = require('./handler/payment.transaction-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.PAYMENT,
