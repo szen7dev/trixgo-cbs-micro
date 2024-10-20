@@ -23,7 +23,7 @@ class Model extends BaseModel {
                 currency = currency ? currency.toUpperCase() : 'VND';
 
                 if(!checkObjectIDs(userID)) {
-                  return resolve({ error: true, message: 'object_invalid' });
+                  return resolve({ error: true, message: 'user_object_id_invalid' });
                 }
 
                 const localeAllow = ['en', 'vi'];
