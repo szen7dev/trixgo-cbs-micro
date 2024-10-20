@@ -120,9 +120,12 @@ function getFooterEmail() {
 
 exports.sendMailForgetPassword = function (email, fullName, codeReset){
     let emailContent = templateRecoverPass(fullName, codeReset);
+    // mailer(email, `CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM`, emailContent, function(cb){
+    //     console.log(cb);
+    // }, 'TRIXGO <noreply.trixgo@gmail.com>')
     mailer(email, `CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM`, emailContent, function(cb){
         console.log(cb);
-    }, 'TRIXGO <noreply.trixgo@gmail.com>')
+    }, 'TRIXGO <no-reply@trixgo.com>')
 }
 
 exports.sendMailNewAccount = function (email, fullName, pwd){

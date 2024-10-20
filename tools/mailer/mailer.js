@@ -13,7 +13,8 @@ module.exports = function (to, subject, content, callback, from) {
     });
 
     let mail = {
-        from: from || 'TRIXGO <noreply.trixgo@gmail.com>',
+        // from: from || 'Trixgo <noreply.trixgo@gmail.com',
+        from: from || 'Trixgo <no-reply@trixgo.com',
         to: to,
         subject: subject,
         html: content,
