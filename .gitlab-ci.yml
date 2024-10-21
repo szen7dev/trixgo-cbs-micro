@@ -10,7 +10,7 @@ build-docker:
     - docker
   only:
     refs:
-      - master
+      - main
       - staging
 # Click to deploy manual
 build-docker-websocket:
@@ -19,10 +19,13 @@ build-docker-websocket:
     _DOCKER_CACHE_IMAGE_TAG: ws-$CI_COMMIT_REF_NAME
     _DOCKER_RELEASE_IMAGE_TAG: ws-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA-$CI_JOB_ID
     NODE_OPTIONS: "--max-old-space-size=2048"
+  before_script:
+  - _DOCKER_CACHE_IMAGE_TAG=`echo $CI_COMMIT_REF_NAME | sed -E 's/[^a-z0-9._-]+/__/g'`
+  - _DOCKER_RELEASE_IMAGE_TAG="ws-$_DOCKER_CACHE_IMAGE_TAG-`printf %010d $CI_PIPELINE_ID`-$CI_COMMIT_SHORT_SHA"
   tags:
     - docker
   only:
     refs:
-      - master
+      - main
       - staging
   when: manual
