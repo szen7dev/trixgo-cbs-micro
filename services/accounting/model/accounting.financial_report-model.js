@@ -14,10 +14,10 @@ const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-co
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
-const ITEM__ACCOUNT_COLL                            = require('../../item/database/item.account-coll')
-const ITEM__DOCTYPE_COLL                            = require('../../item/database/item.doctype-coll')
-const ITEM_FUNDA_COLL                               = require('../../item/database/item.funda-coll')
-const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
+const ITEM__ACCOUNT_COLL                = require('../../item/database/item.account-coll')
+const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll')
+const ITEM_FUNDA_COLL                   = require('../../item/database/item.funda-coll')
+const CONTRACT_COLL                     = require('../../item/database/item.contract-coll')
 const FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
 const FINANCIAL_REPORT_COLL             = require('../database/accounting.financial_report-coll')
@@ -590,7 +590,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 2/9/2024
      */
-    getListByProperty({ companyID, option, reportID }) {
+    getListByProperty({ companyID, option, reportID, accountID }) {
         return new Promise(async resolve => {
             try {
                 let infoReport = await FINANCIAL_REPORT_COLL.findById(reportID).populate({
@@ -598,180 +598,207 @@ class Model extends BaseModel {
                     select: '_id name sign'
                 })
                 // console.log(infoReport)
-
-                let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
-                let conditionDebitObj1 = {funda: ObjectID(infoReport.funda._id)}
-                let conditionDebitObj2 = {funda: ObjectID(infoReport.funda._id)}
-                let conditionCreditObj1 = {funda: ObjectID(infoReport.funda._id)}
-                let conditionCreditObj2 = {funda: ObjectID(infoReport.funda._id)}
-
-                let conditionPopulate = {
-                    path: '_id.account',
-                    select: '_id name description',
-                    model: 'account'
-                }
-
-                let arrRevenueID = [], arrExpenseID = []
-
-                let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
-                .select('_id')
-                let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
-                .select('_id')
-                if(listAcc1){
-                    arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
-                }
-                if(listAcc2){
-                    arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
-                }
-
-                conditionDebitObj1.debit = {
-                    $in: arrRevenueID
-                }
-                conditionCreditObj1.credit = {
-                    $in: arrRevenueID
-                }
-
-                conditionDebitObj2.debit = {
-                    $in: arrExpenseID
-                }
-                conditionCreditObj2.credit = {
-                    $in: arrExpenseID
-                }
-               
-                conditionProject = {
-                    forward: '$forward',
-                    cancel: '$cancel',
-                    funda: 1,
-                    date: 1,
-                    amount: 1,
-                    customerDebit: 1,
-                    customerCredit: 1,
-                    debit: 1,
-                    credit: 1
-                }
-
-                conditionMatch = {
-                    "forward": 0,
-                    "cancel": 0,
-                    "date": {
-                        $gte: moment(infoReport.fromDate).toDate(),
-                        $lte: moment(infoReport.toDate).toDate(),
+                if(!accountID){
+                    let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                    let conditionDebitObj1 = {funda: ObjectID(infoReport.funda._id)}
+                    let conditionDebitObj2 = {funda: ObjectID(infoReport.funda._id)}
+                    let conditionCreditObj1 = {funda: ObjectID(infoReport.funda._id)}
+                    let conditionCreditObj2 = {funda: ObjectID(infoReport.funda._id)}
+    
+                    let conditionPopulate = {
+                        path: '_id.account',
+                        select: '_id name description',
+                        model: 'account'
                     }
-                }
-
-                conditionGroupDebit = {
-                    _id: { account: "$debit" },
-                    amount: { $sum: "$amount" }
-                }
-                conditionGroupCredit = {
-                    _id: { account: "$credit" },
-                    amount: { $sum: "$amount" }
-                }
-
-                let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionDebitObj1
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupDebit
-                                },
-                                {
-                                    $sort: {
-                                        "_id.account": 1
-                                    }
-                                }
-                            ],
-                            _credit:[
-                                {
-                                    $match: conditionCreditObj1
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupCredit
-                                },
-                                {
-                                    $sort: {
-                                        "_id.account": 1
-                                    }
-                                }
-                            ],
-
+    
+                    let arrRevenueID = [], arrExpenseID = []
+    
+                    let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
+                    .select('_id')
+                    let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
+                    .select('_id')
+                    if(listAcc1){
+                        arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
+                    }
+                    if(listAcc2){
+                        arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
+                    }
+    
+                    conditionDebitObj1.debit = {
+                        $in: arrRevenueID
+                    }
+                    conditionCreditObj1.credit = {
+                        $in: arrRevenueID
+                    }
+    
+                    conditionDebitObj2.debit = {
+                        $in: arrExpenseID
+                    }
+                    conditionCreditObj2.credit = {
+                        $in: arrExpenseID
+                    }
+                   
+                    conditionProject = {
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        funda: 1,
+                        date: 1,
+                        amount: 1,
+                        customerDebit: 1,
+                        customerCredit: 1,
+                        debit: 1,
+                        credit: 1
+                    }
+    
+                    conditionMatch = {
+                        "forward": 0,
+                        "cancel": 0,
+                        "date": {
+                            $gte: moment(infoReport.fromDate).toDate(),
+                            $lte: moment(infoReport.toDate).toDate(),
                         }
                     }
-                ])
-
-                let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionDebitObj2
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupDebit
-                                },
-                                {
-                                    $sort: {
-                                        "_id.account": 1
-                                    }
-                                }
-                            ],
-                            _credit:[
-                                {
-                                    $match: conditionCreditObj2
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupCredit
-                                },
-                                {
-                                    $sort: {
-                                        "_id.account": 1
-                                    }
-                                }
-                            ],
-
-                        }
+    
+                    conditionGroupDebit = {
+                        _id: { account: "$debit" },
+                        amount: { $sum: "$amount" }
                     }
-                ])
+                    conditionGroupCredit = {
+                        _id: { account: "$credit" },
+                        amount: { $sum: "$amount" }
+                    }
+    
+                    let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj1
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    },
+                                    {
+                                        $sort: {
+                                            "_id.account": 1
+                                        }
+                                    }
+                                ],
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj1
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupCredit
+                                    },
+                                    {
+                                        $sort: {
+                                            "_id.account": 1
+                                        }
+                                    }
+                                ],
+    
+                            }
+                        }
+                    ])
+    
+                    let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj2
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    },
+                                    {
+                                        $sort: {
+                                            "_id.account": 1
+                                        }
+                                    }
+                                ],
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj2
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupCredit
+                                    },
+                                    {
+                                        $sort: {
+                                            "_id.account": 1
+                                        }
+                                    }
+                                ],
+    
+                            }
+                        }
+                    ])
+    
+                    await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._debit, conditionPopulate)
+                    await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._credit, conditionPopulate)
+                    await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._debit, conditionPopulate)
+                    await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._credit, conditionPopulate)
+    
+                    // console.log(listData1[0]._debit)
+                    // console.log(listData1[0]._credit)
+                    // console.log(listData2[0]._debit)
+                    // console.log(listData2[0]._credit)
+    
+                    return resolve({ error: false, data: {infoReport, listData1, listData2} })
+                }else{
+                    let conditionObj = {
+                        forward: 0,
+                        cancel: 0,
+                        funda: ObjectID(infoReport.funda._id),
+                        date: {
+                            $gte: moment(infoReport.fromDate).toDate(),
+                            $lte: moment(infoReport.toDate).toDate(),
+                        },
+                        $or: [
+                            { debit: ObjectID(accountID) },
+                            { credit: ObjectID(accountID) },
+                        ]
+                    }
+    
+                    let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
+                    .select('quantity unitprice amount debit credit date voucher note name')
+                    .populate({
+                        path: 'debit credit voucher',
+                        select: 'name description type note'
+                    })
+                    .sort({date: 1})
+                    // console.log(listData)
 
-                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._debit, conditionPopulate)
-                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._credit, conditionPopulate)
-                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._debit, conditionPopulate)
-                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._credit, conditionPopulate)
-
-                // console.log(listData1[0]._debit)
-                // console.log(listData1[0]._credit)
-                // console.log(listData2[0]._debit)
-                // console.log(listData2[0]._credit)
-
-                return resolve({ error: false, data: {infoReport, listData1, listData2} })
-                
+                    let infoAccount = await ITEM__ACCOUNT_COLL.findById(accountID)
+    
+                    return resolve({ error: false, data: {infoReport, infoAccount, listData}  })
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
