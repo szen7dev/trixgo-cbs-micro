@@ -75,7 +75,7 @@ class Model extends BaseModel {
                         company: companyID,
                         userCreate: userID, 
                         parent: infoAfterInsert._id,
-                        funda: item.funda,
+                        funda: item._id,
                         name: item.name,
                         fromDate: infoAfterInsert.fromDate,
                         toDate: infoAfterInsert.toDate,
@@ -178,10 +178,10 @@ class Model extends BaseModel {
                         parent: ObjectID(reportID),
                     },
                     { $set: { 
-                        "name" : infoAfterUpdate.status,
-                        "note" : infoAfterUpdate.project,
-                        "fromDate" : infoAfterUpdate.package,
-                        "toDate" : infoAfterUpdate.toPackage
+                        "name" : infoAfterUpdate.name,
+                        "note" : infoAfterUpdate.note,
+                        "fromDate" : infoAfterUpdate.fromDate,
+                        "toDate" : infoAfterUpdate.toDate
                     } }
                 )
 
