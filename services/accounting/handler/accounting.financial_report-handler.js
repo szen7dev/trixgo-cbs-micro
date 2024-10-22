@@ -24,7 +24,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { parentID, fundaID, name, note, fromDate, toDate, revenue, expense, profit } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -53,7 +53,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { reportID, name, note, fromDate, toDate, revenue, expense, profit } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID } = ctx.meta.infoUser;
 
@@ -79,7 +79,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, docID, arrFunda } = ctx.params;
-                console.log(ctx.params)
+
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -142,9 +143,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, reportID, parentID, fundaID, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { reportID, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
                 
-                console.log(ctx.params)
+                // console.log(ctx.params)
                 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -155,9 +156,8 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.getList({
-                        userID, option, parentID, fundaID, keyword, limit, lastestID, select, populates, sortKey 
-                     });
- 
+                        userID, companyID: company._id, keyword, limit, lastestID, select, populates, sortKey 
+                     })
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

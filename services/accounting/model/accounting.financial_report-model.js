@@ -490,8 +490,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
-        // console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
+    getList({  userID, companyID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -503,33 +502,6 @@ class Model extends BaseModel {
                 let conditionObj = { company: companyID }
                 let sortBy;
                 let keys	 = ['createAt__1', '_id__1'];
-
-                if(orderID ){
-                    conditionObj.order = ObjectID(orderID)
-                }else{
-                    if(fundaID ){
-                        conditionObj.funda = ObjectID(fundaID)
-                    }else{
-                        // Thẻ kho
-                        if(option == 1){
-                            conditionObj.company = companyID
-                            conditionObj.goods = { $exists: true, $ne: null }
-                        }
-
-                        // Sổ quỹ
-                        if(option == 2){
-                            conditionObj.company = companyID
-                            conditionObj.account = { $exists: true, $ne: null }
-                            conditionObj.type = {$in: [7, 8]}
-                        }
-
-                        // Công nợ
-                        if(option == 3){
-                            conditionObj.company = companyID
-                            conditionObj.customer = { $exists: true, $ne: null }
-                        }
-                    }
-                }
 
                 // Làm rõ mục đích để làm gì?
                 if (sortKey && typeof sortKey === 'string') {
@@ -554,76 +526,12 @@ class Model extends BaseModel {
                     }
                 }
 
-                if (checkObjectIDs(projectID)) {
-                    conditionObj.project = projectID;
-                }
-
-                if (checkObjectIDs(packageID)) {
-                    conditionObj.package = packageID;
-                }
-
-                if (checkObjectIDs(toPackageID)) {
-                    conditionObj.toPackage = toPackageID;
-                }
-
-                if (checkObjectIDs(warehouseID)) {
-                    conditionObj.warehouse = warehouseID;
-                }
-
-                if (checkObjectIDs(accountID)) {
-                    conditionObj.account = accountID;
-                }
-
-                if (checkObjectIDs(contraID)) {
-                    conditionObj.contra = contraID;
-                }
-
-                if (checkObjectIDs(customerID)) {
-                    conditionObj.customer = customerID;
-                }
-
-                if (checkObjectIDs(userCreateID)) {
-                    conditionObj.userCreate = userCreateID;
-                }
-
-                if (checkObjectIDs(goodsID)) {
-                    conditionObj.goods = goodsID;
-                }
-
-                if (checkObjectIDs(parentGoodsID)) {
-                    conditionObj.parentGoods = parentGoodsID;
-                }
-
-                if (checkObjectIDs(assetsID)) {
-                    conditionObj.assets = assetsID;
-                }
-
-                if (checkObjectIDs(workID)) {
-                    conditionObj.budgetWork = workID;
-                }
-
-                if (checkObjectIDs(subtypeID)) {
-                    conditionObj.subtype = subtypeID;
-                }
-
-                if (!isNaN(status) && Number(status) >= 1) {
-                    conditionObj.status = Number(status)
-                }
-
-                if (!isNaN(outin) && Number(outin) >= 1) {
-                    conditionObj.outin = Number(outin)
-                }
-
-                if (!isNaN(type) && Number(type) >= 1) {
-                    conditionObj.type = Number(type)
-                }
-
                 if (keyword) {
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = RegExp(keyword, 'i');
                 }
-                // console.log(conditionObj)
+                console.log(conditionObj)
                 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
