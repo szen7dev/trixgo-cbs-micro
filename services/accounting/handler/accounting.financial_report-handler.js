@@ -178,13 +178,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option } = ctx.params;
+                let { option, reportID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.getListByProperty({ companyID: company._id, option })
+                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.getListByProperty({ companyID: company._id, option, reportID })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

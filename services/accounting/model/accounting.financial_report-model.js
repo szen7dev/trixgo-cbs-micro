@@ -347,8 +347,8 @@ class Model extends BaseModel {
 
                 // console.log(listData1)
                 // console.log(listData2)
-                console.log(listData1[0]._debit)
-                console.log(listData1[0]._credit)
+                // console.log(listData1[0]._debit)
+                // console.log(listData1[0]._credit)
 
                 let revenue = 0, expense = 0
                 if(listData1[0]._credit.length){
@@ -590,317 +590,187 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 2/9/2024
      */
-    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate }) {
-        // console.log({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate })
+    getListByProperty({ companyID, option, reportID }) {
         return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 * 1. Ban đầu query tổng tất cả dữ liệu
-                 * 2. Sau bổ sung các phiếu đầu kỳ/kết chuyển số dư
-                 */
-                let conditionObj1 = {
-                    company: ObjectID(companyID),
-                    status: 5, // Hoàn thành
-                    outin: 1, // Xuất ra (Thu tiền)
+                let infoReport = await FINANCIAL_REPORT_COLL.findById(reportID).populate({
+                    path: 'funda',
+                    select: '_id name sign'
+                })
+                // console.log(infoReport)
+
+                let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                let conditionDebitObj1 = {funda: ObjectID(infoReport.funda._id)}
+                let conditionDebitObj2 = {funda: ObjectID(infoReport.funda._id)}
+                let conditionCreditObj1 = {funda: ObjectID(infoReport.funda._id)}
+                let conditionCreditObj2 = {funda: ObjectID(infoReport.funda._id)}
+
+                let conditionPopulate = {
+                    path: '_id.account',
+                    select: '_id name description',
+                    model: 'account'
                 }
 
-                let conditionObj2 = {
-                    company: ObjectID(companyID),
-                    status: 5, // Hoàn thành
-                    outin: 2, // Nhập vào (Chi tiền)
+                let arrRevenueID = [], arrExpenseID = []
+
+                let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
+                .select('_id')
+                let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
+                .select('_id')
+                if(listAcc1){
+                    arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
+                }
+                if(listAcc2){
+                    arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
                 }
 
-                // Thẻ kho
-                if(option == 1){
-                    conditionObj1.goods = { $exists: true, $ne: null }
-                    conditionObj2.goods = { $exists: true, $ne: null }
+                conditionDebitObj1.debit = {
+                    $in: arrRevenueID
+                }
+                conditionCreditObj1.credit = {
+                    $in: arrRevenueID
                 }
 
-                // Sổ quỹ
-                else if(option == 2){
-                    conditionObj1.account = { $exists: true, $ne: null }
-                    conditionObj2.account = { $exists: true, $ne: null }
-
-                    conditionObj1.type = {$in: [7, 8]}
-                    conditionObj2.type = {$in: [7, 8]}
+                conditionDebitObj2.debit = {
+                    $in: arrExpenseID
+                }
+                conditionCreditObj2.credit = {
+                    $in: arrExpenseID
+                }
+               
+                conditionProject = {
+                    forward: '$forward',
+                    cancel: '$cancel',
+                    funda: 1,
+                    date: 1,
+                    amount: 1,
+                    customerDebit: 1,
+                    customerCredit: 1,
+                    debit: 1,
+                    credit: 1
                 }
 
-                // Công nợ
-                else if(option == 3){
-                    conditionObj1.customer = { $exists: true, $ne: null }
-                    conditionObj2.customer = { $exists: true, $ne: null }
-                }
-
-                // if(fromDate && toDate){
-                //     if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
-                //         let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-                //         let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-                //         conditionObj1.date  = { 
-                //             $gte: moment(startTime).toDate(),
-                //             $lte: moment(endTime).toDate()
-                //         }
-                //         conditionObj2.date  = { 
-                //             $gte: moment(startTime).toDate(),
-                //             $lte: moment(endTime).toDate()
-                //         }
-                //     }
-                // }
-
-                if (checkObjectIDs(projectID)) {
-                    conditionObj1.project = ObjectID(projectID);
-                    conditionObj2.project = ObjectID(projectID);
-                }
-
-                if (checkObjectIDs(warehouseID)) {
-                    conditionObj1.warehouse = ObjectID(warehouseID);
-                    conditionObj2.warehouse = ObjectID(warehouseID);
-                }
-
-                if (checkObjectIDs(accountID)) {
-                    conditionObj1.account = ObjectID(accountID);
-                    conditionObj2.account = ObjectID(accountID);
-                }
-
-                if (checkObjectIDs(contraID)) {
-                    conditionObj1.contra = ObjectID(contraID);
-                    conditionObj2.contra = ObjectID(contraID);
-                }
-
-                if (checkObjectIDs(customerID)) {
-                    conditionObj1.customer = ObjectID(customerID);
-                    conditionObj2.customer = ObjectID(customerID);
-                }
-
-                if (checkObjectIDs(userCreateID)) {
-                    conditionObj1.userCreate = ObjectID(userCreateID);
-                    conditionObj2.userCreate = ObjectID(userCreateID);
-                }
-
-                if (checkObjectIDs(goodsID)) {
-                    conditionObj1.goods = ObjectID(goodsID);
-                    conditionObj2.goods = ObjectID(goodsID);
-                }
-
-                if (checkObjectIDs(assetsID)) {
-                    conditionObj1.assets = ObjectID(assetsID);
-                    conditionObj2.assets = ObjectID(assetsID);
-                }
-
-                if (checkObjectIDs(workID)) {
-                    conditionObj1.budgetWork = ObjectID(workID);
-                    conditionObj2.budgetWork = ObjectID(workID);
-                }
-
-                if (checkObjectIDs(subtypeID)) {
-                    conditionObj1.subtype = ObjectID(subtypeID);
-                    conditionObj2.subtype = ObjectID(subtypeID);
-                }
-
-                if (!isNaN(type) && Number(type) >= 1) {
-                    conditionObj1.type = Number(type)
-                    conditionObj2.type = Number(type)
-                }
-
-                let conditionGroup = {}, conditionPopulate = {}
-
-                // Thẻ kho
-                if(option == 1){
-                    conditionGroup = {
-                        _id: { goods: "$goods" },
-                        quantity: { $sum: "$quantity" },
-                        amount: { $sum: "$amount" }
+                conditionMatch = {
+                    "forward": 0,
+                    "cancel": 0,
+                    "date": {
+                        $gte: moment(infoReport.fromDate).toDate(),
+                        $lte: moment(infoReport.toDate).toDate(),
                     }
                 }
 
-                // Sổ quỹ
-                else if(option == 2){
-                    conditionGroup = {
-                        _id: { account: "$account" },
-                        amount: { $sum: "$amount" }
-                    }
+                conditionGroupDebit = {
+                    _id: { account: "$debit" },
+                    amount: { $sum: "$amount" }
+                }
+                conditionGroupCredit = {
+                    _id: { account: "$credit" },
+                    amount: { $sum: "$amount" }
                 }
 
-                // Công nợ
-                else if(option == 3){
-                    conditionGroup = {
-                        _id: { customer: "$customer" },
-                        amount: { $sum: "$amount" }
-                    }
-                }
+                let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj1
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                },
+                                {
+                                    $sort: {
+                                        "_id.account": 1
+                                    }
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj1
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                },
+                                {
+                                    $sort: {
+                                        "_id.account": 1
+                                    }
+                                }
+                            ],
 
-                let listData1 = await FINANCIAL_REPORT_COLL.aggregate([
-                    {
-                        $match: conditionObj1
-                    },
-                    {
-                        $group: conditionGroup
-                    },
-                ])
-
-                let listData2 = await FINANCIAL_REPORT_COLL.aggregate([
-                    {
-                        $match: conditionObj2
-                    },
-                    {
-                        $group: conditionGroup
+                        }
                     }
                 ])
 
-                // console.log(listData1)
-                // console.log(listData2)
+                let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj2
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                },
+                                {
+                                    $sort: {
+                                        "_id.account": 1
+                                    }
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj2
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                },
+                                {
+                                    $sort: {
+                                        "_id.account": 1
+                                    }
+                                }
+                            ],
 
-                let arr = [...listData1,...listData2]
-                let arrCombine = [], arr1 = [], arr2 = []
-
-                // Thẻ kho
-                if(option == 1){
-                    listData1.forEach(item=>{
-                        let key = item._id.goods;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
                         }
-                        arr1[key].push(item)
-                    })
-    
-                    listData2.forEach(item=>{
-                        let key = item._id.goods;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
-                }
+                    }
+                ])
 
-                // Sổ quỹ
-                else if(option == 2){
-                    listData1.forEach(item=>{
-                        let key = item._id.account;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
-                        }
-                        arr1[key].push(item)
-                    })
-    
-                    listData2.forEach(item=>{
-                        let key = item._id.account;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
-                }
+                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._debit, conditionPopulate)
+                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._credit, conditionPopulate)
+                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._debit, conditionPopulate)
+                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._credit, conditionPopulate)
 
-                // Công nợ
-                else if(option == 3){
-                    listData1.forEach(item=>{
-                        let key = item._id.customer;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
-                        }
-                        arr1[key].push(item)
-                    })
-    
-                    listData2.forEach(item=>{
-                        let key = item._id.customer;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
-                }
+                // console.log(listData1[0]._debit)
+                // console.log(listData1[0]._credit)
+                // console.log(listData2[0]._debit)
+                // console.log(listData2[0]._credit)
 
-                // console.log(arr1)
-                // console.log(arr2)
-
-                // Thẻ kho
-                if(option == 1){
-                    let listItem = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
-                    .select('name sign unit')
-
-                    listItem.forEach(item =>{
-                        let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
-    
-                        if(arr1[item._id]){
-                            quantityExpense = arr1[item._id][0].quantity
-                            expense = arr1[item._id][0].amount
-                        }
-                        
-                        if(arr2[item._id]){
-                            quantityIncome = arr2[item._id][0].quantity
-                            income = arr2[item._id][0].amount
-                        }
-    
-                        arrCombine.push({
-                            _id: item._id,
-                            name: item.name,
-                            unit: item.unit,
-                            quantityIncome: Number(quantityIncome),
-                            income: Number(income),
-                            quantityExpense: Number(quantityExpense),
-                            expense: Number(expense),
-                        })
-                    })
-
-                    // console.log(arrCombine)
-
-                    return resolve({ error: false, data: arrCombine })
-                }
-
-                // Sổ quỹ
-                else if(option == 2){
-                    let listItem = await ITEM__ACCOUNT_COLL.find({_id: {$in: arr.map(item => item._id.account)}})
-                    .select('name description')
-
-                    listItem.forEach(item =>{
-                        let income = 0, expense = 0
-
-                        if(arr2[item._id]){
-                            expense = arr2[item._id][0].amount
-                        }
-                        
-                        if(arr1[item._id]){
-                            income = arr1[item._id][0].amount
-                        }
-
-                        arrCombine.push({
-                            _id: item._id,
-                            name: item.name,
-                            description: item.description,
-                            income: Number(income),
-                            expense: Number(expense),
-                        })
-                    })
-
-                    return resolve({ error: false, data: arrCombine })
-                }
-
-                // Công nợ
-                else if(option == 3){
-                    let listItem = await ITEM__CONTACT_COLL.find({_id: {$in: arr.map(item => item._id.customer)}})
-                    .select('name phone sign')
-
-                    listItem.forEach(item =>{
-                        let income = 0, expense = 0
-
-                        if(arr1[item._id]){
-                            expense = arr1[item._id][0].amount
-                        }
-                        
-                        if(arr2[item._id]){
-                            income = arr2[item._id][0].amount
-                        }
-
-                        arrCombine.push({
-                            _id: item._id,
-                            name: item.name,
-                            income: Number(income),
-                            expense: Number(expense),
-                        })
-                    })
-
-                    return resolve({ error: false, data: arrCombine })
-                }
+                return resolve({ error: false, data: {infoReport, listData1, listData2} })
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
