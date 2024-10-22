@@ -210,25 +210,20 @@ class Model extends BaseModel {
                 let conditionCreditObj1 = {funda : {$in : listFunda.map(item=>ObjectID(item._id)) }}
                 let conditionDebitObj2 = {funda : {$in : listFunda.map(item=>ObjectID(item._id)) }}
                 let conditionCreditObj2 = {funda : {$in : listFunda.map(item=>ObjectID(item._id)) }}
+
                 let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
                 let arrRevenueID = [], arrExpenseID = []
 
-                let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } })
+                let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
                 .select('_id')
-                // .sort({name: 1})
-
-                let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } })
+                let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
                 .select('_id')
-                // .sort({name: 1})
-
                 if(listAcc1){
                     arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
                 }
                 if(listAcc2){
                     arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
                 }
-                // console.log(arrRevenueID)
-                // console.log(arrExpenseID)
 
                 conditionDebitObj1.debit = {
                     $in: arrRevenueID
@@ -386,6 +381,60 @@ class Model extends BaseModel {
                     expense: Number(expense).toFixed(0),
                     profit: Number(revenue - expense).toFixed(0)
                 }, { new: true });
+
+                /**
+                 * CẬP NHẬT CHO CÁC CƠ SỞ
+                 */
+                for(const item of listFunda){
+                    let revenueFunda = 0, expenseFunda = 0
+
+                    if(listData1[0]._credit.length){
+                        revenueFunda = Number(revenueFunda) + listData1[0]._credit.reduce((accumulator, currentItem) => {
+                            if(currentItem._id.funda.toString() === item._id.toString()  ){
+                                return accumulator + currentItem.amount
+                            }
+                            return accumulator;
+                          }, 0)
+                    }
+                    if(listData1[0]._debit.length){
+                        revenueFunda = Number(revenueFunda) - listData1[0]._debit.reduce((accumulator, currentItem) => {
+                            if(currentItem._id.funda.toString() === item._id.toString()  ){
+                                return accumulator + currentItem.amount
+                            }
+                            return accumulator;
+                          }, 0)
+                    }
+
+                    if(listData2[0]._debit.length){
+                        expenseFunda = Number(expenseFunda) + listData2[0]._debit.reduce((accumulator, currentItem) => {
+                            if(currentItem._id.funda.toString() === item._id.toString()  ){
+                                return accumulator + currentItem.amount
+                            }
+                            return accumulator;
+                          }, 0)
+                    }
+
+                    if(listData2[0]._credit.length){
+                        expenseFunda = Number(expenseFunda) - listData2[0]._credit.reduce((accumulator, currentItem) => {
+                            if(currentItem._id.funda.toString() === item._id.toString()  ){
+                                return accumulator + currentItem.amount
+                            }
+                            return accumulator;
+                          }, 0)
+                    }
+
+                    // console.log({revenueFunda})
+                    // console.log({expenseFunda})
+                    // console.log('===================')
+
+                    await FINANCIAL_REPORT_COLL.findOneAndUpdate({ parent: reportID, funda: item._id}, { 
+                        userUpdate: userID, 
+                        modifyAt: new Date(),
+                        revenue: Number(revenueFunda).toFixed(0),
+                        expense: Number(expenseFunda).toFixed(0),
+                        profit: Number(revenueFunda - expenseFunda).toFixed(0)
+                    }, { new: true })
+                }
 
                 return resolve({ error: false, message: 'Đồng bộ thành công' })
 
@@ -859,408 +908,6 @@ class Model extends BaseModel {
         })
     }
 
-    /*
-     * Name: Tổng hợp
-     * Code: HiepNH
-     * Date: 20/9/2024
-     */
-    getAmountByProperty({ userID, companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate, ctx }){
-        // console.log({ userID, companyID, parentID, accountID, year, month, option })
-        return new Promise(async resolve => {
-            try {
-                /**
-                 * BA
-                 * Tham số của option:
-                 * 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
-                 */
-                let conditionObj = {}, conditionPlanObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
-
-                // Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị: QUỸ
-                if(Number(option) === 1){
-                    let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
-                        appID: "5dfe4bf251dc622100bb9d8c", // Ứng dụng Quỹ
-                        menuID: "66ecc9166748e0001242a36c", // Báo cáo quản trị: 66ecc90fa002e190dc4193b4 // 66ecc9166748e0001242a36c**
-                        type: "1"
-                    })
-
-                    let listDataCompany = await FINANCIAL_REPORT_COLL.aggregate([
-                        {
-                            $match: {
-                                status: 5, // Đã hoàn thành
-                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                                company: {$in: listCompany.data.map(item=> ObjectID(item._id.company._id))},
-                                account: { $exists: true, $ne: null }, // Sổ quỹ
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { company: "$company" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-                    // console.log(listDataCompany)
-                    
-                    let listDataAccount = await FINANCIAL_REPORT_COLL.aggregate([
-                        {
-                            $match: {
-                                status: 5, // Đã hoàn thành
-                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                                company: ObjectID(companyID),
-                                account: { $exists: true, $ne: null }, // Sổ quỹ
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { account: "$account" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-                    // console.log(listDataAccount)
-
-                    await FINANCIAL_REPORT_COLL.populate(listDataCompany, {
-                        path: '_id.company',
-                        select: '_id name sign image',
-                        model: 'company'
-                    })
-
-                    await FINANCIAL_REPORT_COLL.populate(listDataAccount, {
-                        path: '_id.account',
-                        select: '_id name description',
-                        model: 'account'
-                    })
-
-                    return resolve({ error: false, data: { listDataCompany, listDataAccount } })
-                }
-
-                // Báo cáo Biểu đồ theo năm, tháng: QUỸ
-                else if(Number(option) === 2){
-                    let yearFilter = new Date().getFullYear()
-                    let monthFilter = new Date().getMonth() + 1
-                    // console.log({yearFilter})
-                    // console.log({monthFilter})
-
-                    if(!month){
-                        let listData = await FINANCIAL_REPORT_COLL.aggregate([
-                            {
-                                $match: {
-                                    status: 5, // Đã hoàn thành
-                                    type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                                    company: ObjectID(companyID),
-                                    account: { $exists: true, $ne: null }, // Sổ quỹ
-                                }
-                            },
-                            {
-                                $project: {
-                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    outin: 1,
-                                    amount: 1,
-                                }
-                            },
-                            {
-                                $match: {
-                                    year: Number(yearFilter),
-                                    month: Number(monthFilter),
-                                }
-                            },
-                            {
-                                $group: {
-                                    _id: { month: "$month" },
-                                    total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                    total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                                }
-                            },
-                        ])
-    
-                        return resolve({ error: false, data: listData })
-                    }else{
-                        let listData = await FINANCIAL_REPORT_COLL.aggregate([
-                            {
-                                $match: {
-                                    status: 5, // Đã hoàn thành
-                                    type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                                    company: ObjectID(companyID),
-                                    account: { $exists: true, $ne: null }, // Sổ quỹ
-                                }
-                            },
-                            {
-                                $project: {
-                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    amount: 1,
-                                    outin: 1,
-                                }
-                            },
-                            {
-                                $match: {
-                                    year: Number(yearFilter),
-                                    month: Number(monthFilter),
-                                }
-                            },
-                            {
-                                $group: {
-                                    _id: { day: "$day" },
-                                    total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                    total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                                }
-                            },
-                        ])
-    
-                        return resolve({ error: false, data: listData })
-                    }
-                }
-
-                // Báo cáo Khoản mục phí
-                else if(Number(option) === 3){
-                    // Kế hoạch
-                    if (checkObjectIDs(subtypeID)) {
-                        conditionPlanObj = {
-                            status: 5, // Đã hoàn thành
-                            type: 1,
-                            // company: ObjectID(companyID),
-                            subtype: ObjectID(subtypeID),
-                            project: { $exists: true, $ne: null },
-                        }
-                    }else{
-                        conditionPlanObj = {
-                            status: 5, // Đã hoàn thành
-                            type: 1,
-                            company: ObjectID(companyID),
-                            project: { $exists: true, $ne: null },
-                        }
-                    }
-
-                     // Thực tế
-                    if (checkObjectIDs(subtypeID)) {
-                        conditionObj = {
-                            status: 5, // Đã hoàn thành
-                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            // company: ObjectID(companyID),
-                            subtype: ObjectID(subtypeID),
-                            account: { $exists: true, $ne: null }, // Sổ quỹ
-                            project: { $exists: true, $ne: null },
-                        }
-                    }else{
-                        conditionObj = {
-                            status: 5, // Đã hoàn thành
-                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            company: ObjectID(companyID),
-                            account: { $exists: true, $ne: null }, // Sổ quỹ
-                            project: { $exists: true, $ne: null },
-                        }
-                    }
-
-                    let listData1 = await FINANCIAL_REPORT_COLL.aggregate([
-                        {
-                            $match: conditionPlanObj
-                        },
-                        {
-                            $group: {
-                                _id: { project: "$project" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-
-                    let listData2 = await FINANCIAL_REPORT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: { project: "$project" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-
-                    let arr = [...listData1,...listData2]
-                    let arrCombine = [], arr1 = [], arr2 = []
-                    
-                    listData1.forEach(item=>{
-                        let key = item._id.project;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
-                        }
-                        arr1[key].push(item)
-                    })
-    
-                    listData2.forEach(item=>{
-                        let key = item._id.project;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
-
-                    let listItem = await ITEM__DEPARTMENT_COLL.find({_id: {$in: arr.map(item => item._id.project)}})
-                    .select('name sign description unit')
-
-                    listItem.forEach(item =>{
-                        let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
-    
-                        if(arr1[item._id]){
-                            planIncome = arr1[item._id][0].total1
-                            planExpense = arr1[item._id][0].total2
-                        }
-                        
-                        if(arr2[item._id]){
-                            realIncome = arr2[item._id][0].total1
-                            realExpense = arr2[item._id][0].total2
-                        }
-    
-                        arrCombine.push({
-                            _id: item._id,
-                            name: item.name,
-                            sign: item.sign,
-                            description: item.description,
-                            unit: item.unit,
-                            planIncome: Number(planIncome),
-                            planExpense: Number(planExpense),
-                            realIncome: Number(realIncome),
-                            realExpense: Number(realExpense),
-                        })
-                    })
-
-                    return resolve({ error: false, data: arrCombine })
-                }
-
-                // Báo cáo Khoản mục của dự án cụ thể
-                else if(Number(option) === 4){
-
-                    // Kế hoạch
-                    if (checkObjectIDs(projectID)) {
-                        conditionPlanObj = {
-                            status: 5, // Đã hoàn thành
-                            type: 1,
-                            outin: 2, // Chi phí
-                            // company: ObjectID(companyID),
-                            project: ObjectID(projectID),
-                            subtype: { $exists: true, $ne: null },
-                        }
-                    }else{
-                        conditionPlanObj = {
-                            status: 5, // Đã hoàn thành
-                            type: 1,
-                            outin: 2, // Chi phí
-                            company: ObjectID(companyID),
-                            subtype: { $exists: true, $ne: null },
-                        }
-                    }
-
-                    // Thực tế
-                    if (checkObjectIDs(projectID)) {
-                        conditionObj = {
-                            status: 5, // Đã hoàn thành
-                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            outin: 2, // Chi phí
-                            // company: ObjectID(companyID),
-                            project: ObjectID(projectID),
-                            account: { $exists: true, $ne: null }, // Sổ quỹ
-                            subtype: { $exists: true, $ne: null },
-                        }
-                    }else{
-                        conditionObj = {
-                            status: 5, // Đã hoàn thành
-                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            outin: 2, // Chi phí
-                            company: ObjectID(companyID),
-                            account: { $exists: true, $ne: null }, // Sổ quỹ
-                            subtype: { $exists: true, $ne: null },
-                        }
-                    }
-
-                    let listData1 = await FINANCIAL_REPORT_COLL.aggregate([
-                        {
-                            $match: conditionPlanObj
-                        },
-                        {
-                            $group: {
-                                _id: { subtype: "$subtype" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-
-                    let listData2 = await FINANCIAL_REPORT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: { subtype: "$subtype" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-
-                    let arr = [...listData1,...listData2]
-                    let arrCombine = [], arr1 = [], arr2 = []
-                    
-                    listData1.forEach(item=>{
-                        let key = item._id.subtype;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
-                        }
-                        arr1[key].push(item)
-                    })
-    
-                    listData2.forEach(item=>{
-                        let key = item._id.subtype;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
-
-                    let listItem = await ITEM__DOCTYPE_COLL.find({_id: {$in: arr.map(item => item._id.subtype)}})
-                    .select('name sign description unit')
-
-                    listItem.forEach(item =>{
-                        let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
-    
-                        if(arr1[item._id]){
-                            planIncome = arr1[item._id][0].total1
-                            planExpense = arr1[item._id][0].total2
-                        }
-                        
-                        if(arr2[item._id]){
-                            realIncome = arr2[item._id][0].total1
-                            realExpense = arr2[item._id][0].total2
-                        }
-    
-                        arrCombine.push({
-                            _id: item._id,
-                            name: item.name,
-                            sign: item.sign,
-                            description: item.description,
-                            unit: item.unit,
-                            planIncome: Number(planIncome),
-                            planExpense: Number(planExpense),
-                            realIncome: Number(realIncome),
-                            realExpense: Number(realExpense),
-                        })
-                    })
-
-                    return resolve({ error: false, data: arrCombine })
-                }
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        })
-    }
-
-
     /**
      * Dev: HiepNH
      * Func: Tải excel
@@ -1529,152 +1176,6 @@ class Model extends BaseModel {
                 // console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
             }
-        })
-    }
-
-    exportExcelByFilter({ option, userID, companyID, filterParams, ctx }) {
-        // console.log({ option, userID, companyID, filterParams })
-        return new Promise(async resolve => {
-            try {
-                if (Number(option) === 1) {
-                    // console.log('==========================')
-                    const populates = JSON.stringify({
-                        path: 'department position field property area area1 area2 linkUser workingStatus contractType',
-                        select: 'name sign fullname',
-                        populate: {
-                            path: 'parent',
-                            select: 'name',
-                            populate: {
-                                path: 'parent',
-                                select: 'name',
-                            }
-                        }
-                    })
-
-                    const { data, error } = await this.getListByProperty({
-                        ...filterParams,
-                        // populates,
-                        // type: 1,
-                        userID,
-                        companyID,
-                        isExportExcel: false,
-                        ctx
-                    });
-                    // console.log(data)
-
-                    if (error || !data?.length) {
-                        return resolve({ data, error })
-                    }
-
-                    const result = await this.downloadExcelFile(data)
-                    return resolve(result);
-                }
-
-                else if (Number(option) === 2) {
-
-                
-                }
-
-                else if (Number(option) === 3) {
-                    // // console.log('222222222222222223333')
-
-                    // let conditionObj = {
-                    //     company: ObjectID(companyID)
-                    // }
-
-                    // if (Number(validatePhone) === 1) {
-                    //     conditionObj.phone = { $exists: true, $ne: null }
-                    // }
-
-                    // if (Number(validateMail) === 1) {
-                    //     conditionObj.email = { $exists: true, $ne: null }
-                    // }
-
-                    // // let totalCustomer = 0, newCustomer = 0
-
-                    // let limit = Number(page * unit)
-                    // let listData = await ITEM__CONTACT_COLL.find(conditionObj)
-                    //     .select('_id name phone email birthday purchasedValue type note getVouchers modifyAt')
-                    //     .sort({ modifyAt: -1 })
-                    //     // .sort({purchasedValue: -1})
-                    //     .limit(limit)
-
-                    // // Modify the workbook.
-                    // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_ads.xlsx')))
-                    //     .then(async workbook => {
-
-                    //         var i = 3;
-                    //         listData?.forEach((item, index) => {
-
-                    //             workbook.sheet("Export").row(i).cell(1).value(Number(index + 1))
-                    //             workbook.sheet("Export").row(i).cell(2).value(item.name)
-                    //             workbook.sheet("Export").row(i).cell(3).value(item?.phone)
-                    //             workbook.sheet("Export").row(i).cell(4).value(item?.email)
-                    //             workbook.sheet("Export").row(i).cell(5).value(item?.birthday)
-                    //             workbook.sheet("Export").row(i).cell(6).value(Number(item?.type))
-                    //             workbook.sheet("Export").row(i).cell(7).value(item?.note)
-                    //             workbook.sheet("Export").row(i).cell(8).value(Number(item?.purchasedValue))
-                    //             if (item?.getVouchers.length && item?.getVouchers.includes("64378d6618c77f00128abe93")) {
-                    //                 workbook.sheet("Export").row(i).cell(9).value('Quan tâm OA')
-                    //             }
-                    //             workbook.sheet("Export").row(i).cell(10).value(item.modifyAt)
-
-                    //             i++
-                    //         });
-
-                    //         const now = new Date();
-                    //         const filePath = '../../../files/temporary_uploads/';
-                    //         const fileName = `contact_ads${now.getTime()}.xlsx`;
-                    //         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    //         await workbook.toFileAsync(pathWriteFile);
-                    //         const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    //         fs.unlinkSync(pathWriteFile);
-                    //         return resolve({ error: false, data: result?.Location, status: 200 });
-                    //     });
-
-                    // // return resolve({ error: false, data: listData, status: 200 });
-                }
-            } catch (error) {
-                console.log({ error })
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    downloadExcelFile(data) {
-        // console.log('Bạn vừa tải data về hệ thống')
-        return new Promise(resolve => {
-            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/store_inventory_report.xlsx')))
-                .then(async workbook => {
-
-                    let i = 4;
-                    data?.forEach((item, index) => {
-                        workbook.sheet("Data").row(i).cell(1).value(Number(index + 1));
-                        workbook.sheet("Data").row(i).cell(2).value(item.name);
-                        workbook.sheet("Data").row(i).cell(3).value(item?.unit);
-                        workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantityIncome));
-                        workbook.sheet("Data").row(i).cell(5).value(Number(item?.income));
-                        workbook.sheet("Data").row(i).cell(6).value(Number(item?.quantityExpense));
-                        workbook.sheet("Data").row(i).cell(7).value(Number(item?.expense));
-                        workbook.sheet("Data").row(i).cell(8).value(Number(item?.quantityIncome - item?.quantityExpense));
-                        workbook.sheet("Data").row(i).cell(9).value(Number(item?.income - item?.expense));
-                 
-                        i++
-                    });
-
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `store_inventory_report${now.getTime()}.xlsx`;
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
-                });
         })
     }
 }
