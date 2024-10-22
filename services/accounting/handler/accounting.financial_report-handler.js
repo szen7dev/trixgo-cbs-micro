@@ -22,13 +22,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, fundaID, name, note, fromDate, toDate, revenue, expense, profit } = ctx.params;
+                let { name, note, fromDate, toDate } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.insert({ userID, companyID: company._id, parentID, fundaID, name, note, fromDate, toDate, revenue, expense, profit })
+                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.insert({ userID, companyID: company._id, name, note, fromDate, toDate })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -46,18 +46,17 @@ module.exports = {
         auth: "required",
         params: {
             reportID    : { type: "string" },
-            filesID     : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { reportID, name, note, fromDate, toDate, revenue, expense, profit } = ctx.params;
+                let { reportID, name, note, fromDate, toDate } = ctx.params;
 
                 // console.log(ctx.params)
 
 				const { _id: userID } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.update({ userID, reportID, name, note, fromDate, toDate, revenue, expense, profit });
+                let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.update({ userID, reportID, name, note, fromDate, toDate });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -73,19 +72,19 @@ module.exports = {
      */
     syncData: {
         params: {
-            salaryID : { type: "string", optional: true },
+            reportID : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, docID, arrFunda } = ctx.params;
+                let { option, reportID, arrFunda } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.syncData({
-                    userID, companyID: company._id, option, docID, arrFunda
+                    userID, companyID: company._id, option, reportID, arrFunda
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -143,7 +142,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { reportID, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { reportID, parentID, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
                 
                 // console.log(ctx.params)
                 
@@ -156,7 +155,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.getList({
-                        userID, companyID: company._id, keyword, limit, lastestID, select, populates, sortKey 
+                        userID, companyID: company._id, parentID, keyword, limit, lastestID, select, populates, sortKey 
                      })
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
