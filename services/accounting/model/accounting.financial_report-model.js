@@ -42,8 +42,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, companyID, parentID, fundaID, name, note, fromDate, toDate, revenue, expense, profit }) {
-        // const that = this
+    insert({ userID, companyID, name, note, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
                 if (!name || name == '')
@@ -55,46 +54,40 @@ class Model extends BaseModel {
                     name
                 }
 
-                if (checkObjectIDs(fundaID)) {
-                    dataInsert.funda = fundaID;
-                }
-                if (checkObjectIDs(parentID)) {
-                    dataInsert.parent = parentID;
-                }
-
                 if (fromDate) {
                     dataInsert.fromDate = fromDate;
                 }
                 if (toDate) {
                     dataInsert.toDate = toDate;
                 }
-
-                if (!isNaN(revenue)) {
-                    dataInsert.revenue = Number(revenue)
-                }
-                if (!isNaN(expense)) {
-                    dataInsert.expense = Number(expense)
-                }
-                if (!isNaN(profit)) {
-                    dataInsert.profit = Number(profit)
-                }
             
                 if (note && note != '') {
                     dataInsert.note = note;
                 }
-               
-                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
-                // // Cập nhật lại thông tin Order
-                // await that.updateValue({orderID, userID})
+                let listFunda = await ITEM_FUNDA_COLL.find({company: companyID})
+                for(const item of listFunda){
+                    let dataInsertDetail = {
+                        company: companyID,
+                        userCreate: userID, 
+                        parent: infoAfterInsert._id,
+                        funda: item.funda,
+                        name: item.name,
+                        fromDate: infoAfterInsert.fromDate,
+                        toDate: infoAfterInsert.toDate,
+                    }
 
-                // await FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderID, { 
-                //     $addToSet: { products: infoAfterInsert._id } 
-                // }, { new: true });
+                    let infoChild = await this.insertData(dataInsertDetail)
+                    if(infoChild){
+                        await FINANCIAL_REPORT_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                            $addToSet: {childs: infoChild._id}
+                        }, { new: true });
+                    }
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -108,7 +101,7 @@ class Model extends BaseModel {
      * Code  : HiepNH
      * Date  : 15/9/2024
      */
-    updateValue({ orderID, userID }){
+    updateValue({ reportID, userID }){
         return new Promise(async (resolve) => {
             try {    
                 let dataUpdate = { 
@@ -119,7 +112,7 @@ class Model extends BaseModel {
                 let listData = await FINANCIAL_REPORT_COLL.aggregate([
                     {
                         $match: {
-                            order: ObjectID(orderID),
+                            order: ObjectID(reportID),
                         }
                     },
                     {
@@ -133,7 +126,7 @@ class Model extends BaseModel {
                     dataUpdate.amount = Number(listData[0].amount)
                 }
 
-                let infoAfterUpdate = await FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
+                let infoAfterUpdate = await FINANCIAL_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true });
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
 
@@ -149,126 +142,48 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice }) {
-        // console.log({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice })
-        const that = this
+    update({ userID, reportID, name, note, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderProductID))
-                    return resolve({ error: true, message: 'orderProductID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
+                if(!checkObjectIDs(reportID))
+                    return resolve({ error: true, message: 'reportID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
                 let dataUpdate = { 
                     userUpdate: userID, 
                     modifyAt: new Date() 
                 };
 
-                if (checkObjectIDs(filesID)) {
-                    dataUpdate.$addToSet = { files: filesID };
-                }
-
-                if (checkObjectIDs(fundaID)) {
-                    dataUpdate.funda = fundaID;
-                }
-                if (checkObjectIDs(accountID)) {
-                    dataUpdate.account = accountID;
-                }
-                if (checkObjectIDs(contraID)) {
-                    dataUpdate.contra = contraID;
-                }
-                if (checkObjectIDs(customerID)) {
-                    dataUpdate.customer = customerID;
-                }
-                if (checkObjectIDs(contractID)) {
-                    dataUpdate.contract = contractID;
-                }
-
-                if (checkObjectIDs(goodsID)) {
-                    let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
-                    dataUpdate.goods = goodsID;
-
-                    if(infoGoods && infoGoods.parent){
-                        dataUpdate.parentGoods = infoGoods.parent;
-                    }else{
-                        dataUpdate.parentGoods = null;
-                    }
-                }
-
-                if (checkObjectIDs(assetsID)) {
-                    dataUpdate.assets = assetsID;
-                }
-                if (checkObjectIDs(workID)) {
-                    dataUpdate.budgetWork = workID;
-
-                    // Lấy thông tin phần tử cha để đưa sang
-                    let infoWork = await BUDGET_WORK_COLL.findById(workID)
-                    if(infoWork){
-                        if(infoWork.budget){
-                            dataUpdate.budget = infoWork.budget;
-                        }
-                        if(infoWork.item){
-                            dataUpdate.budgetItem = infoWork.item;
-                        }
-                        if(infoWork.group){
-                            dataUpdate.budgetGroup = infoWork.group;
-                        }
-                    }
-                }
-
-                if (checkObjectIDs(subtypeID)) {
-                    dataUpdate.subtype = subtypeID;
-
-                    // Lấy thông tin phần tử cha để đưa sang
-                    let infoDoctype = await ITEM__DOCTYPE_COLL.findById(subtypeID)
-                    if(infoDoctype){
-                        if(infoDoctype.parent){
-                            dataUpdate.parentSubtype = infoDoctype.parent;
-                        }
-                    }
-                }
-                
-                if (checked && !isNaN(checked) && Number(checked) > 0) {
-                    dataUpdate.checked = checked;
-                }
-
-                let convertStr = ''
                 if (name && name != '') {
                     dataUpdate.name = name;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
                 }
+
                 if (note && note != '') {
                     dataUpdate.note = note;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
-                if(convertStr != ""){
-                    dataUpdate.namecv = convertStr
                 }
 
-                let unitPrice2 = 0
-                if (unitPrice != 0) {
-                    unitPrice2 = Number(unitPrice)
+                if (fromDate) {
+                    dataUpdate.fromDate = fromDate;
                 }
-                if (quantity && !isNaN(quantity)) {
-                    dataUpdate.quantity = Number(quantity)
-                }
-
-                if (weight && !isNaN(weight)) {
-                    dataUpdate.weight = weight
+                if (toDate) {
+                    dataUpdate.toDate = toDate;
                 }
 
-                if(unitPrice2 >= 0){
-                    let amount  = Number(quantity * unitPrice2).toFixed(0)
-
-                    dataUpdate.unitPrice = unitPrice2
-                    dataUpdate.amount = amount
-                }
-                // console.log({ dataUpdate })
-
-                let infoAfterUpdate = await FINANCIAL_REPORT_COLL.findByIdAndUpdate(orderProductID, dataUpdate, { new: true })
+                let infoAfterUpdate = await FINANCIAL_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                // Cập nhật lại thông tin Order
-                await that.updateValue({orderID: infoAfterUpdate.order, userID})
+                // Cập nhật lại mẩu tin con
+                await FINANCIAL_REPORT_COLL.updateMany(
+                    { 
+                        parent: ObjectID(reportID),
+                    },
+                    { $set: { 
+                        "name" : infoAfterUpdate.status,
+                        "note" : infoAfterUpdate.project,
+                        "fromDate" : infoAfterUpdate.package,
+                        "toDate" : infoAfterUpdate.toPackage
+                    } }
+                )
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -283,12 +198,12 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({
-        companyID, userID, option, docID, arrFunda
+        companyID, userID, option, reportID, arrFunda
     }){
         // const that = this
         return new Promise(async (resolve) => {
             try {
-                let info = await FINANCIAL_REPORT_COLL.findById(docID)
+                let info = await FINANCIAL_REPORT_COLL.findById(reportID)
                 // console.log(info)
 
                 let listFunda = arrFunda.map(item=>ObjectID(item))
@@ -439,6 +354,9 @@ class Model extends BaseModel {
                     }
                 ])
 
+                console.log(listData1)
+                console.log(listData2)
+
                 return resolve({ error: false, data: { listData1, listData2 } })
 
             } catch (error) {
@@ -490,8 +408,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
-        // console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
+    getList({  userID, companyID, parentID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -504,32 +421,11 @@ class Model extends BaseModel {
                 let sortBy;
                 let keys	 = ['createAt__1', '_id__1'];
 
-                if(orderID ){
-                    conditionObj.order = ObjectID(orderID)
+                if (checkObjectIDs(parentID)) {
+                    conditionObj.parent = parentID;
                 }else{
-                    if(fundaID ){
-                        conditionObj.funda = ObjectID(fundaID)
-                    }else{
-                        // Thẻ kho
-                        if(option == 1){
-                            conditionObj.company = companyID
-                            conditionObj.goods = { $exists: true, $ne: null }
-                        }
-
-                        // Sổ quỹ
-                        if(option == 2){
-                            conditionObj.company = companyID
-                            conditionObj.account = { $exists: true, $ne: null }
-                            conditionObj.type = {$in: [7, 8]}
-                        }
-
-                        // Công nợ
-                        if(option == 3){
-                            conditionObj.company = companyID
-                            conditionObj.customer = { $exists: true, $ne: null }
-                        }
-                    }
-                }
+                    conditionObj.parent = { $exists: false }
+                }  
 
                 // Làm rõ mục đích để làm gì?
                 if (sortKey && typeof sortKey === 'string') {
@@ -552,70 +448,6 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
-                }
-
-                if (checkObjectIDs(projectID)) {
-                    conditionObj.project = projectID;
-                }
-
-                if (checkObjectIDs(packageID)) {
-                    conditionObj.package = packageID;
-                }
-
-                if (checkObjectIDs(toPackageID)) {
-                    conditionObj.toPackage = toPackageID;
-                }
-
-                if (checkObjectIDs(warehouseID)) {
-                    conditionObj.warehouse = warehouseID;
-                }
-
-                if (checkObjectIDs(accountID)) {
-                    conditionObj.account = accountID;
-                }
-
-                if (checkObjectIDs(contraID)) {
-                    conditionObj.contra = contraID;
-                }
-
-                if (checkObjectIDs(customerID)) {
-                    conditionObj.customer = customerID;
-                }
-
-                if (checkObjectIDs(userCreateID)) {
-                    conditionObj.userCreate = userCreateID;
-                }
-
-                if (checkObjectIDs(goodsID)) {
-                    conditionObj.goods = goodsID;
-                }
-
-                if (checkObjectIDs(parentGoodsID)) {
-                    conditionObj.parentGoods = parentGoodsID;
-                }
-
-                if (checkObjectIDs(assetsID)) {
-                    conditionObj.assets = assetsID;
-                }
-
-                if (checkObjectIDs(workID)) {
-                    conditionObj.budgetWork = workID;
-                }
-
-                if (checkObjectIDs(subtypeID)) {
-                    conditionObj.subtype = subtypeID;
-                }
-
-                if (!isNaN(status) && Number(status) >= 1) {
-                    conditionObj.status = Number(status)
-                }
-
-                if (!isNaN(outin) && Number(outin) >= 1) {
-                    conditionObj.outin = Number(outin)
-                }
-
-                if (!isNaN(type) && Number(type) >= 1) {
-                    conditionObj.type = Number(type)
                 }
 
                 if (keyword) {

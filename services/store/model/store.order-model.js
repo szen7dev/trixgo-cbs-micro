@@ -635,12 +635,12 @@ getList({ option, status, arrType, outin, type, userID, companyID, projectID, pa
               }
 
               if (checkObjectIDs(packageID)) {
-                conditionObj.package = packageID;
-            }
+                    conditionObj.package = packageID;
+                }
 
-            if (checkObjectIDs(toPackageID)) {
-                conditionObj.toPackage = toPackageID;
-            }
+                if (checkObjectIDs(toPackageID)) {
+                    conditionObj.toPackage = toPackageID;
+                }
 
               if (checkObjectIDs(warehouseID)) {
                   conditionObj.warehouse = warehouseID;
