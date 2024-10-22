@@ -200,18 +200,16 @@ class Model extends BaseModel {
     syncData({
         companyID, userID, option, reportID, arrFunda
     }){
-        // const that = this
         return new Promise(async (resolve) => {
             try {
                 let info = await FINANCIAL_REPORT_COLL.findById(reportID)
-                // console.log(info)
 
-                let listFunda = arrFunda.map(item=>ObjectID(item))
+                let listFunda = await ITEM_FUNDA_COLL.find({company: companyID, members: {$in: [userID]}}).select('_id')
 
-                let conditionDebitObj1 = {funda : {$in : listFunda }}
-                let conditionCreditObj1 = {funda : {$in : listFunda }}
-                let conditionDebitObj2 = {funda : {$in : listFunda }}
-                let conditionCreditObj2 = {funda : {$in : listFunda }}
+                let conditionDebitObj1 = {funda : {$in : listFunda.map(item=>ObjectID(item._id)) }}
+                let conditionCreditObj1 = {funda : {$in : listFunda.map(item=>ObjectID(item._id)) }}
+                let conditionDebitObj2 = {funda : {$in : listFunda.map(item=>ObjectID(item._id)) }}
+                let conditionCreditObj2 = {funda : {$in : listFunda.map(item=>ObjectID(item._id)) }}
                 let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
                 let arrRevenueID = [], arrExpenseID = []
 
@@ -279,8 +277,6 @@ class Model extends BaseModel {
                 // console.log(conditionCreditObj)
                 // console.log(conditionProject)
                 // console.log(conditionMatch)
-
-                let revenue = 0, expense = 0
 
                 let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
@@ -354,10 +350,44 @@ class Model extends BaseModel {
                     }
                 ])
 
-                console.log(listData1)
-                console.log(listData2)
+                // console.log(listData1)
+                // console.log(listData2)
+                console.log(listData1[0]._debit)
+                console.log(listData1[0]._credit)
 
-                return resolve({ error: false, data: { listData1, listData2 } })
+                let revenue = 0, expense = 0
+                if(listData1[0]._credit.length){
+                    revenue = Number(revenue) + listData1[0]._credit.reduce((accumulator, currentItem) => {
+                        return accumulator + currentItem.amount
+                      }, 0)
+                }
+                if(listData1[0]._debit.length){
+                    revenue = Number(revenue) - listData1[0]._debit.reduce((accumulator, currentItem) => {
+                        return accumulator + currentItem.amount
+                      }, 0)
+                }
+
+                if(listData2[0]._debit.length){
+                    expense = Number(expense) + listData2[0]._debit.reduce((accumulator, currentItem) => {
+                        return accumulator + currentItem.amount
+                      }, 0)
+                }
+                if(listData2[0]._credit.length){
+                    expense = Number(expense) - listData2[0]._credit.reduce((accumulator, currentItem) => {
+                        return accumulator + currentItem.amount
+                      }, 0)
+                }
+
+                // console.log({revenue})
+                // console.log({expense})
+
+                await FINANCIAL_REPORT_COLL.findByIdAndUpdate(reportID, {
+                    revenue: Number(revenue).toFixed(0),
+                    expense: Number(expense).toFixed(0),
+                    profit: Number(revenue - expense).toFixed(0)
+                }, { new: true });
+
+                return resolve({ error: false, message: 'Đồng bộ thành công' })
 
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
