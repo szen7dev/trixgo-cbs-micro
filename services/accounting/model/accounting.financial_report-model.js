@@ -81,7 +81,12 @@ class Model extends BaseModel {
                         toDate: infoAfterInsert.toDate,
                     }
 
-                    await this.insertData(dataInsertDetail)
+                    let infoChild = await this.insertData(dataInsertDetail)
+                    if(infoChild){
+                        await FINANCIAL_REPORT_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                            $addToSet: {childs: infoChild._id}
+                        }, { new: true });
+                    }
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });
@@ -348,6 +353,9 @@ class Model extends BaseModel {
                         }
                     }
                 ])
+
+                console.log(listData1)
+                console.log(listData2)
 
                 return resolve({ error: false, data: { listData1, listData2 } })
 

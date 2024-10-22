@@ -20,6 +20,10 @@ module.exports  = DATABASE_MIDDLEWARE("financial_report", {
         type: Schema.Types.ObjectId,
         ref : "financial_report"
     },
+    childs : [{
+        type   : Schema.Types.ObjectId,
+        ref: 'financial_report'
+    }],
     //_________Cơ sở     
     funda: {
         type: Schema.Types.ObjectId,
