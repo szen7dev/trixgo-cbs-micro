@@ -586,7 +586,10 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 				//=======================VARIABLE/CONSTANTS=====================
-				let dataUpdate = {};
+				let dataUpdate = {
+					userUpdate: authorID,
+					modifyAt: new Date()
+				};
 
 				//=========================VALIDATION==========================
 				if(!checkObjectIDs([mediaID])) {
