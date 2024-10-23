@@ -15,31 +15,21 @@ const GeoSchema = new Schema({
 });
 
 module.exports  = DATABASE_MIDDLEWARE("media", {
-    /**
-     *  Người tạo bài viết
-     */
-    author: {
-        type    :  Schema.Types.ObjectId,
-        ref     : 'user'
+    //_________Công ty
+    company: {
+        type: Schema.Types.ObjectId,
+        ref: 'company'
     },
-
-    /**
-     * Tiêu đề của bài viết
-     */
-    title: {
-        type: String,
-		default: ''
+    //_________Dự án, phòng ban
+    department: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'department'
     },
-
-    /**
-     * Nội dung của bài viết
-     */
-    content: {
-        type: String,
-		default: ''
+    //_________Chủ đề chuyển đổi số
+    other: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'doctype'
     },
-    //_________Slug/URL
-    slug: String,
     /**
      * Loại bài viết
      * 1: Bài viết công ty (Thành viên trong công ty)
@@ -53,93 +43,74 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type: Number,
         default: 1
     },
-
-	/**
-     * Bài viết gán địa điểm
-     */
-	location: GeoSchema,
-
-    /**
-     * Bạn bè được tag trong bài viết
-     */
-    tagFriends: [{
+    //_________Tiêu đề của bài viết
+    title: String,
+    //_________Tóm tắt
+    summary: String,
+    //_________Nội dung của bài viết
+    content: String,
+    //_________Mô tả (SEO)
+    description: String,
+    //_________Slug/URL (SEO)
+    slug: String,
+    //_________Chuyên mục
+    menu: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'media_menu'
+    },
+    //_________Tags
+    tags: [{
         type: Schema.Types.ObjectId,
-        ref: 'user'
+        ref: 'doctype'
     }],
-
-    /**
-     * Các files được đính kèm trong bài viết
-     */
+    //_________Địa điểm
+	location: GeoSchema,
+    //_________File
     files: [{
         type: Schema.Types.ObjectId,
         ref: 'media_file'
     }],
-
-    /**
-     * Các ảnh được đính kèm trong bài viết
-     */
+    //_________Ảnh
     images: [{
         type: Schema.Types.ObjectId,
         ref: 'media_file'
     }],
-
-    /**
-     * Background bài viết
-     */
+    //_________Background bài viết (ảnh đại diện bài viết)
     background: {
         type: Schema.Types.ObjectId,
         ref: 'media_file'
     },
-
     /**
      * Trạng thái của bài viết
-     * 1: hoạt động (active)
-     * 2: đã xóa
+     * 1: Hoạt động (active)
+     * 2: Ẩn
     */
     status: {
         type   : Number,
         default: 1
     },
-
-    /**
-     * ID Công ty
-     */
-    company: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'company'
-    },
-
-    /**
-     * ID dự án phòng ban
-     */
-    department: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'department'
-    },
-
-    /**
-     * ID Chủ đề chuyển đổi số
-     */
-    other: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'doctype'
-    },
-
-    //_________Số lượng reaction của media
+    //_________Số lượng reaction
     amountReaction: {
         type    :  Number,
         default : 0
     },
-
-    //_________Số lượng comment của media
+    //_________Số lượng comment
     amountComment: {
         type    :  Number,
         default : 0
     },
-
-    //_________Số lượng lượt xem của media
+    //_________Số lượng lượt xem
     amountView: {
         type    :  Number,
         default : 0
     },
+    //_________Người tạo bài viết
+    author: {
+        type    :  Schema.Types.ObjectId,
+        ref     : 'user'
+    },
+    userUpdate: {
+        type: Schema.Types.ObjectId,
+        ref : 'user'
+    }
 })

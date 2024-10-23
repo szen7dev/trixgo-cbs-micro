@@ -31,7 +31,7 @@ module.exports = {
             background      : { type: "string", optional: true },
             files           : { type: "array", optional: true },
             images          : { type: "array", optional: true },
-            tagFriends      : { type: "array", optional: true },
+            tags            : { type: "array", optional: true },
             otherID         : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             departmentID    : { type: "string", optional: true },
@@ -42,12 +42,14 @@ module.exports = {
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const {
                     title, content, type, otherID, companyID, departmentID, location,
-                    tagFriends, files, images, background
+                    tags, files, images, background, summary, description, status, menu
                 } = ctx.params;
+
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await MEDIA_MODEL.insertMedia({
                     title, content, type, otherID, companyID, departmentID, location,
-                    tagFriends, files, images, background, authorID, bizfullname, ctx
+                    tags, files, images, background, summary, description, status, menu, authorID, bizfullname, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
