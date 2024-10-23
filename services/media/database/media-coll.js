@@ -70,8 +70,8 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type: Schema.Types.ObjectId,
         ref: 'media_file'
     }],
-    //_________Background bài viết (ảnh đại diện bài viết)
-    background: {
+    //_________Thumbnail bài viết
+    thumbnail: {
         type: Schema.Types.ObjectId,
         ref: 'media_file'
     },
