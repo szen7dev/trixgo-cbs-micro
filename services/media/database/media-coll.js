@@ -60,12 +60,12 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     }],
     //_________Địa điểm
 	location: GeoSchema,
-    //_________File
+    //_________File (cân nhắc bỏ)
     files: [{
         type: Schema.Types.ObjectId,
         ref: 'media_file'
     }],
-    //_________Ảnh
+    //_________Ảnh (cân nhắc bỏ)
     images: [{
         type: Schema.Types.ObjectId,
         ref: 'media_file'
