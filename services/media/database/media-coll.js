@@ -25,11 +25,6 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type    : Schema.Types.ObjectId,
         ref     : 'department'
     },
-    //_________Chủ đề chuyển đổi số
-    other: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'doctype'
-    },
     /**
      * Loại bài viết
      * 1: Bài viết công ty (Thành viên trong công ty)
@@ -54,7 +49,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     //_________Slug/URL (SEO)
     slug: String,
     //_________Chuyên mục
-    menu: {
+    category: {
         type    : Schema.Types.ObjectId,
         ref     : 'media_menu'
     },

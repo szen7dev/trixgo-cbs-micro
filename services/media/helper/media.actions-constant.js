@@ -2,6 +2,7 @@ const BASE_ACTIONS = 'ACT_MEDIA';
 const COMMENT      = 'COMMENT';
 const MENU      = 'MENU';
 const CATE      = 'CATE';
+const TAG      = 'TAG';
 
 const CF_ACTIONS_MEDIA = {
 	/**
@@ -30,6 +31,14 @@ const CF_ACTIONS_MEDIA = {
 	CATE_UPDATE                 			          : `${BASE_ACTIONS}_${CATE}_UPDATE`,
 	CATE_REMOVE                			          : `${BASE_ACTIONS}_${CATE}_REMOVE`,
 	CATE_GET_INFO_AND_GET_LIST                        : `${BASE_ACTIONS}_${CATE}_GET_INFO_AND_GET_LIST`,
+
+     /**
+     * TAG
+     */
+	TAG_INSERT                		               : `${BASE_ACTIONS}_${TAG}_INSERT`,
+	TAG_UPDATE                 			          : `${BASE_ACTIONS}_${TAG}_UPDATE`,
+	TAG_REMOVE                			          : `${BASE_ACTIONS}_${TAG}_REMOVE`,
+	TAG_GET_INFO_AND_GET_LIST                        : `${BASE_ACTIONS}_${TAG}_GET_INFO_AND_GET_LIST`,
 
      /**
       * FILE MEDIA

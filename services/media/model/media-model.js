@@ -47,7 +47,7 @@ class Model extends BaseModel {
 	 */
 		insertMedia({
 			companyID, authorID, type, title, content, summary, description,
-			tags, files, images, background, status, menu, ctx
+			tags, files, images, background, status, categoryID, ctx
 		}) {
 			return new Promise(async (resolve) => {
 				try {
@@ -86,9 +86,13 @@ class Model extends BaseModel {
 						default:
 							break;
 					}
-	
-					if (tags && tags.length) {
+
+					if (checkObjectIDs(tags)) {
 						dataInsert.tags = tags;
+					}
+
+					if (checkObjectIDs(categoryID)) {
+						dataInsert.category = categoryID;
 					}
 
 					if (summary && summary != '') {
@@ -580,8 +584,8 @@ class Model extends BaseModel {
      * Updated: 24/02/2022
 	 */
 	updateMedia({
-		mediaID, title, content, type, otherID, companyID, departmentID, location,
-		tagFriends, files, images, background, authorID, ctx
+		mediaID, title, content, type, companyID, departmentID, location,
+		tags, files, images, background, authorID, categoryID,  summary, description, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
@@ -682,30 +686,20 @@ class Model extends BaseModel {
 					dataUpdate.location = locationOfMedia;
 				}
 
-				if (tagFriends) {
-					if(!checkObjectIDs(tagFriends)) {
-						return resolve({
-							error: true,
-							message: "Tham số tagFriends không hợp lệ",
-							keyError: "params_tagFriends_invalid",
-							status: 400
-						})
-					}
-
-					dataUpdate.tagFriends = tagFriends;
+				if (checkObjectIDs(tags)) {
+					dataUpdate.tags = tags;
 				}
 
-				if (companyID) {
-					if(!checkObjectIDs([companyID])) {
-						return resolve({
-							error: true,
-							message: "Tham số companyID không hợp lệ",
-							keyError: "params_companyID_invalid",
-							status: 400
-						})
-					}
+				if (checkObjectIDs(categoryID)) {
+					dataUpdate.category = categoryID;
+				}
 
-					dataUpdate.company = companyID;
+				if (summary && summary != '') {
+					dataUpdate.summary = summary;
+				}
+
+				if (description && description != '') {
+					dataUpdate.description = description;
 				}
 
 				if (departmentID) {
@@ -719,19 +713,6 @@ class Model extends BaseModel {
 					}
 
 					dataUpdate.department = departmentID;
-				}
-
-				if (otherID) {
-					if(!checkObjectIDs([otherID])) {
-						return resolve({
-							error: true,
-							message: "Tham số otherID không hợp lệ",
-							keyError: "params_otherID_invalid",
-							status: 400
-						})
-					}
-
-					dataUpdate.other = otherID;
 				}
 
 				if (background) {

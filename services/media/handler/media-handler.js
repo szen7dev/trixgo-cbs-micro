@@ -41,15 +41,15 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
                 const {
-                    title, content, type, otherID, companyID, departmentID, location,
-                    tags, files, images, background, summary, description, status, menu
+                    title, content, type, companyID, departmentID, location,
+                    tags, files, images, background, summary, description, status, categoryID
                 } = ctx.params;
 
                 console.log(ctx.params)
 
                 const resultAfterCallHandler = await MEDIA_MODEL.insertMedia({
-                    title, content, type, otherID, companyID, departmentID, location,
-                    tags, files, images, background, summary, description, status, menu, authorID, bizfullname, ctx
+                    title, content, type, companyID, departmentID, location,
+                    tags, files, images, background, summary, description, status, categoryID, authorID, bizfullname, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -84,13 +84,13 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const {
-                    mediaID, title, content, type, otherID, companyID, departmentID, location,
-                    tagFriends, files, images, background
+                    mediaID, title, content, type, companyID, departmentID, location,
+                    tags, files, images, background, categoryID, summary, description
                 } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.updateMedia({
-                    mediaID, title, content, type, otherID, companyID, departmentID, location,
-                    tagFriends, files, images, background, authorID, ctx
+                    mediaID, title, content, type, companyID, departmentID, location,
+                    tags, files, images, background, authorID, categoryID,  summary, description, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
