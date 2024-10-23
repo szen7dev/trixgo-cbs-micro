@@ -40,352 +40,493 @@ class Model extends BaseModel {
         super(MEDIA_COLL);
     }
 
-	/**
+		/**
 	 * Dev: MinhVH
 	 * Func: THÊM BÀI VIẾT MỚI
      * Updated: 24/02/2022
 	 */
-	insertMedia({
-		title, content, type, otherID, companyID, departmentID, location,
-		tagFriends, files, images, background, authorID, bizfullname, ctx
-	}) {
-        return new Promise(async (resolve) => {
-            try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let dataInsert = {};
-				let dataUpdate = {};
-				let arrReceiver = [];
-				let titleMSS = 'THÔNG BÁO';
-				let descriptionMSS = '';
-
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([authorID])) {
-					return resolve({
-						error: true,
-						message: "Tham số authorID không hợp lệ",
-						keyError: "params_authorID_invalid",
-						status: 400
-					})
-				}
-
-				if (!MEDIA_TYPES.includes(type)) {
-					return resolve({
-						error: true,
-						message: "Tham số type không hợp lệ",
-						keyError: "params_type_invalid",
-						status: 400
-					})
-				}
-
-				let checkName = await MEDIA_COLL.findOne({ company: companyID, title: title.trim() });
-				if(checkName)
-					return resolve({ error: true, message: "name_existed" });
-
-				dataInsert = {
-					author: authorID,
-					title,
-					content
-				}
-
-				dataInsert.slug = stringUtils.getSlugAccents(title)
-
-				switch (type) {
-					case 'company':
-						dataInsert.type = 1;
-						break;
-					case 'department':
-						dataInsert.type = 2;
-						break;
-					case 'digital-conversion':
-						dataInsert.type = 3;
-						break;
-					case 'system':
-						dataInsert.type = 4;
-						break;
-					case 'just-me':
-						dataInsert.type = 5;
-						break;
-					default:
-						break;
-				}
-
-				if (location) {
-					let locationOfMedia = {
-						type: "Point",
-						coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
+		insertMedia({
+			companyID, authorID, title, content, summary, description,
+			tags, files, images, status, categoryID, ctx
+		}) {
+			return new Promise(async (resolve) => {
+				try {	
+					let checkName = await MEDIA_COLL.findOne({ company: companyID, title: title.trim() });
+					if(checkName)
+						return resolve({ error: true, message: "title|name_existed" });
+	
+					let dataInsert = {
+						company: companyID,
+						author: authorID,
+						title,
+						content,
+						slug: stringUtils.getSlugAccents(title)
+					}
+	
+					if (!isNaN(status)) {
+						dataInsert.status = Number(status)
 					}
 
-					dataInsert.location = locationOfMedia;
-				}
+					if (checkObjectIDs(tags)) {
+						dataInsert.tags = tags;
+					}
 
-				if (otherID) {
-					if(!checkObjectIDs(otherID)) {
+					if (checkObjectIDs(categoryID)) {
+						dataInsert.category = categoryID;
+					}
+
+					if (summary && summary != '') {
+						dataInsert.summary = summary;
+					}
+
+					if (description && description != '') {
+						dataInsert.description = description;
+					}
+	
+					let infoMediaAfterInserted = await this.insertData(dataInsert);
+					if(!infoMediaAfterInserted) {
 						return resolve({
 							error: true,
-							message: "Tham số otherID không hợp lệ",
-							keyError: "params_otherID_invalid",
-							status: 400
+							message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+							keyError: "error_occurred",
+							status: 422
 						})
 					}
-
-					dataInsert.other = otherID;
-				}
-
-				if (companyID) {
-					if(!checkObjectIDs(companyID)) {
-						return resolve({
-							error: true,
-							message: "Tham số companyID không hợp lệ",
-							keyError: "params_companyID_invalid",
-							status: 400
-						})
-					}
-
-					dataInsert.company = companyID;
-				}
-
-				if (departmentID) {
-					if(!checkObjectIDs(departmentID)) {
-						return resolve({
-							error: true,
-							message: "Tham số departmentID không hợp lệ",
-							keyError: "params_departmentID_invalid",
-							status: 400
-						})
-					}
-
-					dataInsert.department = departmentID;
-				}
-
-				if (tagFriends && tagFriends.length) {
-					if(!checkObjectIDs(tagFriends)) {
-						return resolve({
-							error: true,
-							message: "Tham số tagFriends không hợp lệ",
-							keyError: "params_tagFriends_invalid",
-							status: 400
-						})
-					}
-
-					dataInsert.tagFriends = tagFriends;
-				}
-
-				let infoMediaAfterInserted = await this.insertData(dataInsert);
-
-                if(!infoMediaAfterInserted) {
-					return resolve({
-						error: true,
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-						keyError: "error_occurred",
-						status: 422
-					})
-				}
-
-				const { _id: mediaID, type: mediaType, company } = infoMediaAfterInserted;
-
-				if (background) {
-					if(!checkObjectIDs([background])) {
-						return resolve({
-							error: true,
-							message: "Tham số background không hợp lệ",
-							keyError: "params_background_invalid",
-							status: 400
-						})
-					}
-
-					const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
-						fileID: background
-					});
-
-					if(!infoFileCore.error) {
-						const { app, company, name, nameOrg, description, status, path, size, mimeType, type, author } = infoFileCore.data;
-
-						const infoAfterInserted = await MEDIA__FILE_COLL.create({
-							media: mediaID,
-							file: fileID,
-							app, company,
-							name, nameOrg, path, size, mimeType,
-							description, status, type, author
-						});
-
-						dataUpdate.background = infoAfterInserted._id;
-					}
-				}
-
-				if (files && files.length) {
-					if(!checkObjectIDs(files)) {
-						return resolve({
-							error: true,
-							message: "Tham số files không hợp lệ",
-							keyError: "params_files_invalid",
-							status: 400
-						})
-					}
-
-					let { results, errors } = await PromisePool
-						.for(files)
-						.withConcurrency(2)
-						.process(async fileID => {
-							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
-								fileID
-							});
-
-							if(!infoFileCore.error) {
-								const {
-									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
-								} = infoFileCore.data;
-
-								const infoAfterInserted = await MEDIA__FILE_COLL.create({
-									media: mediaID,
-									file: fileID,
-									app, company,
-									name, nameOrg, path, size, mimeType,
-									description, status, type, author
+	
+					if (files && files.length) {
+						if(!checkObjectIDs(files)) {
+							return resolve({
+								error: true,
+								message: "Tham số files không hợp lệ",
+								keyError: "params_files_invalid",
+								status: 400
+							})
+						}
+	
+						let { results, errors } = await PromisePool
+							.for(files)
+							.withConcurrency(2)
+							.process(async fileID => {
+								const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+									fileID
 								});
-								return infoAfterInserted._id;
-							}
-						})
-
-					if(results.length && !errors.length) {
-						results = results.filter(Boolean);
-						dataUpdate.files = results;
+	
+								if(!infoFileCore.error) {
+									const {
+										app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+									} = infoFileCore.data;
+	
+									const infoAfterInserted = await MEDIA__FILE_COLL.create({
+										media: mediaID,
+										file: fileID,
+										app, company,
+										name, nameOrg, path, size, mimeType,
+										description, status, type, author
+									});
+									return infoAfterInserted._id;
+								}
+							})
+	
+						if(results.length && !errors.length) {
+							results = results.filter(Boolean);
+							dataUpdate.files = results;
+						}
 					}
-				}
-
-				if (images && images.length) {
-					if(!checkObjectIDs(images)) {
-						return resolve({
-							error: true,
-							message: "Tham số images không hợp lệ",
-							keyError: "params_images_invalid",
-							status: 400
-						})
-					}
-
-					let { results, errors } = await PromisePool
-						.for(images)
-						.withConcurrency(2)
-						.process(async fileID => {
-							const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
-								fileID
-							});
-
-							if(!infoFileCore.error) {
-								const {
-									app, company, name, nameOrg, description, status, path, size, mimeType, type, author
-								} = infoFileCore.data;
-
-								const infoAfterInserted = await MEDIA__FILE_COLL.create({
-									media: mediaID,
-									file: fileID,
-									app, company,
-									name, nameOrg, path, size, mimeType,
-									description, status, type, author
+	
+					if (images && images.length) {
+						if(!checkObjectIDs(images)) {
+							return resolve({
+								error: true,
+								message: "Tham số images không hợp lệ",
+								keyError: "params_images_invalid",
+								status: 400
+							})
+						}
+	
+						let { results, errors } = await PromisePool
+							.for(images)
+							.withConcurrency(2)
+							.process(async fileID => {
+								const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+									fileID
 								});
-								return infoAfterInserted._id;
-							}
-						})
-
-					if(results.length && !errors.length) {
-						results = results.filter(Boolean);
-						dataUpdate.images = results;
-					}
+	
+								if(!infoFileCore.error) {
+									const {
+										app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+									} = infoFileCore.data;
+	
+									const infoAfterInserted = await MEDIA__FILE_COLL.create({
+										media: mediaID,
+										file: fileID,
+										app, company,
+										name, nameOrg, path, size, mimeType,
+										description, status, type, author
+									});
+									return infoAfterInserted._id;
+								}
+							})
+	
+						if(results.length && !errors.length) {
+							results = results.filter(Boolean);
+							dataUpdate.images = results;
+						}
+					}	
+	
+					return resolve({ error: false, data: infoMediaAfterInserted, status: 200 });
+				} catch (error) {
+					console.error(error);
+					return resolve({ error: true, message: error.message, status: 500 });
 				}
+			})
+		}
 
-				if(!isEmptyObject(dataUpdate)) {
-					await MEDIA_COLL.findByIdAndUpdate(mediaID, dataUpdate);
-				}
+	// /**
+	//  * Dev: MinhVH
+	//  * Func: THÊM BÀI VIẾT MỚI
+    //  * Updated: 24/02/2022
+	//  */
+	// insertMedia({
+	// 	title, content, type, otherID, companyID, departmentID, location,
+	// 	tagFriends, files, images, background, authorID, bizfullname, ctx
+	// }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+	// 			//=======================VARIABLE/CONSTANTS=====================
+	// 			let dataInsert = {};
+	// 			let dataUpdate = {};
+	// 			let arrReceiver = [];
+	// 			let titleMSS = 'THÔNG BÁO';
+	// 			let descriptionMSS = '';
 
-				/**
-                 * Loại bài viết
-                 * 1: Bài viết công ty (Thành viên trong công ty)
-                 * 2: Dự án, phòng ban
-                 * 3: Chuyển đổi số
-                 * 4: Hệ thống
-                 * 5: Bài viết cá nhân
-                 * ..... Sau bổ sung thêm vài loại bài viết
-                 */
-				switch (mediaType) {
-                    case 1: {
-                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                            companyID: company?.toString(),
-                            isLoadAll: true
-                        });
+	// 			//=========================VALIDATION==========================
+	// 			if(!checkObjectIDs([authorID])) {
+	// 				return resolve({
+	// 					error: true,
+	// 					message: "Tham số authorID không hợp lệ",
+	// 					keyError: "params_authorID_invalid",
+	// 					status: 400
+	// 				})
+	// 			}
 
-                        if(!listReceivers.error) {
-                            arrReceiver = listReceivers.data?.map(user => user._id);
-							titleMSS = 'NỘI BỘ CÔNG TY';
-							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
-                        }
-                        break;
-                    }
-                    case 2: {
-                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                            departmentID
-                            // select: "name members"
-                        });
+	// 			if (!MEDIA_TYPES.includes(type)) {
+	// 				return resolve({
+	// 					error: true,
+	// 					message: "Tham số type không hợp lệ",
+	// 					keyError: "params_type_invalid",
+	// 					status: 400
+	// 				})
+	// 			}
 
-                        if(!listReceivers.error) {
-                            arrReceiver = listReceivers.data?.members;
-							titleMSS = listReceivers.data?.name;
-							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
-                        }
-						break;
-                    }
-                    case 3:
-                    case 4: {
-                        const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
-                            isLoadAll: true
-                        });
+	// 			let checkName = await MEDIA_COLL.findOne({ company: companyID, title: title.trim() });
+	// 			if(checkName)
+	// 				return resolve({ error: true, message: "title|name_existed" });
 
-                        if(!listReceivers.error) {
-                            arrReceiver = listReceivers.data?.map(user => user._id);
+	// 			dataInsert = {
+	// 				author: authorID,
+	// 				title,
+	// 				content
+	// 			}
 
-							if(mediaType === 3) {
-								titleMSS = 'CHUYỂN ĐỔI SỐ';
-								descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
-							} else{
-								titleMSS = 'HỆ THỐNG';
-								descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
-							}
-                        }
-                        break;
-                    }
-                    default:
-						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
-                        break;
-                }
+	// 			dataInsert.slug = stringUtils.getSlugAccents(title)
 
-				arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+	// 			switch (type) {
+	// 				case 'company':
+	// 					dataInsert.type = 1;
+	// 					break;
+	// 				case 'department':
+	// 					dataInsert.type = 2;
+	// 					break;
+	// 				case 'digital-conversion':
+	// 					dataInsert.type = 3;
+	// 					break;
+	// 				case 'system':
+	// 					dataInsert.type = 4;
+	// 					break;
+	// 				case 'just-me':
+	// 					dataInsert.type = 5;
+	// 					break;
+	// 				default:
+	// 					break;
+	// 			}
 
-				if(arrReceiver && arrReceiver.length) {
-					ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
-						users: arrReceiver,
-						title: titleMSS,
-						description: descriptionMSS,
-						dataSend: {
-							app: APP_KEYS.MEDIA,
-							languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
-							mainColl: {
-								kind: 'media',
-								item: { _id: infoMediaAfterInserted._id }
-							}
-						},
-						web_url: `/media/post/${mediaID}`,
-						env: ENV_DEVICE_WEB_CBS
-					});
-				}
+	// 			if (location) {
+	// 				let locationOfMedia = {
+	// 					type: "Point",
+	// 					coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
+	// 				}
 
-                return resolve({ error: false, data: {
-					infoMedia: infoMediaAfterInserted,
-					receivers: arrReceiver
-				}, status: 200 });
-            } catch (error) {
-				console.error(error);
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+	// 				dataInsert.location = locationOfMedia;
+	// 			}
+
+	// 			if (otherID) {
+	// 				if(!checkObjectIDs(otherID)) {
+	// 					return resolve({
+	// 						error: true,
+	// 						message: "Tham số otherID không hợp lệ",
+	// 						keyError: "params_otherID_invalid",
+	// 						status: 400
+	// 					})
+	// 				}
+
+	// 				dataInsert.other = otherID;
+	// 			}
+
+	// 			if (companyID) {
+	// 				if(!checkObjectIDs(companyID)) {
+	// 					return resolve({
+	// 						error: true,
+	// 						message: "Tham số companyID không hợp lệ",
+	// 						keyError: "params_companyID_invalid",
+	// 						status: 400
+	// 					})
+	// 				}
+
+	// 				dataInsert.company = companyID;
+	// 			}
+
+	// 			if (departmentID) {
+	// 				if(!checkObjectIDs(departmentID)) {
+	// 					return resolve({
+	// 						error: true,
+	// 						message: "Tham số departmentID không hợp lệ",
+	// 						keyError: "params_departmentID_invalid",
+	// 						status: 400
+	// 					})
+	// 				}
+
+	// 				dataInsert.department = departmentID;
+	// 			}
+
+	// 			if (tagFriends && tagFriends.length) {
+	// 				if(!checkObjectIDs(tagFriends)) {
+	// 					return resolve({
+	// 						error: true,
+	// 						message: "Tham số tagFriends không hợp lệ",
+	// 						keyError: "params_tagFriends_invalid",
+	// 						status: 400
+	// 					})
+	// 				}
+
+	// 				dataInsert.tagFriends = tagFriends;
+	// 			}
+
+	// 			let infoMediaAfterInserted = await this.insertData(dataInsert);
+
+    //             if(!infoMediaAfterInserted) {
+	// 				return resolve({
+	// 					error: true,
+	// 					message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+	// 					keyError: "error_occurred",
+	// 					status: 422
+	// 				})
+	// 			}
+
+	// 			const { _id: mediaID, type: mediaType, company } = infoMediaAfterInserted;
+
+	// 			if (background) {
+	// 				if(!checkObjectIDs([background])) {
+	// 					return resolve({
+	// 						error: true,
+	// 						message: "Tham số background không hợp lệ",
+	// 						keyError: "params_background_invalid",
+	// 						status: 400
+	// 					})
+	// 				}
+
+	// 				const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+	// 					fileID: background
+	// 				});
+
+	// 				if(!infoFileCore.error) {
+	// 					const { app, company, name, nameOrg, description, status, path, size, mimeType, type, author } = infoFileCore.data;
+
+	// 					const infoAfterInserted = await MEDIA__FILE_COLL.create({
+	// 						media: mediaID,
+	// 						file: fileID,
+	// 						app, company,
+	// 						name, nameOrg, path, size, mimeType,
+	// 						description, status, type, author
+	// 					});
+
+	// 					dataUpdate.background = infoAfterInserted._id;
+	// 				}
+	// 			}
+
+	// 			if (files && files.length) {
+	// 				if(!checkObjectIDs(files)) {
+	// 					return resolve({
+	// 						error: true,
+	// 						message: "Tham số files không hợp lệ",
+	// 						keyError: "params_files_invalid",
+	// 						status: 400
+	// 					})
+	// 				}
+
+	// 				let { results, errors } = await PromisePool
+	// 					.for(files)
+	// 					.withConcurrency(2)
+	// 					.process(async fileID => {
+	// 						const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+	// 							fileID
+	// 						});
+
+	// 						if(!infoFileCore.error) {
+	// 							const {
+	// 								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+	// 							} = infoFileCore.data;
+
+	// 							const infoAfterInserted = await MEDIA__FILE_COLL.create({
+	// 								media: mediaID,
+	// 								file: fileID,
+	// 								app, company,
+	// 								name, nameOrg, path, size, mimeType,
+	// 								description, status, type, author
+	// 							});
+	// 							return infoAfterInserted._id;
+	// 						}
+	// 					})
+
+	// 				if(results.length && !errors.length) {
+	// 					results = results.filter(Boolean);
+	// 					dataUpdate.files = results;
+	// 				}
+	// 			}
+
+	// 			if (images && images.length) {
+	// 				if(!checkObjectIDs(images)) {
+	// 					return resolve({
+	// 						error: true,
+	// 						message: "Tham số images không hợp lệ",
+	// 						keyError: "params_images_invalid",
+	// 						status: 400
+	// 					})
+	// 				}
+
+	// 				let { results, errors } = await PromisePool
+	// 					.for(images)
+	// 					.withConcurrency(2)
+	// 					.process(async fileID => {
+	// 						const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
+	// 							fileID
+	// 						});
+
+	// 						if(!infoFileCore.error) {
+	// 							const {
+	// 								app, company, name, nameOrg, description, status, path, size, mimeType, type, author
+	// 							} = infoFileCore.data;
+
+	// 							const infoAfterInserted = await MEDIA__FILE_COLL.create({
+	// 								media: mediaID,
+	// 								file: fileID,
+	// 								app, company,
+	// 								name, nameOrg, path, size, mimeType,
+	// 								description, status, type, author
+	// 							});
+	// 							return infoAfterInserted._id;
+	// 						}
+	// 					})
+
+	// 				if(results.length && !errors.length) {
+	// 					results = results.filter(Boolean);
+	// 					dataUpdate.images = results;
+	// 				}
+	// 			}
+
+	// 			if(!isEmptyObject(dataUpdate)) {
+	// 				await MEDIA_COLL.findByIdAndUpdate(mediaID, dataUpdate);
+	// 			}
+
+	// 			/**
+    //              * Loại bài viết
+    //              * 1: Bài viết công ty (Thành viên trong công ty)
+    //              * 2: Dự án, phòng ban
+    //              * 3: Chuyển đổi số
+    //              * 4: Hệ thống
+    //              * 5: Bài viết cá nhân
+    //              * ..... Sau bổ sung thêm vài loại bài viết
+    //              */
+	// 			switch (mediaType) {
+    //                 case 1: {
+    //                     const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+    //                         companyID: company?.toString(),
+    //                         isLoadAll: true
+    //                     });
+
+    //                     if(!listReceivers.error) {
+    //                         arrReceiver = listReceivers.data?.map(user => user._id);
+	// 						titleMSS = 'NỘI BỘ CÔNG TY';
+	// 						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
+    //                     }
+    //                     break;
+    //                 }
+    //                 case 2: {
+    //                     const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
+    //                         departmentID
+    //                         // select: "name members"
+    //                     });
+
+    //                     if(!listReceivers.error) {
+    //                         arrReceiver = listReceivers.data?.members;
+	// 						titleMSS = listReceivers.data?.name;
+	// 						descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
+    //                     }
+	// 					break;
+    //                 }
+    //                 case 3:
+    //                 case 4: {
+    //                     const listReceivers = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`, {
+    //                         isLoadAll: true
+    //                     });
+
+    //                     if(!listReceivers.error) {
+    //                         arrReceiver = listReceivers.data?.map(user => user._id);
+
+	// 						if(mediaType === 3) {
+	// 							titleMSS = 'CHUYỂN ĐỔI SỐ';
+	// 							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
+	// 						} else{
+	// 							titleMSS = 'HỆ THỐNG';
+	// 							descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
+	// 						}
+    //                     }
+    //                     break;
+    //                 }
+    //                 default:
+	// 					descriptionMSS = `${bizfullname} đã tạo mới 1 bài viết`;
+    //                     break;
+    //             }
+
+	// 			arrReceiver = arrReceiver.filter(receiverID => receiverID.toString() !== authorID.toString());
+
+	// 			if(arrReceiver && arrReceiver.length) {
+	// 				ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+	// 					users: arrReceiver,
+	// 					title: titleMSS,
+	// 					description: descriptionMSS,
+	// 					dataSend: {
+	// 						app: APP_KEYS.MEDIA,
+	// 						languageKey: LANGUAGE_KEYS.CREATE_NEW_MEDIA,
+	// 						mainColl: {
+	// 							kind: 'media',
+	// 							item: { _id: infoMediaAfterInserted._id }
+	// 						}
+	// 					},
+	// 					web_url: `/media/post/${mediaID}`,
+	// 					env: ENV_DEVICE_WEB_CBS
+	// 				});
+	// 			}
+
+    //             return resolve({ error: false, data: {
+	// 				infoMedia: infoMediaAfterInserted,
+	// 				receivers: arrReceiver
+	// 			}, status: 200 });
+    //         } catch (error) {
+	// 			console.error(error);
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
 	/**
 	 * Dev: MinhVH
@@ -393,56 +534,23 @@ class Model extends BaseModel {
      * Updated: 24/02/2022
 	 */
 	updateMedia({
-		mediaID, title, content, type, otherID, companyID, departmentID, location,
-		tagFriends, files, images, background, authorID, ctx
+		mediaID, title, content, tags, files, images, authorID, categoryID,  summary, description, status, ctx
 	}) {
         return new Promise(async (resolve) => {
             try {
-				//=======================VARIABLE/CONSTANTS=====================
-				let dataUpdate = {};
-
-				//=========================VALIDATION==========================
-				if(!checkObjectIDs([mediaID])) {
-					return resolve({
-						error: true,
-						message: "Tham số mediaID không hợp lệ",
-						keyError: "params_mediaID_invalid",
-						status: 400
-					})
-				}
-
-				if(!checkObjectIDs([authorID])) {
-					return resolve({
-						error: true,
-						message: "Tham số authorID không hợp lệ",
-						keyError: "params_authorID_invalid",
-						status: 400
-					})
-				}
-
-				if (type && !MEDIA_TYPES.includes(type)) {
-					return resolve({
-						error: true,
-						message: "Tham số type không hợp lệ",
-						keyError: "params_type_invalid",
-						status: 400
-					})
-				}
-
 				let infoMedia = await MEDIA_COLL
 					.findOne({
 						_id: mediaID,
 						author: authorID
 					})
 					.lean();
-
 				if (!infoMedia) {
                     return resolve({
 						error: true,
 						message: "Bài viết không tồn tại hoặc bạn không phải tác giả bài viết",
 						keyError: "media_not_exists_or_you_are_not_author_of_post",
 						status: 400
-					});
+					})
 				}
 
 				let checkName = await MEDIA_COLL.findOne({
@@ -455,126 +563,38 @@ class Model extends BaseModel {
 				if(checkName)
 					return resolve({ error: true, message: "title_existed" });
 
-				// title && (dataUpdate.title = title);
+				let dataUpdate = {
+					userUpdate: authorID,
+					modifyAt: new Date()
+				}
+
 				if (title && title != '') {
 					dataUpdate.title = title;
 					dataUpdate.slug = stringUtils.getSlugAccents(title)
 				}
 
-				content && (dataUpdate.content = content);
-
-				switch (type) {
-					case 'company':
-						dataUpdate.type = 1;
-						break;
-					case 'department':
-						dataUpdate.type = 2;
-						break;
-					case 'digital-conversion':
-						dataUpdate.type = 3;
-						break;
-					case 'system':
-						dataUpdate.type = 4;
-						break;
-					case 'just-me':
-						dataUpdate.type = 5;
-						break;
-					default:
-						break;
+				if (checkObjectIDs(tags)) {
+					dataUpdate.tags = tags;
 				}
 
-				if (location) {
-					let locationOfMedia = {
-						type: "Point",
-						coordinates: [parseFloat(location.lng), parseFloat(location.lat)]
-					}
-
-					dataUpdate.location = locationOfMedia;
+				if (checkObjectIDs(categoryID)) {
+					dataUpdate.category = categoryID;
 				}
 
-				if (tagFriends) {
-					if(!checkObjectIDs(tagFriends)) {
-						return resolve({
-							error: true,
-							message: "Tham số tagFriends không hợp lệ",
-							keyError: "params_tagFriends_invalid",
-							status: 400
-						})
-					}
-
-					dataUpdate.tagFriends = tagFriends;
+				if (content && content != '') {
+					dataUpdate.content = content;
 				}
 
-				if (companyID) {
-					if(!checkObjectIDs([companyID])) {
-						return resolve({
-							error: true,
-							message: "Tham số companyID không hợp lệ",
-							keyError: "params_companyID_invalid",
-							status: 400
-						})
-					}
-
-					dataUpdate.company = companyID;
+				if (summary && summary != '') {
+					dataUpdate.summary = summary;
 				}
 
-				if (departmentID) {
-					if(!checkObjectIDs([departmentID])) {
-						return resolve({
-							error: true,
-							message: "Tham số departmentID không hợp lệ",
-							keyError: "params_departmentID_invalid",
-							status: 400
-						})
-					}
-
-					dataUpdate.department = departmentID;
+				if (description && description != '') {
+					dataUpdate.description = description;
 				}
 
-				if (otherID) {
-					if(!checkObjectIDs([otherID])) {
-						return resolve({
-							error: true,
-							message: "Tham số otherID không hợp lệ",
-							keyError: "params_otherID_invalid",
-							status: 400
-						})
-					}
-
-					dataUpdate.other = otherID;
-				}
-
-				if (background) {
-					if(!checkObjectIDs([background])) {
-						return resolve({
-							error: true,
-							message: "Tham số background không hợp lệ",
-							keyError: "params_background_invalid",
-							status: 400
-						})
-					}
-
-					const infoFileCore = await ctx.call(`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GET_INFO_FILE}`, {
-						fileID: background
-					});
-
-					if(!infoFileCore.error) {
-						const { app, company, name, nameOrg, description, status, path, size, mimeType, type, author } = infoFileCore.data;
-
-						const infoAfterInserted = await MEDIA__FILE_COLL.create({
-							media: mediaID,
-							file: fileID,
-							app, company,
-							name, nameOrg, path, size, mimeType,
-							description, status, type, author
-						});
-
-						if(infoAfterInserted && infoMedia.background) {
-							await MEDIA__FILE_COLL.findByIdAndDelete(infoMedia.background);
-						}
-
-						dataUpdate.background = infoAfterInserted._id;
-					}
+				if (!isNaN(status)) {
+					dataUpdate.status = Number(status)
 				}
 
 				if (files && files.length) {
@@ -717,175 +737,39 @@ class Model extends BaseModel {
 
 	/**
 	 * Dev: MinhVH
-	 * Func: XÓA BÀI VIẾT
-     * Updated: 24/02/2022
-	 */
-	deleteMedia({ mediaID, authorID }) {
-        return new Promise(async resolve => {
-            try {
-				if(!checkObjectIDs([mediaID])) {
-					return resolve({
-						error: true,
-						message: "Tham số mediaID không hợp lệ",
-						keyError: "params_mediaID_invalid",
-						status: 400
-					})
-				}
-
-				if(!checkObjectIDs([authorID])) {
-					return resolve({
-						error: true,
-						message: "Tham số authorID không hợp lệ",
-						keyError: "params_authorID_invalid",
-						status: 400
-					})
-				}
-
-				let infoMediaAfterDelete = await MEDIA_COLL.findOneAndDelete({
-					_id: mediaID,
-					author: authorID
-				});
-
-				if (!infoMediaAfterDelete) {
-                    return resolve({
-						error: true,
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-						keyError: "error_occurs",
-						status: 422
-					})
-				}
-
-				return resolve({
-					error: false,
-					status: 200,
-					data: infoMediaAfterDelete
-				});
-			} catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-	/**
-	 * Dev: MinhVH
 	 * Func: THÔNG TIN BÀI VIẾT
      * Updated: 24/02/2022
 	 */
-	getInfoMedia({ mediaID, authorID, companyID, select, populates, ctx }) {
-        return new Promise(async resolve => {
-            try {
-				if(!checkObjectIDs([mediaID])) {
-					return resolve({
-						error: true,
-						message: "Tham số mediaID không hợp lệ",
-						keyError: "params_mediaID_invalid",
-						status: 400
-					})
-				}
-
-				if(!checkObjectIDs([authorID])) {
-					return resolve({
-						error: true,
-						message: "Tham số authorID không hợp lệ",
-						keyError: "params_authorID_invalid",
-						status: 400
-					})
-				}
-
-				if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
+	getInfo({ mediaID, select, populates = {} }) {
+		// console.log({orderID, select, populates})
+		return new Promise(async resolve => {
+			try {
+				if (!checkObjectIDs(mediaID))
+					return resolve({ error: true, message: 'param_invalid' });
+	
+				if (populates && typeof populates === 'string') {
+					if (!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
 					populates = JSON.parse(populates);
-				} else{
+				} else {
 					populates = {
 						path: "",
 						select: ""
 					}
 				}
-
-				let infoMedia = await MEDIA_COLL
-					.findById(mediaID)
+	
+				let info = await MEDIA_COLL.findById(mediaID)
 					.select(select)
 					.populate(populates)
-					.lean();
-
-				if (!infoMedia) {
-                    return resolve({
-						error: true,
-						message: "Bài viết không tồn tại",
-						keyError: "media_not_exists",
-						status: 400
-					})
-				}
-
-				let hasPermission = true;
-
-				switch (infoMedia.type) {
-					case 1:
-						if(typeof infoMedia.company === 'string' && infoMedia.company?.toString() !== companyID?.toString()) {
-							hasPermission = false;
-						} else if(infoMedia.company?._id?.toString() !== companyID?.toString()){
-							hasPermission = false;
-						}
-						break;
-					case 2:
-						let departmentID = '';
-
-						if(typeof infoMedia.department === 'string') {
-							departmentID = infoMedia.department;
-						} else {
-							departmentID = infoMedia.department?._id;
-						}
-
-						const infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-							departmentID: departmentID.toString()
-						})
-						if(!infoProject.error && infoProject.status === 200) {
-							const membersID = infoProject.data?.members.map(item => item.toString());
-
-							if(!membersID.includes(authorID.toString())) {
-								hasPermission = false;
-							}
-						}
-						break;
-					case 5:
-						if(typeof infoMedia.author === 'string' && infoMedia.author?.toString() !== authorID.toString()) {
-							hasPermission = false;
-						} else if(infoMedia.author?._id?.toString() !== authorID.toString()) {
-							hasPermission = false;
-						}
-						break;
-					default:
-						break;
-				}
-
-				if(!hasPermission) {
-					return resolve({
-						error: true,
-						message: 'Bạn không có quyền truy cập bài viết này',
-						keyError: KEY_ERROR.PERMISSION_DENIED,
-						status: 400
-					});
-				}
-
-				const infoReaction = await MEDIA__REACIONT_COLL.findOne({
-					media: mediaID,
-					author: authorID
-				}).select('type').lean();
-
-				infoMedia.reaction = infoReaction;
-
-				return resolve({
-					error: false,
-					status: 200,
-					data: infoMedia
-				});
+	
+				if (!info) return resolve({ error: true, message: 'cannot_get' });
+	
+				return resolve({ error: false, data: info });
 			} catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+				return resolve({ error: true, message: error.message });
+			}
+		})
+	}
 
 	/**
 	 * Dev: MinhVH

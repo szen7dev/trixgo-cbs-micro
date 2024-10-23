@@ -27,11 +27,10 @@ module.exports = {
         params: {
             title           : { type: "string" },
             content         : { type: "string" },
-            type            : { type: "string" },
             background      : { type: "string", optional: true },
             files           : { type: "array", optional: true },
             images          : { type: "array", optional: true },
-            tagFriends      : { type: "array", optional: true },
+            tags            : { type: "array", optional: true },
             otherID         : { type: "string", optional: true },
             companyID       : { type: "string", optional: true },
             departmentID    : { type: "string", optional: true },
@@ -39,15 +38,15 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID, bizfullname } = ctx.meta.infoUser;
+				const { _id: authorID } = ctx.meta.infoUser;
                 const {
-                    title, content, type, otherID, companyID, departmentID, location,
-                    tagFriends, files, images, background
+                    title, content, type, companyID, tags, files, images, background, summary, description, status, categoryID
                 } = ctx.params;
 
+                console.log(ctx.params)
+
                 const resultAfterCallHandler = await MEDIA_MODEL.insertMedia({
-                    title, content, type, otherID, companyID, departmentID, location,
-                    tagFriends, files, images, background, authorID, bizfullname, ctx
+                    title, content, type, companyID, tags, files, images, background, summary, description, status, categoryID, authorID, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -82,13 +81,11 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
                 const {
-                    mediaID, title, content, type, otherID, companyID, departmentID, location,
-                    tagFriends, files, images, background
+                    mediaID, title, content, type, tags, files, images, categoryID, summary, description, status
                 } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.updateMedia({
-                    mediaID, title, content, type, otherID, companyID, departmentID, location,
-                    tagFriends, files, images, background, authorID, ctx
+                    mediaID, title, content, type, tags, files, images, authorID, categoryID, summary, description, status, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -143,8 +140,8 @@ module.exports = {
 				const { _id: authorID, company } = ctx.meta.infoUser;
                 const { mediaID, select, populates } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.getInfoMedia({
-					mediaID, authorID, companyID: company?._id, select, populates, ctx
+                const resultAfterCallHandler = await MEDIA_MODEL.getInfo({
+					mediaID, select, populates, ctx
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

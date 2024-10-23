@@ -3,6 +3,7 @@ const COMMENTS = '/comments';
 const REACTIONS = '/reactions';
 const MENU      = '/menu';
 const CATE      = '/cate';
+const TAG      = '/tag';
 
 const CF_ROUTINGS_MEDIA = {
     ORIGIN_APP: BASE_ROUTE,
@@ -31,6 +32,9 @@ const CF_ROUTINGS_MEDIA = {
 
     //================================MEDIA_CATE=======================================//
     CATE                                        : `${BASE_ROUTE}${CATE}`,
+
+    //================================MEDIA_TAG=======================================//
+    TAG                                        : `${BASE_ROUTE}${TAG}`,
 }
 
 exports.CF_ROUTINGS_MEDIA = CF_ROUTINGS_MEDIA;
