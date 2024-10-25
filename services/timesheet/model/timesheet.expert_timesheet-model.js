@@ -415,14 +415,47 @@ class Model extends BaseModel {
                     await that.updateValue({ parentID: infoAfterUpdate.parent, userID })
                 }
 
-                // Cập nhật số ngày nghỉ phép trong năm tới hiện tại: USER_COLL
+                // Cập nhật số ngày nghỉ phép trong năm tới hiện tại: USER_COLL---
                 if(infoAfterUpdate.parent && (subtype == 2 || infoTimeSheetID.subtype == 2)){
-                    let year = new Date(date).getFullYear()
-                    let numberOnLeave = await TIMESHEET__EXPERT_TIMESHEET_COLL.count({ 
-                        assignee: infoAfterUpdate.assignee, 
-                        subtype: 2,
-                        $where: `return this.date.getFullYear() === ${Number(year)}`
-                    })
+                    let numberOnLeave = 0
+                    let yearFilter = new Date(date).getFullYear()
+
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: {
+                                assignee: ObjectID(infoAfterUpdate.assignee),
+                                subtype: 2,
+                            }
+                        },
+                        {
+                            $project: {
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                hours: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                hours: { $sum: "$hours" },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
+
+                    if(listData.length){
+                        numberOnLeave = Number(listData[0].hours)/8
+                    }
+
+                    // let numberOnLeave = await TIMESHEET__EXPERT_TIMESHEET_COLL.count({ 
+                    //     assignee: infoAfterUpdate.assignee, 
+                    //     subtype: 2,
+                    //     $where: `return this.date.getFullYear() === ${Number(year)}`
+                    // })
                     
                     await USER_COLL.findByIdAndUpdate(infoAfterUpdate.assignee, {
                         numberOnLeave: numberOnLeave
