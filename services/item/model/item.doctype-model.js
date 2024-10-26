@@ -193,11 +193,6 @@ class Model extends BaseModel {
     getInfo({ doctypeID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(doctypeID))
                     return resolve({ error: true, message: 'Request params doctypeID invalid', status: 400 });
 
@@ -212,11 +207,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 let infoAterGet = await ITEM__DOCTYPE_COLL
                     .findById(doctypeID)
                     .select(select)
