@@ -3,16 +3,16 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-const GeoSchema = new Schema({
-    type: {
-        type: String,
-        default: "Point"
-    },
-    coordinates: {
-        type: [Number],
-        index: "2dsphere"
-    }
-});
+// const GeoSchema = new Schema({
+//     type: {
+//         type: String,
+//         default: "Point"
+//     },
+//     coordinates: {
+//         type: [Number],
+//         index: "2dsphere"
+//     }
+// });
 
 module.exports  = DATABASE_MIDDLEWARE("media", {
     //_________Công ty
@@ -58,18 +58,18 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type: Schema.Types.ObjectId,
         ref: 'doctype'
     }],
-    //_________Địa điểm
-	location: GeoSchema,
-    //_________File (cân nhắc bỏ)
-    files: [{
-        type: Schema.Types.ObjectId,
-        ref: 'media_file'
-    }],
-    //_________Ảnh (cân nhắc bỏ)
-    images: [{
-        type: Schema.Types.ObjectId,
-        ref: 'media_file'
-    }],
+    // //_________Địa điểm (cân nhắc bỏ)
+	// location: GeoSchema,
+    // //_________File (cân nhắc bỏ)
+    // files: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'media_file'
+    // }],
+    // //_________Ảnh (cân nhắc bỏ)
+    // images: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'media_file'
+    // }],
     //_________Thumbnail bài viết
     thumbnail: {
         type: Schema.Types.ObjectId,

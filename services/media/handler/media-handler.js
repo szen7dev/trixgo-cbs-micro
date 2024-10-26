@@ -27,27 +27,18 @@ module.exports = {
         params: {
             title           : { type: "string" },
             content         : { type: "string" },
-            background      : { type: "string", optional: true },
-            files           : { type: "array", optional: true },
-            images          : { type: "array", optional: true },
+            thumbnailID     : { type: "string", optional: true },
             tags            : { type: "array", optional: true },
-            otherID         : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            departmentID    : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
-                const {
-                    title, content, type, companyID, tags, files, images, background, summary, description, status, categoryID
-                } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+                const { categoryID, title, content, tags, summary, description, thumbnailID, status } = ctx.params;
 
                 console.log(ctx.params)
 
-                const resultAfterCallHandler = await MEDIA_MODEL.insertMedia({
-                    title, content, type, companyID, tags, files, images, background, summary, description, status, categoryID, authorID, ctx
-				});
+                const resultAfterCallHandler = await MEDIA_MODEL.insert({ companyID: company._id, userID, categoryID, title, content, tags, summary, description, thumbnailID, status });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -67,25 +58,19 @@ module.exports = {
             mediaID         : { type: "string" },
             title           : { type: "string" },
             content         : { type: "string" },
-            type            : { type: "string" },
-            background      : { type: "string", optional: true },
-            files           : { type: "array", optional: true },
-            images          : { type: "array", optional: true },
-            tagFriends      : { type: "array", optional: true },
-            otherID         : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            departmentID    : { type: "string", optional: true },
+            thumbnailID     : { type: "string", optional: true },
+            tags            : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: userID } = ctx.meta.infoUser;
                 const {
-                    mediaID, title, content, type, tags, files, images, categoryID, summary, description, status
+                    mediaID, categoryID, title, content, tags, summary, description, thumbnailID, status
                 } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.updateMedia({
-                    mediaID, title, content, type, tags, files, images, authorID, categoryID, summary, description, status, ctx
+                const resultAfterCallHandler = await MEDIA_MODEL.update({
+                    userID, mediaID, categoryID, title, content, tags, summary, description, thumbnailID, status
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -141,7 +126,7 @@ module.exports = {
                 const { mediaID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getInfo({
-					mediaID, select, populates, ctx
+					mediaID, select, populates
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -159,13 +144,8 @@ module.exports = {
     getListMedia: {
         auth: "required",
         params: {
-            type            : { type: 'string', optional: true },
-            mediaID         : { type: 'string', optional: true },
-            isRelated       : { type: 'string', optional: true },
+            categoryID      : { type: 'string', optional: true },
             lastestID       : { type: 'string', optional: true },
-            companyID       : { type: 'string', optional: true },
-            departmentID    : { type: 'string', optional: true },
-            otherID         : { type: 'string', optional: true },
             limit           : { type: "string", optional: true },
             select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
@@ -173,15 +153,14 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID } = ctx.meta.infoUser;
+				const { _id: authorID, company } = ctx.meta.infoUser;
                 const {
-                    lastestID, companyID, departmentID, otherID, mediaID,
-                    keyword, isRelated, type, limit, select, populates
+                    categoryID, keyword, limit, lastestID, select, populates, sortKey
                 } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.getListMedia({
-					authorID, lastestID, companyID, departmentID, otherID, mediaID,
-                    keyword, isRelated, type, limit, select, populates
+                const resultAfterCallHandler = await MEDIA_MODEL.getList({
+					companyID: company._id, categoryID,
+                    keyword, limit, lastestID, select, populates, sortKey
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
