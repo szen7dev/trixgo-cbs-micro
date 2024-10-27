@@ -60,16 +60,16 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     }],
     // //_________Địa điểm (cân nhắc bỏ)
 	// location: GeoSchema,
-    // //_________File (cân nhắc bỏ)
-    // files: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'media_file'
-    // }],
-    // //_________Ảnh (cân nhắc bỏ)
-    // images: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'media_file'
-    // }],
+    //_________File (cân nhắc bỏ)
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: 'media_file'
+    }],
+    //_________Ảnh (cân nhắc bỏ)
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: 'media_file'
+    }],
     //_________Thumbnail bài viết
     thumbnail: {
         type: Schema.Types.ObjectId,
