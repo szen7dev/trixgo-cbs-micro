@@ -40,6 +40,7 @@ const PCM_PLAN_GROUP_COLL            		    = require('../../subject_pcm/database
 const FIN__CASH_BOOK_COLL                       = require('../../fin/database/fin.cash_book-coll');
 // const STORE_ORDER_PRODUCT_COLL                  = require('../../store/database/store.order_product-coll');
 // const STORE_ORDER_COLL                          = require("../../store/database/store.order-coll");
+const MEDIA_COLL					        	= require('../../media/database/media-coll');
 
 const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/model/subject_pcm.pcm_plan_group').MODEL
 const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
@@ -851,6 +852,25 @@ class Model extends BaseModel {
                             await USER_COLL.findByIdAndUpdate(item._id, {
                                 numberOnLeave: Number(dataOnLeave[0].hours / 8).toFixed(2)
                             }, { new: true })
+                        }
+                    }
+                }
+
+                 /**
+                 * Cập nhật Thumbnail cho Media
+                 */
+                else if(option == 19){
+                    let listHuman = await USER_COLL.find({ company: companyID, status: 1 })
+                    .select('_id fullname numberOnLeave')
+                    
+                    for(const item of listHuman){
+                        let listData = await MEDIA_COLL.find({})
+                        for(const item of listData){
+                            if(item.images.length){
+                                await MEDIA_COLL.findByIdAndUpdate(item, {
+                                    thumbnail: item.images[0]
+                                }, { new: true })
+                            }
                         }
                     }
                 }
