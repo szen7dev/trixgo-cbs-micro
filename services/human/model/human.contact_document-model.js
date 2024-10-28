@@ -142,8 +142,12 @@ class Model extends BaseModel {
                 // Cập nhật lại số lượng document cho contact
                 await this.updateValue({ contactID, userID: userCreate })
 
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+                // Cập nhật vào mẩu tin cha
+                await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, {
+                    $addToSet: {
+                        documents: infoAfterInsert._id
+                    }
+                }, { new: true })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
