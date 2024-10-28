@@ -44,31 +44,15 @@ module.exports = {
         params: {
             email           : { type: "string" },
             password        : { type: "string" },
-            platform        : { type: "string" },
+            platform        : { type: "string", optional: true },
             domain          : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { email, password, platform, domain } = ctx.params;
-                // console.log({ params_login: ctx.params })
 
-                /**
-                 * validate code platform-domain
-                 */
-                // let isValidatePlatform = validateDomainAndPlatform.find(item => item.platform == platform && item.domain == domain);
-                // if (!isValidatePlatform) {
-                //     return {
-                //         error: true,
-                //         data: {
-                //             message: 'platform_login_invalid',
-                //             keyError: 'platform_login_invalid'
-                //         }
-                //     }
-                // }
                 let infoUser = await AUTH__USER_MODEL.login({ email, password, platform });
-                // console.log({ infoUser })
-                // ctx.emit("NOTIFICATION__LOG_CREATE:MOBILE", { users: '5e60f595f63b8a4e196a1943' });
                 return infoUser;
             } catch (error) {
                 console.error(error)
@@ -567,6 +551,9 @@ module.exports = {
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
                     companyID, departmentID, positionID, level, status, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode
                 } = ctx.params;
+
+                // console.log(ctx.params)
+
 				let { _id: currentUserID, company } = ctx.meta.infoUser;
 
                 if(!userID) {

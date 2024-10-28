@@ -860,18 +860,27 @@ class Model extends BaseModel {
                  * Cập nhật Thumbnail cho Media
                  */
                 else if(option == 19){
-                    let listHuman = await USER_COLL.find({ company: companyID, status: 1 })
-                    .select('_id fullname numberOnLeave')
-                    
-                    for(const item of listHuman){
-                        let listData = await MEDIA_COLL.find({})
-                        for(const item of listData){
-                            if(item.images.length){
-                                await MEDIA_COLL.findByIdAndUpdate(item, {
-                                    thumbnail: item.images[0]
-                                }, { new: true })
-                            }
+                    let listData = await MEDIA_COLL.find({})
+                    for(const item of listData){
+                        if(item.images.length){
+                            await MEDIA_COLL.findByIdAndUpdate(item, {
+                                thumbnail: item.images[0]
+                            }, { new: true })
                         }
+                    }
+                }
+
+                /**
+                 * Cập nhật Hồ sơ nhân sự
+                 */
+                else if(option == 20){
+                    let listData = await HUMAN__CONTACT_DOCUMENT_COLL.find({}).select('_id contact')
+                    for(const item of listData){
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(item.contact, {
+                            $addToSet: {
+                                documents: item
+                            }
+                        }, { new: true })
                     }
                 }
 
