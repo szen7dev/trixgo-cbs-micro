@@ -2544,8 +2544,7 @@ class Model extends BaseModel {
                                 }
     
                                 if(subitem.type == 6){
-                                    str6 = str6 + subitem.name
-                                    str6 = str6 + `Ngày ${moment(subitem.fromDate).format('DD/MM/YYYY')}: ${subitem.name} - ${subitem.note}` + '\n'
+                                    str6 = str6 + `Ngày ${moment(subitem.fromDate).format('DD/MM/YYYY')}: ${subitem?.name} - ${subitem?.note}` + '\n'
                                 }
                             }
                         }
