@@ -156,6 +156,8 @@ class Model extends BaseModel {
                     name: isExist.name,
                     fullname: isExist.fullname,
                     bizfullname: isExist.bizfullname,
+                    gender : isExist.gender ,
+                    birthDay : isExist.birthDay ,
                     company: isExist.company,
                     department: isExist.department,
                     contacts: isExist.contacts,
@@ -171,7 +173,7 @@ class Model extends BaseModel {
                 }
 
                 const token = await sign({ infoUser: newExist }, JWT_SECRET_KEY);
-                console.log({ token })
+                // console.log({ token })
 
                 // update lastLog of user
                 await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
