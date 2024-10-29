@@ -25,15 +25,15 @@ module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
 	mixins: [
 		DbService('media'),
-		DbService('media_file'),  
-		DbService('media_reaction'),  
-		DbService('media_reaction_file'),  
-		DbService('media_reaction_file'),  
+		DbService('media_file'),
+		DbService('media_reaction'),
+		DbService('media_reaction_file'),
+		DbService('media_reaction_file'),
 		DbService('media_reaction_comment'),
-		DbService('media_comment'),  
-		DbService('media_menu'),  
-		DbService('media_cate'),  
-		DbService('media_tag'),  
+		DbService('media_comment'),
+		DbService('media_menu'),
+		DbService('media_cate'),
+		DbService('media_tag'),
 		CacheCleaner([CF_DOMAIN_SERVICES.MEDIA])
     ],
 
@@ -64,27 +64,27 @@ module.exports = {
 		// CHỈNH SỬA BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.updateMedia,
 
-		// XÓA BÀI VIẾT	
+		// XÓA BÀI VIẾT
 		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.deleteMedia,
 
-		// CHI TIẾT BÀI VIẾT	
+		// CHI TIẾT BÀI VIẾT
 		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfoMedia,
 
-		// LẤY DANH SÁCH BÀI VIẾT 	
+		// LẤY DANH SÁCH BÀI VIẾT
 		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getListMedia,
 
 		// CẬP NHẬT LƯỢT XEM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_VIEW_MEDIA] 		            		: MEDIA_HANDLER.updateView,
 
-		// LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT 	
+		// LẤY DANH SÁCH NGƯỜI XEM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.LIST_SEEN_MEDIA] 		            			: MEDIA_HANDLER.getListUsersSeen,
 
 		// LƯU BÀI VIẾT
 		[CF_ACTIONS_MEDIA.SAVE_MEDIA] 		            				: MEDIA_HANDLER.saveMedia,
-		
+
 		// LẤY DANH SÁCH BÀI VIẾT ĐÃ LƯU
 		[CF_ACTIONS_MEDIA.LIST_SAVE_MEDIA] 		            			: MEDIA_HANDLER.getListSaveMedia,
-		
+
 		// GHIM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.PIN_MEDIA] 		            				: MEDIA_HANDLER.pinMedia,
 
