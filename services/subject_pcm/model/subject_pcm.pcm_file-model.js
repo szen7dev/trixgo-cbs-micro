@@ -49,6 +49,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
  * import inter-coll, exter-coll
  */
 const PCM_FILE__COLL                    = require('../database/subject_pcm.pcm_file-coll');
+const PCM_COMMENT_COLL                  = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_PLAN_TASK__COLL               = require('../database/subject_pcm.pcm_plan_task-coll');
 const PCM_PLAN_GROUP__COLL              = require('../database/subject_pcm.pcm_plan_group-coll');
 const ITEM__CONTRACT_COLL            	= require('../../item/database/item.contract-coll');
@@ -357,8 +358,14 @@ class Model extends BaseModel {
                 if(isTemplateFile){
                     let listTemplateTask = await PCM_PLAN_TASK__COLL.find({ company: companyID, subtype: 17 }).select('_id name')
                     // console.log(listTemplateTask)
+                    // conditionObj.task = { $in: listTemplateTask.map(item=>item._id) }
 
-                    conditionObj.task = { $in: listTemplateTask.map(item=>item._id) }
+                    let listComment = await PCM_COMMENT_COLL.find({ 
+                        task: { $in: listTemplateTask.map(item=>item._id) },
+                        official: true
+                    })
+
+                    conditionObj.comment = { $in: listComment.map(item=>item._id) }
 
                     if(isXlsxFile){
                         conditionObj.nameOrg = { $regex: /\.xlsx/ }
