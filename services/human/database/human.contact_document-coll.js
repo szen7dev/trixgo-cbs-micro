@@ -26,8 +26,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
      * 2. Kinh nghiệm thực tế tham gia tại các Dự án
      * 3. Lịch sử làm việc theo các Quyết định bổ nhiệm tại các hợp đồng (Chức vụ)
      * 4. Trình độ học vấn + Chuyên ngành đào tạo
-     * 5. Bằng cấp chứng chỉ
-     * 6. Khác (Bảo hiểm xã hội, tài sản giao nhận, lịch sử tuyển dụng, quá trình làm việc, công tác)
+     * 5. Bằng cấp chứng chỉ/Hồ sơ khác
+     * 6. Đánh giá nhân sự
      */
     type: { type: Number, default: 1 },
     //_________Từ ngày/Ngày cấp
