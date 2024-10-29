@@ -194,7 +194,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                console.log('==============dl here------------------')
+                // console.log('==============dl here------------------')
                 await this.validateEntity(ctx.params);
                 const { groupID } = ctx.params;
 				const { _id: userID } = ctx.meta.infoUser;
