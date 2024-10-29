@@ -1268,15 +1268,15 @@ class Model extends BaseModel {
     getListByFilter({
         parentID, companyID, receiverID, types, isExportExcel = false,
         requestResponse, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 20, lastestID, select, populates = {}, isParent, type, genders, ctx }) {
-        // console.log({ parentID, companyID, receiverID, types, isExportExcel,requestResponse, fromDate, toDate, marked, userID, departmentsID, keyword, limit, lastestID, select, populates, isParent, type, genders })
+        keyword, limit = 300, lastestID, select, populates = {}, isParent, type, genders }) {
         return new Promise(async (resolve) => {
             try {
-                if (limit > 20) {
-                    limit = 20;
-                } else {
-                    limit = +limit;
+                if (limit > 300) {
+                    limit = 300;
                 }
+                //  else {
+                //     limit = +limit;
+                // }
 
                 let conditionObj = {};
                 let sortBy;
@@ -1393,9 +1393,6 @@ class Model extends BaseModel {
                 }
                 let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
                 let totalPage = Math.ceil(totalRecord / limit);
-
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({
                     error: false, data: {
@@ -2330,19 +2327,15 @@ class Model extends BaseModel {
     }
 
     exportExcelByFilter({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail, ctx }) {
-        // console.log({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail })
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
+                // Tải danh sách theo điều kiện lọc
                 if (!option) {
-                    // console.log('==========================')
                     const populates = JSON.stringify({
-                        path: 'department position field property area area1 area2 linkUser workingStatus contractType',
-                        select: 'name sign fullname',
+                        path: 'department position field property area area1 area2 linkUser workingStatus contractType documents',
+                        select: 'name sign fullname type educationalBackground2 field2 certificateType certificateName fromDate toDate workplace reference',
                         populate: {
-                            path: 'parent',
+                            path: 'parent educationalBackground2 field2 certificateType certificateName',
                             select: 'name',
                             populate: {
                                 path: 'parent',
@@ -2361,6 +2354,8 @@ class Model extends BaseModel {
                         ctx
                     });
 
+                    // console.log(data?.listRecords)
+
                     if (error || !data?.listRecords?.length) {
                         return resolve({ data, error })
                     }
@@ -2370,30 +2365,6 @@ class Model extends BaseModel {
                 }
 
                 else if (Number(option) === 1) {
-
-                    // let listData = await FNB_ORDER_COLL.aggregate([
-                    //     {
-                    //         $match: {
-                    //             company: ObjectID(companyID),
-                    //             date: {
-                    //                 $gte: moment(fromDate).toDate(),
-                    //                 $lte: moment(toDate).toDate()
-                    //             }
-                    //         }
-                    //     },
-                    //     {
-                    //         $group: {
-                    //             _id: { customer: "$customer", amount: "$amount" },
-                    //             // quantity: { $sum: 1 },
-                    //             // numberOfProducts: { $sum: "$numberOfProducts" },
-                    //             // total: { $sum: "$total" },
-                    //             // discount: { $sum: "$discount" },
-                    //             // salesoff: { $sum: "$salesoff" },
-                    //             // amount: { $sum: "$amount" },
-                    //         }
-                    //     }
-                    // ])
-
                     // Khách mới
                     let listDataNew = await FNB_ORDER_COLL.aggregate([
                         {
@@ -2503,6 +2474,7 @@ class Model extends BaseModel {
 
                     let i = 3;
                     data?.forEach((item, index) => {
+                        // NhanSu
                         workbook.sheet("NhanSu").row(i).cell(1).value(Number(index + 1));
                         workbook.sheet("NhanSu").row(i).cell(2).value(item.name);
                         workbook.sheet("NhanSu").row(i).cell(3).value(item.sign);
@@ -2550,6 +2522,45 @@ class Model extends BaseModel {
                         workbook.sheet("NhanSu").row(i).cell(45).value(item.note);
                         workbook.sheet("NhanSu").row(i).cell(46).value(item?.linkUser?.fullname);
                         workbook.sheet("NhanSu").row(i).cell(47).value(item?.files.length);
+
+                        // NhanSu2
+                        workbook.sheet("NhanSu2").row(i).cell(1).value(Number(index + 1))
+                        workbook.sheet("NhanSu2").row(i).cell(2).value(item.name)
+                        workbook.sheet("NhanSu2").row(i).cell(3).value(item?.department?.name)
+                        workbook.sheet("NhanSu2").row(i).cell(4).value(item?.position?.name)
+                        
+
+                        let str = '', str1 = '', str2 = '', str3 = '', str4 = '', str5 = '', str6 = ''
+                        let duration = Number(getTimeBetween(new Date(), item?.workStartDate)/(24*60*60)).toFixed(0)
+
+                        if(item?.documents){
+                            for(const subitem of item?.documents){
+                                if(subitem.type == 1){
+                                    str1 = str1 + `Từ ${moment(subitem.fromDate).format('DD/MM/YYYY')} đến ${moment(subitem.toDate).format('DD/MM/YYYY')} làm việc tại ${subitem.workplace} - ${subitem.name} - Người tham chiếu: ${subitem.reference}` + subitem.name + '\n'
+                                }
+    
+                                if(subitem.type == 4){
+                                    str4 = str4 + subitem?.educationalBackground2?.name + ' chuyên ngành ' + subitem?.field2?.name + '\n'
+                                }
+    
+                                if(subitem.type == 6){
+                                    str6 = str6 + `Ngày ${moment(subitem.fromDate).format('DD/MM/YYYY')}: ${subitem?.name} - ${subitem?.note}` + '\n'
+                                }
+                            }
+                        }
+
+                        workbook.sheet("NhanSu2").row(i).cell(5).value(str4)
+                        workbook.sheet("NhanSu2").row(i).cell(6).value((item?.area2 != null && item?.area2 != undefined) ? (`${item?.area2?.name}, ${item?.area2?.parent?.name}, ${item?.area2?.parent?.parent?.name}`) : "")
+                        workbook.sheet("NhanSu2").row(i).cell(7).value(item.phone)
+                        workbook.sheet("NhanSu2").row(i).cell(8).value(item?.workStartDate)
+                        workbook.sheet("NhanSu2").row(i).cell(9).value(`${duration} ngày`)
+                        workbook.sheet("NhanSu2").row(i).cell(10).value(item?.sallary ? Number(item?.sallary) : 0)
+                        workbook.sheet("NhanSu2").row(i).cell(11).value(`Ngày ${moment(item?.changeSallaryDate).format('DD/MM/YYYY')}`)
+                        workbook.sheet("NhanSu2").row(i).cell(12).value(str1)
+                        workbook.sheet("NhanSu2").row(i).cell(13).value(str6)
+                        workbook.sheet("NhanSu2").row(i).cell(14).value(str6)
+                        
+
                         i++
                     });
 
