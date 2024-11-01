@@ -570,8 +570,7 @@ getInfo({ orderID, select, populates = '{"path":"assignee project userCreate use
  * Author: Hiepnh
  * Date: 9/4/2022
  */
-getList({ option, status, arrType, outin, type, userID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates = '{"path":"assignee funda project contract warehouse customer userCreate userUpdate parent link","select":"fullname name sign phone image"}', sortKey, isCompanyOther, fromDate, toDate }) {
-    //   console.log({ option, status, arrType, outin, type, userID, companyID, accountID, customerID, goodsID, assetsID, projectID, packageID, toPackageID, userCreateID, companyOfUser, keyword, limit, lastestID, select, populates, sortKey, isCompanyOther })
+getList({ option, status, arrType, outin, type, userID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates, sortKey, isCompanyOther, fromDate, toDate }) {
       return new Promise(async (resolve) => {
           try {
               let sortBy;
@@ -693,7 +692,7 @@ getList({ option, status, arrType, outin, type, userID, companyID, projectID, pa
                   keyword = '.*' + keyword.join(".*") + '.*';
                   conditionObj.name = RegExp(keyword, 'i');
               }
-            //   console.log(conditionObj)
+              console.log(conditionObj)
 
               let conditionObjOrg = { ...conditionObj };
 
