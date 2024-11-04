@@ -4,6 +4,7 @@ const REACTIONS = '/reactions';
 const MENU      = '/menu';
 const CATE      = '/cate';
 const TAG      = '/tag';
+const QUESTION      = '/question';
 
 const CF_ROUTINGS_MEDIA = {
     ORIGIN_APP: BASE_ROUTE,
@@ -28,13 +29,16 @@ const CF_ROUTINGS_MEDIA = {
 
     
     //================================MEDIA_MENU=======================================//
-    MENU                                        : `${BASE_ROUTE}${MENU}`,
+    MENU                                       : `${BASE_ROUTE}${MENU}`,
 
     //================================MEDIA_CATE=======================================//
-    CATE                                        : `${BASE_ROUTE}${CATE}`,
+    CATE                                       : `${BASE_ROUTE}${CATE}`,
 
     //================================MEDIA_TAG=======================================//
     TAG                                        : `${BASE_ROUTE}${TAG}`,
+
+    //================================MEDIA_QUESTION=======================================//
+    QUESTION                                   : `${BASE_ROUTE}${QUESTION}`,
 }
 
 exports.CF_ROUTINGS_MEDIA = CF_ROUTINGS_MEDIA;

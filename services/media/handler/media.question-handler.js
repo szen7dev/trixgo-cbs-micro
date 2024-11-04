@@ -1,0 +1,143 @@
+/**
+ * TOOLS
+ */
+const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code.js');
+
+/**
+ * MODELS
+ */
+const MEDIA_QUESTION_MODEL = require('../model/media.question-model.js').MODEL;
+
+module.exports = {
+    /**
+     * Name: Insert
+     * Author: HiepNH
+     * Code: 9/4/2022
+     */
+    insert: {
+        auth: "required",
+        params: {
+            goodsID: { type: "string" },
+            name: { type: "string" },
+            note: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { name, note, goodsID } = ctx.params;
+
+                console.log(ctx.params)
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await MEDIA_QUESTION_MODEL.insert({
+                    companyID: company._id, userID, name, note, goodsID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+
+    },
+
+    /**
+     * Name: Update
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+    update: {
+        auth: "required",
+        params: {
+            questionID  : { type: "string" },
+            name  : { type: "string" },
+            note  : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { questionID, name, note } = ctx.params;
+                console.log(ctx.params)
+
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await MEDIA_QUESTION_MODEL.update({ userID, questionID, name, note });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: Remove
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+    remove: {
+        auth: "required",
+        params: {
+            questionID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+
+                const { questionID } = ctx.params;
+                const { _id: userID } = ctx.meta.infoUser;
+
+                const resultAfterCallHandler = await MEDIA_QUESTION_MODEL.remove({
+                    questionID, userID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: Get info and Get list
+     * Author: Hiepnh
+     * Date: 9/4/2022
+     */
+    getInfoAndGetList: {
+        auth: "required",
+        params: {
+            questionID      : { type: "string", optional: true },
+            goodsID         : { type: "string", optional: true },
+
+            // Field mặc định
+            keyword         : { type: "string", optional: true },
+            limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            select          : { type: "string", optional: true },
+            populates       : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { questionID, goodsID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+
+                console.log(ctx.params)
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler;
+                if (questionID) {
+                    resultAfterCallHandler = await MEDIA_QUESTION_MODEL.getInfo({
+                        questionID, userID, select, populates
+                    });
+                } else {
+                    resultAfterCallHandler = await MEDIA_QUESTION_MODEL.getList({ companyID: company._id, goodsID, keyword, limit, lastestID, select, populates, sortKey });
+                }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+}
