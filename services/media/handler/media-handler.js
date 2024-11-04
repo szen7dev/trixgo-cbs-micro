@@ -122,7 +122,7 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID, company } = ctx.meta.infoUser;
+				// const { _id: authorID, company } = ctx.meta.infoUser;
                 const { mediaID, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getInfo({
@@ -153,7 +153,7 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				const { _id: authorID, company } = ctx.meta.infoUser;
+				const { company } = ctx.meta.infoUser;
                 const {
                     categoryID, keyword, limit, lastestID, select, populates, sortKey
                 } = ctx.params;
