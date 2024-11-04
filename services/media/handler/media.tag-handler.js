@@ -24,7 +24,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { name } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -55,7 +55,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { tagID, name } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
@@ -117,7 +117,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { tagID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 

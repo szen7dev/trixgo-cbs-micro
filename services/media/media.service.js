@@ -20,6 +20,7 @@ const MEDIA__REACTION_COMMENT_HANDLER	= require('./handler/media.reaction_commen
 const MEDIA__MENU_HANDLER				= require('./handler/media.menu-handler');
 const MEDIA__CATE_HANDLER				= require('./handler/media.cate-handler');
 const MEDIA__TAG_HANDLER				= require('./handler/media.tag-handler');
+const MEDIA__QUESTION_HANDLER			= require('./handler/media.question-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
@@ -34,6 +35,7 @@ module.exports = {
 		DbService('media_menu'),
 		DbService('media_cate'),
 		DbService('media_tag'),
+		DbService('media_question'),
 		CacheCleaner([CF_DOMAIN_SERVICES.MEDIA])
     ],
 
@@ -136,6 +138,12 @@ module.exports = {
 		[CF_ACTIONS_MEDIA.TAG_UPDATE]									: MEDIA__TAG_HANDLER.update,
 		[CF_ACTIONS_MEDIA.TAG_REMOVE]									: MEDIA__TAG_HANDLER.remove,
 		[CF_ACTIONS_MEDIA.TAG_GET_INFO_AND_GET_LIST]					: MEDIA__TAG_HANDLER.getInfoAndGetList,
+
+		//========================================== MEDIA_QUESTION ==============================================//
+		[CF_ACTIONS_MEDIA.QUESTION_INSERT]									: MEDIA__QUESTION_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.QUESTION_UPDATE]									: MEDIA__QUESTION_HANDLER.update,
+		[CF_ACTIONS_MEDIA.QUESTION_REMOVE]									: MEDIA__QUESTION_HANDLER.remove,
+		[CF_ACTIONS_MEDIA.QUESTION_GET_INFO_AND_GET_LIST]					: MEDIA__QUESTION_HANDLER.getInfoAndGetList,
 	},
 
 	/**
