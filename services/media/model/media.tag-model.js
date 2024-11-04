@@ -164,7 +164,7 @@ class Model extends BaseModel {
              }
 
               let conditionObjOrg = { ...conditionObj };
-              console.log({ conditionObjOrg });
+            //   console.log({ conditionObjOrg });
 
               // PHÂN TRANG KIỂU MỚI
               if (lastestID && checkObjectIDs(lastestID)) {

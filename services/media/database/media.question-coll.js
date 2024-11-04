@@ -9,6 +9,11 @@ module.exports  = DATABASE_MIDDLEWARE("media_question", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Sản phẩm
+    goods: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
+    },
     //_________Câu hỏi
     name: String,
     //_________Trả lời

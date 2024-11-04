@@ -26,14 +26,15 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  insert({ companyID, userID, name, note }) {
+  insert({ companyID, userID, name, note, goodsID }) {
     return new Promise(async (resolve) => {
         try {
             let dataInsert = { 
               company: companyID,
               userCreate: userID, 
               name,
-              note
+              note,
+              goods: goodsID
             }
 
             let infoAfterInsert = await this.insertData(dataInsert);
@@ -130,7 +131,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  getList({ companyID, keyword, limit, lastestID, select, populates = {}, sortKey }) {
+  getList({ companyID, goodsID, keyword, limit, lastestID, select, populates = {}, sortKey }) {
       return new Promise(async (resolve) => {
           try {
               let sortBy;
@@ -142,6 +143,12 @@ class Model extends BaseModel {
               } else {
                   limit = +limit;
               }
+
+                if (checkObjectIDs(goodsID)) {
+                    conditionObj.goods = goodsID;
+                }else{
+                    conditionObj.company = companyID;
+                }
 
               if (populates && typeof populates === 'string') {
                   if (!IsJsonString(populates))
@@ -169,7 +176,7 @@ class Model extends BaseModel {
              }
 
               let conditionObjOrg = { ...conditionObj };
-              console.log({ conditionObjOrg });
+            //   console.log({ conditionObjOrg });
 
               // PHÂN TRANG KIỂU MỚI
               if (lastestID && checkObjectIDs(lastestID)) {

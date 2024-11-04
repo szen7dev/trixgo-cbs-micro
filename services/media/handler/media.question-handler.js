@@ -6,7 +6,7 @@ const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_cod
 /**
  * MODELS
  */
-const MEDIA_QUESTION_MODEL = require('../model/media_question-model.js').MODEL;
+const MEDIA_QUESTION_MODEL = require('../model/media.question-model.js').MODEL;
 
 module.exports = {
     /**
@@ -17,20 +17,21 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
+            goodsID: { type: "string" },
             name: { type: "string" },
             note: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { name, note } = ctx.params;
+                let { name, note, goodsID } = ctx.params;
 
                 console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await MEDIA_QUESTION_MODEL.insert({
-                    companyID: company._id, userID, name, note
+                    companyID: company._id, userID, name, note, goodsID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -105,7 +106,8 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            questionID         : { type: "string", optional: true },
+            questionID      : { type: "string", optional: true },
+            goodsID         : { type: "string", optional: true },
 
             // Field mặc định
             keyword         : { type: "string", optional: true },
@@ -117,7 +119,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { questionID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { questionID, goodsID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
                 console.log(ctx.params)
 
@@ -129,7 +131,7 @@ module.exports = {
                         questionID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await MEDIA_QUESTION_MODEL.getList({ companyID: company._id, keyword, limit, lastestID, select, populates, sortKey });
+                    resultAfterCallHandler = await MEDIA_QUESTION_MODEL.getList({ companyID: company._id, goodsID, keyword, limit, lastestID, select, populates, sortKey });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
