@@ -327,13 +327,17 @@ class Model extends BaseModel {
                     }
                 }
 
-                 const filter = {};
-                 goodsID && (filter['_id'] = goodsID);
+                //  const filter = {};
+                //  goodsID && (filter['_id'] = goodsID);
 
-                let infoAterGet = await ITEM__GOODS_COLL.findOne(filter)
+                // let infoAterGet = await ITEM__GOODS_COLL.findOne(filter)
+                //     .select(select)
+                //     .populate(populates)
+                //     .lean();
+
+                    let infoAterGet = await ITEM__GOODS_COLL.findById(goodsID)
                     .select(select)
                     .populate(populates)
-                    .lean();
 
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
