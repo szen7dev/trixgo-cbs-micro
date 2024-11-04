@@ -56,7 +56,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     //_________Tags
     tags: [{
         type: Schema.Types.ObjectId,
-        ref: 'doctype'
+        ref: 'media_tag'
     }],
     // //_________Địa điểm (cân nhắc bỏ)
 	// location: GeoSchema,

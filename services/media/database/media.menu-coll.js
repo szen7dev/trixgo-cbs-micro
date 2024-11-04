@@ -21,7 +21,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
     //_________Level
     level: {
         type: Number,
-        default: 1 
+        default: 1
     },
     //_________Tên
     name: String,
@@ -40,4 +40,4 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }
-})   
+})

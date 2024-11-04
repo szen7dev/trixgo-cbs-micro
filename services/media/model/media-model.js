@@ -47,7 +47,7 @@ class Model extends BaseModel {
 	 */
 	insert({ companyID, userID, categoryID, title, content, tags, summary, description, thumbnailID, status }) {
 		return new Promise(async (resolve) => {
-			try {	
+			try {
 				let checkName = await MEDIA_COLL.findOne({ company: companyID, title: title.trim() });
 				if(checkName)
 					return resolve({ error: true, message: "title_existed" });
@@ -111,7 +111,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
 				let infoMedia = await MEDIA_COLL.findById(mediaID)
-				if (!infoMedia) 
+				if (!infoMedia)
 					return resolve({ error: true, message: 'can_not_get_info' })
 
 				let checkName = await MEDIA_COLL.findOne({
@@ -163,7 +163,7 @@ class Model extends BaseModel {
 				}
 
 				let infoAfterUpdate = await MEDIA_COLL.findByIdAndUpdate(mediaID, dataUpdate, { new: true });
-                if(!infoAfterUpdate) 
+                if(!infoAfterUpdate)
 					return resolve({ error: true, message: "Cập nhật thất bại" })
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -200,7 +200,7 @@ class Model extends BaseModel {
     }
 
 	/**
-	 * Name: Get info 
+	 * Name: Get info
 	 * Author: Hiepnh
 	 * Date: 9/4/2022
 	 */
@@ -209,10 +209,12 @@ class Model extends BaseModel {
 			try {
 				if (!checkObjectIDs(mediaID))
 					return resolve({ error: true, message: 'param_invalid' });
-	
+
+				console.log({ populates });
 				if (populates && typeof populates === 'string') {
 					if (!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
 					populates = JSON.parse(populates);
 				} else {
 					populates = {
@@ -220,22 +222,22 @@ class Model extends BaseModel {
 						select: ""
 					}
 				}
-	
+
 				let info = await MEDIA_COLL
-				.findById(mediaID)
-				.select(select)
-				.populate(populates)
-				.lean();
-	
+					.findById(mediaID)
+					.select(select)
+					.populate(populates)
+					.lean();
+
 				if (!info) return resolve({ error: true, message: 'cannot_get' });
-	
+
 				return resolve({ error: false, data: info });
 			} catch (error) {
 				return resolve({ error: true, message: error.message });
 			}
 		})
 	}
-	
+
 	getList({ companyID, categoryID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
 		return new Promise(async (resolve) => {
 			try {
@@ -279,7 +281,6 @@ class Model extends BaseModel {
 					keyword = '.*' + keyword.join(".*") + '.*';
 					conditionObj.title = RegExp(keyword, 'i');
 				}
-			//   console.log(conditionObj)
 
 				let conditionObjOrg = { ...conditionObj };
 
@@ -299,7 +300,6 @@ class Model extends BaseModel {
 					let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy = dataPagingAndSort.data.sort;
 				}
-				// console.log(sortBy)
 
 				let infoDataAfterGet = await MEDIA_COLL.find(conditionObj)
 					.limit(limit + 1)
@@ -331,12 +331,11 @@ class Model extends BaseModel {
 						nextCursor,
 					}, status: 200
 				});
-
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
 			}
 		})
-	} 
+	}
 
 	/**
 	 * Dev: MinhVH
