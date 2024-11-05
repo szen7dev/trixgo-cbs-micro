@@ -692,7 +692,7 @@ getList({ option, status, arrType, outin, type, userID, companyID, projectID, pa
                   keyword = '.*' + keyword.join(".*") + '.*';
                   conditionObj.name = RegExp(keyword, 'i');
               }
-              console.log(conditionObj)
+            //   console.log(conditionObj)
 
               let conditionObjOrg = { ...conditionObj };
 
