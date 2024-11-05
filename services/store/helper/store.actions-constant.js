@@ -2,6 +2,7 @@ const BASE_ACTIONS = 'ACT_STORE';
 
 const ORDER                      = 'ORDER';
 const ORDER_PRODUCT              = 'ORDER_PRODUCT';
+const VOUCHER                    = 'VOUCHER';
 
 const CF_ACTIONS_STORE= {
 
@@ -31,6 +32,17 @@ const CF_ACTIONS_STORE= {
    ORDER_PRODUCT_IMPORT_FROM_EXCEL                 : `${BASE_ACTIONS}_${ORDER_PRODUCT}_IMPORT_FROM_EXCEL`,
    ORDER_PRODUCT_EXPORT_EXCEL                      : `${BASE_ACTIONS}_${ORDER_PRODUCT}_EXPORT_EXCEL`,
    ORDER_PRODUCT_EXPORT_EXCEL_BY_FILTER            : `${BASE_ACTIONS}_${ORDER_PRODUCT}_EXPORT_EXCEL_BY_FILTER`,
+
+   /**
+   * VOUCHER
+   */
+   VOUCHER_INSERT                                    : `${BASE_ACTIONS}_${VOUCHER}_INSERT`,
+   VOUCHER_UPDATE                                    : `${BASE_ACTIONS}_${VOUCHER}_UPDATE`,
+   VOUCHER_REMOVE                                    : `${BASE_ACTIONS}_${VOUCHER}_REMOVE`,
+   VOUCHER_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${VOUCHER}_GET_INFO_AND_GET_LIST`,
+   VOUCHER_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${VOUCHER}_DOWNLOAD_TEMPLATE_EXCEL`,
+   VOUCHER_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${VOUCHER}_IMPORT_FROM_EXCEL`,
+   VOUCHER_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${VOUCHER}_EXPORT_EXCEL`,
 }
 
 exports.CF_ACTIONS_STORE = CF_ACTIONS_STORE
