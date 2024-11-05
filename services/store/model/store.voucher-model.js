@@ -459,7 +459,6 @@ class Model extends BaseModel {
 
                     select = JSON.parse(select);
                 }
-
                 // console.log(populates)
                 // console.log(conditionObj)
 

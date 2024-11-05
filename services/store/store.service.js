@@ -18,6 +18,7 @@ module.exports = {
 	mixins: [
 		DbService(STORE__ORDER_COLL),
 		DbService(STORE__ORDER_PRODUCT_COLL),
+		DbService(STORE__VOUCHER_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.STORE])
     ],
 
