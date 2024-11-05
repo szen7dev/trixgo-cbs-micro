@@ -136,6 +136,8 @@
                  await this.validateEntity(ctx.params);
                  let { voucherID, option, sign, customerID, template, type, status, keyword, limit, lastestID, select, populates, isMember } = ctx.params;
 
+                // console.log(ctx.params)
+
                  const { _id: userID, company } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler;
