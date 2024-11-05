@@ -357,7 +357,6 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: info })
                 }else{
                     if(!option){
-                        // console.log('2222222222222222')
                         let info = await STORE_VOUCHER_COLL.findOne({ company: companyID, sign: sign.replace(/\s/g, "") })
                         .select(select)
 
@@ -366,30 +365,16 @@ class Model extends BaseModel {
 
                     }else{
                         // Kiểm tra voucher còn hiệu lực hay không
-                        // console.log('11111111111111111111')
                         let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, linkUser: userID }).select('_id name linkUser')
-                        // console.log(infoContact)
                         if(infoContact){
-                            const now = new Date();
-                            // console.log(now)
-                            // console.log({ 
-                            //     company: companyID, 
-                            //     sign: sign.replace(/\s/g, ""),
-                            //     receivers: {$in: [infoContact._id]}, // Được cấp voucher
-                            //     buyers: {$nin: [infoContact._id]}, // Chưa sử dụng
-                            //     expired: {$gte: moment(now).toDate()} // Còn hạn sử dụng
-                            // })
-
                             let info = await STORE_VOUCHER_COLL.findOne({ 
                                 company: companyID, 
                                 sign: sign.replace(/\s/g, ""),
                                 receivers: {$in: [infoContact._id]}, // Được cấp voucher
                                 buyers: {$nin: [infoContact._id]}, // Chưa sử dụng
-                                expired: {$gte: moment(now).toDate()} // Còn hạn sử dụng
+                                expired: { $gt: new Date()} // Còn hạn sử dụng
                             })
                             .select(select)
-                            console.log('==================')
-                            console.log(info)
 
                             if (!info) return resolve({ error: true, message: 'Voucher không hợp lệ', keyError: KEY_ERROR.GET_INFO_FAILED })
                                 return resolve({ error: false, data: info })
@@ -412,7 +397,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getList({ companyID, userID, customerID, template, type, keyword, limit=50, lastestID, select, populates, isMember }) {
+    getList({ companyID, userID, option, customerID, template, type, keyword, limit=50, lastestID, select, populates, isMember }) {
         // console.log({ companyID, userID, customerID, template, type, keyword, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -428,7 +413,6 @@ class Model extends BaseModel {
                 // let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(customerID && checkObjectIDs(customerID)){
-
                     // Danh sách các voucher của customerID chưa sử dụng và Còn thời hạn
                     conditionObj.expired = {
                         $gt: new Date()
@@ -436,7 +420,19 @@ class Model extends BaseModel {
                     conditionObj.receivers = { $in: [customerID]}
                     conditionObj.buyers = { $nin: [customerID]}
                 }else{
-                    conditionObj.company = ObjectID(companyID)
+                    // Voucher của userID đang truy cập
+                    if(option){
+                        let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, linkUser: userID }).select('_id name linkUser')
+                        if(infoContact){
+                            conditionObj.expired = {
+                                $gt: new Date()
+                            }
+                            conditionObj.receivers = { $in: [infoContact._id]}
+                            conditionObj.buyers = { $nin: [infoContact._id]}
+                        }
+                    }else{
+                        conditionObj.company = ObjectID(companyID)
+                    }
                 }
 
                 if(type && !isNaN(type)){
