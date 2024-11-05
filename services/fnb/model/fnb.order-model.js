@@ -5208,8 +5208,7 @@ class Model extends BaseModel {
     // console.log({ companyID, year, month, userID, queryFnb })
     return new Promise(async (resolve) => {
       try {
-        // if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
-        if (1 > 0) {
+        if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
           let yearFilter;
           let currentYear = new Date().getFullYear();
           let currentMonth = new Date().getMonth() + 1;

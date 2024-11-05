@@ -388,7 +388,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company, email } = ctx.meta.infoUser;
                 let { companyID, filterParams, queryFnb } = ctx.params;
-                // console.log(ctx.params)
+               
+                console.log('11111111111111111')
+                console.log(ctx.params)
 
                 if (!companyID) {
                     companyID = company._id;
@@ -421,8 +423,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, email, company } = ctx.meta.infoUser;
                 let { companyID, option, month, year, fromDate, toDate, filterParams } = ctx.params;
-
-                // console.log(ctx.params)
+                
+                console.log('22222222222222222')
+                console.log(ctx.params)
 
                 if (!companyID) {
                     companyID = company._id;
