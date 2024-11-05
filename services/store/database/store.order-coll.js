@@ -146,11 +146,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default: 2
     },   
-    //_________Người giới thiệu
-    referrer: {
-        type: Schema.Types.ObjectId,
-        ref : 'contact'
-    }, 
     /**
      * Người thực hiện
      */
@@ -229,6 +224,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
+    //_________Người giới thiệu
+    referrer: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    }, 
     /**
      * Phương thức thanh toán
      * 1-Tiền mặt
