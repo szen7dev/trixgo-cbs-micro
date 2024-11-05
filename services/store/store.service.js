@@ -7,15 +7,18 @@ const { CF_ACTIONS_STORE } 	    			= require('./helper/store.actions-constant');
 
 const STORE__ORDER_HANDLER  			 	= require('./handler/store.order-handler');
 const STORE__ORDER_PRODUCT_HANDLER  		= require('./handler/store.order_product-handler');
+const STORE__VOUCHER_HANDLER  				= require('./handler/store.voucher-handler');
 
 const STORE__ORDER_COLL  			 		= require('./database/store.order-coll');
 const STORE__ORDER_PRODUCT_COLL  			= require('./database/store.order_product-coll');
+const STORE__VOUCHER_COLL  					= require('./database/store.voucher-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.STORE,
 	mixins: [
 		DbService(STORE__ORDER_COLL),
 		DbService(STORE__ORDER_PRODUCT_COLL),
+		DbService(STORE__VOUCHER_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.STORE])
     ],
 
@@ -57,6 +60,15 @@ module.exports = {
 		[CF_ACTIONS_STORE.ORDER_PRODUCT_IMPORT_FROM_EXCEL]				: STORE__ORDER_PRODUCT_HANDLER.importFromExcel,
 		[CF_ACTIONS_STORE.ORDER_PRODUCT_EXPORT_EXCEL]					: STORE__ORDER_PRODUCT_HANDLER.exportExcel,
 		[CF_ACTIONS_STORE.ORDER_PRODUCT_EXPORT_EXCEL_BY_FILTER]			: STORE__ORDER_PRODUCT_HANDLER.exportExcelByFilter,
+
+		//==========================================  STORE_VOUCHER ==============================================//
+		[CF_ACTIONS_STORE.VOUCHER_INSERT]								: STORE__VOUCHER_HANDLER.insert,
+		[CF_ACTIONS_STORE.VOUCHER_UPDATE]								: STORE__VOUCHER_HANDLER.update,
+		[CF_ACTIONS_STORE.VOUCHER_REMOVE]								: STORE__VOUCHER_HANDLER.remove,
+		[CF_ACTIONS_STORE.VOUCHER_GET_INFO_AND_GET_LIST]				: STORE__VOUCHER_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_STORE.VOUCHER_DOWNLOAD_TEMPLATE_EXCEL]				: STORE__VOUCHER_HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_STORE.VOUCHER_IMPORT_FROM_EXCEL]					: STORE__VOUCHER_HANDLER.importFromExcel,
+		[CF_ACTIONS_STORE.VOUCHER_EXPORT_EXCEL]							: STORE__VOUCHER_HANDLER.exportExcel,
 	},
 
 	/**
