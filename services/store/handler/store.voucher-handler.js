@@ -134,14 +134,14 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
-                 let { voucherID, sign, customerID, template, type, status, keyword, limit, lastestID, select, populates, isMember } = ctx.params;
+                 let { voucherID, option, sign, customerID, template, type, status, keyword, limit, lastestID, select, populates, isMember } = ctx.params;
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
                  let resultAfterCallHandler;
                  if(voucherID || sign){
                      resultAfterCallHandler = await STORE_VOUCHER_MODEL.getInfo({
-                        companyID: company._id, voucherID, sign, select, populates,
+                        companyID: company._id, userID, voucherID, option, sign, select, populates,
                      })
                  }else{
                      resultAfterCallHandler = await STORE_VOUCHER_MODEL.getList({

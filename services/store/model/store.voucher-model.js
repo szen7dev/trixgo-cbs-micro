@@ -328,9 +328,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getInfo({ companyID, voucherID, sign, select, populates={} }) {
-        // console.log({ companyID, voucherID, sign, select })
-        // console.log({ sign: sign.replace(/\s/g, "") })
+    getInfo({ companyID, userID, voucherID, sign, option, select, populates={} }) {
         return new Promise(async resolve => {
             try {
                 if(voucherID){
@@ -357,24 +355,39 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, data: info })
                 }else{
-                    // populate
-                    if(populates && typeof populates === 'string'){
-                        if(!IsJsonString(populates))
-                            return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                    if(!option){
+                        let info = await STORE_VOUCHER_COLL.findOne({ company: companyID, sign: sign.replace(/\s/g, "") })
+                        .select(select)
+                        .populate(populates)
 
-                        populates = JSON.parse(populates);
+                        if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
+                        return resolve({ error: false, data: info })
                     }else{
-                        populates = {
-                            path: "",
-                            select: ""
-                        }
-                    }
+                        // Kiểm tra voucher còn hiệu lực hay không
+                        let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, linkUser: userID })
+                        if(infoContact){
+                            let info = await STORE_VOUCHER_COLL.findOne({ 
+                                company: companyID, 
+                                sign: sign.replace(/\s/g, ""),
+                                receivers: {$in: [infoContact._id]}
+                            })
+                            .select(select)
 
-                    let info = await STORE_VOUCHER_COLL.findOne({ company: companyID, sign: sign.replace(/\s/g, "") })
-                                        .select(select)
-                                        .populate(populates)
-                    if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
-                    return resolve({ error: false, data: info })
+                            if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
+                                return resolve({ error: false, data: info })
+                        }else{
+                            return resolve({
+                                error: true,
+                                message: "Voucher không hợp lệ",
+                            })
+                        }
+
+                        // if (!info.receivers.includes(customerID))
+                        //     return resolve({
+                        //       error: true,
+                        //       message: "Voucher không áp dụng cho khách hàng này",
+                        //     });
+                    }
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message })
