@@ -6,6 +6,7 @@ const { checkObjectIDs, IsJsonString }
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment                            = require('moment');
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
@@ -356,24 +357,41 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: info })
                 }else{
                     if(!option){
+                        // console.log('2222222222222222')
                         let info = await STORE_VOUCHER_COLL.findOne({ company: companyID, sign: sign.replace(/\s/g, "") })
                         .select(select)
-                        .populate(populates)
 
                         if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
                         return resolve({ error: false, data: info })
+
                     }else{
                         // Kiểm tra voucher còn hiệu lực hay không
-                        let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, linkUser: userID })
+                        // console.log('11111111111111111111')
+                        let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, linkUser: userID }).select('_id name linkUser')
+                        // console.log(infoContact)
                         if(infoContact){
+                            const now = new Date();
+                            // console.log(now)
+                            // console.log({ 
+                            //     company: companyID, 
+                            //     sign: sign.replace(/\s/g, ""),
+                            //     receivers: {$in: [infoContact._id]}, // Được cấp voucher
+                            //     buyers: {$nin: [infoContact._id]}, // Chưa sử dụng
+                            //     expired: {$gte: moment(now).toDate()} // Còn hạn sử dụng
+                            // })
+
                             let info = await STORE_VOUCHER_COLL.findOne({ 
                                 company: companyID, 
                                 sign: sign.replace(/\s/g, ""),
-                                receivers: {$in: [infoContact._id]}
+                                receivers: {$in: [infoContact._id]}, // Được cấp voucher
+                                buyers: {$nin: [infoContact._id]}, // Chưa sử dụng
+                                expired: {$gte: moment(now).toDate()} // Còn hạn sử dụng
                             })
                             .select(select)
+                            console.log('==================')
+                            console.log(info)
 
-                            if (!info) return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
+                            if (!info) return resolve({ error: true, message: 'Voucher không hợp lệ', keyError: KEY_ERROR.GET_INFO_FAILED })
                                 return resolve({ error: false, data: info })
                         }else{
                             return resolve({
@@ -381,12 +399,6 @@ class Model extends BaseModel {
                                 message: "Voucher không hợp lệ",
                             })
                         }
-
-                        // if (!info.receivers.includes(customerID))
-                        //     return resolve({
-                        //       error: true,
-                        //       message: "Voucher không áp dụng cho khách hàng này",
-                        //     });
                     }
                 }
             } catch (error) {
