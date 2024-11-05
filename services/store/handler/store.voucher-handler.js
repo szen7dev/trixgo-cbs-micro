@@ -147,7 +147,7 @@
                      })
                  }else{
                      resultAfterCallHandler = await STORE_VOUCHER_MODEL.getList({
-                         companyID: company._id, userID, customerID, template,  type, status, keyword, limit, lastestID, select, populates, isMember
+                         companyID: company._id, userID, option, customerID, template,  type, status, keyword, limit, lastestID, select, populates, isMember
                      })
                  }
 

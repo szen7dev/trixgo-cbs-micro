@@ -66,15 +66,12 @@ return new Promise(async (resolve) => {
         let dataInsert = { 
             company: companyID,
             userCreate: userID, 
-            admins: [userID], 
-            members: [userID] 
         }
 
         if (checkObjectIDs(fundaID)) {
             dataInsert.funda = fundaID;
         }else{
             let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
-            // console.log(infoFunda)
             if(infoFunda){
                 dataInsert.funda = infoFunda._id;
             }
