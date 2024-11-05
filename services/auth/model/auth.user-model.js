@@ -99,7 +99,7 @@ class Model extends BaseModel {
             }
         });
     }
-    // implement by: KHANHNEY
+
     login({ email, password, platform }) {
         return new Promise(async resolve => {
             try {
@@ -196,6 +196,67 @@ class Model extends BaseModel {
                 });
             } catch (error) {
                 console.error({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Author: HiepNH
+     * Func: Lấy mã OTP theo email hoặc phone gửi về
+     * Date: 5/11/2024
+     */
+    getOTP({ email }) {
+        return new Promise(async resolve => {
+            try {
+                const emailValid = email.toLowerCase().trim();
+
+                /**
+                 * set code (random 6 character)
+                 * => send mail with code
+                 * => enter code match => enter new password(not enter oldpass)
+                 */
+                const checkExist = await AUTH__USER_COLL.findOne({ email: emailValid }).lean();
+                if (!checkExist) {
+                    return resolve({
+                        error: true,
+                        message: "Email không tồn tại",
+                        keyError: "email_not_exists",
+                        status: 404
+                    })
+                }
+
+                const codeReset = Math.floor(100000 + Math.random() * 900000);
+
+                const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(checkExist._id, {
+                    codeReset
+                }, { new: true });
+
+                if (!infoAfterUpdateCode) {
+                    return resolve({
+						error: true,
+						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+						keyError: "error_occurred",
+						status: 422
+					})
+                }
+
+                const mailContent = templateRecoverPass(checkExist.fullname, codeReset);
+                sendEmailRecoverPass(
+                    email,
+                    'CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM',
+                    mailContent,
+                    cb => {
+                        console.log(cb);
+                    }
+                )
+
+                return resolve({
+                    error: false,
+                    data: { codeReset },
+                    status: 200
+                });
+            } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })
