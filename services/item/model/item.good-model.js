@@ -37,7 +37,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID }){
+	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID }){
         // console.log('1111111111111111')
         // console.log({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID })
         return new Promise(async resolve => {
@@ -45,12 +45,17 @@ class Model extends BaseModel {
                 if(!name || name == "")
                     return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
 
+                let checkName = await ITEM__GOODS_COLL.findOne({ company: companyID, name: name.trim() });
+				if(checkName)
+					return resolve({ error: true, message: "title_existed" });
+
                 let dataInsert = {
                     userCreate: userID,
                     userUpdate: userID,
                     modifyAt: new Date(),
                     company: companyID,
                     name,
+                    slug: stringUtils.getSlugAccents(name)
                 }
 
                 if(authorID && checkObjectIDs(authorID)){
@@ -61,6 +66,10 @@ class Model extends BaseModel {
 
                 if(projectID && checkObjectIDs(projectID)){
                     dataInsert.project = projectID;
+                }
+
+                if(categoryID && checkObjectIDs(categoryID)){
+                    dataInsert.category = categoryID;
                 }
 
                 if(parentID && checkObjectIDs(parentID)){
@@ -178,19 +187,35 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ projectID, goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID }){
+	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID }){
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(goodsID))
-                    return resolve({ error: true, message: "goodsID không hợp lệ", keyError: "Request params goodsID invalid" });
+				let info = await ITEM__GOODS_COLL.findById(goodsID)
+				if (!info)
+					return resolve({ error: true, message: 'can_not_get_info' })
+
+                let checkName = await ITEM__GOODS_COLL.findOne({
+					company: info.company,
+					name: name.trim(),
+					_id: {
+						$ne: goodsID
+					}
+					});
+				if(checkName)
+					return resolve({ error: true, message: "name_existed" });
 
                 let dataUpdate = {
                     userUpdate: userID,
                     modifyAt: new Date()
                 }
 
+                // Tác giả (áp dụng cho Khóa học)
                 if(authorID && checkObjectIDs(authorID)){
                     userUpdate.author = authorID
+                }
+
+                if(categoryID && checkObjectIDs(categoryID)){
+                    dataUpdate.category = categoryID;
                 }
 
                 if(imagesID && imagesID.length) {
@@ -199,13 +224,10 @@ class Model extends BaseModel {
                     }
                 }
 
-                // if(projectID && checkObjectIDs(projectID)){
-                //     dataUpdate.project = projectID;
-                // }
-
-                if(name && name != ""){
-                    dataUpdate.name = name;
-                }
+                if (name && name != '') {
+					dataUpdate.name = name;
+					dataUpdate.slug = stringUtils.getSlugAccents(name)
+				}
 
                 if(sign && sign != ""){
                     dataUpdate.sign = sign;

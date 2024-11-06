@@ -68,8 +68,15 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Number,
         default : 1
     },
+    //_________Chuyên mục
+    category: {
+        type    : Schema.Types.ObjectId,
+        ref     : 'media_menu'
+    },
     //_________Tên
     name: String,
+    //_________Slug/URL (SEO)
+    slug: String,
     //_________Nội dung
     namecv: String,
     //_________Mã hiệu
