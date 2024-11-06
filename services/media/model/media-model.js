@@ -205,13 +205,9 @@ class Model extends BaseModel {
 	 * Author: Hiepnh
 	 * Date: 9/4/2022
 	 */
-	getInfo({ mediaID, select, populates }) {
+	getInfo({ companyID, mediaID, slug, select, populates }) {
 		return new Promise(async resolve => {
 			try {
-				if (!checkObjectIDs(mediaID))
-					return resolve({ error: true, message: 'param_invalid' });
-
-				console.log({ populates });
 				if (populates && typeof populates === 'string') {
 					if (!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -224,15 +220,31 @@ class Model extends BaseModel {
 					}
 				}
 
-				let info = await MEDIA_COLL
+				if (!checkObjectIDs(mediaID)){
+					let info = await MEDIA_COLL
 					.findById(mediaID)
 					.select(select)
 					.populate(populates)
 					.lean();
 
-				if (!info) return resolve({ error: true, message: 'cannot_get' });
+					if (!info) return resolve({ error: true, message: 'cannot_get' })
 
-				return resolve({ error: false, data: info });
+					return resolve({ error: false, data: info })
+				}else{
+					if(slug && slug != ''){
+						let info = await MEDIA_COLL
+						.findOne({ company: companyID, slug: slug.trim() })
+						.select(select)
+						.populate(populates)
+						.lean();
+
+						if (!info) return resolve({ error: true, message: 'cannot_get' })
+
+						return resolve({ error: false, data: info })
+					}else{
+						return resolve({ error: true, message: 'cannot_get' })
+					}
+				}
 			} catch (error) {
 				return resolve({ error: true, message: error.message });
 			}

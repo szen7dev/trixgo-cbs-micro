@@ -332,12 +332,9 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ goodsID, select, populates }) {
+    getInfo({ companyID, goodsID, slug, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                if(goodsID && !checkObjectIDs(goodsID))
-                    return resolve({ error: true, message: 'Request params goodsID invalid', status: 400 });
-
                  if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -350,14 +347,33 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await ITEM__GOODS_COLL.findById(goodsID)
-                .select(select)
-                .populate(populates)
+                if (!checkObjectIDs(goodsID)){
+                    let info = await ITEM__GOODS_COLL
+                    .findById(goodsID)
+                    .select(select)
+                    .populate(populates)
 
-                if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+                    if(!info)
+                        return resolve({ error: true, message: "can't_get_info", status: 403 });
 
-                return resolve({ error: false, data: infoAterGet, status: 200 });
+                    return resolve({ error: false, data: info, status: 200 });
+
+				}else{
+					if(slug && slug != ''){
+						let info = await ITEM__GOODS_COLL
+						.findOne({ company: companyID, slug: slug.trim() })
+						.select(select)
+						.populate(populates)
+						.lean();
+
+						if (!info) return resolve({ error: true, message: 'cannot_get' })
+
+						return resolve({ error: false, data: info })
+					}else{
+						return resolve({ error: true, message: 'cannot_get' })
+					}
+				}
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
