@@ -111,7 +111,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { goodsID, companyID, projectID, parentID, fundaID, type, isParent, status, usage, menuSlug, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
+                let { goodsID, companyID, projectID, parentID, fundaID, type, isParent, status, usage, menuSlug, slug, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -124,7 +124,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(goodsID){
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getInfo({
-                        goodsID, select, populates
+                        companyID, goodsID, slug, select, populates
                     });
                 } else{
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getList({

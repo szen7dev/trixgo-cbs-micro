@@ -122,11 +122,16 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-				// const { _id: authorID, company } = ctx.meta.infoUser;
-                const { mediaID, select, populates } = ctx.params;
+				const { _id: authorID, company } = ctx.meta.infoUser;
+
+                const { companyID, mediaID, slug, select, populates } = ctx.params;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getInfo({
-					mediaID, select, populates
+					companyID, mediaID, slug, select, populates
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
