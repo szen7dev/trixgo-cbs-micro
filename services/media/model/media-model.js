@@ -3,25 +3,25 @@
 /**
  * EXTERNAL PACKAGE
  */
-const PromisePool								= require('@supercharge/promise-pool');
-const ObjectID                          		= require('mongoose').Types.ObjectId;
+// const PromisePool								= require('@supercharge/promise-pool');
+// const ObjectID                          		= require('mongoose').Types.ObjectId;
 
 /**
  * CONSTANTS
  */
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
-const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
-const { CF_ACTIONS_ITEM }               		= require('../../item/helper/item.actions-constant');
-const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
-const { APP_KEYS, LANGUAGE_KEYS, KEY_ERROR }	= require('../../../tools/keys');
-const { ENV_DEVICE_WEB_CBS } 					= require('../../notification/helper/notification.keys-constant');
+// const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
+// const { CF_ACTIONS_ITEM }               		= require('../../item/helper/item.actions-constant');
+// const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
+// const { APP_KEYS, LANGUAGE_KEYS, KEY_ERROR }	= require('../../../tools/keys');
+// const { ENV_DEVICE_WEB_CBS } 					= require('../../notification/helper/notification.keys-constant');
 
 /**
  * TOOLS
  */
 const BaseModel                                 = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString, isEmptyObject } = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 				= require('../../../tools/cursor_base/playground/index');
 const stringUtils					    		= require('../../../tools/utils/string_utils');
 
@@ -30,9 +30,9 @@ const stringUtils					    		= require('../../../tools/utils/string_utils');
  */
 const MEDIA__MENU_COLL					        = require('../database/media.menu-coll');
 const MEDIA_COLL					        	= require('../database/media-coll');
-const MEDIA__FILE_COLL					        = require('../database/media.file-coll');
 const MEDIA__SEEN_COLL					       	= require('../database/media.seen-coll');
 const MEDIA__SAVE_COLL					    	= require('../database/media.save-coll');
+const MEDIA__FILE_COLL					        = require('../database/media.file-coll');
 const MEDIA__REACIONT_COLL              		= require('../database/media.reaction-coll');
 
 class Model extends BaseModel {
@@ -137,6 +137,8 @@ class Model extends BaseModel {
 
 				if (checkObjectIDs(tags)) {
 					dataUpdate.tags = tags;
+				} else {
+					dataUpdate.tags = [];
 				}
 
 				if (checkObjectIDs(categoryID)) {
@@ -279,7 +281,7 @@ class Model extends BaseModel {
 
 				if (checkObjectIDs(categoryID)) {
 					conditionObj.category = categoryID;
-				}else{
+				} else{
 					conditionObj.company = companyID;
 				}
 
