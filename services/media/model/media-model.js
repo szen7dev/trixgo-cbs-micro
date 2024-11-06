@@ -28,6 +28,7 @@ const stringUtils					    		= require('../../../tools/utils/string_utils');
 /**
  * COLLECTIONS
  */
+const MEDIA__MENU_COLL					        = require('../database/media.menu-coll');
 const MEDIA_COLL					        	= require('../database/media-coll');
 const MEDIA__FILE_COLL					        = require('../database/media.file-coll');
 const MEDIA__SEEN_COLL					       	= require('../database/media.seen-coll');
@@ -238,7 +239,7 @@ class Model extends BaseModel {
 		})
 	}
 
-	getList({ companyID, categoryID, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+	getList({ companyID, categoryID, menuSlug, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
 		return new Promise(async (resolve) => {
 			try {
 				let sortBy;
@@ -267,6 +268,13 @@ class Model extends BaseModel {
 					conditionObj.category = categoryID;
 				}else{
 					conditionObj.company = companyID;
+				}
+
+				if(menuSlug){
+					let infoMenu = await MEDIA__MENU_COLL.findOne({ company: companyID, slug: menuSlug})
+					if(infoMenu){
+						conditionObj.category = infoMenu._id;
+					}
 				}
 
 				if (sortKey && typeof sortKey === 'string') {

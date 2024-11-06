@@ -155,11 +155,11 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { company } = ctx.meta.infoUser;
                 const {
-                    categoryID, keyword, limit, lastestID, select, populates, sortKey
+                    categoryID, menuSlug, keyword, limit, lastestID, select, populates, sortKey
                 } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.getList({
-					companyID: company._id, categoryID,
+					companyID: company._id, categoryID, menuSlug,
                     keyword, limit, lastestID, select, populates, sortKey
 				});
 

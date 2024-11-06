@@ -25,6 +25,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
  */
 const ITEM__GOODS_COLL            				= require('../database/item.goods-coll');
 // const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
+const MEDIA__MENU_COLL					        = require('../../media/database/media.menu-coll');
 
 class Model extends BaseModel {
 
@@ -407,7 +408,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, projectID, parentID, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
+        companyID, projectID, parentID, menuSlug, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
         keyword, limit = 10, lastestID, select, populates = {}, sortDirection = '-1' }) {
         return new Promise(async (resolve) => {
             try {
@@ -471,6 +472,13 @@ class Model extends BaseModel {
                 if(projectID && checkObjectIDs(projectID)){
                     conditionObj.project = projectID;
                 }
+
+                if(menuSlug){
+					let infoMenu = await MEDIA__MENU_COLL.findOne({ company: companyID, slug: menuSlug})
+					if(infoMenu){
+						conditionObj.category = infoMenu._id;
+					}
+				}
 
                 // Chỉ lấy danh sách cha hoặc con
                 if(isListParentOfListChilds == 1){
