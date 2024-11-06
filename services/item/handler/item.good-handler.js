@@ -32,7 +32,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { projectID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, duration, usage, authorID } = ctx.params;
+                const { projectID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, duration, usage, authorID, categoryID } = ctx.params;
                 // console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
@@ -45,7 +45,7 @@ module.exports = {
 
                 // console.log('22222222222222222222')
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ projectID, companyID: company._id, parentID, convertID, convertQuantity, status, duration, usage, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, authorID });
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ projectID, companyID: company._id, parentID, convertID, convertQuantity, status, duration, usage, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, authorID, categoryID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -77,11 +77,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-                const { goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, convertID, convertQuantity, status, duration, usage, imagesID, authorID } = ctx.params;
+                const { goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, convertID, convertQuantity, status, duration, usage, imagesID, authorID, categoryID } = ctx.params;
 
                 // console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, duration, usage, imagesID, authorID });
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, duration, usage, imagesID, authorID, categoryID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
