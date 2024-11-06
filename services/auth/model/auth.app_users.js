@@ -65,7 +65,6 @@ class Model extends BaseModel {
         })
     }
 
-
     update({ appID, companyID, memberID, level, userID }) {
         return new Promise(async (resolve) => {
             try {

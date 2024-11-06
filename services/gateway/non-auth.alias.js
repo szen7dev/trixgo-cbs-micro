@@ -10,9 +10,9 @@ const { CF_ROUTINGS_GATEWAY } 	= require('./helper/gateway.routes-constant');
 const { CF_ROUTINGS_AUTH }		= require('../auth/helper/auth.routes-constant');
 const { CF_ROUTINGS_ZALO } 		= require('../zalo_oa/helper/zalo.routes');
 const { CF_ROUTINGS_FACEBOOK } 	= require('../facebook/helper/facebook.routes');
-const { CF_ROUTINGS_PAYMENT }			= require('../payment/helper/payment.routes-constant');
-const { CF_ROUTINGS_ITEM }			= require('../item/helper/item.routes-constant');
-const { CF_ROUTINGS_FNB }			= require('../fnb/helper/fnb.routes-constant');
+const { CF_ROUTINGS_PAYMENT }	= require('../payment/helper/payment.routes-constant');
+const { CF_ROUTINGS_ITEM }		= require('../item/helper/item.routes-constant');
+const { CF_ROUTINGS_FNB }		= require('../fnb/helper/fnb.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -21,7 +21,7 @@ const { CF_ACTIONS_GATEWAY }	= require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH }		= require('../auth/helper/auth.actions-constant');
 const { CF_ACTIONS_ZALO }		= require('../zalo_oa/helper/zalo.actions');
 const { CF_ACTIONS_FACEBOOK }	= require('../facebook/helper/facebook.actions');
-const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
+const { CF_ACTIONS_PAYMENT } 	= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_ITEM } 		= require('../item/helper/item.actions-constant');
 const { CF_ACTIONS_FNB } 		= require('../fnb/helper/fnb.actions-constant');
 
@@ -45,6 +45,9 @@ module.exports = {
 		/**
 		 * Code: A0015
 		 */
+		[`POST ${CF_ROUTINGS_AUTH.GET_OTP}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_OTP}`],
+
 		[`POST ${CF_ROUTINGS_AUTH.LOGIN}`] :
 		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.LOGIN}`],
 

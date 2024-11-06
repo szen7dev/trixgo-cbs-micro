@@ -62,6 +62,29 @@ module.exports = {
     },
 
     /**
+     * Author: HiepNH
+     * Func: Lấy mã OTP theo email hoặc phone gửi về
+     * Date: 5/11/2024
+     */
+    getOTP: {
+        params: {
+            email: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { email } = ctx.params;
+                // console.log(ctx.params)
+
+                const infoUser = await AUTH__USER_MODEL.getOTP({ email });
+                return infoUser;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Author: MinhVH
      * Func: Quên mật khẩu
      * Date: 10/10/2022
