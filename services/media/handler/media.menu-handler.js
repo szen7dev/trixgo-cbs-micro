@@ -137,6 +137,8 @@ module.exports = {
                     });
                 }
 
+                // console.log(resultAfterCallHandler)
+
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
