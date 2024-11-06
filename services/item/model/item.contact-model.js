@@ -76,9 +76,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ option, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee, ctx
+    insert({ option, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee
     }) {
-        // console.log({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee })
         return new Promise(async resolve => {
             try {
                 /**
@@ -99,7 +98,7 @@ class Model extends BaseModel {
                 //___________Xác thực số điện thoại
                 if (!regexPhoneNumber(phone))
                     return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
-                
+
                 let checkPhone = phone.replace(/\s/g, "").length
                 if (Number(checkPhone) < 10)
                     return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
