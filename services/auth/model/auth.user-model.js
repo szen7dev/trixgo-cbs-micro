@@ -279,7 +279,7 @@ class Model extends BaseModel {
                 // Reset pass/code
                 if (info) {
                     if(infoContact){
-                        console.log('6666666666666666666666')
+                        console.log('oldddd11111111111111111111111')
                         // link user với contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
                             linkUser: info._id
@@ -289,16 +289,8 @@ class Model extends BaseModel {
                             $addToSet: { contacts: infoContact._id } 
                         }, { new: true });
                     }
-
-                     /**
-                     * set code (random 6 character)
-                     * => send mail with code
-                     * => enter code match => enter new password(not enter oldpass)
-                     */
-                    const codeReset = Math.floor(100000 + Math.random() * 900000);
     
                     const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                        codeReset,
                         password: hashPassword
                     }, { new: true });
     
@@ -323,9 +315,9 @@ class Model extends BaseModel {
     
                     return resolve({
                         error: false,
-                        data: { codeReset, psw: password },
+                        data: password,
                         status: 200
-                    });
+                    })
                 }
 
                 /**
@@ -334,7 +326,7 @@ class Model extends BaseModel {
                 else{
                     // Bắt buộc phải tạo bằng Số điện thoại
                     if(isValidVietnamPhoneNumber(strValid)){                            
-                        console.log('111111111111111111')
+                        console.log('newwww111111111111111111')
                         // Tạo tài khoản trên phân vùng ECOM
                         let dataInsert = {
                             userCreate: authorID,
@@ -351,9 +343,9 @@ class Model extends BaseModel {
                         if (!infoUserAfterInsert)
                             return resolve({ error: true, message: 'cannot_insert_data' });
 
-                        console.log('22222222222222222222')
+                        console.log('newwww22222222222222222222')
                         if(infoContact){
-                            console.log('333333333333333333')
+                            console.log('newwww333333333333333333')
                             // link user với contact
                             await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
                                 linkUser: infoUserAfterInsert._id
@@ -363,7 +355,7 @@ class Model extends BaseModel {
                                 $addToSet: { contacts: infoContact._id } 
                             }, { new: true });
                         }else{
-                            console.log('44444444444444444444')
+                            console.log('newwww44444444444444444444')
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 authorID, 
                                 fundaID,
@@ -374,7 +366,7 @@ class Model extends BaseModel {
                             });
 
                             // console.log({infoNewContact})
-                            console.log('55555555555555555555555')
+                            console.log('newwww55555555555555555555555')
 
                             // link user với contact
                             if(infoNewContact){
@@ -389,7 +381,11 @@ class Model extends BaseModel {
                         }
 
                         // Gửi mã OTP về cho user
-                        return resolve({ error: false, data: infoUserAfterInsert, pwd: password, exists: true })
+                        return resolve({
+                            error: false,
+                            data: password,
+                            status: 200
+                        })
                     }else{
                         return resolve({ error: true, message: 'Số điện thoại không hợp lệ' });
                     }
