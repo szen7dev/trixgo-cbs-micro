@@ -99,6 +99,7 @@ class Model extends BaseModel {
                 //___________Xác thực số điện thoại
                 if (!regexPhoneNumber(phone))
                     return resolve({ error: true, message: 'Số điện thoại không hợp lệ' })
+                
                 let checkPhone = phone.replace(/\s/g, "").length
                 if (Number(checkPhone) < 10)
                     return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
@@ -423,42 +424,42 @@ class Model extends BaseModel {
                 /**
                  * TẠO TÀI KHOẢN CHO KHÁCH HÀNG
                  */
-                if (option) {
-                    let companyID, departmentID, positionID, userID;
+                // if (option) {
+                //     let companyID, departmentID, positionID, userID;
 
-                    // Dành cho Việt Nguyên Holding
-                    if (option == 1) {
-                        companyID = '6046be79b55525368b11bc2b';
-                        departmentID = '6046be79b55525368b11bc36';
-                        positionID = '6046be79b55525368b11bc38';
-                        userID = '6046be7ab55525368b11bc7d';
-                    }
+                //     // Dành cho Việt Nguyên Holding
+                //     if (option == 1) {
+                //         companyID = '6046be79b55525368b11bc2b';
+                //         departmentID = '6046be79b55525368b11bc36';
+                //         positionID = '6046be79b55525368b11bc38';
+                //         userID = '6046be7ab55525368b11bc7d';
+                //     }
 
-                    let infoUserCustomer = await AUTH__USER.insert({
-                        email,
-                        fullname: name,
-                        level: 1,
-                        departmentID,
-                        positionID,
-                        companyID,
-                        phone,
-                        userID
-                    })
+                //     let infoUserCustomer = await AUTH__USER.insert({
+                //         email,
+                //         fullname: name,
+                //         level: 1,
+                //         departmentID,
+                //         positionID,
+                //         companyID,
+                //         phone,
+                //         userID
+                //     })
 
-                    if (infoUserCustomer && infoUserCustomer.data) {
-                        await USER_COLL.findByIdAndUpdate(infoUserCustomer.data._id,
-                            {
-                                $addToSet: { contacts: infoAfterInsert._id }
-                            },
-                            { new: true })
+                //     if (infoUserCustomer && infoUserCustomer.data) {
+                //         await USER_COLL.findByIdAndUpdate(infoUserCustomer.data._id,
+                //             {
+                //                 $addToSet: { contacts: infoAfterInsert._id }
+                //             },
+                //             { new: true })
 
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id,
-                            {
-                                linkUser: infoUserCustomer.data._id
-                            },
-                            { new: true })
-                    }
-                }
+                //         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id,
+                //             {
+                //                 linkUser: infoUserCustomer.data._id
+                //             },
+                //             { new: true })
+                //     }
+                // }
 
                 // Cập nhật linkUser với tài khoản
                 if (linkUser && checkObjectIDs(linkUser)) {

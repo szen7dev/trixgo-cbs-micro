@@ -27,9 +27,12 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant');
+const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 
-const TIMESHEET__EXPERT_TIMESHEET_COLL   = require('../../timesheet/database/timesheet.expert_timesheet-coll')
-const TIMESHEET__EXPERT_SALARY_COLL      = require('../../timesheet/database/timesheet.expert_salary-coll')
+const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const TIMESHEET__EXPERT_SALARY_COLL     = require('../../timesheet/database/timesheet.expert_salary-coll')
+
+const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;
 class Model extends BaseModel {
 
     constructor() {
@@ -39,11 +42,11 @@ class Model extends BaseModel {
     register({ email, fullname, level, companyID, platform }) {
         return new Promise(async resolve => {
             try {
-                 let emailValid      = email.toLowerCase().trim();
-                 let objectExitsUser = {};
+                let emailValid      = email.toLowerCase().trim();
+                let objectExitsUser = {};
 
-                 let listPlatformValid                    = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB];
-                 let listLevelValid                       = [LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE];
+                let listPlatformValid                    = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB];
+                let listLevelValid                       = [LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE];
 
                 if (!email || email == '')
                     return resolve({ error: true, message: 'mail_invalid' });
@@ -100,13 +103,18 @@ class Model extends BaseModel {
         });
     }
 
-    login({ email, password, platform }) {
+    login({ email, password }) {
         return new Promise(async resolve => {
             try {
-                let emailValid          = email.toLowerCase().trim();
+                let strValid = email.toLowerCase().trim();
 
                 let isExist = await AUTH__USER_COLL
-                    .findOne({ email: emailValid })
+                    .findOne({ 
+                        $or: [
+                            { email: strValid },
+                            { phone: strValid },
+                        ]
+                     })
                     .populate({
                         path: 'company department contacts',
                         select: '_id name sign image debt'
@@ -116,7 +124,7 @@ class Model extends BaseModel {
                     return resolve({
                         error: true,
                         message: 'Email không tồn tại',
-                        keyError: "email_not_exists",
+                        keyError: "email_or_phone_not_exists",
                         status: 400
                     });
                 }
@@ -176,7 +184,12 @@ class Model extends BaseModel {
                 // console.log({ token })
 
                 // update lastLog of user
-                await AUTH__USER_COLL.findOneAndUpdate({ email: emailValid }, {
+                await AUTH__USER_COLL.findOneAndUpdate({ 
+                    $or: [
+                        {  email: strValid },
+                        {  phone: strValid },
+                    ]
+                 }, {
                     lastLog: new Date()
                 });
                 // console.log({ emailValid })
@@ -207,55 +220,136 @@ class Model extends BaseModel {
      * Date: 5/11/2024
      */
     getOTP({ email }) {
+        // console.log({ email })
         return new Promise(async resolve => {
             try {
-                const emailValid = email.toLowerCase().trim();
+                let companyID = "6046c63a2c1dc33996dd9762" // Phân vùng set làm Sàn TMĐT (Medgo)
+
+                const strValid = email.toLowerCase().trim();
+                const info = await AUTH__USER_COLL.findOne({
+                    $or: [
+                        {  email: strValid },
+                        {  phone: strValid },
+                    ]
+                })
+                .select('fullname email phone contacts')
+                .populate({
+                    path: 'contacts',
+                    select: 'name email phone'
+                })
+                console.log(info)
+
+                // Kiểm tra xem email là Phone hay Email
+                function isValidEmail(str) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(str);
+                }         
+                
+                function isValidVietnamPhoneNumber(str) {
+                    const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                    return phoneRegex.test(str);
+                }
+
+                console.log({____isMail: isValidEmail(strValid)});
+                console.log({____isPhone: isValidVietnamPhoneNumber(strValid)});
+
+                // Reset pass/code
+                if (info) {
+                     /**
+                     * set code (random 6 character)
+                     * => send mail with code
+                     * => enter code match => enter new password(not enter oldpass)
+                     */
+                    const checkExist = await AUTH__USER_COLL.findOne({ 
+                        $or: [
+                            {  email: strValid },
+                            {  phone: strValid },
+                        ]
+                     })
+                    .select('fullname email phone contacts')
+                    .lean();
+
+                    const codeReset = Math.floor(100000 + Math.random() * 900000);
+    
+                    const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(checkExist._id, {
+                        codeReset
+                    }, { new: true });
+    
+                    if (!infoAfterUpdateCode) {
+                        return resolve({
+                            error: true,
+                            message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                            keyError: "error_occurred",
+                            status: 422
+                        })
+                    }
+    
+                    // const mailContent = templateRecoverPass(checkExist.fullname, codeReset);
+                    // sendEmailRecoverPass(
+                    //     email,
+                    //     'CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM',
+                    //     mailContent,
+                    //     cb => {
+                    //         console.log(cb);
+                    //     }
+                    // )
+    
+                    return resolve({
+                        error: false,
+                        data: { codeReset },
+                        status: 200
+                    });
+                }
 
                 /**
-                 * set code (random 6 character)
-                 * => send mail with code
-                 * => enter code match => enter new password(not enter oldpass)
+                 * TẠO TÀI KHOẢN
                  */
-                const checkExist = await AUTH__USER_COLL.findOne({ email: emailValid }).lean();
-                if (!checkExist) {
-                    return resolve({
-                        error: true,
-                        message: "Email không tồn tại",
-                        keyError: "email_not_exists",
-                        status: 404
-                    })
-                }
+                else{
+                    if(isValidEmail(strValid) || isValidVietnamPhoneNumber(strValid)){
+                        // Tạo tài khoản
+                        let password        = randomStringFixLengthCode(6);
+                        let hashPassword    = await hash(password, 8);
+                        if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
+    
+                        let dataInsert = {
+                            company: companyID,
+                            password: hashPassword,
+                            fullname: `fullname ${strValid}-ECOM`,
+                            bizfullname: `fullname ${strValid}-ECOM`,
+                            level: 1,
+                        }
 
-                const codeReset = Math.floor(100000 + Math.random() * 900000);
+                        if(isValidEmail(strValid)){
+                            dataInsert.email = strValid
+                        }else{
+                            dataInsert.phone = strValid
+                            dataInsert.email = `${strValid}.trx.ecom@gmail.com`
+                        }
+    
+                        let infoUserAfterInsert = await this.insertData(dataInsert);
+                        if (!infoUserAfterInsert)
+                            return resolve({ error: true, message: 'cannot_insert_data' });
 
-                const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(checkExist._id, {
-                    codeReset
-                }, { new: true });
+                        // Kiểm tra/Tạo danh bạ/Link với tài khoản
+                        // ITEM__CONTACT_COLL
+                        let infoContact = await ITEM__CONTACT_COLL.findOne({
+                            company: companyID, 
+                            $or: [
+                                {  email: strValid },
+                                {  phone: strValid },
+                            ]
+                        })
+                        .select('_id name linkUser')
+                        console.log(infoContact)
 
-                if (!infoAfterUpdateCode) {
-                    return resolve({
-						error: true,
-						message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-						keyError: "error_occurred",
-						status: 422
-					})
-                }
+                        await ITEM__CONTACT_MODEL.insert(dataInsert);
 
-                const mailContent = templateRecoverPass(checkExist.fullname, codeReset);
-                sendEmailRecoverPass(
-                    email,
-                    'CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM',
-                    mailContent,
-                    cb => {
-                        console.log(cb);
+                        // Gửi mã OTP về cho user
+                        return resolve({ error: false, data: infoUserAfterInsert, pwd: password, exists: true })
+                    }else{
+                        return resolve({ error: true, message: 'Mail hoặc Điện thoại không hợp lệ' });
                     }
-                )
-
-                return resolve({
-                    error: false,
-                    data: { codeReset },
-                    status: 200
-                });
+                }                
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

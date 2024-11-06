@@ -21,13 +21,16 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         require:  true,
         unique : true
     },
+    //_______Điện thoại
+    phone: {
+        type   : String,
+        unique : true
+    },
     //_______Mật khẩu
     password: {
       type: String,
     //   select: false, // Để fix Bảo mật
     },
-    //_______Điện thoại
-    phone: String,
     //_______Tên (vd: Nam)
     firstname: String,
     //_______Họ (vd: Nguyễn Văn)

@@ -74,7 +74,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { email } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const infoUser = await AUTH__USER_MODEL.getOTP({ email });
                 return infoUser;
