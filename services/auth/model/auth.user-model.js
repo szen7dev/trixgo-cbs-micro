@@ -30,7 +30,8 @@ const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.ac
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
-const TIMESHEET__EXPERT_SALARY_COLL     = require('../../timesheet/database/timesheet.expert_salary-coll')
+const TIMESHEET__EXPERT_SALARY_COLL     = require('../../timesheet/database/timesheet.expert_salary-coll');
+const e = require('express');
 
 const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;
 class Model extends BaseModel {
@@ -104,6 +105,7 @@ class Model extends BaseModel {
     }
 
     login({ email, password }) {
+        // console.log({ email, password })
         return new Promise(async resolve => {
             try {
                 let strValid = email.toLowerCase().trim();
@@ -117,7 +119,7 @@ class Model extends BaseModel {
                      })
                     .populate({
                         path: 'company department contacts',
-                        select: '_id name sign image debt'
+                        select: '_id name phone email sign image debt'
                     })
 
                 if (!isExist) {
@@ -216,16 +218,20 @@ class Model extends BaseModel {
 
     /**
      * Author: HiepNH
-     * Func: Lấy mã OTP theo email hoặc phone gửi về
+     * Func: Lấy mã OTP theo email hoặc phone gửi về => TẠO TK MỚI TRÊN ECOM
      * Date: 5/11/2024
      */
     getOTP({ email }) {
         // console.log({ email })
         return new Promise(async resolve => {
             try {
-                let companyID = "6046c63a2c1dc33996dd9762" // Phân vùng set làm Sàn TMĐT (Medgo)
+                let authorID = "6046c63b2c1dc33996dd97e7" // Trợ lý viên sàn ECOM: FIX
+                let fundaID = "670c4e1de5851300129f80c5" // Cơ sở sàn Ecom: FIX
+                let companyID = "6046c63a2c1dc33996dd9762" // Phân vùng set làm Sàn TMĐT (Medgo): FIX
 
                 const strValid = email.toLowerCase().trim();
+
+                // Kiểm tra Tài khoản xem đã tồn tại trong hệ thống hay chưa
                 const info = await AUTH__USER_COLL.findOne({
                     $or: [
                         {  email: strValid },
@@ -237,14 +243,31 @@ class Model extends BaseModel {
                     path: 'contacts',
                     select: 'name email phone'
                 })
-                console.log(info)
+                // console.log(info)
 
-                // Kiểm tra xem email là Phone hay Email
+                // Kiểm tra/Tạo danh bạ/Link với tài khoản
+                let infoContact = await ITEM__CONTACT_COLL.findOne({
+                    company: companyID, 
+                    $or: [
+                        {  email: strValid },
+                        {  phone: strValid },
+                    ]
+                })
+                .select('_id name phone email linkUser')
+                // console.log({infoContact})
+
+                // Mã hóa password
+                let password        = randomStringFixLengthCode(6);
+                let hashPassword    = await hash(password, 8);
+                if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
+
+                // Hàm kiểm tra Email
                 function isValidEmail(str) {
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     return emailRegex.test(str);
                 }         
                 
+                // Hàm kiểm tra Phone
                 function isValidVietnamPhoneNumber(str) {
                     const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
                     return phoneRegex.test(str);
@@ -255,24 +278,28 @@ class Model extends BaseModel {
 
                 // Reset pass/code
                 if (info) {
+                    if(infoContact){
+                        console.log('6666666666666666666666')
+                        // link user với contact
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
+                            linkUser: info._id
+                        }, { new: true })
+
+                        await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                            $addToSet: { contacts: infoContact._id } 
+                        }, { new: true });
+                    }
+
                      /**
                      * set code (random 6 character)
                      * => send mail with code
                      * => enter code match => enter new password(not enter oldpass)
                      */
-                    const checkExist = await AUTH__USER_COLL.findOne({ 
-                        $or: [
-                            {  email: strValid },
-                            {  phone: strValid },
-                        ]
-                     })
-                    .select('fullname email phone contacts')
-                    .lean();
-
                     const codeReset = Math.floor(100000 + Math.random() * 900000);
     
-                    const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(checkExist._id, {
-                        codeReset
+                    const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                        codeReset,
+                        password: hashPassword
                     }, { new: true });
     
                     if (!infoAfterUpdateCode) {
@@ -284,7 +311,7 @@ class Model extends BaseModel {
                         })
                     }
     
-                    // const mailContent = templateRecoverPass(checkExist.fullname, codeReset);
+                    // const mailContent = templateRecoverPass(info.fullname, codeReset);
                     // sendEmailRecoverPass(
                     //     email,
                     //     'CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM',
@@ -296,7 +323,7 @@ class Model extends BaseModel {
     
                     return resolve({
                         error: false,
-                        data: { codeReset },
+                        data: { codeReset, psw: password },
                         status: 200
                     });
                 }
@@ -305,49 +332,66 @@ class Model extends BaseModel {
                  * TẠO TÀI KHOẢN
                  */
                 else{
-                    if(isValidEmail(strValid) || isValidVietnamPhoneNumber(strValid)){
-                        // Tạo tài khoản
-                        let password        = randomStringFixLengthCode(6);
-                        let hashPassword    = await hash(password, 8);
-                        if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
-    
+                    // Bắt buộc phải tạo bằng Số điện thoại
+                    if(isValidVietnamPhoneNumber(strValid)){                            
+                        console.log('111111111111111111')
+                        // Tạo tài khoản trên phân vùng ECOM
                         let dataInsert = {
+                            userCreate: authorID,
                             company: companyID,
                             password: hashPassword,
                             fullname: `fullname ${strValid}-ECOM`,
                             bizfullname: `fullname ${strValid}-ECOM`,
                             level: 1,
-                        }
-
-                        if(isValidEmail(strValid)){
-                            dataInsert.email = strValid
-                        }else{
-                            dataInsert.phone = strValid
-                            dataInsert.email = `${strValid}.trx.ecom@gmail.com`
+                            phone: strValid,
+                            email: `${strValid}.trx.ecom@gmail.com`
                         }
     
                         let infoUserAfterInsert = await this.insertData(dataInsert);
                         if (!infoUserAfterInsert)
                             return resolve({ error: true, message: 'cannot_insert_data' });
 
-                        // Kiểm tra/Tạo danh bạ/Link với tài khoản
-                        // ITEM__CONTACT_COLL
-                        let infoContact = await ITEM__CONTACT_COLL.findOne({
-                            company: companyID, 
-                            $or: [
-                                {  email: strValid },
-                                {  phone: strValid },
-                            ]
-                        })
-                        .select('_id name linkUser')
-                        console.log(infoContact)
+                        console.log('22222222222222222222')
+                        if(infoContact){
+                            console.log('333333333333333333')
+                            // link user với contact
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
+                                linkUser: infoUserAfterInsert._id
+                            }, { new: true })
 
-                        await ITEM__CONTACT_MODEL.insert(dataInsert);
+                            await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                                $addToSet: { contacts: infoContact._id } 
+                            }, { new: true });
+                        }else{
+                            console.log('44444444444444444444')
+                            let infoNewContact = await ITEM__CONTACT_MODEL.insert({
+                                authorID, 
+                                fundaID,
+                                type: 2, 
+                                name: `fullname ${strValid}-ECOM`,
+                                phone: strValid, 
+                                email: `${strValid}.trx.ecom@gmail.com`
+                            });
+
+                            // console.log({infoNewContact})
+                            console.log('55555555555555555555555')
+
+                            // link user với contact
+                            if(infoNewContact){
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
+                                    linkUser: infoUserAfterInsert._id
+                                }, { new: true })
+    
+                                await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                                    $addToSet: { contacts: infoNewContact.data._id } 
+                                }, { new: true })
+                            }
+                        }
 
                         // Gửi mã OTP về cho user
                         return resolve({ error: false, data: infoUserAfterInsert, pwd: password, exists: true })
                     }else{
-                        return resolve({ error: true, message: 'Mail hoặc Điện thoại không hợp lệ' });
+                        return resolve({ error: true, message: 'Số điện thoại không hợp lệ' });
                     }
                 }                
             } catch (error) {
@@ -1411,13 +1455,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Hàm xóa user
-     * Hiepnh: Không được phép xóa User
-	 * Date: 03/03/2022
-	 */
 
     /**
 	 * Dev: HiepNH
