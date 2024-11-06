@@ -302,16 +302,17 @@ class Model extends BaseModel {
                             status: 422
                         })
                     }
-    
-                    // const mailContent = templateRecoverPass(info.fullname, codeReset);
-                    // sendEmailRecoverPass(
-                    //     email,
-                    //     'CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM',
-                    //     mailContent,
-                    //     cb => {
-                    //         console.log(cb);
-                    //     }
-                    // )
+                    
+                    // Gửi mã OTP về cho user
+                    const mailContent = templateRecoverPass(info.fullname, password);
+                    sendEmailRecoverPass(
+                        email,
+                        'MÃ OTP ĐĂNG NHẬP CỦA BẠN - TRIXGO.COM',
+                        mailContent,
+                        cb => {
+                            console.log(cb);
+                        }
+                    )
     
                     return resolve({
                         error: false,
@@ -381,6 +382,16 @@ class Model extends BaseModel {
                         }
 
                         // Gửi mã OTP về cho user
+                        const mailContent = templateRecoverPass(infoUserAfterInsert.fullname, password);
+                        sendEmailRecoverPass(
+                            email,
+                            'MÃ OTP ĐĂNG NHẬP CỦA BẠN - TRIXGO.COM',
+                            mailContent,
+                            cb => {
+                                console.log(cb);
+                            }
+                        )
+
                         return resolve({
                             error: false,
                             data: password,
