@@ -3,17 +3,6 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-// const GeoSchema = new Schema({
-//     type: {
-//         type: String,
-//         default: "Point"
-//     },
-//     coordinates: {
-//         type: [Number],
-//         index: "2dsphere"
-//     }
-// });
-
 module.exports  = DATABASE_MIDDLEWARE("media", {
     //_________Công ty
     company: {
@@ -57,18 +46,6 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     tags: [{
         type: Schema.Types.ObjectId,
         ref: 'media_tag'
-    }],
-    // //_________Địa điểm (cân nhắc bỏ)
-	// location: GeoSchema,
-    //_________File (cân nhắc bỏ)
-    files: [{
-        type: Schema.Types.ObjectId,
-        ref: 'media_file'
-    }],
-    //_________Ảnh (cân nhắc bỏ)
-    images: [{
-        type: Schema.Types.ObjectId,
-        ref: 'media_file'
     }],
     //_________Thumbnail bài viết
     thumbnail: {
