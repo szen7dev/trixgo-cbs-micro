@@ -221,16 +221,6 @@ class Model extends BaseModel {
 				}
 
 				if (!checkObjectIDs(mediaID)){
-					let info = await MEDIA_COLL
-					.findById(mediaID)
-					.select(select)
-					.populate(populates)
-					.lean();
-
-					if (!info) return resolve({ error: true, message: 'cannot_get' })
-
-					return resolve({ error: false, data: info })
-				}else{
 					if(slug && slug != ''){
 						let info = await MEDIA_COLL
 						.findOne({ company: companyID, slug: slug.trim() })
@@ -244,6 +234,16 @@ class Model extends BaseModel {
 					}else{
 						return resolve({ error: true, message: 'cannot_get' })
 					}
+				}else{
+					let info = await MEDIA_COLL
+					.findById(mediaID)
+					.select(select)
+					.populate(populates)
+					.lean();
+
+					if (!info) return resolve({ error: true, message: 'cannot_get' })
+
+					return resolve({ error: false, data: info })
 				}
 			} catch (error) {
 				return resolve({ error: true, message: error.message });
@@ -252,6 +252,7 @@ class Model extends BaseModel {
 	}
 
 	getList({ companyID, categoryID, menuSlug, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+		// console.log({companyID, categoryID, menuSlug, keyword, limit, lastestID, select, populates, sortKey})
 		return new Promise(async (resolve) => {
 			try {
 				let sortBy;

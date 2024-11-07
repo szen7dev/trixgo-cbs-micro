@@ -8,21 +8,13 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
  */
 const MEDIA_MODEL                               = require('../model/media-model').MODEL;
 
-
 module.exports = {
-
-	/**
-	 * ============================ ********************* ===============================
-	 * ============================     	MEDIA  	      ===============================
-	 * ============================ ********************* ===============================
-	 */
-
     /**
 	 * Dev: MinhVH
 	 * Func: THÊM BÀI VIẾT MỚI
      * Updated: 24/02/2022
 	 */
-    insertMedia: {
+    insert: {
         auth: "required",
         params: {
             title           : { type: "string" },
@@ -52,7 +44,7 @@ module.exports = {
 	 * Func: CHỈNH SỬA BÀI VIẾT
      * Updated: 24/02/2022
 	 */
-	updateMedia: {
+	update: {
         auth: "required",
         params: {
             mediaID         : { type: "string" },
@@ -85,7 +77,7 @@ module.exports = {
 	 * Func: XÓA BÀI VIẾT
      * Updated: 24/02/2022
 	 */
-    deleteMedia: {
+    delete: {
         auth: "required",
         params: {
             mediaID: { type: "string" },
@@ -107,70 +99,47 @@ module.exports = {
         }
     },
 
-    /**
-	 * Dev: MinhVH
-	 * Func: CHI TIẾT BÀI VIẾT
-     * Updated: 24/02/2022
-	 */
-    getInfoMedia: {
-        auth: "required",
+    getInfoAndGetList: {
         params: {
-            mediaID     : { type: "string" },
-            select      : { type: "string", optional: true },
-            populates   : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-				await this.validateEntity(ctx.params);
-				const { _id: authorID, company } = ctx.meta.infoUser;
+            mediaID         : { type: "string", optional: true },
+            companyID       : { type: "string", optional: true },
+            categoryID      : { type: "string", optional: true },
 
-                const { companyID, mediaID, slug, select, populates } = ctx.params;
-
-                if(!companyID){
-                    companyID = company._id
-                }
-
-                const resultAfterCallHandler = await MEDIA_MODEL.getInfo({
-					companyID, mediaID, slug, select, populates
-				});
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
-            }
-        }
-    },
-
-    /**
-	 * Dev: MinhVH
-	 * Func: LẤY DANH SÁCH BÀI VIẾT
-     * Updated: 24/02/2022
-	 */
-    getListMedia: {
-        auth: "required",
-        params: {
-            categoryID      : { type: 'string', optional: true },
-            lastestID       : { type: 'string', optional: true },
+            // Field mặc định
             limit           : { type: "string", optional: true },
+            lastestID       : { type: "string", optional: true },
+            keyword         : { type: "string", optional: true },
             select          : { type: "string", optional: true },
             populates       : { type: "string", optional: true },
+            sortDirection   : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-				await this.validateEntity(ctx.params);
-				const { company } = ctx.meta.infoUser;
-                const {
-                    categoryID, menuSlug, keyword, limit, lastestID, select, populates, sortKey
-                } = ctx.params;
+                await this.validateEntity(ctx.params);
+                let { mediaID, companyID, categoryID, menuSlug, slug, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.getList({
-					companyID: company._id, categoryID, menuSlug,
-                    keyword, limit, lastestID, select, populates, sortKey
-				});
+                // console.log(ctx.params)
+
+                const infoUser = ctx?.meta?.infoUser;
+
+                if(!companyID && infoUser?.company){
+                    companyID = infoUser?.company?._id
+                }
+
+                let resultAfterCallHandler;
+                if(mediaID){
+                    resultAfterCallHandler = await MEDIA_MODEL.getInfo({
+                        companyID, mediaID, slug, select, populates
+                    });
+                } else{
+                    resultAfterCallHandler = await MEDIA_MODEL.getList({
+                        companyID, categoryID, menuSlug, keyword, limit, lastestID, select, populates, sortKey
+                    });
+                }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
+                return { error: true, message: error.message };
             }
         }
     },

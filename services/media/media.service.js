@@ -59,21 +59,10 @@ module.exports = {
 	actions: {
 
 		// ================================  MEDIA  ================================
-
-		// THÊM BÀI VIẾT MỚI
-		[CF_ACTIONS_MEDIA.INSERT_MEDIA] 		            			: MEDIA_HANDLER.insertMedia,
-
-		// CHỈNH SỬA BÀI VIẾT
-		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.updateMedia,
-
-		// XÓA BÀI VIẾT
-		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.deleteMedia,
-
-		// CHI TIẾT BÀI VIẾT
-		[CF_ACTIONS_MEDIA.INFO_MEDIA] 		            				: MEDIA_HANDLER.getInfoMedia,
-
-		// LẤY DANH SÁCH BÀI VIẾT
-		[CF_ACTIONS_MEDIA.LIST_MEDIA] 		            			    : MEDIA_HANDLER.getListMedia,
+		[CF_ACTIONS_MEDIA.INSERT_MEDIA] 		            			: MEDIA_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.update,
+		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.delete,
+		[CF_ACTIONS_MEDIA.MEDIA_GET_INFO_AND_GET_LIST] 					: MEDIA_HANDLER.getInfoAndGetList,
 
 		// CẬP NHẬT LƯỢT XEM BÀI VIẾT
 		[CF_ACTIONS_MEDIA.UPDATE_VIEW_MEDIA] 		            		: MEDIA_HANDLER.updateView,
