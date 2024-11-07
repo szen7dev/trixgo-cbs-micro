@@ -28,8 +28,6 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
                 const { categoryID, title, content, tags, summary, description, thumbnailID, status } = ctx.params;
 
-                console.log(ctx.params)
-
                 const resultAfterCallHandler = await MEDIA_MODEL.insert({ companyID: company._id, userID, categoryID, title, content, tags, summary, description, thumbnailID, status });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
