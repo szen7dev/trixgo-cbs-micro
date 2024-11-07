@@ -1,6 +1,6 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
+const { checkObjectIDs, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { setTimeZone  }                  = require('../../../tools/utils/time_utils');

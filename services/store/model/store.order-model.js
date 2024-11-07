@@ -567,7 +567,8 @@ getInfo({ orderID, select, populates = '{"path":"assignee project userCreate use
  * Author: Hiepnh
  * Date: 9/4/2022
  */
-getList({ option, status, arrType, outin, type, userID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, parentID, userCreateID, companyOfUser, keyword, limit = 50, lastestID, select, populates, sortKey, isCompanyOther, fromDate, toDate }) {
+getList({ option, status, arrType, outin, type, userID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, keyword, limit = 50, lastestID, select, populates, sortKey, fromDate, toDate }) {
+    // console.log({option, userCreateID, userID})
       return new Promise(async (resolve) => {
           try {
               let sortBy;

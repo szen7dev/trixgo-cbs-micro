@@ -17,21 +17,19 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            menuID: { type: "string" },
-            productID: { type: "string", optional: true },
-            postID: { type: "string", optional: true },
+            link: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, menuID, productID, postID } = ctx.params;
+                let { type, link, thumbnailID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await MEDIA_CATE_MODEL.insert({
-                    companyID: company._id, userID, type, menuID, productID, postID
+                    companyID: company._id, userID, type, link, thumbnailID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -51,16 +49,17 @@ module.exports = {
         auth: "required",
         params: {
             cateID  : { type: "string" },
+            link: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cateID } = ctx.params;
-                console.log(ctx.params)
+                const { cateID, type, link, thumbnailID } = ctx.params;
+                // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_CATE_MODEL.update({ userID, cateID });
+                const resultAfterCallHandler = await MEDIA_CATE_MODEL.update({ userID, cateID, type, link, thumbnailID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -104,7 +103,7 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            cateID         : { type: "string", optional: true },
+            cateID          : { type: "string", optional: true },
 
             // Field mặc định
             keyword         : { type: "string", optional: true },
@@ -116,11 +115,15 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, cateID, menuID, slug, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { companyID, type, cateID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler;
                 if (cateID) {
@@ -128,7 +131,7 @@ module.exports = {
                         cateID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await MEDIA_CATE_MODEL.getList({ type, companyID: company._id, menuID, slug, keyword, limit, lastestID, select, populates, sortKey });
+                    resultAfterCallHandler = await MEDIA_CATE_MODEL.getList({ type, companyID, keyword, limit, lastestID, select, populates, sortKey });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

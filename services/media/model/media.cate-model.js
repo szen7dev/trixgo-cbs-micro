@@ -27,26 +27,21 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  insert({ companyID, userID, type, menuID, productID, postID }) {
+  insert({ companyID, userID, type, link, thumbnailID }) {
     return new Promise(async (resolve) => {
         try {
-            if (!checkObjectIDs(menuID))
-                return resolve({error: true, message: "menuID invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-
             let dataInsert = { 
               company: companyID,
               userCreate: userID, 
-              menu: menuID
+              link
             }
 
-            if (checkObjectIDs(postID)) {
-                dataInsert.post = postID;
-                dataInsert.type = Number(1)
-            }else{
-                if (checkObjectIDs(productID)) {
-                    dataInsert.product = productID;
-                    dataInsert.type = Number(2)
-                }
+            if (!isNaN(type)) {
+                dataInsert.type = Number(type)
+            }
+
+            if (checkObjectIDs(thumbnailID)) {
+                dataInsert.thumbnail = thumbnailID;
             }
 
             let infoAfterInsert = await this.insertData(dataInsert);
@@ -65,22 +60,31 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  update({ cateID }) {
+  update({ userID, cateID, type, link, thumbnailID}) {
       return new Promise(async (resolve) => {
           try {
             const info = await MEDIA_CATE_COLL.findById(cateID)
             if(!info) {
                 return resolve({
                     error: true,
-                    message: 'Order không tồn tại',
-                    keyError: "order_not_exists",
+                    message: 'cateID không tồn tại',
+                    keyError: "cateID_not_exists",
                     status: 400
                 })
             }
 
             let dataUpdate = { 
                 userUpdate: userID, 
-                modifyAt: new Date() 
+                modifyAt: new Date(),
+                link
+            }
+
+            if (!isNaN(type)) {
+                dataUpdate.type = Number(type)
+            }
+
+            if (checkObjectIDs(thumbnailID)) {
+                dataUpdate.thumbnail = thumbnailID;
             }
 
             let infoAfterUpdate = await MEDIA_CATE_COLL.findByIdAndUpdate(cateID, dataUpdate, { new: true });
@@ -157,11 +161,11 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  getList({ type, companyID, menuID, slug, keyword, limit, lastestID, select, populates = {}, sortKey }) {
+  getList({ type, companyID, keyword, limit, lastestID, select, populates, sortKey }) {
       return new Promise(async (resolve) => {
           try {
               let sortBy;
-              let conditionObj = {};
+              let conditionObj = {company: companyID};
               let keys = ['createAt__-1', '_id__-1'];
 
               if (limit > 50) {
@@ -187,22 +191,6 @@ class Model extends BaseModel {
                       return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
 
                   keys = JSON.parse(sortKey);
-              }
-
-              if (checkObjectIDs(menuID)) {
-                conditionObj.menu = menuID;
-              } else {
-                if(slug && slug != ''){
-                    let infoMenu = await MEDIA_MENU_COLL.findOne({ company: companyID, slug: slug.trim() });
-                    // console.log(infoMenu)
-                    if(infoMenu){
-                        conditionObj.menu = infoMenu._id;
-                    }else{
-                        conditionObj.company = companyID;
-                    }
-                }else{
-                    conditionObj.company = companyID;
-                }
               }
 
               if (!isNaN(type)) {
