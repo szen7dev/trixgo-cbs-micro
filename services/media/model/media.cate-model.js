@@ -27,13 +27,14 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  insert({ companyID, userID, type, link, thumbnailID }) {
+  insert({ companyID, userID, type, name, link, thumbnailID }) {
     return new Promise(async (resolve) => {
         try {
             let dataInsert = { 
               company: companyID,
               userCreate: userID, 
-              link
+              name,
+              link,
             }
 
             if (!isNaN(type)) {
@@ -60,7 +61,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  update({ userID, cateID, type, link, thumbnailID}) {
+  update({ userID, cateID, type, name, link, thumbnailID}) {
       return new Promise(async (resolve) => {
           try {
             const info = await MEDIA_CATE_COLL.findById(cateID)
@@ -76,7 +77,8 @@ class Model extends BaseModel {
             let dataUpdate = { 
                 userUpdate: userID, 
                 modifyAt: new Date(),
-                link
+                name,
+                link,
             }
 
             if (!isNaN(type)) {

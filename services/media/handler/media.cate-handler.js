@@ -17,19 +17,20 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
+            name: { type: "string" },
             link: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { type, link, thumbnailID } = ctx.params;
+                let { type, name, link, thumbnailID } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await MEDIA_CATE_MODEL.insert({
-                    companyID: company._id, userID, type, link, thumbnailID
+                    companyID: company._id, userID, type, name, link, thumbnailID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -49,17 +50,18 @@ module.exports = {
         auth: "required",
         params: {
             cateID  : { type: "string" },
+            name: { type: "string" },
             link: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { cateID, type, link, thumbnailID } = ctx.params;
+                const { cateID, type, name, link, thumbnailID } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_CATE_MODEL.update({ userID, cateID, type, link, thumbnailID });
+                const resultAfterCallHandler = await MEDIA_CATE_MODEL.update({ userID, cateID, type, name, link, thumbnailID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
