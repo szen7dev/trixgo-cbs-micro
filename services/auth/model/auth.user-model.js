@@ -139,13 +139,33 @@ class Model extends BaseModel {
                 // console.log(password.toString())
 
                 // Kiểm tra: Nếu mật khẩu hoặc codeReset (OTP) không trùng khớp
-                if (!isMatchPass && (isExist?.codeReset && (isExist?.codeReset.toString() != password.toString()))) {
-                    return resolve({
-                        error: true,
-                        message: 'Mật khẩu không trùng khớp',
-                        keyError: "password_not_match",
-                        status: 400
-                    })
+                // if (!isMatchPass && (isExist?.codeReset && (isExist?.codeReset.toString() != password.toString()))) {
+                //     return resolve({
+                //         error: true,
+                //         message: 'Mật khẩu không trùng khớp',
+                //         keyError: "password_not_match",
+                //         status: 400
+                //     })
+                // }
+
+                if (!isMatchPass) {
+                    if(isExist?.codeReset && isExist?.codeReset != ''){
+                        if(isExist?.codeReset.toString() != password.toString()){
+                            return resolve({
+                                error: true,
+                                message: 'Mật khẩu không trùng khớp',
+                                keyError: "password_not_match",
+                                status: 400
+                            })  
+                        }
+                    }else{
+                        return resolve({
+                            error: true,
+                            message: 'Mật khẩu không trùng khớp',
+                            keyError: "password_not_match",
+                            status: 400
+                        })
+                    }
                 }
 
                 if (isExist.status == STATUS_BLOCK) {
