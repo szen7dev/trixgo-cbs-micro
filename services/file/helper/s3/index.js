@@ -8,8 +8,6 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { PutObjectCommand, S3 } = require('@aws-sdk/client-s3');
 
-const moment = require('moment');
-
 let s3Object = new S3({
     region: config.aws_region,
 });
