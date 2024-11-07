@@ -11,33 +11,20 @@ module.exports  = DATABASE_MIDDLEWARE("media_cate", {
     },
     /**
      * Type
-     * 1-Bài viết
-     * 2-Sản phẩm
+     * 1-Banner
+     * 2-Footer
      */
     type: {
         type: Number,
         default: 1 
     },
-    menu_item: {
+    //_________Thumbnail
+    thumbnail: {
         type: Schema.Types.ObjectId,
-        ref : "media_menu"
+        ref: 'file'
     },
-    menu_group: {
-        type: Schema.Types.ObjectId,
-        ref : "media_menu"
-    },
-    menu: {
-        type: Schema.Types.ObjectId,
-        ref : "media_menu"
-    },
-    product: {
-        type: Schema.Types.ObjectId,
-        ref: "goods"
-    },
-    post: {
-        type: Schema.Types.ObjectId,
-        ref: "media"
-    },
+    //_________Link
+    link: String,
     userCreate: {
         type: Schema.Types.ObjectId,
         ref: "user"

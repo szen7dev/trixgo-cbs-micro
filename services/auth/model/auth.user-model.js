@@ -121,7 +121,6 @@ class Model extends BaseModel {
                         path: 'company department contacts',
                         select: '_id name phone email sign image debt'
                     })
-                // console.log({isExist})
 
                 if (!isExist) {
                     return resolve({
@@ -133,21 +132,6 @@ class Model extends BaseModel {
                 }
 
                 const isMatchPass = await compare(password, isExist.password)
-
-                // console.log({isMatchPass})
-                // console.log(isExist?.codeReset.toString())
-                // console.log(password.toString())
-
-                // Kiểm tra: Nếu mật khẩu hoặc codeReset (OTP) không trùng khớp
-                // if (!isMatchPass && (isExist?.codeReset && (isExist?.codeReset.toString() != password.toString()))) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Mật khẩu không trùng khớp',
-                //         keyError: "password_not_match",
-                //         status: 400
-                //     })
-                // }
-
                 if (!isMatchPass) {
                     if(isExist?.codeReset && isExist?.codeReset != ''){
                         if(isExist?.codeReset.toString() != password.toString()){
