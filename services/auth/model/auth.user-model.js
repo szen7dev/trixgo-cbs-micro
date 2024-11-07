@@ -27,7 +27,6 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant');
-const { CF_DOMAIN_SERVICES }            = require("../../gateway/helper/domain.constant");
 const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO }               = require("../../zalo_oa/helper/zalo.actions");
 
