@@ -73,7 +73,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     //_________Thumbnail bài viết
     thumbnail: {
         type: Schema.Types.ObjectId,
-        ref: 'media_file'
+        ref: 'file'
     },
     /**
      * Trạng thái của bài viết
