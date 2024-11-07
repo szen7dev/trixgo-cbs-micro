@@ -27,8 +27,12 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant');
-const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
+const { CF_DOMAIN_SERVICES }            = require("../../gateway/helper/domain.constant");
+const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
+const { CF_ACTIONS_ZALO }               = require("../../zalo_oa/helper/zalo.actions");
 
+const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
+const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../../timesheet/database/timesheet.expert_salary-coll');
 const e = require('express');
@@ -324,7 +328,26 @@ class Model extends BaseModel {
                             console.log(cb);
                         }
                     )
-    
+
+                    // Bắn Zalo ZNS
+                    console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                    const removeFirst1 = `84${strValid.slice(1)}`;
+                    let dataOA = {
+                        // phone: `${removeFirst1}`,
+                        phone: "84985199295",
+                        templateData: {
+                            otp: password,
+                        },
+                        templateId: "382295", // Bắn OTP
+                        appId: "3185213136011361427", // Zalo OA Trixgo
+                    };
+                    console.log(dataOA)
+                    let infoZNS = await ctx.call(
+                        `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                        dataOA,
+                    );
+                    console.log(infoZNS)
+                    
                     return resolve({
                         error: false,
                         data: password,
@@ -402,6 +425,25 @@ class Model extends BaseModel {
                                 console.log(cb);
                             }
                         )
+
+                        // Bắn Zalo ZNS
+                        console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                        const removeFirst1 = `84${strValid.slice(1)}`;
+                        let dataOA = {
+                            // phone: `${removeFirst1}`,
+                            phone: "84985199295",
+                            templateData: {
+                                otp: password,
+                            },
+                            templateId: "382295", // Bắn OTP
+                            appId: "3185213136011361427", // Zalo OA Trixgo
+                        };
+                        console.log(dataOA)
+                        let infoZNS = await ctx.call(
+                            `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                            dataOA,
+                        );
+                        console.log(infoZNS)
 
                         return resolve({
                             error: false,
