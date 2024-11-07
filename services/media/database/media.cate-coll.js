@@ -23,6 +23,8 @@ module.exports  = DATABASE_MIDDLEWARE("media_cate", {
         type: Schema.Types.ObjectId,
         ref: 'file'
     },
+    //_________Name
+    name: String,
     //_________Link
     link: String,
     userCreate: {
