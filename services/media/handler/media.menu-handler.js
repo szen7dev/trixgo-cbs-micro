@@ -120,12 +120,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { menuID, parentID, keyword, limit, lastestID, populates, select, sortKey
+                let { companyID, menuID, parentID, keyword, limit, lastestID, populates, select, sortKey
                 } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler;
                 if (menuID) {
@@ -133,7 +137,7 @@ module.exports = {
                         menuID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await MEDIA_MENU_MODEL.getList({ companyID: company._id, userID, parentID, keyword, limit, lastestID, populates, select, sortKey
+                    resultAfterCallHandler = await MEDIA_MENU_MODEL.getList({ companyID, userID, parentID, keyword, limit, lastestID, populates, select, sortKey
                     });
                 }
 
