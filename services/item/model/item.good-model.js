@@ -333,6 +333,7 @@ class Model extends BaseModel {
      * Code:
      */
     getInfo({ companyID, goodsID, slug, select, populates }) {
+        // console.log({ companyID, goodsID, slug, select, populates })
         return new Promise(async (resolve) => {
             try {
                  if(populates && typeof populates === 'string'){
@@ -348,17 +349,6 @@ class Model extends BaseModel {
                 }
 
                 if (!checkObjectIDs(goodsID)){
-                    let info = await ITEM__GOODS_COLL
-                    .findById(goodsID)
-                    .select(select)
-                    .populate(populates)
-
-                    if(!info)
-                        return resolve({ error: true, message: "can't_get_info", status: 403 });
-
-                    return resolve({ error: false, data: info, status: 200 });
-
-				}else{
 					if(slug && slug != ''){
 						let info = await ITEM__GOODS_COLL
 						.findOne({ company: companyID, slug: slug.trim() })
@@ -372,6 +362,16 @@ class Model extends BaseModel {
 					}else{
 						return resolve({ error: true, message: 'cannot_get' })
 					}
+				}else{
+                    let info = await ITEM__GOODS_COLL
+                    .findById(goodsID)
+                    .select(select)
+                    .populate(populates)
+
+                    if(!info)
+                        return resolve({ error: true, message: "can't_get_info", status: 403 });
+
+                    return resolve({ error: false, data: info, status: 200 });
 				}
 
             } catch (error) {
