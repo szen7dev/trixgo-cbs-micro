@@ -12,7 +12,6 @@ const CF_ROUTINGS_MEDIA = {
     MAIN_MEDIA                  		        : `${BASE_ROUTE}`,
     UPDATE_VIEW_MEDIA                  		    : `${BASE_ROUTE}/views`,
     LIST_SEEN_MEDIA                  		    : `${BASE_ROUTE}/seens`,
-    INFO_MEDIA                  		        : `${BASE_ROUTE}/:mediaID`,
     SAVE_MEDIA                  		        : `${BASE_ROUTE}/save`,
     PIN_MEDIA                  		            : `${BASE_ROUTE}/pin`,
     FILE_MEDIA                  		        : `${BASE_ROUTE}/files`,

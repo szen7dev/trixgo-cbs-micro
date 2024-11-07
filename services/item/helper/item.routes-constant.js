@@ -76,7 +76,7 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================GOOD============================================//
     GOODS                                       : `${BASE_ROUTE}${GOODS}`,
-    GOOD_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${GOODS}/download-template-excel`,
+    GOOD_DOWNLOAD_TEMPLATE_EXCEL                : `${BASE_ROUTE}${GOODS}/download-template-excel`,
     GOOD_IMPORT_FROM_EXCEL                      : `${BASE_ROUTE}${GOODS}/import-from-excel`,
     GOOD_EXPORT_EXCEL                           : `${BASE_ROUTE}${GOODS}/export-excel`,
     GOODS_KYSUHIEP                              : `${BASE_ROUTE}${GOODS}/kysuhiep`,
