@@ -4,49 +4,6 @@ const {
 const ZALO_MODEL = require("../model/zalo.model").MODEL;
 
 module.exports = {
-  requestZaloOAPermission: {
-    async handler(ctx) {
-      try {
-        const { appId } = ctx.params;
-
-        const resultAfterCallHandler = await ZALO_MODEL.generateUrlRequest({
-          cacher: this.broker.cacher,
-          appId,
-        });
-
-        return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-      } catch (error) {
-        return renderStatusCodeAndResponse({
-          ctx,
-          error_message: error.message,
-        });
-      }
-    },
-  },
-
-  renewAccessToken: {
-    params: {
-      appId: { type: "string" },
-      isCache: { type: "boolean" },
-    },
-    async handler(ctx) {
-      try {
-        const resultAfterCallHandler = await ZALO_MODEL.renewAccessToken({
-          appId,
-          isCache: ctx.params.isCache,
-          cacher: this.broker.cacher,
-        });
-
-        return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-      } catch (error) {
-        return renderStatusCodeAndResponse({
-          ctx,
-          error_message: error.message,
-        });
-      }
-    },
-  },
-
   sendMessage: {
     params: {
       text: { type: "string" },
@@ -101,13 +58,56 @@ module.exports = {
     },
   },
 
-  zaloOACallback: {
-    params: {
-      oa_id: { type: "string" },
-      code: { type: "string" },
-      code_challenge: { type: "string" },
-      state: { type: "string" },
+  requestZaloOAPermission: {
+    async handler(ctx) {
+      try {
+        const { appId } = ctx.params;
+
+        const resultAfterCallHandler = await ZALO_MODEL.generateUrlRequest({
+          cacher: this.broker.cacher,
+          appId,
+        });
+
+        return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+      } catch (error) {
+        return renderStatusCodeAndResponse({
+          ctx,
+          error_message: error.message,
+        });
+      }
     },
+  },
+
+  renewAccessToken: {
+    params: {
+      appId: { type: "string" },
+      isCache: { type: "boolean" },
+    },
+    async handler(ctx) {
+      try {
+        const resultAfterCallHandler = await ZALO_MODEL.renewAccessToken({
+          appId,
+          isCache: ctx.params.isCache,
+          cacher: this.broker.cacher,
+        });
+
+        return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+      } catch (error) {
+        return renderStatusCodeAndResponse({
+          ctx,
+          error_message: error.message,
+        });
+      }
+    },
+  },
+
+  zaloOACallback: {
+    // params: {
+    //   oa_id: { type: "string" },
+    //   code: { type: "string" },
+    //   code_challenge: { type: "string" },
+    //   state: { type: "string" },
+    // },
     async handler(ctx) {
       try {
         const { code_challenge, code, state } = ctx.params;

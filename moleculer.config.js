@@ -1,7 +1,6 @@
 "use strict";
 
 const { REDIS_SEPERATOR } = require('./tools/cache/cf_redis');
-console.log({ REDIS_SEPERATOR })
 
 /**
  * Moleculer ServiceBroker configuration file
