@@ -142,7 +142,7 @@ return new Promise(async (resolve) => {
 })
 }
 
-insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
+insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
         try {
             // if([2,3,4,5,6].includes(Number(type))){
@@ -219,6 +219,10 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
             if (checkObjectIDs(customerID)) {
                 dataInsert.customer = customerID;
             }
+            if (checkObjectIDs(affiliateID)) {
+                dataInsert.affiliate = affiliateID;
+            }
+
             if (checkObjectIDs(shiftID)) {
                 dataInsert.shift = shiftID;
             }
