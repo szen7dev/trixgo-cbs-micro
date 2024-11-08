@@ -1817,6 +1817,52 @@ class Model extends BaseModel {
                                     }
                                 })
 
+                                let ktt = 'Kế toán trưởng', nvtt = 'Nhân viên tính lương', nvns = 'Người trách nhân sự'
+                                if(companyID.toString() === "6046bedeb55525368b11c5c3"){
+                                    ktt = 'Bùi Ngọc Bích Phương Thảo'
+                                    nvtt = 'Nguyễn Thị Diễm Quỳnh'
+                                    nvns = 'Nguyễn Thị Diễm Quỳnh'
+                                }
+                                if(companyID.toString() === "6046bcefb55525368b11ab29"){
+                                    ktt = 'Phạm Minh Tú'
+                                    nvtt = 'Đỗ Ninh Trang'
+                                    nvns = 'Đỗ Thùy Dương'
+                                }
+
+                                workbook.sheet("BangLuongPay").row(i).cell(2).value('TỔNG')
+                                .style({horizontalAlignment: "center"})
+
+                                workbook.sheet("BangLuongPay").row(i).cell(4).formula(`=SUM(D3:D${i-1})`)
+
+                                workbook.sheet("BangLuongPay").range(`A${i}:F${i}`)
+                                .style({"bold": true, "fill": "FFFF00"})
+
+                                workbook.sheet("BangLuongPay").row(i+2).cell(2).value('DUYỆT')
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongPay").row(i+2).cell(3).value('PKT')
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongPay").row(i+2).cell(4).value('PHCNS')
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongPay").range(`E${i+2}:F${i+2}`)
+                                .style({horizontalAlignment: "center", "bold": true})
+                                .merged(true)
+                                workbook.sheet("BangLuongPay").row(i+2).cell(5).value('NGƯỜI LẬP')
+                                
+
+                                workbook.sheet("BangLuongPay").row(i+7).cell(3).value(ktt)
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongPay").row(i+7).cell(4).value(nvns)
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongPay").range(`E${i+7}:F${i+7}`)
+                                .style({horizontalAlignment: "center", "bold": true})
+                                .merged(true)
+                                workbook.sheet("BangLuongPay").row(i+7).cell(5).value(nvtt)
+
                                 /**
                                  * Tổng hợp số công đi làm
                                  */
