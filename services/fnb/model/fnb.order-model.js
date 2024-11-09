@@ -1011,7 +1011,7 @@ class Model extends BaseModel {
          * - Đơn hàng Offline
          * - Khách hàng đã từng bấm quan tâm Zalo OA
          */
-        if ([1].includes(Number(salesChannel)) && Number(total) >= 3000000) {
+        if ([1].includes(Number(salesChannel)) && Number(total) >= 300000) {
           /**
            * Số điện thoại không hợp lệ
            * Nội dung mẫu ZNS không hợp lệ
@@ -1038,7 +1038,8 @@ class Model extends BaseModel {
             const removeFirst1 = `84${str.slice(1)}`;
 
             let dataOA1 = {
-              phone: `${removeFirst1}`,
+              // phone: `${removeFirst1}`,
+              phone: "84985199295",
               templateData: {
                 customer_name: infoCustomer.name,
                 order_code: `C${Number(numberOfOrder + 1)}`,
