@@ -30,7 +30,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -60,9 +60,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, outin, type, businessID, channelID, fundaID, shiftID, customerID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products } = ctx.params;
+                let { companyID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -71,7 +71,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await STORE_ORDER_MODEL.insertFull({
-                    companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products
+                    companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
