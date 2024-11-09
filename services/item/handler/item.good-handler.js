@@ -122,7 +122,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler;
-                if(goodsID){
+                if(goodsID || slug){
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getInfo({
                         companyID, goodsID, slug, select, populates
                     });
