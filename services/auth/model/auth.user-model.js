@@ -140,7 +140,7 @@ class Model extends BaseModel {
                         if(isExist?.codeReset.toString() != password.toString()){
                             return resolve({
                                 error: true,
-                                message: 'Mật khẩu không trùng khớp',
+                                message: 'OTP không đúng',
                                 keyError: "password_not_match",
                                 status: 400
                             })  
