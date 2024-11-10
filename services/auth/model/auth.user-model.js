@@ -235,7 +235,7 @@ class Model extends BaseModel {
      * Func: Lấy mã OTP theo email hoặc phone gửi về => TẠO TK MỚI TRÊN ECOM
      * Date: 5/11/2024
      */
-    getOTP({ email }) {
+    getOTP({ email, ctx }) {
         // console.log({ email })
         return new Promise(async resolve => {
             try {

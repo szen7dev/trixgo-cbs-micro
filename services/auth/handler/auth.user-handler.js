@@ -76,7 +76,7 @@ module.exports = {
                 const { email } = ctx.params;
                 // console.log(ctx.params)
 
-                const infoUser = await AUTH__USER_MODEL.getOTP({ email });
+                const infoUser = await AUTH__USER_MODEL.getOTP({ email, ctx });
                 return infoUser;
             } catch (error) {
                 return { error: true, message: error.message };
