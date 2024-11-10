@@ -1011,7 +1011,7 @@ class Model extends BaseModel {
          * - Đơn hàng Offline
          * - Khách hàng đã từng bấm quan tâm Zalo OA
          */
-        let hour = Number(moment(new Date('2024-11-11 15:30')).hours())
+        let hour = Number(moment(new Date()).hours())
         // console.log({hour})
         if (Number(total) >= 50000 && hour <= 18) {
         // if ([1].includes(Number(salesChannel)) && Number(total) >= 300000) {
