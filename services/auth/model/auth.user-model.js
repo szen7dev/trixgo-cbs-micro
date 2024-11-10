@@ -337,8 +337,8 @@ class Model extends BaseModel {
                         templateData: {
                             otp: password,
                         },
-                        templateId: "382295", // Bắn OTP
-                        appId: "3185213136011361427", // Zalo OA Trixgo
+                        templateId: "379154", // Bắn OTP
+                        appId: "963380776351252177", // Zalo OA Trixgo
                     };
                     console.log(dataOA)
                     let infoZNS = await ctx.call(
@@ -434,8 +434,8 @@ class Model extends BaseModel {
                             templateData: {
                                 otp: password,
                             },
-                            templateId: "382295", // Bắn OTP
-                            appId: "3185213136011361427", // Zalo OA Trixgo
+                            templateId: "379154", // Bắn OTP
+                            appId: "963380776351252177", // Zalo OA Trixgo
                         };
                         console.log(dataOA)
                         let infoZNS = await ctx.call(

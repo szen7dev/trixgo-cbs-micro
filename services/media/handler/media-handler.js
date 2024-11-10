@@ -125,7 +125,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler;
-                if(mediaID){
+                if(mediaID || slug){
                     resultAfterCallHandler = await MEDIA_MODEL.getInfo({
                         companyID, mediaID, slug, select, populates
                     });
