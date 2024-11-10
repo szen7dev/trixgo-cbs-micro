@@ -1011,69 +1011,72 @@ class Model extends BaseModel {
          * - Đơn hàng Offline
          * - Khách hàng đã từng bấm quan tâm Zalo OA
          */
-        if ([1].includes(Number(salesChannel)) && Number(total) >= 300000) {
+        let hour = Number(moment(new Date('2024-11-11 15:30')).hours())
+        // console.log({hour})
+        if (Number(total) >= 50000 && hour <= 18) {
+        // if ([1].includes(Number(salesChannel)) && Number(total) >= 300000) {
           /**
            * Số điện thoại không hợp lệ
            * Nội dung mẫu ZNS không hợp lệ
            * Mẫu ZNS này không được phép gửi vào ban đêm (từ 22h-6h)
            * Tài khoản Zalo không tồn tại hoặc đã bị vô hiệu hoá
            */
-          console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
-          let hour = Number(moment(new Date()).hours())
-          console.log({hour})
+          // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
 
           let infoConfig = await ITEM__CONFIG_COLL.findOne({
             company: infoFunda.company,
             type: 1,
             active: 1,
           });
-          console.log(infoConfig)
+          // console.log(infoConfig)
           const { metadata: { template } } = infoConfig;
 
           if (infoConfig && template) {
-            console.log('===============Check OK===============>>>>>>>>>>>>>>>')
+            // console.log('===============Check OK===============>>>>>>>>>>>>>>>')
 
             // Xử lý dữ liệu số điện thoại
             const str = infoCustomer.phone;
             const removeFirst1 = `84${str.slice(1)}`;
 
             let dataOA1 = {
-              // phone: `${removeFirst1}`,
-              phone: "84985199295",
+              phone: `${removeFirst1}`,
+              // phone: "84985199295",
               templateData: {
                 customer_name: infoCustomer.name,
                 order_code: `C${Number(numberOfOrder + 1)}`,
                 price: total,
                 date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                note: "Chi tiết xem linkProfile",
+                note: "Bấm quan tâm OA tặng voucher 200k",
+                // note: "Chi tiết xem linkProfile",
               },
               templateId: template.new_order,
               appId: infoConfig.channel,
             };
-            console.log({dataOA1})
             let infoOA = await ctx.call(
               `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
               dataOA1,
             );
-            console.log({infoOA})
 
-            let dataOA2 = {
-              phone: "84985199295",
-              templateData: {
-                customer_name: infoCustomer.name,
-                order_code: `C${Number(numberOfOrder + 1)}`,
-                price: total,
-                date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                note: "Chi tiết xem linkProfile",
-              },
-              templateId: template.new_order,
-              appId: infoConfig.channel
-            };
-            console.log(dataOA2)
-            await ctx.call(
-              `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-              dataOA2,
-            );
+            if(Number(total) >= 50000){
+            // if(Number(total) >= 300000){
+              let dataOA2 = {
+                phone: "84985199295",
+                templateData: {
+                  customer_name: infoCustomer.name,
+                  order_code: `C${Number(numberOfOrder + 1)}`,
+                  price: total,
+                  date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                  // note: "Chi tiết xem linkProfile",
+                  note: "Bấm quan tâm OA tặng voucher 200k",
+                },
+                templateId: template.new_order,
+                appId: infoConfig.channel
+              };
+              await ctx.call(
+                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                dataOA2,
+              );
+            }
           }
         }
 
@@ -1140,9 +1143,9 @@ class Model extends BaseModel {
         }
 
         // Record Traffic
-        if(getRequestAPI.permission == 1){
-          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
-        }
+        // if(getRequestAPI.permission == 1){
+        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+        // }
 
         return resolve({ error: false, data: infoAfterInsert });
       } catch (error) {
@@ -2214,10 +2217,10 @@ class Model extends BaseModel {
           }
         }
 
-        // Record Traffic
-        if(getRequestAPI.permission == 1){
-          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-        }
+        // // Record Traffic
+        // if(getRequestAPI.permission == 1){
+        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        // }
 
         return resolve({ error: false, data: infoAfterInsert });
       } catch (error) {
@@ -3257,10 +3260,10 @@ class Model extends BaseModel {
           }
         }
 
-        // Record Traffic
-        if(getRequestAPI.permission == 1){
-          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-        }
+        // // Record Traffic
+        // if(getRequestAPI.permission == 1){
+        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        // }
 
         return resolve({ error: false, data: infoAfterInsert });
 
@@ -3958,10 +3961,10 @@ class Model extends BaseModel {
         if (!checkObjectIDs(orderID))
           return resolve({ error: true, message: "param_invalid" });
 
-        // Record Traffic
-        if(getRequestAPI.permission == 1){
-          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-        }
+        // // Record Traffic
+        // if(getRequestAPI.permission == 1){
+        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        // }
 
         // populate
         if (populates && typeof populates === "string") {
@@ -4043,10 +4046,10 @@ class Model extends BaseModel {
     // console.log({ type, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
     return new Promise(async (resolve) => {
       try {
-        // Record Traffic
-        if(getRequestAPI.permission == 1){
-          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-        }
+        // // Record Traffic
+        // if(getRequestAPI.permission == 1){
+        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        // }
 
         if (Number(limit) > 10) {
           limit = 10;
@@ -4352,10 +4355,10 @@ class Model extends BaseModel {
     // console.log({ companyID, fundasID, fundas, customerID, optionFixFunda, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration })
     return new Promise(async (resolve) => {
       try {
-        // Record Traffic
-        if(getRequestAPI.permission == 1){
-          await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-        }
+        // // Record Traffic
+        // if(getRequestAPI.permission == 1){
+        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+        // }
 
         let duration = getTimeBetween(toDate, fromDate);
         // console.log({duration:duration/86400})
