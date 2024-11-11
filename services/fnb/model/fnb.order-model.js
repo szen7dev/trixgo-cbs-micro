@@ -1013,7 +1013,8 @@ class Model extends BaseModel {
          */
         let hour = Number(moment(new Date()).hours())
         // console.log({hour})
-        if (Number(total) >= 50000 && hour <= 18) {
+        // if (Number(total) >= 50000 && hour <= 18) {
+        if (Number(total) >= 50000) {
         // if ([1].includes(Number(salesChannel)) && Number(total) >= 300000) {
           /**
            * Số điện thoại không hợp lệ
@@ -1046,7 +1047,7 @@ class Model extends BaseModel {
                 order_code: `C${Number(numberOfOrder + 1)}`,
                 price: total,
                 date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                note: "Bấm quan tâm OA tặng voucher 200k",
+                note: "Quan tâm OA tặng mã 200k",
                 // note: "Chi tiết xem linkProfile",
               },
               templateId: template.new_order,
@@ -1067,7 +1068,7 @@ class Model extends BaseModel {
                   price: total,
                   date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
                   // note: "Chi tiết xem linkProfile",
-                  note: "Bấm quan tâm OA tặng voucher 200k",
+                  note: "Quan tâm OA tặng mã 200k",
                 },
                 templateId: template.new_order,
                 appId: infoConfig.channel
