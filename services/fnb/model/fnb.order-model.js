@@ -1043,7 +1043,7 @@ class Model extends BaseModel {
               phone: `${removeFirst1}`,
               // phone: "84985199295",
               templateData: {
-                customer_name: infoCustomer.name,
+                customer_name: `Khách ${infoCustomer.phone}`,
                 order_code: `C${Number(numberOfOrder + 1)}`,
                 price: total,
                 date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
@@ -1063,7 +1063,7 @@ class Model extends BaseModel {
               let dataOA2 = {
                 phone: "84985199295",
                 templateData: {
-                  customer_name: infoCustomer.name,
+                  customer_name: `Khách ${infoCustomer.phone}`,
                   order_code: `C${Number(numberOfOrder + 1)}`,
                   price: total,
                   date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
