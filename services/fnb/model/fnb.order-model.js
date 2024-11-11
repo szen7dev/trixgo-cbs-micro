@@ -1014,7 +1014,7 @@ class Model extends BaseModel {
         let hour = Number(moment(new Date()).hours())
         // console.log({hour})
         // if (Number(total) >= 50000 && hour <= 18) {
-        if (Number(total) >= 50000) {
+        if (Number(total) >= 50000 && hour <= 18) {
         // if ([1].includes(Number(salesChannel)) && Number(total) >= 300000) {
           /**
            * Số điện thoại không hợp lệ
@@ -1058,8 +1058,8 @@ class Model extends BaseModel {
               dataOA1,
             );
 
-            if(Number(total) >= 50000){
-            // if(Number(total) >= 300000){
+            // if(Number(total) >= 50000){
+            if(Number(total) >= 200000){
               let dataOA2 = {
                 phone: "84985199295",
                 templateData: {
