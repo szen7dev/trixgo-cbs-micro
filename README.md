@@ -4,6 +4,15 @@
 
 <!-- Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục -->
 
+## **CÁC BƯỚC TRIỂN KHAI KẾT NỐI ZALO OA**
+1. Tạo Kênh Zalo OA => để có channel (appId)
+2. Đăng ký các Template
+3. Tạo và cập nhật channel, template để lưu vào DB
+4. Xác thực ứng dụng cho phép Hệ thống kết nối với ZNS
+https://api.trixgo.com/api/oa/request?appId=963380776351252177
+5. Cấu hình BE để nhận template, channel -> bắn tin ZNS
+
+
 ## **CÁC BƯỚC TRIỂN KHAI API CHO MỘT SERVICE**
 
 ===Lấy item làm mẫu===
