@@ -318,15 +318,17 @@ class Model extends BaseModel {
                     }
                     
                     // Gửi mã OTP về cho user
-                    const mailContent = templateRecoverPass(info.fullname, password);
-                    sendEmailRecoverPass(
-                        email,
-                        'MÃ OTP ĐĂNG NHẬP CỦA BẠN - TRIXGO.COM',
-                        mailContent,
-                        cb => {
-                            console.log(cb);
-                        }
-                    )
+                    if(isValidEmail(strValid)){
+                        const mailContent = templateRecoverPass(info.fullname, password);
+                        sendEmailRecoverPass(
+                            email,
+                            'MÃ OTP ĐĂNG NHẬP CỦA BẠN - TRIXGO.COM',
+                            mailContent,
+                            cb => {
+                                console.log(cb);
+                            }
+                        )
+                    }
 
                     // Bắn Zalo ZNS
                     // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
