@@ -18,8 +18,8 @@ module.exports = {
         auth: "required",
         params: {
             name          : { type: "string" },
-            type          : { type: "string", optional: true  },
-            active        : { type: "string", optional: true  },
+            type          : { type: "number", optional: true  },
+            active        : { type: "number", optional: true  },
             channel       : { type: "string", optional: true },
             template      : { type: "string", optional: true },
             secretKey     : { type: "string", optional: true },
@@ -29,9 +29,15 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company  } = ctx.meta.infoUser;
-                const { name, type, active, channel, template, secretKey, tokenKey } = ctx.params;
+                const { companyID, name, type, active, channel, template, secretKey, tokenKey, metadata } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.insert({ companyID: company._id, userID, name, type, active, channel, template, secretKey, tokenKey });
+                console.log(ctx.params)
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -49,8 +55,8 @@ module.exports = {
         params: {
             configID      : { type: "string" }, 
             name          : { type: "string" },
-            type          : { type: "string", optional: true  },
-            active        : { type: "string", optional: true  },
+            type          : { type: "number", optional: true  },
+            active        : { type: "number", optional: true  },
             channel       : { type: "string", optional: true },
             template      : { type: "string", optional: true },
             secretKey     : { type: "string", optional: true },
@@ -60,9 +66,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { configID, name, type, active, channel, template, secretKey, tokenKey } = ctx.params;
+                const { configID, name, type, active, channel, template, secretKey, tokenKey, metadata } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey });
+                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
