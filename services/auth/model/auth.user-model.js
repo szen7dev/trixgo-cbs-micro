@@ -318,34 +318,38 @@ class Model extends BaseModel {
                     }
                     
                     // Gửi mã OTP về cho user
-                    const mailContent = templateRecoverPass(info.fullname, password);
-                    sendEmailRecoverPass(
-                        email,
-                        'MÃ OTP ĐĂNG NHẬP CỦA BẠN - TRIXGO.COM',
-                        mailContent,
-                        cb => {
-                            console.log(cb);
-                        }
-                    )
+                    if(isValidEmail(strValid)){
+                        console.log('===============BẮN EMAIL OTP===============>>>>>>>>>>>>>>>')
+                        const mailContent = templateRecoverPass(info.fullname, password);
+                        sendEmailRecoverPass(
+                            email,
+                            'MÃ OTP ĐĂNG NHẬP CỦA BẠN - TRIXGO.COM',
+                            mailContent,
+                            cb => {
+                                console.log(cb);
+                            }
+                        )
+                    }
 
                     // Bắn Zalo ZNS
-                    // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
-                    // const removeFirst1 = `84${strValid.slice(1)}`;
-                    let dataOA = {
-                        phone: `${removeFirst1}`,
-                        // phone: "84985199295",
-                        templateData: {
-                            otp: password,
-                        },
-                        templateId: "382295", // Bắn OTP
-                        appId: "3185213136011361427", // Zalo OA Trixgo
-                    };
-                    // console.log(dataOA)
-                    let infoZNS = await ctx.call(
-                        `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                        dataOA,
-                    );
-                    // console.log(infoZNS)
+                    if(isValidVietnamPhoneNumber(strValid)){  
+                        console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                        const removeFirst1 = `84${strValid.slice(1)}`;
+                        let dataOA = {
+                            phone: `${removeFirst1}`,
+                            // phone: "84985199295",
+                            templateData: {
+                                otp: password,
+                            },
+                            templateId: "382295", // Bắn OTP
+                            appId: "3185213136011361427", // Zalo OA Trixgo
+                        };
+                        // console.log(dataOA)
+                        let infoZNS = await ctx.call(
+                            `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                            dataOA,
+                        );
+                    }
                     
                     return resolve({
                         error: false,
