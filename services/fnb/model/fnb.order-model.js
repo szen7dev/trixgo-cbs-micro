@@ -1011,10 +1011,18 @@ class Model extends BaseModel {
          * - Đơn hàng Offline
          * - Khách hàng đã từng bấm quan tâm Zalo OA
          */
+        // Hàm kiểm tra Phone
+        function isValidVietnamPhoneNumber(str) {
+            const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+            return phoneRegex.test(str);
+        }
+        const strValid = infoCustomer.phone.toLowerCase().trim();
+        // console.log({strValid})
+        // console.log(`84${strValid.slice(1)}`)
         let hour = Number(moment(new Date()).hours())
         // console.log({hour})
         // if (Number(total) >= 50000 && hour <= 18) {
-        if (Number(total) >= 50000 && hour <= 18) {
+        if (Number(total) >= 50000 && hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
         // if ([1].includes(Number(salesChannel)) && Number(total) >= 300000) {
           /**
            * Số điện thoại không hợp lệ
