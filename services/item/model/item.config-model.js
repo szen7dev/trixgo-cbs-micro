@@ -34,7 +34,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey }) {
+    insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata }) {
         // console.log({ userID, name, type, active, channel, template, secretKey, tokenKey })
         return new Promise(async resolve => {
             try {
@@ -45,12 +45,34 @@ class Model extends BaseModel {
                     company: companyID,
                     userCreate: userID,
                     name,
-                    type: +type,
-                    active: +active,
-                    channel,
-                    template,
-                    secretKey,
-                    tokenKey
+                }
+
+                if(channel && channel != ""){
+                    dataInsert.channel = channel
+                }
+
+                if(template && template != ""){
+                    dataInsert.template = template
+                }
+
+                if(secretKey && secretKey != ""){
+                    dataInsert.secretKey = secretKey
+                }
+
+                if(tokenKey && tokenKey != ""){
+                    dataInsert.tokenKey = tokenKey
+                }
+
+                if(metadata && metadata != ""){
+                    dataInsert.metadata = metadata
+                }
+
+                if (!isNaN(type)) {
+                    dataInsert.type = Number(type)
+                }
+
+                if (!isNaN(active)) {
+                    dataInsert.active = Number(active)
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -75,8 +97,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey }){
-        // console.log({ userID, configID, name, type, active, channel, template, secretKey, tokenKey })
+    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata }){
+        // console.log({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata })
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID) || !checkObjectIDs(configID) )
@@ -86,12 +108,34 @@ class Model extends BaseModel {
                     userUpdate: userID,
                     modifyAt: Date.now(),
                     name,
-                    type: +type,
-                    active: +active,
-                    channel,
-                    template,
-                    secretKey,
-                    tokenKey
+                }
+
+                if(channel && channel != ""){
+                    dataUpdate.channel = channel
+                }
+
+                if(template && template != ""){
+                    dataUpdate.template = template
+                }
+
+                if(secretKey && secretKey != ""){
+                    dataUpdate.secretKey = secretKey
+                }
+
+                if(tokenKey && tokenKey != ""){
+                    dataUpdate.tokenKey = tokenKey
+                }
+
+                if(metadata && metadata != ""){
+                    dataUpdate.metadata = metadata
+                }
+
+                if (!isNaN(type)) {
+                    dataUpdate.type = Number(type)
+                }
+
+                if (!isNaN(active)) {
+                    dataUpdate.active = Number(active)
                 }
 
                 let infoAfterUpdate = await ITEM__CONFIG_COLL.findByIdAndUpdate(configID, dataUpdate, { new: true });

@@ -1017,13 +1017,8 @@ class Model extends BaseModel {
             return phoneRegex.test(str);
         }
         const strValid = infoCustomer.phone.toLowerCase().trim();
-        // console.log({strValid})
-        // console.log(`84${strValid.slice(1)}`)
         let hour = Number(moment(new Date()).hours())
-        // console.log({hour})
-        // if (Number(total) >= 50000 && hour <= 18) {
         if (Number(total) >= 50000 && hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
-        // if ([1].includes(Number(salesChannel)) && Number(total) >= 300000) {
           /**
            * Số điện thoại không hợp lệ
            * Nội dung mẫu ZNS không hợp lệ
@@ -1067,7 +1062,7 @@ class Model extends BaseModel {
             );
 
             // if(Number(total) >= 50000){
-            if(Number(total) >= 200000){
+            if(Number(total) >= 300000){
               let dataOA2 = {
                 phone: "84985199295",
                 templateData: {
