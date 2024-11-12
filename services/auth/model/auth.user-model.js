@@ -319,6 +319,7 @@ class Model extends BaseModel {
                     
                     // Gửi mã OTP về cho user
                     if(isValidEmail(strValid)){
+                        console.log('===============BẮN EMAIL OTP===============>>>>>>>>>>>>>>>')
                         const mailContent = templateRecoverPass(info.fullname, password);
                         sendEmailRecoverPass(
                             email,
@@ -331,9 +332,8 @@ class Model extends BaseModel {
                     }
 
                     // Bắn Zalo ZNS
-                    // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
                     if(isValidVietnamPhoneNumber(strValid)){  
-                        // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                        console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
                         const removeFirst1 = `84${strValid.slice(1)}`;
                         let dataOA = {
                             phone: `${removeFirst1}`,
