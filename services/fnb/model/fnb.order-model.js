@@ -1018,7 +1018,8 @@ class Model extends BaseModel {
         }
         const strValid = infoCustomer.phone.toLowerCase().trim();
         let hour = Number(moment(new Date()).hours())
-        if (Number(total) >= 50000 && hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
+        // if (Number(total) >= 50000 && hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
+        if (hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
           /**
            * Số điện thoại không hợp lệ
            * Nội dung mẫu ZNS không hợp lệ
@@ -1055,14 +1056,15 @@ class Model extends BaseModel {
               },
               templateId: template.new_order,
               appId: infoConfig.channel,
-            };
-            let infoOA = await ctx.call(
+            }
+            await ctx.call(
               `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
               dataOA1,
-            );
+            )
 
             // if(Number(total) >= 50000){
-            if(Number(total) >= 300000){
+            // if(Number(total) >= 300000){
+            if(1>0){
               let dataOA2 = {
                 phone: "84985199295",
                 templateData: {
@@ -1075,11 +1077,11 @@ class Model extends BaseModel {
                 },
                 templateId: template.new_order,
                 appId: infoConfig.channel
-              };
+              }
               await ctx.call(
                 `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                 dataOA2,
-              );
+              )
             }
           }
         }
