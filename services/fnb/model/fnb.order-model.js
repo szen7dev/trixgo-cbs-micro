@@ -3471,6 +3471,66 @@ class Model extends BaseModel {
               dataUpdate.new = 3; // Khách vãng lai
             }
           }
+
+          //___________BẮN TIN ZNS
+          function isValidVietnamPhoneNumber(str) {
+            const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+            return phoneRegex.test(str);
+          }
+          const strValid = infoCustomer.phone.toLowerCase().trim();
+          let hour = Number(moment(new Date()).hours())
+
+          if (hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
+            let infoConfig = await ITEM__CONFIG_COLL.findOne({
+              company: infoOrder.company,
+              type: 1,
+              active: 1,
+            });
+            const { metadata: { template } } = infoConfig;
+  
+            if (infoConfig && template) {  
+              // Xử lý dữ liệu số điện thoại
+              const str = infoCustomer.phone;
+              const removeFirst1 = `84${str.slice(1)}`;
+  
+              let dataOA1 = {
+                phone: `${removeFirst1}`,
+                templateData: {
+                  customer_name: `Khách ${infoCustomer.phone}`,
+                  order_code: infoOrder.sign,
+                  price: infoOrder.total,
+                  date: moment(infoOrder.date).format("HH:mm DD/MM/YYYY"),
+                  note: "Quan tâm OA tặng mã 200k",
+                },
+                templateId: template.new_order,
+                appId: infoConfig.channel,
+              }
+              await ctx.call(
+                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                dataOA1,
+              )
+  
+              // if(Number(total) >= 50000){
+              if(Number(total) >= 200000){
+                let dataOA2 = {
+                  phone: "84985199295",
+                  templateData: {
+                    customer_name: `Khách ${infoCustomer.phone}`,
+                    order_code: infoOrder.sign,
+                    price: infoOrder.total,
+                    date: moment(infoOrder.date).format("HH:mm DD/MM/YYYY"),
+                    note: "Quan tâm OA tặng mã 200k",
+                  },
+                  templateId: template.new_order,
+                  appId: infoConfig.channel
+                }
+                await ctx.call(
+                  `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                  dataOA2,
+                )
+              }
+            }
+          }
         }
 
         // console.log(dataUpdate)
