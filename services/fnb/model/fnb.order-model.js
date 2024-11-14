@@ -5291,95 +5291,239 @@ class Model extends BaseModel {
    * LỖI GÂY CHẬM DO FROMDATE - TODATE KÉO DÀI CẢ NĂM
    * https://docs.google.com/document/d/1hRYD5pLK7G3n37-Cs-N732cifa1Z3-W1dV8sTSRInfY/edit
    */
-  exportExcel({ companyID, year, month, email, userID, queryFnb }) {
-    // console.log({ companyID, year, month, userID, queryFnb })
+  exportExcel({ option, companyID, year, month, email, userID, queryFnb }) {
+    console.log({ option, companyID, year, month, userID, queryFnb })
     return new Promise(async (resolve) => {
       try {
-        if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){
-          let yearFilter;
-          let currentYear = new Date().getFullYear();
-          let currentMonth = new Date().getMonth() + 1;
+        let yearFilter;
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth() + 1;
 
-          let obj = JSON.parse(queryFnb);
-          if (obj.fromDate && obj.toDate) {
-            currentMonth = new Date(obj.toDate).getMonth() + 1;
-            currentYear = new Date(obj.toDate).getFullYear();
-          }
+        if (year && !isNaN(year)) {
+          yearFilter = Number(year);
+        } else {
+          yearFilter = Number(currentYear);
+        }
 
-          if (year && !isNaN(year)) {
-            yearFilter = Number(year);
+        let projectObj = {
+          year: { $year: "$createAt" },
+          month: { $month: "$createAt" },
+          company: 1,
+          funda: 1,
+          createAt: 1,
+          assignee: 1,
+          executor: 1,
+          total: 1,
+          amount: 1,
+          avgQuantityPerStaff: 1,
+        };
+
+        let conditionObjYear = {
+          year: Number(yearFilter),
+          month: { $in: [currentMonth - 2, currentMonth - 1, currentMonth] },
+        };
+
+        let conditionGroupErr = {
+          _id: { executor: "$executor", month: "$month" },
+          number: { $sum: 1 },
+          amount: { $sum: "$amount" },
+        };
+        let conditionPopulateErr = {
+          path: "_id.executor",
+          select: "_id fullname department",
+          populate: {
+            path: "department",
+            select: "_id name",
+            model: "department",
+          },
+          model: "user",
+        };
+
+        if(!option){
+          if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){  
+            let obj = JSON.parse(queryFnb);
+            if (obj.fromDate && obj.toDate) {
+              currentMonth = new Date(obj.toDate).getMonth() + 1;
+              currentYear = new Date(obj.toDate).getFullYear();
+            }
+
+            let conditionGroup = {};
+            let conditionPopulate = {}, sortBy = { "_id.month": -1, avgQuantityPerStaff: -1 };
+  
+            let conditionObj = {
+              company: ObjectID(companyID),
+              status: 5,
+              avgQuantityPerStaff: { $exists: true, $ne: null },
+            };
+
+            let lookupObj = {
+              from: "users",
+              localField: "assignee",
+              foreignField: "_id",
+              as: "staff",
+            };
+            conditionPopulate = {
+              path: "_id.staff",
+              select: "_id fullname department",
+              populate: {
+                path: "department",
+                select: "_id name",
+                model: "department",
+              },
+              model: "user",
+            };
+          
+            conditionGroup = {
+              _id: { staff: "$staff._id", month: "$month", year: "$year" },
+              avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+            };
+  
+            /**
+             * LỖI MẮC PHẢI
+             */
+            let listDataErr = await FNB_MISTAKE_COLL.aggregate([
+              {
+                $match: {
+                  company: ObjectID(companyID),
+                },
+              },
+              {
+                $project: projectObj,
+              },
+              {
+                $match: conditionObjYear,
+              },
+              {
+                $group: conditionGroupErr,
+              },
+              {
+                $sort: { "_id.month": -1 },
+              },
+            ]);
+            await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr);
+  
+            /**
+             * DOANH SỐ
+             */
+            let listDataR = await FNB_ORDER_COLL.aggregate([
+              {
+                $match: conditionObj,
+              },
+              {
+                $project: projectObj,
+              },
+              {
+                $match: conditionObjYear,
+              },
+              {
+                $lookup: lookupObj,
+              },
+              {
+                $unwind: "$staff",
+              },
+              {
+                $group: conditionGroup,
+              },
+              {
+                $sort: sortBy,
+              },
+            ]);
+            await FNB_SHIFT_COLL.populate(listDataR, conditionPopulate);
+  
+            // Modify the workbook.
+            XlsxPopulate.fromFileAsync(
+              path.resolve(
+                __dirname,
+                "../../../files/templates/excels/fnb_export_kpi.xlsx",
+              ),
+            ).then(async (workbook) => {
+              var i = 3;
+              listDataR?.forEach((item, index) => {
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(1)
+                  .value(Number(index + 1));
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(2)
+                  .value(item?._id?.staff.fullname);
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(3)
+                  .value(`${item?._id.staff?.department?.name}`);
+                // workbook.sheet("DoanhSo").row(i).cell(5).value(item?.number);
+                // workbook.sheet("DoanhSo").row(i).cell(6).value(item?.avgTotalPerStaff);
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(4)
+                  .value(Number(item?._id?.month));
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(5)
+                  .value(
+                    item?.avgQuantityPerStaff != null
+                      ? Number(item?.avgQuantityPerStaff)
+                      : 0,
+                  );
+  
+                i++;
+              });
+  
+              /**
+               * PHẠT LỖI VI PHẠM
+               */
+              var i = 3;
+              listDataErr?.forEach((item, index) => {
+                workbook
+                  .sheet("Err")
+                  .row(i)
+                  .cell(1)
+                  .value(Number(index + 1));
+                workbook
+                  .sheet("Err")
+                  .row(i)
+                  .cell(2)
+                  .value(item?._id?.executor.fullname);
+                workbook
+                  .sheet("Err")
+                  .row(i)
+                  .cell(3)
+                  .value(`${item?._id.executor?.department?.name}`);
+                workbook.sheet("Err").row(i).cell(4).value(item?._id.month);
+                workbook.sheet("Err").row(i).cell(5).value(item?.number);
+                workbook.sheet("Err").row(i).cell(6).value(item?.amount);
+  
+                i++;
+              });
+  
+              const now = new Date();
+              const filePath = "../../../files/temporary_uploads/";
+              const fileName = `BaoCaoKPI_${now.getTime()}.xlsx`;
+              const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+  
+              await workbook.toFileAsync(pathWriteFile);
+              const result = await uploadFileS3(pathWriteFile, fileName);
+  
+              fs.unlinkSync(pathWriteFile);
+              return resolve({
+                error: false,
+                data: result?.Location,
+                status: 200,
+              });
+            });
           } else {
-            yearFilter = Number(currentYear);
+            return resolve({
+              error: true,
+              message: "Bạn không có quyền",
+              status: 500,
+            });
           }
-
-          let conditionObj = {
-            company: ObjectID(companyID),
-            status: 5,
-            avgQuantityPerStaff: { $exists: true, $ne: null },
-          };
-          let projectObj = {
-            year: { $year: "$createAt" },
-            month: { $month: "$createAt" },
-            company: 1,
-            funda: 1,
-            createAt: 1,
-            assignee: 1,
-            executor: 1,
-            total: 1,
-            amount: 1,
-            avgQuantityPerStaff: 1,
-          };
-          let lookupObj = {
-            from: "users",
-            localField: "assignee",
-            foreignField: "_id",
-            as: "staff",
-          };
-          let conditionGroup = {};
-          let conditionPopulate = {},
-            sortBy = { "_id.month": -1, avgQuantityPerStaff: -1 };
-
-          let conditionObjYear = {
-            year: Number(yearFilter),
-            month: { $in: [currentMonth - 2, currentMonth - 1, currentMonth] },
-          };
-
-          conditionGroup = {
-            _id: { staff: "$staff._id", month: "$month", year: "$year" },
-            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
-          };
-
-          conditionPopulate = {
-            path: "_id.staff",
-            select: "_id fullname department",
-            populate: {
-              path: "department",
-              select: "_id name",
-              model: "department",
-            },
-            model: "user",
-          };
-
-          /**
-           * LỖI MẮC PHẢI
-           */
-          let conditionGroupErr = {
-            _id: { executor: "$executor", month: "$month" },
-            number: { $sum: 1 },
-            amount: { $sum: "$amount" },
-          };
-          let conditionPopulateErr = {
-            path: "_id.executor",
-            select: "_id fullname department",
-            populate: {
-              path: "department",
-              select: "_id name",
-              model: "department",
-            },
-            model: "user",
-          };
-          // console.log(conditionObjYear)
-
+        }else{
           let listDataErr = await FNB_MISTAKE_COLL.aggregate([
             {
               $match: {
@@ -5400,104 +5544,162 @@ class Model extends BaseModel {
             },
           ]);
           await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr);
-          // console.log(listDataErr)
 
-          /**
-           * DOANH SỐ
-           */
-          let listDataR = await FNB_ORDER_COLL.aggregate([
+          let listData  = await FNB_MISTAKE_COLL.find({ 
+            company: ObjectID(companyID),
+            $where: `return this.createAt.getFullYear() === ${Number(yearFilter)}`,
+            // $where: `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(yearFilter)}`,
+            // createAt: {
+            //     $gte: moment(fromDate).toDate(),
+            //     $lte: moment(toDate).toDate(),
+            // }
+          })
+          .populate({
+              path: "funda mistake executor userCreate",
+              select: "name sign fullname note manager",
+              populate:{
+                  path: "manager",
+                  select: "fullname"
+              }
+          })
+          .sort({createAt: -1})
+
+          let listDataErrCombine3 = await FNB_MISTAKE_COLL.aggregate([
             {
-              $match: conditionObj,
+                $match: {
+                    company: ObjectID(companyID),
+                }
             },
             {
-              $project: projectObj,
+                $project :  {
+                    year : {$year : "$createAt"},
+                    month : {$month : "$createAt"},
+                    createAt: 1,
+                    company : 1,
+                    funda : 1,
+                    mistake : 1,
+                    executor: 1,
+                    amount: 1,
+                    userCreate: 1,
+                }
             },
             {
-              $match: conditionObjYear,
+                $match: conditionObjYear
             },
             {
-              $lookup: lookupObj,
+                $group: {
+                    _id: { executor: "$userCreate" },
+                    number: { $sum: 1 },
+                    amount: { $sum: "$amount"},
+                }
             },
             {
-              $unwind: "$staff",
+                $sort: { "number": -1, "_id.executor": -1}
+            }
+        ])
+          await FNB_MISTAKE_COLL.populate(listDataErrCombine3, {
+              path: '_id.executor',
+              select: '_id fullname department',
+              populate: {
+                  path: 'department',
+                  select: '_id name',
+                  model: 'department',
+              },
+              model: 'user'
+          })
+
+          let listDataErrCombine4 = await FNB_MISTAKE_COLL.aggregate([
+              {
+                  $match: {
+                      company: ObjectID(companyID),
+                  }
+              },
+              {
+                  $project :  {
+                      year : {$year : "$createAt"},
+                      month : {$month : "$createAt"},
+                      createAt: 1,
+                      company : 1,
+                      funda : 1,
+                      mistake : 1,
+                      executor: 1,
+                      amount: 1,
+                      userCreate: 1,
+                  }
+              },
+              {
+                  $match: conditionObjYear
+              },
+              {
+                  $group: {
+                      _id: { executor: "$userCreate", month: "$month" },
+                      number: { $sum: 1 },
+                      amount: { $sum: "$amount"},
+                  }
+              },
+              {
+                  $sort: { "number": -1, "_id.executor": -1}
+              }
+          ])
+          
+          await FNB_MISTAKE_COLL.populate(listDataErrCombine4, {
+            path: '_id.executor',
+            select: '_id fullname department',
+            populate: {
+                path: 'department',
+                select: '_id name',
+                model: 'department',
             },
-            {
-              $group: conditionGroup,
-            },
-            {
-              $sort: sortBy,
-            },
-          ]);
-          await FNB_SHIFT_COLL.populate(listDataR, conditionPopulate);
-          // console.log(listDataR)
+            model: 'user'
+        })
 
           // Modify the workbook.
-          XlsxPopulate.fromFileAsync(
-            path.resolve(
-              __dirname,
-              "../../../files/templates/excels/fnb_export_kpi.xlsx",
-            ),
-          ).then(async (workbook) => {
-            var i = 3;
-            listDataR?.forEach((item, index) => {
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(1)
-                .value(Number(index + 1));
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(2)
-                .value(item?._id?.staff.fullname);
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(3)
-                .value(`${item?._id.staff?.department?.name}`);
-              // workbook.sheet("DoanhSo").row(i).cell(5).value(item?.number);
-              // workbook.sheet("DoanhSo").row(i).cell(6).value(item?.avgTotalPerStaff);
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(4)
-                .value(Number(item?._id?.month));
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(5)
-                .value(
-                  item?.avgQuantityPerStaff != null
-                    ? Number(item?.avgQuantityPerStaff)
-                    : 0,
-                );
-
-              i++;
+          XlsxPopulate.fromFileAsync(path.resolve(__dirname,"../../../files/templates/excels/export_kpi.xlsx")).then(async (workbook) => {
+            var i = 4;
+            listDataErrCombine3?.forEach((item, index) => {
+                workbook.sheet("DashBoard").row(i).cell(1).value(Number(index+1));
+                workbook.sheet("DashBoard").row(i).cell(2).value(item?._id?.executor?.fullname);
+                i++
             });
 
-            /**
-             * PHẠT LỖI VI PHẠM
-             */
+            var i = 4;
+            listDataErrCombine3?.forEach((item, index) => {
+                for(var m=1; m<=12; m++){
+                    listDataErrCombine4?.forEach((mistake) => {
+                        if(mistake._id.executor._id.toString() === item._id.executor._id.toString() && Number(mistake._id.month) === Number(m)){
+                            workbook.sheet("DashBoard").row(i).cell(m*2+2).value(mistake?.number)
+                            workbook.sheet("DashBoard").row(i).cell(m*2+3).value(mistake?.amount)
+                        }
+                    })
+                }
+                i++
+            });
+
+            var i = 3;
+            listData?.forEach((item, index) => {
+                workbook.sheet("ChiTietLoi").row(i).cell(1).value(Number(index+1));
+                workbook.sheet("ChiTietLoi").row(i).cell(2).value(item.createAt);
+                workbook.sheet("ChiTietLoi").row(i).cell(3).value(item?.executor?.fullname);
+                workbook.sheet("ChiTietLoi").row(i).cell(4).value(item?.funda?.name);
+                workbook.sheet("ChiTietLoi").row(i).cell(5).value((item?.funda?.manager?.fullname));
+                workbook.sheet("ChiTietLoi").row(i).cell(6).value(item?.mistake?.name);
+                workbook.sheet("ChiTietLoi").row(i).cell(7).value(item?.userCreate?.fullname);
+                workbook.sheet("ChiTietLoi").row(i).cell(8).value(item.type);
+                workbook.sheet("ChiTietLoi").row(i).cell(9).value(item.status);
+                workbook.sheet("ChiTietLoi").row(i).cell(10).value(Number(item?.amount));
+                workbook.sheet("ChiTietLoi").row(i).cell(11).value(Number(item?.number));
+                workbook.sheet("ChiTietLoi").row(i).cell(12).value(item.note);
+                i++
+            });
+
             var i = 3;
             listDataErr?.forEach((item, index) => {
-              workbook
-                .sheet("Err")
-                .row(i)
-                .cell(1)
-                .value(Number(index + 1));
-              workbook
-                .sheet("Err")
-                .row(i)
-                .cell(2)
-                .value(item?._id?.executor.fullname);
-              workbook
-                .sheet("Err")
-                .row(i)
-                .cell(3)
-                .value(`${item?._id.executor?.department?.name}`);
-              workbook.sheet("Err").row(i).cell(4).value(item?._id.month);
-              workbook.sheet("Err").row(i).cell(5).value(item?.number);
-              workbook.sheet("Err").row(i).cell(6).value(item?.amount);
+              workbook.sheet("TongHopLoi").row(i).cell(1).value(Number(index + 1));
+              workbook.sheet("TongHopLoi").row(i).cell(2).value(item?._id?.executor.fullname);
+              workbook.sheet("TongHopLoi").row(i).cell(3).value(`${item?._id.executor?.department?.name}`);
+              workbook.sheet("TongHopLoi").row(i).cell(4).value(item?._id.month);
+              workbook.sheet("TongHopLoi").row(i).cell(5).value(item?.number);
+              workbook.sheet("TongHopLoi").row(i).cell(6).value(item?.amount);
 
               i++;
             });
@@ -5516,12 +5718,6 @@ class Model extends BaseModel {
               data: result?.Location,
               status: 200,
             });
-          });
-        } else {
-          return resolve({
-            error: true,
-            message: "Bạn không có quyền",
-            status: 500,
           });
         }
       } catch (error) {
