@@ -151,7 +151,7 @@ module.exports = {
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.update({
                     orderID, userID,
-                    customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID, shippingFeeTotal, shippingFee, paid
+                    customerID, cancelNote, filesID, status, paymentMethod, salesChannel, starRating, complaint, complaintID, shippingFeeTotal, shippingFee, paid, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
