@@ -3299,6 +3299,7 @@ class Model extends BaseModel {
     starRating,
     complaintID,
     complaint,
+    ctx
   }) {
     // console.log({ orderID, userID, customerID, cancelNote, shippingFeeTotal, shippingFee, paid, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint })
     const that = this;
@@ -3327,6 +3328,7 @@ class Model extends BaseModel {
         let infoOrder = await FNB_ORDER_COLL.findById(orderID);
         if (!infoOrder)
           return resolve({ error: true, message: "orderID invalid", keyError: KEY_ERROR.PARAMS_INVALID });
+        // console.log(infoOrder)
 
         let oldCustomerID = infoOrder.customer;
         let oldSalesChannel = infoOrder.salesChannel;
@@ -3487,6 +3489,9 @@ class Model extends BaseModel {
               active: 1,
             });
             const { metadata: { template } } = infoConfig;
+
+            // console.log('111111111111111')
+            // console.log(infoConfig)
   
             if (infoConfig && template) {  
               // Xử lý dữ liệu số điện thoại
@@ -3505,13 +3510,15 @@ class Model extends BaseModel {
                 templateId: template.new_order,
                 appId: infoConfig.channel,
               }
+
+              // console.log({dataOA1})
               await ctx.call(
                 `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                 dataOA1,
               )
   
               // if(Number(total) >= 50000){
-              if(Number(total) >= 200000){
+              if(Number(infoOrder.total) >= 200000){
                 let dataOA2 = {
                   phone: "84985199295",
                   templateData: {
@@ -3524,6 +3531,7 @@ class Model extends BaseModel {
                   templateId: template.new_order,
                   appId: infoConfig.channel
                 }
+                // console.log({dataOA2})
                 await ctx.call(
                   `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                   dataOA2,
