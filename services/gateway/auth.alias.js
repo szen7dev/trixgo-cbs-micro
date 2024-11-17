@@ -1552,6 +1552,9 @@ module.exports = {
 		[`POST ${CF_ROUTINGS_ACCOUNTING.REPORT_SYNC_DATA}`] :
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REPORT_SYNC_DATA}`],
 
+		[`POST ${CF_ROUTINGS_ACCOUNTING.REPORT_EXPORT_EXCEL}`] :
+		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REPORT_EXPORT_EXCEL}`],
+
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//
