@@ -827,7 +827,7 @@ class Model extends BaseModel {
                     let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
     
                     let arrAccounts = []
-                    let listAccs = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[5768]" } }) // Doanh thu
+                    let listAccs = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[5768]" } })
                     .select('_id')
                     if(listAccs){
                         arrAccounts = listAccs.map(item=>ObjectID(item._id))
@@ -947,9 +947,15 @@ class Model extends BaseModel {
                         arr.push(item.account)
                     }
 
-                    let listAcc = await ITEM__ACCOUNT_COLL.find({ company: companyID, _id: {$in: listData2.map(item=>item.account)} }) // Doanh thu
-                    .select('_id name description')
+                    // let listAcc = await ITEM__ACCOUNT_COLL.find({ company: companyID, _id: {$in: listData2.map(item=>item.account)} }) // Doanh thu
+                    // .select('_id name description')
                     // console.log(listAcc)
+
+                    let listAcc1s = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" }, _id: {$in: listData2.map(item=>item.account)} }) // Doanh thu
+                    .select('_id name description')
+
+                    let listAcc2s = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" }, _id: {$in: listData2.map(item=>item.account)} }) // Chi phí
+                    .select('_id name description')
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_fin_report.xlsx')))
@@ -968,15 +974,40 @@ class Model extends BaseModel {
                             workbook.sheet("BaoCao1").row(i).cell(5).value(Number(item.profit))
                             workbook.sheet("BaoCao1").row(i).cell(6).value(item.note)
 
-                            workbook.sheet("BaoCao2").row(2).cell(i+1).value(`${item?.funda?._id}`);
-                            workbook.sheet("BaoCao2").row(3).cell(i+1).value(item?.funda?.name)
+                            workbook.sheet("BaoCao2").row(2).cell(i+2).value(`${item?.funda?._id}`);
+                            workbook.sheet("BaoCao2").row(3).cell(i+2).value(item?.funda?.name)
 
                             i++
                         })
                        
 
-                        var i = 4;
-                        listAcc?.forEach((item, index) => {
+                        // var i = 4;
+                        // listAcc?.forEach((item, index) => {
+                        //     workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
+                        //     workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
+                        //     workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
+
+                        //     i++
+                        // })
+
+                        var i = 5;
+                        workbook.sheet("BaoCao2").row(4).cell(3).value('DOANH THU').style({
+                            bold: true,
+                        })
+                        listAcc1s?.forEach((item, index) => {
+                            workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
+                            workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
+                            workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
+
+                            i++
+                        })
+                        workbook.sheet("BaoCao2").row(15).cell(3).value('CHI PHÍ')
+                        .style({
+                            bold: true,
+                        })
+
+                        var i = 16;
+                        listAcc2s?.forEach((item, index) => {
                             workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
                             workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
                             workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
@@ -986,9 +1017,9 @@ class Model extends BaseModel {
 
                         var i = 4;
                         listData2?.forEach((item, index) => {
-                            workbook.sheet("BaoCao3").row(i).cell(2).value(`${item?.account}`)
-                            workbook.sheet("BaoCao3").row(i).cell(3).value(`${item?.funda}`)
-                            workbook.sheet("BaoCao3").row(i).cell(4).value(Number(item.total))
+                            workbook.sheet("Combine").row(i).cell(2).value(`${item?.account}`)
+                            workbook.sheet("Combine").row(i).cell(5).value(`${item?.funda}`)
+                            workbook.sheet("Combine").row(i).cell(6).value(Number(item.total))
 
                             i++
                         })
