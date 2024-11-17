@@ -863,6 +863,7 @@ class Model extends BaseModel {
                         amount: { $sum: "$amount" }
                     }
 
+                    // https://chatgpt.com/share/6739ef43-56c0-8008-a6a8-3a01ac809f23
                     let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
                           $facet: {
@@ -938,24 +939,49 @@ class Model extends BaseModel {
                             total: { $subtract: ["$totalDebit", "$totalCredit"] }
                           }
                         }
-                      ]);
-
+                    ])
+                    
+                    let conditionPopulate = {
+                        path: 'account',
+                        select: '_id name description',
+                        model: 'account'
+                    }
+                    await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2, conditionPopulate)
                     // console.log(listData2)
 
                     let arr = []
                     for(const item of listData2){
                         arr.push(item.account)
                     }
-
-                    // let listAcc = await ITEM__ACCOUNT_COLL.find({ company: companyID, _id: {$in: listData2.map(item=>item.account)} }) // Doanh thu
-                    // .select('_id name description')
-                    // console.log(listAcc)
-
+                    
                     let listAcc1s = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" }, _id: {$in: listData2.map(item=>item.account)} }) // Doanh thu
                     .select('_id name description')
 
                     let listAcc2s = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" }, _id: {$in: listData2.map(item=>item.account)} }) // Chi phí
                     .select('_id name description')
+
+                    // CHI TIẾT BÚT TOÁN
+                    let listDetail = await FINANCIAL_GENERAL_JOURNAL_COLL.find({
+                        forward: 0,
+                        cancel: 0,
+                        date: {
+                            $gte: moment(infoParent.fromDate).toDate(),
+                            $lte: moment(infoParent.toDate).toDate(),
+                        },
+                        $or: [
+                            { debit:   {
+                                $in: listAccs.map(item=>ObjectID(item._id))
+                            }},
+                            { credit:  {
+                                $in: listAccs.map(item=>ObjectID(item._id))
+                            } }
+                        ]
+                    })
+                    .populate({
+                        path: 'funda voucher warehouse goods subtype parentSubtype debit credit customerDebit customerCredit',
+                         select: '_id name sign unit'
+                    })
+                    // console.log(listDetail.length)
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_fin_report.xlsx')))
@@ -979,16 +1005,6 @@ class Model extends BaseModel {
 
                             i++
                         })
-                       
-
-                        // var i = 4;
-                        // listAcc?.forEach((item, index) => {
-                        //     workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
-                        //     workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
-                        //     workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
-
-                        //     i++
-                        // })
 
                         var i = 5;
                         workbook.sheet("BaoCao2").row(4).cell(3).value('DOANH THU').style({
@@ -1017,9 +1033,33 @@ class Model extends BaseModel {
 
                         var i = 4;
                         listData2?.forEach((item, index) => {
-                            workbook.sheet("Combine").row(i).cell(2).value(`${item?.account}`)
+                            workbook.sheet("Combine").row(i).cell(2).value(`${item?.account._id}`)
+                            workbook.sheet("Combine").row(i).cell(3).value(`${item?.account.name}`)
+                            workbook.sheet("Combine").row(i).cell(4).value(`${item?.account.description}`)
                             workbook.sheet("Combine").row(i).cell(5).value(`${item?.funda}`)
                             workbook.sheet("Combine").row(i).cell(6).value(Number(item.total))
+
+                            i++
+                        })
+
+                        var i = 4;
+                        listDetail?.forEach((item, index) => {
+                            workbook.sheet("Detail").row(i).cell(1).value(item.date)
+                            workbook.sheet("Detail").row(i).cell(2).value(item?.funda?.name)
+                            workbook.sheet("Detail").row(i).cell(3).value(item?.subtype?.name)
+                            workbook.sheet("Detail").row(i).cell(4).value(item?.parentSubtype?.name)
+                            workbook.sheet("Detail").row(i).cell(5).value(item?.voucher?.name)
+                            workbook.sheet("Detail").row(i).cell(6).value(item?.voucher?.sign)
+                            workbook.sheet("Detail").row(i).cell(7).value(item?.customerDebit?.name)
+                            workbook.sheet("Detail").row(i).cell(8).value(item?.customerCredit?.name)
+                            workbook.sheet("Detail").row(i).cell(9).value(item?.debit?.name)
+                            workbook.sheet("Detail").row(i).cell(10).value(item?.credit?.name)
+                            workbook.sheet("Detail").row(i).cell(11).value(Number(item?.quantity))
+                            workbook.sheet("Detail").row(i).cell(12).value(Number(item?.unitprice))
+                            workbook.sheet("Detail").row(i).cell(13).value(Number(item?.amount))
+                            workbook.sheet("Detail").row(i).cell(14).value(item?.goods?.name)
+                            workbook.sheet("Detail").row(i).cell(15).value(item?.warehouse?.name)
+                            workbook.sheet("Detail").row(i).cell(16).value(item?.note)
 
                             i++
                         })
