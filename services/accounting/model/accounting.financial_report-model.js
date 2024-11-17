@@ -940,7 +940,7 @@ class Model extends BaseModel {
                         }
                       ]);
 
-                    console.log(listData2)
+                    // console.log(listData2)
 
                     let arr = []
                     for(const item of listData2){
@@ -984,24 +984,14 @@ class Model extends BaseModel {
                             i++
                         })
 
-                        console.log(workbook.sheet(`BaoCao2`).row(4).cell(4).value())
-                        console.log(workbook.sheet(`BaoCao2`).row(2).cell(5).value())
+                        var i = 4;
+                        listData2?.forEach((item, index) => {
+                            workbook.sheet("BaoCao3").row(i).cell(2).value(`${item?.account}`)
+                            workbook.sheet("BaoCao3").row(i).cell(3).value(`${item?.funda}`)
+                            workbook.sheet("BaoCao3").row(i).cell(4).value(Number(item.total))
 
-                        // listData2?.forEach((item, index) => {
-                        //     for(var acc = 4; acc <= Number(listAcc.length + 3); acc++){
-                        //         let accountID = workbook.sheet(`BaoCao2`).row(acc).cell(4).value()
-                        //         console.log(workbook.sheet(`BaoCao2`).row(acc).cell(4).value())
-    
-                        //         // for(let funda = 5; i <= Number(listData.length + 4); funda++){
-                        //         //     let fundaID = workbook.sheet(`BaoCao2`).row(2).cell(funda).value()
-                        //         //     console.log(fundaID)
-                                    
-                        //         //     // if((item.funda.toString() === fundaID.toString() && item.account.toString() === accountID.toString())){
-                        //         //     //     workbook.sheet(`BaoCao2`).row(acc).cell(funda).value(Number(item.total))
-                        //         //     // }
-                        //         // }
-                        //     }
-                        // })
+                            i++
+                        })
 
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
