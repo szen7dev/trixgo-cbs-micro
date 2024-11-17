@@ -810,254 +810,202 @@ class Model extends BaseModel {
      * Func: Tải excel
      * Date: 4/2/2023
      */
-    exportExcel({ companyID, option, year, month, filterParams, email, userID }) {
-        // console.log({ companyID, option, year, month, filterParams, userID })
+    exportExcel({ option, companyID, userID, parentID, reportID, accountID }) {
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.taichinh.includes(email.toString())){
-                    let conditionObj = { company: companyID }
+                if(!option){
+                    let listData = await FINANCIAL_REPORT_COLL.find({parent: parentID}).populate({
+                        path: 'funda',
+                         select: '_id name sign'
+                    })
 
-                    let obj = JSON.parse(filterParams);
+                    let infoParent = await FINANCIAL_REPORT_COLL.findById(parentID).populate({
+                        path: 'funda',
+                        select: '_id name sign'
+                    })
 
-                    let fundasID = obj.fundasID
-                    let shiftTypes = obj.shiftTypes
-                    let fromDate = obj.fromDate
-                    let toDate = obj.toDate
-                    let keyword = obj.keyword
-                    let salesChannels = obj.salesChannels
-                    let statuss = obj.statuss
-                    let isMistake = obj.isMistake
-                    let isDiscount = obj.isDiscount
-                    let isSalesoff = obj.isSalesoff
-                    let isCredit = obj.isCredit
-                    let isOffer = obj.isOffer
-                    let isNonResident = obj.isNonResident
-                    let isCustomerType = obj.isCustomerType
-
-                    if(fundasID && fundasID.length ){
-                        let arrFun = fundasID.map(item=>ObjectID(item))
-
-                        if(arrFun.length) {
-                            conditionObj.funda = { $in: arrFun };
-                        }
-                    }else{
-                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
-                        if(fundasIDIsMember.length) {
-                            conditionObj.funda = { $in: fundasIDIsMember };
-                        }else{
-                            conditionObj.funda = { $in: [] }
-                        }
+                    let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+    
+                    let arrAccounts = []
+                    let listAccs = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[5768]" } }) // Doanh thu
+                    .select('_id')
+                    if(listAccs){
+                        arrAccounts = listAccs.map(item=>ObjectID(item._id))
                     }
 
-                    shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
-                    salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
-                    statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
-
-                    // Phân loại khác
-                    if(isMistake && isMistake == 1){
-                        conditionObj.numberOfMistakes = { $gt: 0 }
+                    conditionProject = {
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        funda: 1,
+                        date: 1,
+                        amount: 1,
+                        customerDebit: 1,
+                        customerCredit: 1,
+                        debit: 1,
+                        credit: 1
                     }
-
-                    if(isNonResident && isNonResident == 1){
-                        conditionObj.nonResident = 2
-                    }
-
-                    if(isDiscount && isDiscount == 1){
-                        conditionObj.discount = { $gt: 0 }
-                    }
-
-                    if(isSalesoff && isSalesoff == 1){
-                        conditionObj.salesoff = { $gt: 0 }
-                    }
-
-                    if(isCredit && isCredit == 1){
-                        conditionObj.credit = { $gt: 0 }
-                    }
-
-                    if(isOffer && isOffer == 1){
-                        conditionObj.offer = { $gt: 0 }
-                    }
-
-                    if(isCustomerType && isCustomerType == 1){
-                        conditionObj.customerType = 1
-                    }
-                    if(isCustomerType && isCustomerType == 2){
-                        conditionObj.customerType = 2
-                    }
-                    // console.log(conditionObj)
-
-                    // Phân loại theo thời khoảng
-                    if(fromDate && toDate){
-                        conditionObj.createAt = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
+    
+                    conditionMatch = {
+                        "forward": 0,
+                        "cancel": 0,
+                        "date": {
+                            $gte: moment(infoParent.fromDate).toDate(),
+                            $lte: moment(infoParent.toDate).toDate(),
                         }
                     }
-
-                    if(keyword){
-                        keyword = keyword.split(" ");
-                        keyword = '.*' + keyword.join(".*") + '.*';
-                        const regSearch = new RegExp(keyword, 'i');
-
-                        conditionObj.$or = [
-                            { name: regSearch },
-                            { sign: regSearch },
-                        ]
+    
+                    conditionGroupDebit = {
+                        _id: { account: "$debit", funda: "$funda" },
+                        amount: { $sum: "$amount" }
                     }
-                    // console.log(conditionObj)
-
-                    let listData  = await FINANCIAL_REPORT_COLL.find(conditionObj)
-                    .populate({
-                        path: "campaignType",
-                        select: "name",
-                    })
-                    .populate({
-                        path: "referrer",
-                        select: "name phone",
-                    })
-                    .populate({
-                        path: "customer",
-                        select: "name phone",
-                    })
-                    .populate({
-                        path: "funda",
-                        select: "name sign",
-                    })
-                    .populate({
-                        path: "shift",
-                        select: "name sign",
-                    })
-                    .limit(2000)
-                    .sort({createAt: -1})
-                    // console.log(listData)
-
-                    let listData2 = await FINANCIAL_REPORT_COLL.aggregate([
-                            {
-                                $match: {
-                                    order: {$in: listData.map(item => ObjectID(item._id))}
-                                }
-                            },
-                            {
-                                $group: {
-                                    _id: { funda: '$funda', product: '$product' },
-                                    quantity: { $sum: "$quantity" }
-                                }
-                            },
-                            {
-                                $sort: {
-                                    '_id.product': 1
-                                }
-                            }
-                        ])
-
-                    let conditionPopulate1 = {
-                        path: '_id.product',
-                        select: '_id name',
-                        model: 'fnb_product'
+                    conditionGroupCredit = {
+                        _id: { account: "$credit", funda: "$funda" },
+                        amount: { $sum: "$amount" }
                     }
 
-                    let conditionPopulate2 = {
-                        path: '_id.funda',
-                        select: '_id name',
-                        model: 'funda'
-                    }
-
-                    await FINANCIAL_REPORT_COLL.populate(listData2, conditionPopulate1)
-                    await FINANCIAL_REPORT_COLL.populate(listData2, conditionPopulate2)
-                    // console.log(listData2)
-
-                    let listData3 = await FINANCIAL_REPORT_COLL.aggregate([
+                    let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
-                            $match: {
-                                order: {$in: listData.map(item => ObjectID(item._id))}
-                            }
+                          $facet: {
+                            debits: [
+                                {
+                                    $match: {
+                                        funda: {$in: listData.map(item => ObjectID(item.funda._id))},
+                                        debit: {$in: arrAccounts}
+                                    }
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: {
+                                    _id: { funda: "$funda", account: "$debit" }, // Gom nhóm theo funda và debit
+                                    totalDebit: { $sum: "$amount" } // Tổng amount của debit
+                                    }
+                                }
+                            ],
+                            credits: [
+                                {
+                                    $match: {
+                                        funda: {$in: listData.map(item => ObjectID(item.funda._id))},
+                                        credit: {$in: arrAccounts}
+                                    }
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                  $group: {
+                                    _id: { funda: "$funda", account: "$credit" }, // Gom nhóm theo funda và credit
+                                    totalCredit: { $sum: "$amount" } // Tổng amount của credit
+                                  }
+                                }
+                            ],
+                          }
                         },
                         {
-                            $group: {
-                                _id: { product: '$product' },
-                                quantity: { $sum: "$quantity" }
-                            }
+                          $project: {
+                            credits: 1,
+                            debits: 1
+                          }
                         },
                         {
-                            $sort: {
-                                '_id.product': 1
+                          $project: {
+                            merged: {
+                              $setUnion: ["$credits", "$debits"] // Gộp chung danh sách debit và credit
                             }
+                          }
+                        },
+                        {
+                          $unwind: "$merged"
+                        },
+                        {
+                          $group: {
+                            _id: { funda: "$merged._id.funda", account: "$merged._id.account" },
+                            totalDebit: { $sum: { $ifNull: ["$merged.totalDebit", 0] } },
+                            totalCredit: { $sum: { $ifNull: ["$merged.totalCredit", 0] } },
+                          }
+                        },
+                        {
+                          $project: {
+                            funda: "$_id.funda",
+                            account: "$_id.account",
+                            total: { $subtract: ["$totalDebit", "$totalCredit"] }
+                          }
                         }
-                    ])
-                    await FINANCIAL_REPORT_COLL.populate(listData3, conditionPopulate1)
+                      ]);
+
+                    console.log(listData2)
+
+                    let arr = []
+                    for(const item of listData2){
+                        arr.push(item.account)
+                    }
+
+                    let listAcc = await ITEM__ACCOUNT_COLL.find({ company: companyID, _id: {$in: listData2.map(item=>item.account)} }) // Doanh thu
+                    .select('_id name description')
+                    // console.log(listAcc)
 
                     // Modify the workbook.
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_fin_report.xlsx')))
                     .then(async workbook => {
-                        var i = 3;
+                        workbook.sheet("BaoCao1").row(2).cell(1).value(infoParent.name);
+                        workbook.sheet("BaoCao2").row(2).cell(1).value(infoParent.name);
+
+                        workbook.sheet("BaoCao1").row(2).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
+                        workbook.sheet("BaoCao2").row(2).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
+
+                        var i = 4;
                         listData?.forEach((item, index) => {
-                            workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                            workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                            workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-                            workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(6).value(item.name);
-                            workbook.sheet("Order").row(i).cell(7).value(item.sign);
-                            workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-                            workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-                            workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-                            workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                            workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
-                            workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
-                            workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
-                            workbook.sheet("Order").row(i).cell(18).value(Number(item?.shippingFeeTotal));
-                            workbook.sheet("Order").row(i).cell(19).value(Number(item?.shippingFee));
-                            workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfSizeM));
-                            workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfSizeL));
-                            workbook.sheet("Order").row(i).cell(22).value(Number(item.numberOfProducts));
-                            workbook.sheet("Order").row(i).cell(23).value(Number(item.numberOfMistakes));
-                            workbook.sheet("Order").row(i).cell(24).value(item.note);
-                            workbook.sheet("Order").row(i).cell(25).value(Number(item.loyaltyPoints));
-                            workbook.sheet("Order").row(i).cell(26).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
-                            workbook.sheet("Order").row(i).cell(27).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
-                            if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
-                                workbook.sheet("Order").row(i).cell(28).value('Đơn nhân viên');
-                            }
-                            if(Number(item.nonResident) === 2){
-                                workbook.sheet("Order").row(i).cell(29).value('Khách vãng lai');
-                            }
-                            workbook.sheet("Order").row(i).cell(30).value(`${item?.customer?._id}`);
-                            workbook.sheet("Order").row(i).cell(31).value(item?.customer?.phone);
-                            workbook.sheet("Order").row(i).cell(32).value(item?.customer?.name);
-                            workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? `${item?.referrer?._id}` : "");
-                            workbook.sheet("Order").row(i).cell(34).value(item?.referrer ? item?.referrer?.phone : "");
-                            workbook.sheet("Order").row(i).cell(35).value(item?.referrer ? item?.referrer?.name : "");
-                            workbook.sheet("Order").row(i).cell(36).value(item?.campaignType ? item?.campaignType?.name : "");
+                            workbook.sheet("BaoCao1").row(i).cell(2).value(item?.funda?.name);
+                            workbook.sheet("BaoCao1").row(i).cell(3).value(Number(item.revenue))
+                            workbook.sheet("BaoCao1").row(i).cell(4).value(Number(item.expense))
+                            workbook.sheet("BaoCao1").row(i).cell(5).value(Number(item.profit))
+                            workbook.sheet("BaoCao1").row(i).cell(6).value(item.note)
+
+                            workbook.sheet("BaoCao2").row(2).cell(i+1).value(`${item?.funda?._id}`);
+                            workbook.sheet("BaoCao2").row(3).cell(i+1).value(item?.funda?.name)
 
                             i++
-                        });
+                        })
+                       
 
-                        var i = 3;
-                        listData2?.forEach((item, index) => {
-                            workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Product").row(i).cell(2).value(`${item._id.product.name}`);
-                            workbook.sheet("Product").row(i).cell(3).value(`${item._id.funda.name}`);
-                            workbook.sheet("Product").row(i).cell(4).value(Number(item?.quantity));
-
-                            i++
-                        });
-
-                        var i = 3;
-                        listData3?.forEach((item, index) => {
-                            workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Report").row(i).cell(2).value(`${item._id.product.name}`);
-                            workbook.sheet("Report").row(i).cell(3).value(Number(item?.quantity));
+                        var i = 4;
+                        listAcc?.forEach((item, index) => {
+                            workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
+                            workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
+                            workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
 
                             i++
-                        });
+                        })
+
+                        console.log(workbook.sheet(`BaoCao2`).row(4).cell(4).value())
+                        console.log(workbook.sheet(`BaoCao2`).row(2).cell(5).value())
+
+                        // listData2?.forEach((item, index) => {
+                        //     for(var acc = 4; acc <= Number(listAcc.length + 3); acc++){
+                        //         let accountID = workbook.sheet(`BaoCao2`).row(acc).cell(4).value()
+                        //         console.log(workbook.sheet(`BaoCao2`).row(acc).cell(4).value())
+    
+                        //         // for(let funda = 5; i <= Number(listData.length + 4); funda++){
+                        //         //     let fundaID = workbook.sheet(`BaoCao2`).row(2).cell(funda).value()
+                        //         //     console.log(fundaID)
+                                    
+                        //         //     // if((item.funda.toString() === fundaID.toString() && item.account.toString() === accountID.toString())){
+                        //         //     //     workbook.sheet(`BaoCao2`).row(acc).cell(funda).value(Number(item.total))
+                        //         //     // }
+                        //         // }
+                        //     }
+                        // })
 
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
+                        const fileName = `BaoCaoLaiLo_${now.getTime()}.xlsx`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                         await workbook.toFileAsync(pathWriteFile);
