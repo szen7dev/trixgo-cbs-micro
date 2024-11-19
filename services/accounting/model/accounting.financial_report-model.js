@@ -814,18 +814,21 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!option){
-                    let listData = await FINANCIAL_REPORT_COLL.find({parent: parentID}).populate({
-                        path: 'funda',
-                         select: '_id name sign'
-                    })
-
+                    // Thông tin báo cáo
                     let infoParent = await FINANCIAL_REPORT_COLL.findById(parentID).populate({
                         path: 'funda',
                         select: '_id name sign'
                     })
 
+                    // Danh sách cơ sở
+                    let listData = await FINANCIAL_REPORT_COLL.find({parent: parentID}).populate({
+                        path: 'funda',
+                         select: '_id name sign'
+                    })
+
                     let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
-    
+                    
+                    // Tài khoản doanh thu chi phí
                     let arrAccounts = []
                     let listAccs = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[5768]" } })
                     .select('_id')
