@@ -1330,8 +1330,7 @@ class Model extends BaseModel {
      */
     getList({
         subtype, salary, onLeaveSalary, overtimeSalary, mealAllowance, punishment, option, sortOption, parentID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID }) {
-        // console.log({option, sortOption, parentID, userID, keyword, limit, lastestID, select, populates, companyID, positionsID, departmentsID })
+        keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID, month, year }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -1475,6 +1474,11 @@ class Model extends BaseModel {
                         conditionObj.parent = { $exists: false }
                     }
 
+                    // Bảng lương theo tháng, năm
+                    if(month && year){
+                        conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                    }
+
                     if(keyword){
                         keyword = stringUtils.removeAccents(keyword)
                         keyword = keyword.split(" ");
@@ -1492,7 +1496,6 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: true, $ne: null }
                     delete conditionObj.$or;
                 }
-                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
@@ -1512,8 +1515,6 @@ class Model extends BaseModel {
                     let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy        = dataPagingAndSort.data.sort;
                 }
-                // sortBy      = { project: 1 };
-                // console.log({sortBy})
 
                 let infoDataAfterGet = await TIMESHEET__EXPERT_SALARY_COLL.find(conditionObj)
                     .select(select)
