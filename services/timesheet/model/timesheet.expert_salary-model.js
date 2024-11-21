@@ -1554,8 +1554,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID, ctx }){
-        // console.log({ userID, option, year, companyID, assigneeID })
+    getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
+        // console.log({ userID, option, year, month, companyID, projectID, assigneeID })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -1635,6 +1635,11 @@ class Model extends BaseModel {
                                 paid: { $sum: {$add: [ "$paid", "$advance" ]} },
                             }
                         },
+                        {
+                            $sort: {
+                                "_id.month": 1
+                            }
+                        }
                     ])
 
                     return resolve({ error: false, data: listData })
