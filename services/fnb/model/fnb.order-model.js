@@ -3543,7 +3543,7 @@ class Model extends BaseModel {
                   appId: infoConfig.channel
                 }
                 // console.log({dataOA2})
-                for (let i = 1; i <= 3; i++) {
+                for (let i = 1; i <= 2; i++) {
                   await ctx.call(
                     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                     dataOA2,
