@@ -573,7 +573,6 @@ class Model extends BaseModel {
     getList({
         sortOption, parentID, workID, userID,
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype }) {
-        // console.log({ sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, humanID, companyID, type, subtype })
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -592,10 +591,10 @@ class Model extends BaseModel {
 
                 if(sortOption == 1){
                     keys	 = ['date__-1', '_id__-1'];
-                }
-
-                if(sortOption == 2){
+                }else if(sortOption == 2){
                     keys	 = ['createAt__-1', '_id__-1'];
+                }else if(sortOption == 3){
+                    keys	 = ['date__1', '_id__1'];
                 }
 
                 if(populates && typeof populates === 'string'){
@@ -689,9 +688,14 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = humanID
 
+                    if(month & year){
+                        conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                    }
+
                     delete conditionObj.$or 
                 }
 
+                // Loại chấm công
                 if(subtype ){
                     conditionObj.subtype = Number(subtype)
                 }
@@ -703,195 +707,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-                // console.log(conditionObj)
-
-                let conditionObjOrg = { ...conditionObj };
-
-                // PHÂN TRANG KIỂU MỚI
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
-
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-                    conditionObj = dataPagingAndSort.data.find;
-					sortBy       = dataPagingAndSort.data.sort;
-				}else{
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-					sortBy        = dataPagingAndSort.data.sort;
-                }
-
-                let infoDataAfterGet = await TIMESHEET__EXPERT_TIMESHEET_COLL.find(conditionObj)
-                    .select(select)
-                    .limit(+limit + 1)
-                    .sort(sortBy)
-                    .populate(populates)
-                    .lean();
-
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
-
-                if(infoDataAfterGet && infoDataAfterGet.length){
-                    if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
-                        infoDataAfterGet.length = limit;
-                    }
-                }
-
-                let totalRecord = await TIMESHEET__EXPERT_TIMESHEET_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit);
-
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit: +limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor,
-                }, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    getList2({
-        sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype }) {
-        // console.log({ sortOption, parentID, workID, userID, keyword, limit, lastestID, select, populates, option, month, year, humanID, companyID, type, subtype })
-        return new Promise(async (resolve) => {
-            try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                if(Number(limit) > 50){
-                    limit = 50;
-                } else{
-                    limit = +Number(limit);
-                }
-
-                let conditionObj = {};
-                let nextCursor	= null;
-                let sortBy      = null;
-                let keys	 = ['date__1', '_id__1'];
-
-                if(sortOption == 1){
-                    keys	 = ['date__-1', '_id__-1'];
-                }
-
-                if(sortOption == 2){
-                    keys	 = ['createAt__-1', '_id__-1'];
-                }
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
-                    appID: "61e049cffdebf77b072d1b14", 
-                    userID
-                 })
-
-				if(checkObjectIDs(parentID)){
-					conditionObj.parent = parentID;
-
-                    if(humanID && checkObjectIDs(humanID)){
-                        conditionObj.assignee = humanID;
-                    }
-				}else{
-                    // Danh sách Bảng chấm công
-                    if(!option){
-                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                            conditionObj.company = companyID
-                            conditionObj.parent = { $exists: false }
-                        }else{
-                            conditionObj.$or = [
-                                {admins: { $in: [userID] }},
-                                {members: { $in: [userID] }}
-                            ]
-
-                            conditionObj.company = companyID
-                            conditionObj.parent = { $exists: false }
-                        }
-                    }
-
-                    // Chi tiết chấm công của userID: gom nhóm theo Tháng
-                    else if(option == 1){
-                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-
-                        }else{
-                            // Lấy tạm danh sách Rỗng
-                            conditionObj.company = { $exists: false }
-                        }
-
-                        conditionObj.parent = { $exists: true, $ne: null }
-                        conditionObj.assignee = userID
-                        if(month & year){
-                            conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
-                        }
-                    }
-
-                    // Chi tiết chấm công của Công ty: gom nhóm theo Tháng
-                    else if(option == 2){
-                        if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                            
-                        }else{
-                            // Lấy tạm danh sách Rỗng
-                            conditionObj.company = { $exists: false }
-                        }
-
-                        conditionObj.parent = { $exists: true, $ne: null }
-                        conditionObj.assignee = userID
-                        if(month & year){
-                            conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
-                        }
-                    }
-
-                    // Chi tiết chấm công theo workID: gom nhóm theo Ngân sách
-                    else if(option == 3){
-                        conditionObj.work = workID;
-                    }
-                }
-
-                // Chi tiết chấm công của userID đang truy cập
-                if(type && type == 2){
-                    conditionObj.parent = { $exists: true, $ne: null }
-                    conditionObj.assignee = userID
-
-                    delete conditionObj.$or 
-                }
-
-                // Chi tiết chấm công của 1 nhân sự
-                if(type && type == 3){
-                    conditionObj.parent = { $exists: true, $ne: null }
-                    conditionObj.assignee = humanID
-
-                    delete conditionObj.$or 
-                }
-
-                if(subtype ){
-                    conditionObj.subtype = Number(subtype)
-                }
-
-                if(keyword){
-                    keyword = stringUtils.removeAccents(keyword)
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    const regSearch = new RegExp(keyword, 'i');
-                    conditionObj.namecv = regSearch
-                }
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 
