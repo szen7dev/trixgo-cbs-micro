@@ -23,6 +23,8 @@ const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper
 const USER_COLL                         = require('../../auth/database/auth.user-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
 const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
+const ITEM__POSITION_COLL            	= require('../../item/database/item.position-coll'); 
+// const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll');
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
@@ -1120,6 +1122,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
+                // Gom nhóm theo Ngân sách, sản lượng
                 else if(option == 8){
                     let conditionObj = {
                         company: ObjectID(companyID),
@@ -1160,6 +1163,68 @@ class Model extends BaseModel {
             }
         })
     }
+
+        /*
+    * Name: Export Excel
+    * Code: Hiepnh
+    * Date: 25/7/2023
+    */
+   exportExcel({ companyID, year, month, userID }) {
+       return new Promise(async resolve => {
+           try {
+            let conditionMatchObj = {}
+            if(year && !isNaN(year)){
+                conditionMatchObj.year = Number(year)
+            }
+
+            if(month && !isNaN(month)){
+                conditionMatchObj.month = Number(month)
+            }
+
+            let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                {
+                    $match: {
+                        parent: { $exists: true, $ne: null },
+                        work: { $exists: true, $ne: null },
+                        company: ObjectID(companyID),
+                    }
+                },
+                {
+                    $project : {
+                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                        project: 1,
+                        position: 1,
+                        assignee: 1,
+                        work: 1,
+                        hours: 1,
+                        amount: 1,
+                        date: 1,
+                    }
+                },
+                {
+                    $match: conditionMatchObj
+                },
+                {
+                    $group: {
+                        _id: { position: "$position", assignee: "$assignee", work: "$work", month: "$month"},
+                        quantity: { $sum: "$hours" },
+                        amount: { $sum: "$amount" },
+                    }
+                },
+            ])
+
+            let listData1 = await ITEM__POSITION_COLL.find({_id: {$in: listData.map(item=>item._id.position)}}).select('name')
+            let listData2 = await BUDGET__WORK_COLL.find({_id: {$in: listData.map(item=>item._id.work)}}).select('name sign')
+            let listData3 = await USER_COLL.find({_id: {$in: listData.map(item=>item._id.assignee)}}).select('fullname')
+
+            return resolve({ error: false, data: {listData, listData1, listData2, listData3} })
+
+           } catch (error) {
+               return resolve({ error: true, message: error.message, status: 500 });
+           }
+       })
+   }
 }
 
 exports.MODEL = new Model

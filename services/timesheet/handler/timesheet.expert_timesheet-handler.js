@@ -218,12 +218,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { customerID, userCreateID } = ctx.params;
-                // console.log(ctx.params)
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let { year, month } = ctx.params;
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.exportExcel({
-                    customerID, userCreateID
+                    companyID: company._id, year, month, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

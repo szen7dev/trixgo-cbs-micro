@@ -31,29 +31,14 @@ class Model extends BaseModel {
     insert({ userID, subjectID, role, author }) { 
         return new Promise(async (resolve) => {
             try {   
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataInsert = { };
                 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(userID))
                     return resolve({ error: true, message: 'Request params userID invalid', status: 400 });
 
                 if(!checkObjectIDs(subjectID))
                     return resolve({ error: true, message: 'Request params subjectID invalid', status: 400 });
 
-                
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 let checkExist = await USER_PCM_PLAN_REPORT_COLL.findOne({ 
                     user: userID,
                     subject: subjectID
@@ -90,29 +75,14 @@ class Model extends BaseModel {
     update({ userSubjectID, role }) { 
         return new Promise(async (resolve) => {
             try {   
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataUpdate = { };
                 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
                 if(!checkObjectIDs(userSubjectID))
                     return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
                 
                 if(!role && ![2,3].includes(role))                  
                     return resolve({ error: true, message: 'Request params role invalid', status: 400 });
-                
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
+
                 dataUpdate.role = role;
                 let infoAfterUpdate = await USER_PCM_PLAN_REPORT_COLL.findByIdAndUpdate(userSubjectID, dataUpdate, { new: true });
 
@@ -134,24 +104,8 @@ class Model extends BaseModel {
     remove({ userSubjectID }) { 
         return new Promise(async (resolve) => {
             try {   
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(userSubjectID))
                     return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
-                
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
 
                 let infoAterRemove = await USER_PCM_PLAN_REPORT_COLL.findByIdAndDelete(userSubjectID);
 
@@ -173,16 +127,6 @@ class Model extends BaseModel {
     getInfo({ userSubjectID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {   
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(userSubjectID))
                     return resolve({ error: true, message: 'Request params userSubjectID invalid', status: 400 });
 
@@ -199,11 +143,6 @@ class Model extends BaseModel {
                     }
                 }
                 
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 let infoUserSubject = await USER_PCM_PLAN_REPORT_COLL.findById(userSubjectID)
                     .select(select)    
                     .populate(populates)
@@ -232,19 +171,12 @@ class Model extends BaseModel {
                 }else{
                     limit = +limit;
                 }
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
+
                 let conditionObj = { };
                 let conditionFind = {};
                 let sortBy   = { createAt: -1 };
 				let objSort  = {};
 
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
                 if(!checkObjectIDs(parentID)){
                     conditionObj.parent = null;
                 }else{
@@ -268,11 +200,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
                 // GET CONDITION PAGINATION
 				if(lastestID && checkObjectIDs(lastestID)){
 					let infoData = await USER_PCM_PLAN_REPORT_COLL.findById(lastestID);
