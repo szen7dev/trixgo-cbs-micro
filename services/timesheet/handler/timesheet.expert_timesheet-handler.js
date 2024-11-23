@@ -200,4 +200,34 @@ module.exports = {
             }
         }
     },
+
+    
+    /**
+     * Dev: HiepNH
+     * Func: Download Template Excel
+     * Date: 9/12/2022
+     */
+    exportExcel: {
+        auth: 'required',
+        params: {
+            // companyID: { type: "string", optional: true },
+            // option: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, email, company } = ctx.meta.infoUser;
+                let { customerID, userCreateID } = ctx.params;
+                // console.log(ctx.params)
+
+                const resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.exportExcel({
+                    customerID, userCreateID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }
