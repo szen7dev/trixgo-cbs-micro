@@ -1083,15 +1083,15 @@ class Model extends BaseModel {
                 dataOA2,
               )
 
-              await ctx.call(
-                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                dataOA2,
-              )
+              // await ctx.call(
+              //   `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+              //   dataOA2,
+              // )
               
-              await ctx.call(
-                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                dataOA2,
-              )
+              // await ctx.call(
+              //   `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+              //   dataOA2,
+              // )
             }
           }
         }
