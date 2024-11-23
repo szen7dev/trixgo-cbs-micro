@@ -1292,9 +1292,13 @@ class Model extends BaseModel {
                 // Kiểm tra nếu work đã tồn tại trong nhóm position
                 let workGroup = positionGroup.works.find((w) => w.work._id.toString()  === work._id.toString() );
                 if (!workGroup) {
-                    workGroup = { work, assignees: [] };
+                    workGroup = { work, totalQuantity: 0, totalAmount: 0, assignees: [] };
                     positionGroup.works.push(workGroup);
                 }
+
+                // Tính tổng quantity và amount tại cấp độ work
+                workGroup.totalQuantity += item.quantity;
+                workGroup.totalAmount += item.amount;
             
                 // Kiểm tra nếu assignee đã tồn tại trong nhóm work (nếu cần loại trùng lặp assignee)
                 const assigneeExists = workGroup.assignees.some((a) => a.assignee._id.toString()  === assignee._id.toString() );
@@ -1343,8 +1347,14 @@ class Model extends BaseModel {
                         item?.works.forEach((item1, index1) =>{
                             workbook.sheet(index + 1).name(`${item.position.name}`);
 
+                            workbook.sheet(index + 1).row(i).cell(2).value(`A${index1 + 1}`)
                             workbook.sheet(index + 1).row(i).cell(2).value(item1?.work?.name)
                             workbook.sheet(index + 1).row(i).cell(4).value(item1?.work?.unit)
+                            workbook.sheet(index + 1).row(i).cell(5).value(Number(item1?.totalQuantity))
+                            workbook.sheet(index + 1).row(i).cell(6).value(item1?.totalQuantity != 0 ? Number(item1?.totalAmount/item1?.totalQuantity) : 0)
+                            workbook.sheet(index + 1).row(i).cell(7).value(Number(item1?.totalAmount))
+
+                            workbook.sheet(index + 1).range(`A${i}:H${i}`).style({"bold": true})
 
                             i++
 
