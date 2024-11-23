@@ -1339,8 +1339,6 @@ class Model extends BaseModel {
                     // })
 
                     formattedData.forEach((item, index) =>{
-                        // workbook.addSheet(`${item.position.name}`)
-
                         var i = 3
                         item?.works.forEach((item1, index1) =>{
                             workbook.sheet(index + 1).name(`${item.position.name}`);
