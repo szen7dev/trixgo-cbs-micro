@@ -1120,6 +1120,41 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
+                else if(option == 8){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null }
+                    }
+
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: {
+                                year : {$year : "$date"},
+                                month : {$month : "$date"},
+                                hours: 1,
+                                amount: 1
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter)
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { month: '$month' },
+                                quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+
+                    return resolve({ error: false, data: listData })
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

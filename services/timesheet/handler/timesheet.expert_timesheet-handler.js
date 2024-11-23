@@ -184,6 +184,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, year, companyID, projectID, assigneeID, month } = ctx.params;
+                console.log(ctx.params)
+                
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
