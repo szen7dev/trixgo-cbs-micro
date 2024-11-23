@@ -938,7 +938,7 @@ class Model extends BaseModel {
 	 * Func: Cập nhật comment (task)
 	 * Date: 22/02/2022
 	 */
-    updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, bizfullname, ctx }) {
+    updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, ctx }) {
         return new Promise(async (resolve) => {
             try {
                /**
@@ -1031,9 +1031,10 @@ class Model extends BaseModel {
                 //     }
                 // }
 
-                if(isOfficial) {
-                    dataUpdate.official = true;
-                }
+                // if(isOfficial) {
+                //     dataUpdate.official = true;
+                // }
+                dataUpdate.official = isOfficial;
 
                 let infoAfterUpdate = await PCM_COMMENT_COLL.findOneAndUpdate({
                     _id: commentID,
@@ -1054,6 +1055,10 @@ class Model extends BaseModel {
                 if(isOfficial) {
                     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
                         $inc: { amountMarkedResponse: 1 }
+                    })
+                }else{
+                    await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID, {
+                        $inc: { amountMarkedResponse: -1 }
                     })
                 }
 
@@ -1368,6 +1373,7 @@ class Model extends BaseModel {
 	 * Date: 18/05/2022
 	 */
     update({ taskID, projectID, commentID, authorID, content, files, images, isOfficial, select, populates, switchType = this.SWITCH_TYPE.TASK, companyOfAuthor, ctx }) {
+        // console.log({taskID, projectID, commentID, authorID, content, files, images, isOfficial, select, populates, switchType, companyOfAuthor})
         return new Promise(async resolve => {
             switch (switchType) {
                 case this.SWITCH_TYPE.TASK:

@@ -1083,6 +1083,7 @@ class Model extends BaseModel {
 
                     // COPY BẢNG LƯƠNG SANG BẢNG LƯƠNG MỚI
                     else if(option == 4){
+                        let infoOld = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
 
                        let listHuman = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.human)}})
@@ -1099,7 +1100,8 @@ class Model extends BaseModel {
                             name: 'New of copy from ...',
                             namecv: 'New of copy from ...',
                             admins: [userID],
-                            members: [userID]
+                            members: [userID],
+                            type: infoOld.type
                        })
 
                        if(infoAfterInsert){
