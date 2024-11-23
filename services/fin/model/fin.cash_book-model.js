@@ -2436,8 +2436,8 @@ class Model extends BaseModel {
     * Code: Hiepnh
     * Date: 25/7/2023
     */
-   exportExcel({ option, companyID, parentID, year, month, userID, fromDate, toDate }) {
-    //    console.log({ option, companyID, parentID, year, month, userID, fromDate, toDate })
+   exportExcel({ option, companyID, parentID, humanID, year, month, userID, fromDate, toDate }) {
+       console.log({ option, companyID, parentID, humanID, year, month, userID, fromDate, toDate })
        return new Promise(async resolve => {
            try {
             let yearFilter, monthFilter
@@ -2460,71 +2460,114 @@ class Model extends BaseModel {
                 yearFilter = new Date(toDate).getFullYear()
                 monthFilter = new Date(toDate).getMonth() + 1
             }
-            // console.log({yearFilter})
-            // console.log({monthFilter})
 
             // Tải bảng chấm công
             if(option == 1){
-                let infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note subtype')
+                let listData, listData2, infoParent
+                if (checkObjectIDs(parentID)) {
+                    infoParent = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(parentID).select('name hours unitprice amount status date note subtype')
+                    monthFilter = new Date(infoParent.date).getMonth() + 1
+    
+                    listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID})
+                    .populate({
+                        path: 'work assignee',
+                        select:'fullname name unit unitPrice'
+                    })
+                    .select('name hours unitprice amount status date note')
+                    .sort({date: 1})
+    
+                    listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                parent: ObjectID(parentID),
+                                assignee: { $exists: true, $ne: null }
+                            }
+                        },
+                        {
+                            $project: {
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                hours: 1,
+                                subtype: 1,
+                                assignee: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(monthFilter),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { assignee: '$assignee', day: '$day', subtype: '$subtype' }, //fix lại bị sai ở đây nếu 1 ngày có 2 Subtype
+                                quantity: { $sum: "$hours" },
+                            }
+                        },
+                    ])
+                }else{
+                    listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                        company: ObjectID(companyID),
+                        assignee: ObjectID(humanID),
+                        parent: { $exists: true, $ne: null },
+                        $where: `return this.date.getMonth() === ${Number(yearFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
+                    })
+                    .populate({
+                        path: 'work assignee',
+                        select:'fullname name unit unitPrice'
+                    })
+                    .select('name hours unitprice amount status date note')
+                    .sort({date: 1})
+    
+                    listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                assignee: ObjectID(humanID),
+                                parent: { $exists: true, $ne: null }
+                            }
+                        },
+                        {
+                            $project: {
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                hours: 1,
+                                subtype: 1,
+                                assignee: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter),
+                                month: Number(monthFilter),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { assignee: '$assignee', day: '$day', subtype: '$subtype' }, //fix lại bị sai ở đây nếu 1 ngày có 2 Subtype
+                                quantity: { $sum: "$hours" },
+                            }
+                        },
+                    ])
+                }
 
-                monthFilter = new Date(infoParent.date).getMonth() + 1
-                // console.log({ monthFilter })
-
-                let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({parent: parentID})
-                .populate({
-                    path: 'work assignee',
-                    select:'fullname name unit unitPrice'
-                })
-                .select('name hours unitprice amount status date note')
-                .sort({date: 1})
-                // console.log(listData)
-
-                let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                    {
-                        $match: {
-                            parent: ObjectID(parentID),
-                            assignee: { $exists: true, $ne: null }
-                        }
-                    },
-                    {
-                        $project: {
-                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            hours: 1,
-                            subtype: 1,
-                            assignee: 1,
-                        }
-                    },
-                    {
-                        $match: {
-                            year: Number(yearFilter),
-                            month: Number(monthFilter),
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { assignee: '$assignee', day: '$day', subtype: '$subtype' }, //fix lại bị sai ở đây nếu 1 ngày có 2 Subtype
-                            quantity: { $sum: "$hours" },
-                        }
-                    },
-                ])
-                // console.log(listData2)
-                
                 let listUser = await USER_COLL.find({_id: {$in: listData2.map(item=>item._id.assignee)}})
                 .select('fullname department position')
                 .populate({
                     path:'department position',
                     select:'name',
                 })
-                // console.log(listUser)
 
                  // Modify the workbook.
                  XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_report.xlsx')))
-                //  XlsxPopulate.fromDataAsync(response.data)
                  .then(async workbook => {
 
-                    workbook.sheet("Data").row(2).cell(1).value(infoParent.name)
+                    if (checkObjectIDs(parentID)) {
+                        workbook.sheet("Data").row(2).cell(1).value(infoParent.name)
+                    }
 
                      var i = 4
                      listData.forEach((item, index) =>{
