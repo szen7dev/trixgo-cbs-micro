@@ -941,18 +941,10 @@ class Model extends BaseModel {
     updateCommentTask({ taskID, commentID, authorID, content, files, images, isOfficial, select, populates, companyOfAuthor, ctx }) {
         return new Promise(async (resolve) => {
             try {
-               /**
-                * DECALARTION VARIABLE (1)
-                */
-               let dataUpdate = {};
-               let dataAdditional = {};
-               let filesRemove = [];
+                let dataUpdate = {};
+                let dataAdditional = {};
+                let filesRemove = [];
 
-               /**
-                * VALIDATION STEP (2)
-                *  - kiểm tra valid từ các input
-                *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                */
                 if(!checkObjectIDs([commentID])) {
                     return resolve({
                         error: true,
@@ -1031,17 +1023,15 @@ class Model extends BaseModel {
                 //     }
                 // }
 
-                // if(isOfficial) {
-                //     dataUpdate.official = true;
-                // }
-                dataUpdate.official = isOfficial;
+                dataUpdate.official = isOfficial
+                let infoAfterUpdate = await PCM_COMMENT_COLL.findByIdAndUpdate(commentID, dataUpdate);
 
-                let infoAfterUpdate = await PCM_COMMENT_COLL.findOneAndUpdate({
-                    _id: commentID,
-                    author: authorID
-                }, {
-                    $set: dataUpdate
-                });
+                // let infoAfterUpdate = await PCM_COMMENT_COLL.findOneAndUpdate({
+                //     _id: commentID,
+                //     author: authorID
+                // }, {
+                //     $set: dataUpdate
+                // });
 
                 if(!infoAfterUpdate) {
                     return resolve({
