@@ -1829,6 +1829,58 @@ class Model extends BaseModel {
                                     nvns = 'Đỗ Thùy Dương'
                                 }
 
+                                // workbook.sheet("BangLuongIn").row(i).cell(2).value('TỔNG')
+                                // .style({horizontalAlignment: "center"})
+
+                                // workbook.sheet("BangLuongIn").row(i).cell(4).formula(`=SUM(D3:D${i-1})`)
+
+                                // workbook.sheet("BangLuongIn").range(`A${i}:F${i}`)
+                                // .style({"bold": true, "fill": "FFFF00"})
+
+                                workbook.sheet("BangLuongIn").row(i+2).cell(2).value('DUYỆT')
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongIn").row(i+2).cell(6).value('PKT')
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongIn").row(i+2).cell(13).value('PHCNS')
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongIn").range(`F${i+2}:H${i+2}`)
+                                .style({horizontalAlignment: "center", "bold": true})
+                                .merged(true)
+
+                                workbook.sheet("BangLuongIn").range(`M${i+2}:P${i+2}`)
+                                .style({horizontalAlignment: "center", "bold": true})
+                                .merged(true)
+
+                                workbook.sheet("BangLuongIn").range(`T${i+2}:V${i+2}`)
+                                .style({horizontalAlignment: "center", "bold": true})
+                                .merged(true)
+
+                                workbook.sheet("BangLuongIn").row(i+2).cell(20).value('NGƯỜI LẬP')
+                                
+                                workbook.sheet("BangLuongIn").row(i+7).cell(6).value(ktt)
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongIn").row(i+7).cell(13).value(nvns)
+                                .style({horizontalAlignment: "center", "bold": true})
+
+                                workbook.sheet("BangLuongIn").range(`F${i+7}:H${i+7}`)
+                                .style({horizontalAlignment: "center", "bold": true})
+                                .merged(true)
+
+                                workbook.sheet("BangLuongIn").range(`M${i+7}:P${i+7}`)
+                                .style({horizontalAlignment: "center", "bold": true})
+                                .merged(true)
+
+                                workbook.sheet("BangLuongIn").range(`T${i+7}:V${i+7}`)
+                                .style({horizontalAlignment: "center", "bold": true})
+                                .merged(true)
+
+                                workbook.sheet("BangLuongIn").row(i+7).cell(20).value(nvtt)
+
+                                // Bảng lương Pay
                                 workbook.sheet("BangLuongPay").row(i).cell(2).value('TỔNG')
                                 .style({horizontalAlignment: "center"})
 
@@ -1849,8 +1901,8 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuongPay").range(`E${i+2}:F${i+2}`)
                                 .style({horizontalAlignment: "center", "bold": true})
                                 .merged(true)
+
                                 workbook.sheet("BangLuongPay").row(i+2).cell(5).value('NGƯỜI LẬP')
-                                
 
                                 workbook.sheet("BangLuongPay").row(i+7).cell(3).value(ktt)
                                 .style({horizontalAlignment: "center", "bold": true})
@@ -1861,6 +1913,7 @@ class Model extends BaseModel {
                                 workbook.sheet("BangLuongPay").range(`E${i+7}:F${i+7}`)
                                 .style({horizontalAlignment: "center", "bold": true})
                                 .merged(true)
+
                                 workbook.sheet("BangLuongPay").row(i+7).cell(5).value(nvtt)
 
                                 /**
