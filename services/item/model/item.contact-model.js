@@ -2474,6 +2474,11 @@ class Model extends BaseModel {
         return new Promise(resolve => {
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
                 .then(async workbook => {
+
+                    let currentYear = new Date().getFullYear()
+                    workbook.sheet("BaoCao").row(1).cell(3).value(Number(currentYear));
+
+                    // Hàm quy đổi số ngày sang Năm, tháng, ngày
                     function convertDaysToYearsMonthsDays(totalDays) {
                         const years = Math.floor(totalDays / 365); // Tính số năm
                         const remainingDaysAfterYears = totalDays % 365; // Số ngày còn lại sau khi trừ năm

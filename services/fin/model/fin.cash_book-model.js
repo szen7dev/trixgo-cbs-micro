@@ -1829,13 +1829,30 @@ class Model extends BaseModel {
                                     nvns = 'Đỗ Thùy Dương'
                                 }
 
-                                // workbook.sheet("BangLuongIn").row(i).cell(2).value('TỔNG')
-                                // .style({horizontalAlignment: "center"})
+                                workbook.sheet("BangLuongIn").row(i).cell(2).value('TỔNG')
 
-                                // workbook.sheet("BangLuongIn").row(i).cell(4).formula(`=SUM(D3:D${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(5).formula(`=SUM(E4:E${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(6).formula(`=SUM(F4:F${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(7).formula(`=SUM(G4:G${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(8).formula(`=SUM(H4:H${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(9).formula(`=SUM(I4:I${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(10).formula(`=SUM(J4:J${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(11).formula(`=SUM(K4:K${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(12).formula(`=SUM(L4:L${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(13).formula(`=SUM(M4:M${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(14).formula(`=SUM(N4:N${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(15).formula(`=SUM(O4:O${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(16).formula(`=SUM(P4:P${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(17).formula(`=SUM(Q4:Q${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(18).formula(`=SUM(R4:R${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(19).formula(`=SUM(S4:S${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(20).formula(`=SUM(T4:T${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(21).formula(`=SUM(U4:U${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(22).formula(`=SUM(V4:V${i-1})`)
+                                workbook.sheet("BangLuongIn").row(i).cell(23).formula(`=SUM(W4:W${i-1})`)
 
-                                // workbook.sheet("BangLuongIn").range(`A${i}:F${i}`)
-                                // .style({"bold": true, "fill": "FFFF00"})
+                                workbook.sheet("BangLuongIn").range(`A${i}:X${i}`)
+                                .style({"bold": true, "fill": "FFFF00"})
 
                                 workbook.sheet("BangLuongIn").row(i+2).cell(2).value('DUYỆT')
                                 .style({horizontalAlignment: "center", "bold": true})
@@ -1882,7 +1899,6 @@ class Model extends BaseModel {
 
                                 // Bảng lương Pay
                                 workbook.sheet("BangLuongPay").row(i).cell(2).value('TỔNG')
-                                .style({horizontalAlignment: "center"})
 
                                 workbook.sheet("BangLuongPay").row(i).cell(4).formula(`=SUM(D3:D${i-1})`)
 
