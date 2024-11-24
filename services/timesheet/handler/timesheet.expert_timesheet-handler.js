@@ -141,7 +141,7 @@ module.exports = {
                 let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
-                console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
+                // console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
 
                 if(!companyID){
                     companyID = company._id
@@ -184,7 +184,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, year, companyID, projectID, assigneeID, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -221,7 +221,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let { year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.exportExcel({
                     companyID: company._id, year, month, userID

@@ -76,7 +76,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ option, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee
+    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee
     }) {
         return new Promise(async resolve => {
             try {
@@ -939,14 +939,17 @@ class Model extends BaseModel {
                 // Cập nhật lại số lượng document cho contact
                 await this.updateValue({ contactID, userID: authorID })
 
+                if (department && checkObjectIDs(department)) {
+                    await HUMAN__CONTACT_DOCUMENT_COLL.updateMany(
+                        { contact: ObjectID(contactID)},
+                        { $set: {
+                            department: department
+                        } }
+                     );
+                }
+
                 // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
                 if (linkUser && checkObjectIDs(linkUser)) {
-                    // Cập nhật vào user-coll
-                    // await USER_COLL.findByIdAndUpdate(linkUser,
-                    //     {
-                    //         $addToSet: { contacts: contactID }
-                    //     },
-                    //     { new: true })
                     await USER_COLL.findByIdAndUpdate(linkUser,
                         {
                             contacts: [contactID]
@@ -2471,6 +2474,15 @@ class Model extends BaseModel {
         return new Promise(resolve => {
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
                 .then(async workbook => {
+                    function convertDaysToYearsMonthsDays(totalDays) {
+                        const years = Math.floor(totalDays / 365); // Tính số năm
+                        const remainingDaysAfterYears = totalDays % 365; // Số ngày còn lại sau khi trừ năm
+                    
+                        const months = Math.floor(remainingDaysAfterYears / 30); // Tính số tháng
+                        const days = remainingDaysAfterYears % 30; // Số ngày còn lại sau khi trừ tháng
+                    
+                        return { years, months, days }; // Trả về một đối tượng chứa số năm, tháng, ngày
+                    }
 
                     let i = 3;
                     data?.forEach((item, index) => {
@@ -2530,9 +2542,7 @@ class Model extends BaseModel {
                         workbook.sheet("NhanSu2").row(i).cell(4).value(item?.position?.name)
                         
 
-                        let str = '', str1 = '', str2 = '', str3 = '', str4 = '', str5 = '', str6 = ''
-                        let duration = Number(getTimeBetween(new Date(), item?.workStartDate)/(24*60*60)).toFixed(0)
-
+                        let str1 = '', str4 = '', str6 = ''
                         if(item?.documents){
                             for(const subitem of item?.documents){
                                 if(subitem.type == 1){
@@ -2549,24 +2559,26 @@ class Model extends BaseModel {
                             }
                         }
 
+                        let duration = Number(getTimeBetween(new Date(), item?.workStartDate)/(24*60*60)).toFixed(0)
+                        const result = convertDaysToYearsMonthsDays(duration);
+
                         workbook.sheet("NhanSu2").row(i).cell(5).value(str4)
                         workbook.sheet("NhanSu2").row(i).cell(6).value((item?.area2 != null && item?.area2 != undefined) ? (`${item?.area2?.name}, ${item?.area2?.parent?.name}, ${item?.area2?.parent?.parent?.name}`) : "")
                         workbook.sheet("NhanSu2").row(i).cell(7).value(item.phone)
                         workbook.sheet("NhanSu2").row(i).cell(8).value(item?.workStartDate)
-                        workbook.sheet("NhanSu2").row(i).cell(9).value(`${duration} ngày`)
+                        workbook.sheet("NhanSu2").row(i).cell(9).value(`${result.years} năm, ${result.months} tháng, ${result.days} ngày`)
                         workbook.sheet("NhanSu2").row(i).cell(10).value(item?.sallary ? Number(item?.sallary) : 0)
-                        workbook.sheet("NhanSu2").row(i).cell(11).value(`Ngày ${moment(item?.changeSallaryDate).format('DD/MM/YYYY')}`)
+                        workbook.sheet("NhanSu2").row(i).cell(11).value(item?.changeSallaryDate != null ? `Ngày ${moment(item?.changeSallaryDate).format('DD/MM/YYYY')}` : '')
                         workbook.sheet("NhanSu2").row(i).cell(12).value(str1)
                         workbook.sheet("NhanSu2").row(i).cell(13).value(str6)
                         workbook.sheet("NhanSu2").row(i).cell(14).value(str6)
                         
-
                         i++
                     });
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `contact_export_${now.getTime()}.xlsx`;
+                    const fileName = `BaoCaoNhanSu_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);

@@ -187,8 +187,10 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
+                // console.log(ctx.params)
+
                 let {
-                    parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, isParent, type, genders, populates
+                    parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, isParent, type, genders, educationalBackground2sID, field2sID, certificateTypesID, certificateNamesID, certificateGradesID, populates
                 } = ctx.params;
 
                 if(!companyID) {
@@ -196,7 +198,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await HUMAN__CONTACT_DOCUMENT_MODEL.getListByFilter({
-                    userID, parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, isParent, type, genders, populates, ctx
+                    userID, parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, isParent, type, genders, populates, educationalBackground2sID, field2sID, certificateTypesID, certificateNamesID, certificateGradesID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

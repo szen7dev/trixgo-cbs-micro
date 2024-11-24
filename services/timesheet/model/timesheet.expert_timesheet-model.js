@@ -1131,7 +1131,8 @@ class Model extends BaseModel {
                 else if(option == 8){
                     let conditionObj = {
                         company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null }
+                        parent: { $exists: true, $ne: null },
+                        work: { $exists: true, $ne: null }
                     }
 
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -1140,8 +1141,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 hours: 1,
                                 amount: 1
                             }
@@ -1158,6 +1159,9 @@ class Model extends BaseModel {
                                 amount: { $sum: "$amount" },
                             }
                         },
+                        {
+                            $sort: {"_id.month" : 1}
+                        }
                     ])
 
                     return resolve({ error: false, data: listData })
