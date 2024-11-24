@@ -29,6 +29,7 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
 const HUMAN__CONTACT_DOCUMENT_COLL      = require('../database/human.contact_document-coll');
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll');
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll');
+const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll')
 
 let dataTF = {
     appID: "61e049c9fdebf77b072d1b13", // HUMAN
@@ -878,7 +879,7 @@ class Model extends BaseModel {
     }
 
     exportExcel({ userID, companyID, type, filterParams, ctx }) {
-        console.log({ userID, companyID, type, filterParams })
+        // console.log({ userID, companyID, type, filterParams })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {};
@@ -922,41 +923,87 @@ class Model extends BaseModel {
 
                 const listData = await HUMAN__CONTACT_DOCUMENT_COLL
                     .find(conditionObj)
-                    .select('name contact sign fromDate toDate place note workplace certificateGrade number files')
+                    .select('name contact sign fromDate toDate place note workplace certificateGrade number files educationalBackground2 field2 certificateType certificateName certificateGrade')
                     .populate({
-                        path: 'contact',
+                        path: 'contact educationalBackground2 field2 certificateType certificateName',
                         select: 'name sign',
                     })
                     .sort(sortBy)
                     .limit(10000)
                     .lean()
 
-                // console.log({listData})
+                let rawData = await HUMAN__CONTACT_DOCUMENT_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { educationalBackground2: "$educationalBackground2", field2: "$field2", certificateType: "$certificateType", certificateName: "$certificateName", certificateGrade: "$certificateGrade" }
+                        }
+                    },
+                ])
 
-                if(!listData) {
-                    return resolve({
-                        error: true,
-                        message: 'Không tìm thấy dữ liệu',
-                        keyError: 'data_not_exists',
-                        status: 400
-                    });
-                }
+                let listData1 = await ITEM__DOCTYPE_COLL.find({_id: {$in: rawData.map(item=>item._id.educationalBackground2)}})
+                let listData2 = await ITEM__DOCTYPE_COLL.find({_id: {$in: rawData.map(item=>item._id.field2)}})
+                let listData3 = await ITEM__DOCTYPE_COLL.find({_id: {$in: rawData.map(item=>item._id.certificateType)}})
+                let listData4 = await ITEM__DOCTYPE_COLL.find({_id: {$in: rawData.map(item=>item._id.certificateName)}})
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_document_export.xlsx')))
                 .then(async workbook => {
 
                     var i = 3;
+                    listData1?.forEach((item, index) => {
+                        workbook.sheet("TrinhDo").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("TrinhDo").row(i).cell(2).value(item?.name)
+                        
+                        i++
+                    })
+
+                    var i = 3;
+                    listData2?.forEach((item, index) => {
+                        workbook.sheet("ChuyenNganh").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("ChuyenNganh").row(i).cell(2).value(item?.name)
+                        
+                        i++
+                    })
+
+                    var i = 3;
+                    listData3?.forEach((item, index) => {
+                        workbook.sheet("Loai").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("Loai").row(i).cell(2).value(item?.name)
+                        
+                        i++
+                    })
+
+                    var i = 3;
+                    listData4?.forEach((item, index) => {
+                        workbook.sheet("NoiDung").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("NoiDung").row(i).cell(2).value(item?.name)
+                        
+                        i++
+                    })
+
+                    var i = 3;
                     listData?.forEach((item, index) => {
                         workbook.sheet("HoSoNhanSu").row(i).cell(1).value(Number(index+1))
-                        workbook.sheet("HoSoNhanSu").row(i).cell(2).value(item.name)
-                        workbook.sheet("HoSoNhanSu").row(i).cell(3).value(item?.contact?.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(2).value(item?.contact?.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(3).value(item.name)
                         workbook.sheet("HoSoNhanSu").row(i).cell(4).value(item?.sign)
                         workbook.sheet("HoSoNhanSu").row(i).cell(5).value(item?.fromDate)
                         workbook.sheet("HoSoNhanSu").row(i).cell(6).value(item.place)
                         workbook.sheet("HoSoNhanSu").row(i).cell(7).value(item?.toDate)
-                        workbook.sheet("HoSoNhanSu").row(i).cell(10).value(item.note)
-                        workbook.sheet("HoSoNhanSu").row(i).cell(11).value(item?.files.length ? `Có (${item?.files.length})` : 'Không')
+
+                        workbook.sheet("HoSoNhanSu").row(i).cell(8).value(item?.educationalBackground2?.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(9).value(item?.field2?.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(10).value(item?.certificateType?.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(11).value(item?.certificateName?.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(12).value(item?.certificateGrade)
+
+                        workbook.sheet("HoSoNhanSu").row(i).cell(13).value(item.note)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(14).value(item?.files.length ? `Có (${item?.files.length})` : 'Không')
                         
                         i++
                     })
