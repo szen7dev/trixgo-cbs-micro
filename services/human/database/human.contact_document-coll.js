@@ -9,10 +9,10 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Dự án đang triển khai
-    project: {
+    //_________Thuộc phòng ban bộ phận
+    department: {
         type: Schema.Types.ObjectId,
-        ref : "datahub_project"
+        ref : 'department' 
     },
     //_________Nhân sự
     contact: {
@@ -58,6 +58,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
+    //_________Dự án đang triển khai
+    project: {
+        type: Schema.Types.ObjectId,
+        ref : "datahub_project"
+    },
     //_________Gói thầu/Hạng mục tham gia
     item: String,
     //_________Dự án tham gia
@@ -97,16 +102,16 @@ module.exports  = DATABASE_MIDDLEWARE("contact_document", {
     store: String,
     //_________Trạng thái/Hiệu lực (1/2)
     status: { type: Number, default: 1 },
+    //_________Trình độ học vấn
+    educationalBackground2: {
+        type: Schema.Types.ObjectId,
+        ref : "doctype"
+    },
     /**
      * Lĩnh vực chuyên môn
      * Chuyên ngành đào tạo (/item/doctypes/?tab=7)
      */
     field2: {
-        type: Schema.Types.ObjectId,
-        ref : "doctype"
-    },
-    //_________Trình độ học vấn
-    educationalBackground2: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },

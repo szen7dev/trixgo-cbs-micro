@@ -939,14 +939,17 @@ class Model extends BaseModel {
                 // Cập nhật lại số lượng document cho contact
                 await this.updateValue({ contactID, userID: authorID })
 
+                if (department && checkObjectIDs(department)) {
+                    await HUMAN__CONTACT_DOCUMENT_COLL.updateMany(
+                        { contact: ObjectID(contactID)},
+                        { $set: {
+                            department: department
+                        } }
+                     );
+                }
+
                 // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
                 if (linkUser && checkObjectIDs(linkUser)) {
-                    // Cập nhật vào user-coll
-                    // await USER_COLL.findByIdAndUpdate(linkUser,
-                    //     {
-                    //         $addToSet: { contacts: contactID }
-                    //     },
-                    //     { new: true })
                     await USER_COLL.findByIdAndUpdate(linkUser,
                         {
                             contacts: [contactID]

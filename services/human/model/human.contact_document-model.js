@@ -618,13 +618,9 @@ class Model extends BaseModel {
      */
     getListByFilter({
         parentID, companyID, receiverID, types, isExportExcel = false,
-        requestResponse, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders, ctx }) {
-        //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
-        //     console.log({
-        //         parentID, companyID, receiverID, types, isExportExcel,
-        // requestResponse, fromDate, toDate, marked, userID, departmentsID,
-        // keyword, limit, lastestID, select, populates, isParent, type, genders })
+        requestResponse, fromDate, toDate, marked, userID, departmentsID, 
+        educationalBackground2sID, field2sID, certificateTypesID, certificateNamesID, certificateGradesID,
+        keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -641,7 +637,11 @@ class Model extends BaseModel {
                 let keys	     = ['createAt__-1', '_id__-1'];
 
                 const validation = validateParamsObjectID({
-                    departmentsID           : { value: departmentsID, isRequire: false },
+                    departmentsID                : { value: departmentsID, isRequire: false },
+                    educationalBackground2sID    : { value: educationalBackground2sID, isRequire: false },
+                    field2sID                    : { value: field2sID, isRequire: false },
+                    certificateTypesID           : { value: certificateTypesID, isRequire: false },
+                    certificateNamesID           : { value: certificateNamesID, isRequire: false },
                 });
                 if(validation.error) return resolve(validation);
 
@@ -669,6 +669,11 @@ class Model extends BaseModel {
                 // Bộ lọc với nhiều lựa chọn
                 genders && genders.length                       && (conditionObj.gender         = { $in: genders });
                 departmentsID && departmentsID.length           && (conditionObj.department     = { $in: departmentsID });
+                educationalBackground2sID && educationalBackground2sID.length           && (conditionObj.educationalBackground2     = { $in: educationalBackground2sID });
+                field2sID && field2sID.length && (conditionObj.field2     = { $in: field2sID });
+                certificateTypesID && certificateTypesID.length && (conditionObj.certificateType     = { $in: certificateTypesID });
+                certificateNamesID && certificateNamesID.length && (conditionObj.certificateName     = { $in: certificateNamesID });
+                certificateGradesID && certificateGradesID.length && (conditionObj.certificateGrade     = { $in: certificateGradesID });
                 types && types.length                           && (conditionObj.type           = { $in: types });
 
                 // Thời hạn
@@ -876,6 +881,7 @@ class Model extends BaseModel {
     }
 
     exportExcel({ userID, companyID, type, filterParams, ctx }) {
+        console.log({ userID, companyID, type, filterParams })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
