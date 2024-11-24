@@ -623,9 +623,6 @@ class Model extends BaseModel {
         keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
         return new Promise(async (resolve) => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 if(limit > 20){
                     limit = 20;
                 } else{
@@ -884,9 +881,6 @@ class Model extends BaseModel {
         console.log({ userID, companyID, type, filterParams })
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 let conditionObj = {};
                 let resultGetList = { error: true };
 
@@ -925,6 +919,7 @@ class Model extends BaseModel {
                 let keys	     = ['createAt__-1', '_id__-1'];
                 let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
                 let sortBy            = dataPagingAndSort?.data?.sort;
+
                 const listData = await HUMAN__CONTACT_DOCUMENT_COLL
                     .find(conditionObj)
                     .select('name contact sign fromDate toDate place note workplace certificateGrade number files')
