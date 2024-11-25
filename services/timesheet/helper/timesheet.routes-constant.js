@@ -10,6 +10,7 @@ const CF_ROUTINGS_TIMESHEET = {
     EXPERT_SALARY                               : `${BASE_ROUTE}/expert_salary`,
     EXPERT_SALARY_SYNC_DATA                     : `${BASE_ROUTE}/expert_salary/sync-data`,
     EXPERT_SALARY_GET_LIST_BY_PROPERTY          : `${BASE_ROUTE}/expert_salary/get-list-by-property`,
+    EXPERT_SALARY_EXPORT_EXCEL                  : `${BASE_ROUTE}/expert_salary/export-excel`,
 }
 
 exports.CF_ROUTINGS_TIMESHEET = CF_ROUTINGS_TIMESHEET;

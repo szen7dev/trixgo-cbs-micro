@@ -233,4 +233,34 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: Download Template Excel
+     * Author: HiepNH
+     * Code: 25/11/2024
+     */
+    exportExcel: {
+        auth: 'required',
+        params: {
+            // companyID: { type: "string", optional: true },
+            // option: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let { year, month } = ctx.params;
+                // console.log(ctx.params)
+
+                const resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.exportExcel({
+                    companyID: company._id, year, month, userID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
 }

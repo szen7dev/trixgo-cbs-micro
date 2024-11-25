@@ -2,6 +2,10 @@
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const XlsxPopulate                      = require('xlsx-populate')
+const fs                                = require('fs')
+const path                              = require('path')
+const { uploadFileS3 }                  = require('../../../tools/s3')
 
 /**
  * DOMAIN AND ACTIONS
@@ -20,6 +24,7 @@ const {
 }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils')
 const { SALARY_RESET_PERMISSION }       = require('../helper/timesheet.keys-constant')
+
 
 /**
  * COLLECTIONS
@@ -2169,6 +2174,169 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message });
             }
         })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Name: Download Template Excel
+     * Date: 25/11/2024
+     */
+    exportExcel({ companyID, year, month, userID }) {
+       return new Promise(async resolve => {
+           try {
+            let conditionMatchObj = {}
+            if(year && !isNaN(year)){
+                conditionMatchObj.year = Number(year)
+            }
+
+            if(month && !isNaN(month)){
+                conditionMatchObj.month = Number(month)
+            }
+
+            let rawData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                {
+                    $match: {
+                        parent: { $exists: true, $ne: null },
+                        work: { $exists: true, $ne: null },
+                        company: ObjectID(companyID),
+                    }
+                },
+                {
+                    $project : {
+                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                        project: 1,
+                        position: 1,
+                        assignee: 1,
+                        work: 1,
+                        hours: 1,
+                        amount: 1,
+                        date: 1,
+                    }
+                },
+                {
+                    $match: conditionMatchObj
+                },
+                {
+                    $group: {
+                        _id: { position: "$position", work: "$work", assignee: "$assignee"},
+                        quantity: { $sum: "$hours" },
+                        amount: { $sum: "$amount" },
+                    }
+                },
+            ])
+            // console.log(rawData);      
+
+            let conditionPopulate1 = {
+                path: '_id.position',
+                select: '_id name',
+                model: 'position'
+            }
+
+            let conditionPopulate2= {
+                path: '_id.work',
+                select: '_id name sign unit',
+                model: 'budget_work'
+            }
+
+            let conditionPopulate3 = {
+                path: '_id.assignee',
+                select: '_id fullname',
+                model: 'user'
+            }
+
+            if(rawData.length){
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData, conditionPopulate1)
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData, conditionPopulate2)
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData, conditionPopulate3)
+            }
+
+            const formattedData = rawData.reduce((result, item) => {
+                const { position, work, assignee } = item._id;
+            
+                // Kiểm tra nếu position đã tồn tại trong kết quả
+                let positionGroup = result.find((pos) => pos.position._id.toString() === position._id.toString() );
+                if (!positionGroup) {
+                    positionGroup = { position, works: [] };
+                    result.push(positionGroup);
+                }
+            
+                // Kiểm tra nếu work đã tồn tại trong nhóm position
+                let workGroup = positionGroup.works.find((w) => w.work._id.toString()  === work._id.toString() );
+                if (!workGroup) {
+                    workGroup = { work, totalQuantity: 0, totalAmount: 0, assignees: [] };
+                    positionGroup.works.push(workGroup);
+                }
+
+                // Tính tổng quantity và amount tại cấp độ work
+                workGroup.totalQuantity += item.quantity;
+                workGroup.totalAmount += item.amount;
+            
+                // Kiểm tra nếu assignee đã tồn tại trong nhóm work (nếu cần loại trùng lặp assignee)
+                const assigneeExists = workGroup.assignees.some((a) => a.assignee._id.toString()  === assignee._id.toString() );
+                if (!assigneeExists) {
+                    workGroup.assignees.push({
+                        assignee,
+                        quantity: item.quantity,
+                        amount: item.amount,
+                    });
+                }
+            
+                return result;
+            }, []);
+            
+            // console.log(JSON.stringify(formattedData, null, 2));            
+
+            // return resolve({ error: false, data: formattedData })
+            // return resolve({ error: false, data: rawData })
+
+            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_budget.xlsx')))
+                .then(async workbook => {
+
+                    formattedData.forEach((item, index) =>{
+                        var i = 3
+                        item?.works.forEach((item1, index1) =>{
+                            workbook.sheet(index + 1).name(`${item.position.name}`);
+
+                            workbook.sheet(index + 1).row(i).cell(2).value(`A${index1 + 1}`)
+                            workbook.sheet(index + 1).row(i).cell(2).value(item1?.work?.name)
+                            workbook.sheet(index + 1).row(i).cell(4).value(item1?.work?.unit)
+                            workbook.sheet(index + 1).row(i).cell(5).value(Number(item1?.totalQuantity))
+                            workbook.sheet(index + 1).row(i).cell(6).value(item1?.totalQuantity != 0 ? Number(item1?.totalAmount/item1?.totalQuantity) : 0)
+                            workbook.sheet(index + 1).row(i).cell(7).value(Number(item1?.totalAmount))
+
+                            workbook.sheet(index + 1).range(`A${i}:H${i}`).style({"bold": true})
+
+                            i++
+
+                            item1?.assignees.forEach((item2, index2) =>{
+                                workbook.sheet(index + 1).row(i).cell(3).value(item2?.assignee?.fullname)
+
+                                workbook.sheet(index + 1).row(i).cell(5).value(Number(item2?.quantity))
+                                workbook.sheet(index + 1).row(i).cell(6).value(item2?.quantity != 0 ? Number(item2?.amount/item2?.quantity) : 0)
+                                workbook.sheet(index + 1).row(i).cell(7).value(Number(item2?.amount))
+    
+                                i++
+                            })
+                        })
+                    })
+        
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `timesheet_budget${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+
+                    await workbook.toFileAsync(pathWriteFile)
+                    const result = await uploadFileS3(pathWriteFile, fileName)
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 })
+                })
+
+           } catch (error) {
+               return resolve({ error: true, message: error.message, status: 500 });
+           }
+       })
     }
 }
 
