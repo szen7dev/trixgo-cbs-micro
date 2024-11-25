@@ -2571,12 +2571,13 @@ class Model extends BaseModel {
                         workbook.sheet("NhanSu2").row(i).cell(6).value((item?.area2 != null && item?.area2 != undefined) ? (`${item?.area2?.name}, ${item?.area2?.parent?.name}, ${item?.area2?.parent?.parent?.name}`) : "")
                         workbook.sheet("NhanSu2").row(i).cell(7).value(item.phone)
                         workbook.sheet("NhanSu2").row(i).cell(8).value(item?.workStartDate)
-                        workbook.sheet("NhanSu2").row(i).cell(9).value(`${result.years} năm, ${result.months} tháng, ${result.days} ngày`)
+                        workbook.sheet("NhanSu2").row(i).cell(9).value(item?.workStartDate ? `${result.years} năm, ${result.months} tháng, ${result.days} ngày` : '')
                         workbook.sheet("NhanSu2").row(i).cell(10).value(item?.sallary ? Number(item?.sallary) : 0)
                         workbook.sheet("NhanSu2").row(i).cell(11).value(item?.changeSallaryDate != null ? `Ngày ${moment(item?.changeSallaryDate).format('DD/MM/YYYY')}` : '')
                         workbook.sheet("NhanSu2").row(i).cell(12).value(str1)
                         workbook.sheet("NhanSu2").row(i).cell(13).value(str6)
                         workbook.sheet("NhanSu2").row(i).cell(14).value(str6)
+                        workbook.sheet("NhanSu2").row(i).cell(15).value(Number(duration))
                         
                         i++
                     });

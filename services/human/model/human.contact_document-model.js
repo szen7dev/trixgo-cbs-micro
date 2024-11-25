@@ -923,7 +923,7 @@ class Model extends BaseModel {
 
                 const listData = await HUMAN__CONTACT_DOCUMENT_COLL
                     .find(conditionObj)
-                    .select('name contact sign fromDate toDate place note workplace certificateGrade number files educationalBackground2 field2 certificateType certificateName certificateGrade')
+                    .select('type name contact sign fromDate toDate place note workplace certificateGrade number files educationalBackground2 field2 certificateType certificateName certificateGrade')
                     .populate({
                         path: 'contact educationalBackground2 field2 certificateType certificateName',
                         select: 'name sign',
@@ -949,6 +949,15 @@ class Model extends BaseModel {
                 let listData2 = await ITEM__DOCTYPE_COLL.find({_id: {$in: rawData.map(item=>item._id.field2)}})
                 let listData3 = await ITEM__DOCTYPE_COLL.find({_id: {$in: rawData.map(item=>item._id.certificateType)}})
                 let listData4 = await ITEM__DOCTYPE_COLL.find({_id: {$in: rawData.map(item=>item._id.certificateName)}})
+
+               const CONTACT_DOCUMENT_TYPES = [
+                    { value: 1, text: 'Lịch sử làm việc ở các đơn vị' },
+                    { value: 2, text: 'Kinh nghiệm thực tế tham gia tại các Dự án' },
+                    { value: 3, text: 'Lịch sử làm việc theo các Quyết định bổ nhiệm' },
+                    { value: 4, text: 'Trình độ học vấn/Chuyên ngành đào tạo' },
+                    { value: 5, text: 'Bằng cấp chứng chỉ/Hồ sơ khác' },
+                    { value: 6, text: 'Đánh giá nhân sự' },
+                ]
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_document_export.xlsx')))
@@ -990,7 +999,7 @@ class Model extends BaseModel {
                     listData?.forEach((item, index) => {
                         workbook.sheet("HoSoNhanSu").row(i).cell(1).value(Number(index+1))
                         workbook.sheet("HoSoNhanSu").row(i).cell(2).value(item?.contact?.name)
-                        workbook.sheet("HoSoNhanSu").row(i).cell(3).value(item.name)
+                        workbook.sheet("HoSoNhanSu").row(i).cell(3).value(item.name ? item.name : CONTACT_DOCUMENT_TYPES[Number(item?.type - 1)].text)
                         workbook.sheet("HoSoNhanSu").row(i).cell(4).value(item?.sign)
                         workbook.sheet("HoSoNhanSu").row(i).cell(5).value(item?.fromDate)
                         workbook.sheet("HoSoNhanSu").row(i).cell(6).value(item.place)
