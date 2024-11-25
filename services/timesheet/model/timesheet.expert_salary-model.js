@@ -2193,12 +2193,12 @@ class Model extends BaseModel {
                 conditionMatchObj.month = Number(month)
             }
 
-            let rawData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+            let rawData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                 {
                     $match: {
-                        parent: { $exists: true, $ne: null },
-                        work: { $exists: true, $ne: null },
                         company: ObjectID(companyID),
+                        parent: { $exists: true, $ne: null },
+                        project: { $exists: true, $ne: null },
                     }
                 },
                 {
@@ -2207,11 +2207,21 @@ class Model extends BaseModel {
                         month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                         project: 1,
                         position: 1,
-                        assignee: 1,
-                        work: 1,
-                        hours: 1,
-                        amount: 1,
                         date: 1,
+                        salary: 1,
+                        onLeaveSalary: 1,
+                        overtimeSalary: 1,
+                        revenueBonus: 1,
+                        reward: 1,
+                        mealAllowance: 1,
+                        punishment: 1,
+                        insurance: 1,
+                        pitax: 1,
+                        union: 1,
+                        share: 1,
+                        other: 1,
+                        paid: 1,
+                        advance: 1
                     }
                 },
                 {
@@ -2219,111 +2229,73 @@ class Model extends BaseModel {
                 },
                 {
                     $group: {
-                        _id: { position: "$position", work: "$work", assignee: "$assignee"},
-                        quantity: { $sum: "$hours" },
-                        amount: { $sum: "$amount" },
+                        // _id: { project: "$project", position: "$position" },
+                        _id: { project: "$project" },
+                        salary: { $sum: "$salary" },
+                        onLeaveSalary: { $sum: "$onLeaveSalary" },
+                        overtimeSalary: { $sum: "$overtimeSalary" },
+                        revenueBonus: { $sum: "$revenueBonus" },
+                        reward: { $sum: "$reward" },
+                        mealAllowance: { $sum: "$mealAllowance" },
+                        punishment: { $sum: "$punishment" },
+                        insurance: { $sum: "$insurance" },
+                        pitax: { $sum: "$pitax" },
+                        union: { $sum: "$union" },
+                        share: { $sum: "$share" },
+                        other: { $sum: "$other" },
+                        paid: { $sum: "$paid" },
+                        advance: { $sum: "$advance" }
                     }
                 },
             ])
             // console.log(rawData);      
 
             let conditionPopulate1 = {
-                path: '_id.position',
+                path: '_id.project',
                 select: '_id name',
-                model: 'position'
+                model: 'department'
             }
 
-            let conditionPopulate2= {
-                path: '_id.work',
-                select: '_id name sign unit',
-                model: 'budget_work'
-            }
-
-            let conditionPopulate3 = {
-                path: '_id.assignee',
-                select: '_id fullname',
-                model: 'user'
-            }
-
+            // let conditionPopulate2= {
+            //     path: '_id.position',
+            //     select: '_id name',
+            //     model: 'position'
+            // }       
+            
             if(rawData.length){
-                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData, conditionPopulate1)
-                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData, conditionPopulate2)
-                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData, conditionPopulate3)
+                await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData, conditionPopulate1)
             }
 
-            const formattedData = rawData.reduce((result, item) => {
-                const { position, work, assignee } = item._id;
-            
-                // Kiểm tra nếu position đã tồn tại trong kết quả
-                let positionGroup = result.find((pos) => pos.position._id.toString() === position._id.toString() );
-                if (!positionGroup) {
-                    positionGroup = { position, works: [] };
-                    result.push(positionGroup);
-                }
-            
-                // Kiểm tra nếu work đã tồn tại trong nhóm position
-                let workGroup = positionGroup.works.find((w) => w.work._id.toString()  === work._id.toString() );
-                if (!workGroup) {
-                    workGroup = { work, totalQuantity: 0, totalAmount: 0, assignees: [] };
-                    positionGroup.works.push(workGroup);
-                }
-
-                // Tính tổng quantity và amount tại cấp độ work
-                workGroup.totalQuantity += item.quantity;
-                workGroup.totalAmount += item.amount;
-            
-                // Kiểm tra nếu assignee đã tồn tại trong nhóm work (nếu cần loại trùng lặp assignee)
-                const assigneeExists = workGroup.assignees.some((a) => a.assignee._id.toString()  === assignee._id.toString() );
-                if (!assigneeExists) {
-                    workGroup.assignees.push({
-                        assignee,
-                        quantity: item.quantity,
-                        amount: item.amount,
-                    });
-                }
-            
-                return result;
-            }, []);
-            
-            // console.log(JSON.stringify(formattedData, null, 2));            
-
-            // return resolve({ error: false, data: formattedData })
-            // return resolve({ error: false, data: rawData })
-
-            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_budget.xlsx')))
+            XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_combine.xlsx')))
                 .then(async workbook => {
 
-                    formattedData.forEach((item, index) =>{
-                        var i = 3
-                        item?.works.forEach((item1, index1) =>{
-                            workbook.sheet(index + 1).name(`${item.position.name}`);
+                    var i = 4
+                    rawData.forEach((item, index) =>{
+                        workbook.sheet('TongHop').row(2).cell(i).value(`${item._id.project.name}`)
 
-                            workbook.sheet(index + 1).row(i).cell(2).value(`A${index1 + 1}`)
-                            workbook.sheet(index + 1).row(i).cell(2).value(item1?.work?.name)
-                            workbook.sheet(index + 1).row(i).cell(4).value(item1?.work?.unit)
-                            workbook.sheet(index + 1).row(i).cell(5).value(Number(item1?.totalQuantity))
-                            workbook.sheet(index + 1).row(i).cell(6).value(item1?.totalQuantity != 0 ? Number(item1?.totalAmount/item1?.totalQuantity) : 0)
-                            workbook.sheet(index + 1).row(i).cell(7).value(Number(item1?.totalAmount))
+                        workbook.sheet('TongHop').row(5).cell(i).value(Number(item?.salary))
+                        workbook.sheet('TongHop').row(6).cell(i).value(Number(item?.onLeaveSalary))
+                        workbook.sheet('TongHop').row(7).cell(i).value(Number(item?.overtimeSalary))
+                        workbook.sheet('TongHop').row(8).cell(i).value(Number(item?.revenueBonus))
+                        workbook.sheet('TongHop').row(9).cell(i).value(Number(item?.reward))
+                        workbook.sheet('TongHop').row(10).cell(i).value(Number(item?.mealAllowance))
 
-                            workbook.sheet(index + 1).range(`A${i}:H${i}`).style({"bold": true})
+                        workbook.sheet('TongHop').row(12).cell(i).value(Number(item?.punishment))
+                        workbook.sheet('TongHop').row(13).cell(i).value(Number(item?.insurance))
+                        workbook.sheet('TongHop').row(14).cell(i).value(Number(item?.pitax))
+                        workbook.sheet('TongHop').row(15).cell(i).value(Number(item?.union))
+                        workbook.sheet('TongHop').row(16).cell(i).value(Number(item?.share))
+                        workbook.sheet('TongHop').row(17).cell(i).value(Number(item?.other))
 
-                            i++
+                        workbook.sheet('TongHop').row(19).cell(i).value(Number(item?.paid))
+                        workbook.sheet('TongHop').row(20).cell(i).value(Number(item?.advance))
 
-                            item1?.assignees.forEach((item2, index2) =>{
-                                workbook.sheet(index + 1).row(i).cell(3).value(item2?.assignee?.fullname)
-
-                                workbook.sheet(index + 1).row(i).cell(5).value(Number(item2?.quantity))
-                                workbook.sheet(index + 1).row(i).cell(6).value(item2?.quantity != 0 ? Number(item2?.amount/item2?.quantity) : 0)
-                                workbook.sheet(index + 1).row(i).cell(7).value(Number(item2?.amount))
-    
-                                i++
-                            })
-                        })
+                        i++
                     })
         
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `timesheet_budget${now.getTime()}.xlsx`;
+                    const fileName = `salary_combine${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName)
 
                     await workbook.toFileAsync(pathWriteFile)
