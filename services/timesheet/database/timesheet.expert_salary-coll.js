@@ -9,6 +9,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Đơn vị cơ sở/Cửa hàng
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : "funda"
+    },
     //________Dự án/Phòng ban
     project: {
         type: Schema.Types.ObjectId,
