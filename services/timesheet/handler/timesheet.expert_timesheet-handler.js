@@ -202,12 +202,11 @@ module.exports = {
             }
         }
     },
-
     
     /**
      * Dev: HiepNH
-     * Func: Download Template Excel
-     * Date: 9/12/2022
+     * Name: Download Template Excel
+     * Date: 25/11/2024
      */
     exportExcel: {
         auth: 'required',

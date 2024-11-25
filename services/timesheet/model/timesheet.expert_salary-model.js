@@ -2,6 +2,10 @@
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const XlsxPopulate                      = require('xlsx-populate')
+const fs                                = require('fs')
+const path                              = require('path')
+const { uploadFileS3 }                  = require('../../../tools/s3')
 
 /**
  * DOMAIN AND ACTIONS
@@ -20,6 +24,7 @@ const {
 }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils')
 const { SALARY_RESET_PERMISSION }       = require('../helper/timesheet.keys-constant')
+
 
 /**
  * COLLECTIONS
@@ -1585,8 +1590,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 salary: 1,
                                 onLeaveSalary: 1,
                                 overtimeSalary: 1,
@@ -1662,9 +1667,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
-                                // examTotal: { $sum: [ "$salary","$reward","-$punishment" ] },
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 salary: 1,
                                 onLeaveSalary: 1,
                                 overtimeSalary: 1,
@@ -1736,8 +1740,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 salary: 1,
                                 onLeaveSalary: 1,
                                 overtimeSalary: 1,
@@ -1852,8 +1856,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 project: 1,
                                 position: 1,
                                 human: 1,
@@ -1942,8 +1946,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 project: 1,
                                 human: 1,
                                 salary: 1,
@@ -2031,8 +2035,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 human: 1,
                                 salary: 1,
                                 onLeaveSalary: 1,
@@ -2112,8 +2116,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 salary: 1,
                                 onLeaveSalary: 1,
                                 overtimeSalary: 1,
@@ -2169,6 +2173,151 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message });
             }
         })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Name: Download Template Excel
+     * Date: 25/11/2024
+     */
+    exportExcel({ companyID, year, month, userID }) {
+       return new Promise(async resolve => {
+           try {
+            let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                appID: "61e049cffdebf77b072d1b14",
+                userID
+            })
+
+            if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                let conditionMatchObj = {}
+                if(year && !isNaN(year)){
+                    conditionMatchObj.year = Number(year)
+                }
+
+                if(month && !isNaN(month)){
+                    conditionMatchObj.month = Number(month)
+                }
+
+                let rawData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            project: { $exists: true, $ne: null },
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            project: 1,
+                            position: 1,
+                            date: 1,
+                            salary: 1,
+                            onLeaveSalary: 1,
+                            overtimeSalary: 1,
+                            revenueBonus: 1,
+                            reward: 1,
+                            mealAllowance: 1,
+                            punishment: 1,
+                            insurance: 1,
+                            pitax: 1,
+                            union: 1,
+                            share: 1,
+                            other: 1,
+                            paid: 1,
+                            advance: 1
+                        }
+                    },
+                    {
+                        $match: conditionMatchObj
+                    },
+                    {
+                        $group: {
+                            // _id: { project: "$project", position: "$position" },
+                            _id: { project: "$project" },
+                            human: { $sum: 1 },
+                            salary: { $sum: "$salary" },
+                            onLeaveSalary: { $sum: "$onLeaveSalary" },
+                            overtimeSalary: { $sum: "$overtimeSalary" },
+                            revenueBonus: { $sum: "$revenueBonus" },
+                            reward: { $sum: "$reward" },
+                            mealAllowance: { $sum: "$mealAllowance" },
+                            punishment: { $sum: "$punishment" },
+                            insurance: { $sum: "$insurance" },
+                            pitax: { $sum: "$pitax" },
+                            union: { $sum: "$union" },
+                            share: { $sum: "$share" },
+                            other: { $sum: "$other" },
+                            paid: { $sum: "$paid" },
+                            advance: { $sum: "$advance" }
+                        }
+                    },
+                ])
+                // console.log(rawData);      
+
+                let conditionPopulate1 = {
+                    path: '_id.project',
+                    select: '_id name',
+                    model: 'department'
+                }
+
+                // let conditionPopulate2= {
+                //     path: '_id.position',
+                //     select: '_id name',
+                //     model: 'position'
+                // }       
+                
+                if(rawData.length){
+                    await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData, conditionPopulate1)
+                }
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_combine.xlsx')))
+                    .then(async workbook => {
+
+                        var i = 4
+                        rawData.forEach((item, index) =>{
+                            workbook.sheet('TongHop').row(2).cell(i).value(`${item._id.project.name}`)
+                            workbook.sheet('TongHop').row(3).cell(i).value(Number(item?.human))
+
+                            workbook.sheet('TongHop').row(5).cell(i).value(Number(item?.salary))
+                            workbook.sheet('TongHop').row(6).cell(i).value(Number(item?.onLeaveSalary))
+                            workbook.sheet('TongHop').row(7).cell(i).value(Number(item?.overtimeSalary))
+                            workbook.sheet('TongHop').row(8).cell(i).value(Number(item?.revenueBonus))
+                            workbook.sheet('TongHop').row(9).cell(i).value(Number(item?.reward))
+                            workbook.sheet('TongHop').row(10).cell(i).value(Number(item?.mealAllowance))
+
+                            workbook.sheet('TongHop').row(12).cell(i).value(Number(item?.punishment))
+                            workbook.sheet('TongHop').row(13).cell(i).value(Number(item?.insurance))
+                            workbook.sheet('TongHop').row(14).cell(i).value(Number(item?.pitax))
+                            workbook.sheet('TongHop').row(15).cell(i).value(Number(item?.union))
+                            workbook.sheet('TongHop').row(16).cell(i).value(Number(item?.share))
+                            workbook.sheet('TongHop').row(17).cell(i).value(Number(item?.other))
+
+                            workbook.sheet('TongHop').row(19).cell(i).value(Number(item?.paid))
+                            workbook.sheet('TongHop').row(20).cell(i).value(Number(item?.advance))
+
+                            i++
+                        })
+            
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `salary_combine${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+
+                        await workbook.toFileAsync(pathWriteFile)
+                        const result = await uploadFileS3(pathWriteFile, fileName)
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 })
+                })
+            }else{
+                return resolve({ error: true, message: "Can't get data", status: 403 });
+            }
+           } catch (error) {
+               return resolve({ error: true, message: error.message, status: 500 });
+           }
+       })
     }
 }
 

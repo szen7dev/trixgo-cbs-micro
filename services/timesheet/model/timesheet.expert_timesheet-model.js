@@ -1173,11 +1173,11 @@ class Model extends BaseModel {
         })
     }
 
-        /*
-    * Name: Export Excel
-    * Code: Hiepnh
-    * Date: 25/7/2023
-    */
+    /**
+     * Dev: HiepNH
+     * Name: Download Template Excel
+     * Date: 25/11/2024
+     */
    exportExcel({ companyID, year, month, userID }) {
        return new Promise(async resolve => {
            try {
@@ -1248,41 +1248,6 @@ class Model extends BaseModel {
                 await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData, conditionPopulate3)
             }
 
-            // let listData1 = await ITEM__POSITION_COLL.find({_id: {$in: rawData.map(item=>item._id.position)}}).select('name')
-            // let listData2 = await BUDGET__WORK_COLL.find({_id: {$in: rawData.map(item=>item._id.work)}}).select('name sign')
-            // let listData3 = await USER_COLL.find({_id: {$in: rawData.map(item=>item._id.assignee)}}).select('fullname')
-
-            // Xử lý dữ liệu mảng
-            // const formattedData = rawData.reduce((result, item) => {
-            //     const { position, work, assignee } = item._id;
-            
-            //     // Kiểm tra nếu position đã tồn tại trong kết quả
-            //     let positionGroup = result.find((pos) => pos.position.toString() === position.toString() );
-            //     if (!positionGroup) {
-            //         positionGroup = { position, works: [] };
-            //         result.push(positionGroup);
-            //     }
-            
-            //     // Kiểm tra nếu work đã tồn tại trong nhóm position
-            //     let workGroup = positionGroup.works.find((w) => w.work.toString()  === work.toString() );
-            //     if (!workGroup) {
-            //         workGroup = { work, assignees: [] };
-            //         positionGroup.works.push(workGroup);
-            //     }
-            
-            //     // Kiểm tra nếu assignee đã tồn tại trong nhóm work (nếu cần loại trùng lặp assignee)
-            //     const assigneeExists = workGroup.assignees.some((a) => a.assignee.toString()  === assignee.toString() );
-            //     if (!assigneeExists) {
-            //         workGroup.assignees.push({
-            //             assignee,
-            //             quantity: item.quantity,
-            //             amount: item.amount,
-            //         });
-            //     }
-            
-            //     return result;
-            // }, []);
-
             const formattedData = rawData.reduce((result, item) => {
                 const { position, work, assignee } = item._id;
             
@@ -1316,36 +1281,10 @@ class Model extends BaseModel {
             
                 return result;
             }, []);
-            
-            // console.log(JSON.stringify(formattedData, null, 2));            
-
-            // return resolve({ error: false, data: formattedData })
-            // return resolve({ error: false, data: rawData })
 
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_budget.xlsx')))
                 .then(async workbook => {
-
-                    // var i = 4
-                    // listData1.forEach((item, index) =>{
-                    //     workbook.sheet("Report1").row(i).cell(1).value(Number(index+1))
-                    //     workbook.sheet("Report1").row(i).cell(2).value(`${item._id.work?.sign}-${item._id.work?.name}`)
-                    //     workbook.sheet("Report1").row(i).cell(3).value(`${item._id.work?._id}`)
-                    //     workbook.sheet("Report1").row(i).cell(4).value(item._id.work?.unit)
-                    //     workbook.sheet("Report1").row(i).cell(5).value(Number(item._id.work?.quantity))
-                    //     workbook.sheet("Report1").row(i).cell(6).value(Number(item._id.work?.unitPrice))
-                    //     workbook.sheet("Report1").row(i).cell(7).value(Number(item._id.work?.quantity * item._id.work?.unitPrice))
-
-                    //     workbook.sheet("Report2").row(i).cell(1).value(Number(index+1))
-                    //     workbook.sheet("Report2").row(i).cell(2).value(`${item._id.work?.sign}-${item._id.work?.name}`)
-                    //     workbook.sheet("Report2").row(i).cell(3).value(`${item._id.work?._id}`)
-                    //     workbook.sheet("Report2").row(i).cell(4).value(item._id.work?.unit)
-                    //     workbook.sheet("Report2").row(i).cell(5).value(Number(item._id.work?.quantity))
-                    //     workbook.sheet("Report2").row(i).cell(6).value(Number(item._id.work?.unitPrice))
-                    //     workbook.sheet("Report2").row(i).cell(7).value(Number(item._id.work?.quantity * item._id.work?.unitPrice))
-
-                    //     i++
-                    // })
-
+                    
                     formattedData.forEach((item, index) =>{
                         var i = 3
                         item?.works.forEach((item1, index1) =>{
