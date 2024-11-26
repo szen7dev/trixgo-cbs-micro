@@ -31,6 +31,7 @@ const ITEM__FUNDA_COLL            		        = require('../../item/database/item.
 const ITEM__WAREHOUSE_COLL            		    = require('../../item/database/item.warehouse-coll')
 const ITEM__GOODS_COLL            		        = require('../../item/database/item.goods-coll')
 const FNB_CUSTOMER_CARE_COLL                    = require('../../fnb/database/fnb.customer_care-coll');
+const FNB_ORDER_COLL                            = require('../../fnb/database/fnb.order-coll');
 const FNB_ORDER_PRODUCT_COLL                    = require('../../fnb/database/fnb.order_product-coll');
 const FNB_PRODUCT_COLL                          = require('../../fnb/database/fnb.product-coll');
 const FNB_MISTAKE_COLL                          = require('../../fnb/database/fnb.mistake-coll');
@@ -1579,7 +1580,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                // Doanh số bán hàng và sản phẩm
+                // Doanh số bán hàng theo sản phẩm
                 else if(option == 3){
                     let yearFilter
                     let currentYear = new Date().getFullYear()
@@ -1634,9 +1635,6 @@ class Model extends BaseModel {
                         {
                             $group: conditionGroup1
                         },
-                        // {
-                        //     $sort: {"quantity": -1}
-                        // },
                     ])
 
                     let listProduct = await FNB_PRODUCT_COLL.find({_id: {$in: listData1.map(item=>item._id.product)}}).select('name unit')
@@ -1672,7 +1670,86 @@ class Model extends BaseModel {
             
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `common_input_report${now.getTime()}.xlsx`;
+                        const fileName = `product_report${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+
+                    // return resolve({ error: false, data: listData1})
+                }
+
+                // Tổng hợp số sản phẩm/đơn hàng
+                else if(option == 4){
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
+
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        funda: {$nin: [ObjectID("63dccfca4e334d0012d6f6de"),ObjectID("63dcd0802f92230012670b51")]}
+                    }
+
+                    let projectObj =  {
+                        year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                        month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                        company : 1,
+                        funda : 1,
+                        numberOfProducts : 1,
+                        createAt: 1,
+                    }
+
+                    let conditionGroup1 = {
+                        _id: {  numberOfProducts: "$numberOfProducts", month: "$month" },
+                        // _id: {  numberOfProducts: "$numberOfProducts" },
+                        quantity: { $sum: 1},
+                    }
+
+                    let listData1 = await FNB_ORDER_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: projectObj
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter)
+                            }
+                        },
+                        {
+                            $group: conditionGroup1
+                        },
+                        {
+                            $sort: {"quantity": -1}
+                        },
+                    ])
+
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_product_report.xlsx')))
+                    .then(async workbook => {
+                   
+                        var i = 4
+                        listData1.forEach((item, index) =>{
+                            workbook.sheet("Sheet3").row(i).cell(1).value(Number(item?._id.numberOfProducts))
+                            workbook.sheet("Sheet3").row(i).cell(2).value(Number(item.quantity))
+                            workbook.sheet("Sheet3").row(i).cell(3).value(Number(item?._id.month))
+                            workbook.sheet("Sheet3").row(i).cell(4).value(Number(yearFilter))
+                            
+                            i++
+                        })        
+            
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `combo_order_report${now.getTime()}.xlsx`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                         await workbook.toFileAsync(pathWriteFile);
