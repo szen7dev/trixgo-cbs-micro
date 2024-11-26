@@ -77,13 +77,40 @@ module.exports = {
                 let { expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
                      dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype } = ctx.params;
 
-                // console.log(ctx.params)
-
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
                     expertTimesheetID, userID, projectID, name, location, type, assigneeID, hours, unitprice, amount, status, approver,
                     note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: syncData
+     * Author: HiepNH
+     * Code: 22/3/2024
+     */
+    syncData: {
+        params: {
+            timesheetID : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, timesheetID } = ctx.params;
+                console.log('============================>>>>>>>>>>>>')
+                console.log(ctx.params)
+
+				const { _id: userID, company, email } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.syncData({
+                    userID, companyID: company._id, option, userID, timesheetID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

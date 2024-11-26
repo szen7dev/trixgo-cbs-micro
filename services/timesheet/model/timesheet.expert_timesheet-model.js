@@ -30,6 +30,7 @@ const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_
 const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
 const ITEM__POSITION_COLL            	= require('../../item/database/item.position-coll'); 
 // const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll');
+const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll');
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
@@ -478,7 +479,6 @@ class Model extends BaseModel {
 
     // Cập nhật giá trị cho mẩu tin cha
     updateValue({ parentID, userID }){
-        // console.log({ parentID, userID })
         return new Promise(async (resolve) => {
             try {
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -495,7 +495,6 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-                // console.log(listData)
 
                 let dataUpdate = {
                     userUpdate: userID,
@@ -504,7 +503,6 @@ class Model extends BaseModel {
                     amount: listData[0].amount,
                     unitprice: (listData[0].hours != 0 ? Number(listData[0].amount / listData[0].hours) : 0)
                 }
-                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(parentID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
@@ -518,6 +516,183 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoAfterUpdate })
             } catch (error) {
                 return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+        /**
+     * Name: Đồng bộ data
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
+    syncData({
+        option, companyID, userID, timesheetID
+    }){
+        return new Promise(async (resolve) => {
+            try {
+                //___________Quyền truy cập ứng dụng
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049cffdebf77b072d1b14",
+                    userID
+                })
+
+                if(!infoAppUser.error && infoAppUser.data.level == 0){
+
+                    // CẬP NHẬT CA LÀM VIỆC SANG BẢNG CHẤM CÔNG
+                    if(option == 1){
+                        let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
+
+                        let conditionObj = {
+                            company: ObjectID(companyID),
+                            funda: ObjectID(infoTimeSheet.funda),
+                            // parent: { $exists: true, $ne: null }
+                        }
+
+                        let projectObj =  {
+                            year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                            month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                            day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                            company : 1,
+                            funda : 1,
+                            staffs : 1,
+                            workingHours : 1,
+                            subStaffs : 1,
+                            subWorkingHours : 1,
+                            createAt: 1
+                        }
+
+                        let lookupObj = {
+                            from: "users",
+                            localField: "staffs",
+                            foreignField: "_id",
+                            as: "staff"
+                        } 
+        
+                        let lookupSubObj = {
+                            from: "users",
+                            localField: "subStaffs",
+                            foreignField: "_id",
+                            as: "staff"
+                        } 
+
+                        let conditionGroup1 = {
+                            _id: {  staff: "$staff._id", day: "$day" },
+                            workingHours: { $sum: "$workingHours" },
+                        }
+
+                        let conditionGroup2 = {
+                            _id: {  staff: "$staff._id", day: "$day" },
+                            workingHours: { $sum: "$subWorkingHours" },
+                        }
+
+                        let conditionPopulate = {
+                            path: '_id.staff',
+                            select: '_id fullname',
+                            model: 'user',
+                        }
+
+                        let month = Number(infoTimeSheet.date.getMonth()) + 1
+                        let year = infoTimeSheet.date.getFullYear()
+                        console.log({ month, year })
+
+                        let conditionObjTime = {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+
+                        let listData1 = await FNB_SHIFT_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: projectObj
+                            },
+                            { 
+                                $lookup: lookupObj
+                            },
+                            {
+                                $unwind: "$staff"
+                            },
+                            {
+                                $match: conditionObjTime
+                            },
+                            {
+                                $group: conditionGroup1
+                            },
+                        ])
+
+                        let listData2 = await FNB_SHIFT_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $project: projectObj
+                            },
+                            { 
+                                $lookup: lookupSubObj
+                            },
+                            {
+                                $unwind: "$staff"
+                            },
+                            {
+                                $match: conditionObjTime
+                            },
+                            {
+                                $group: conditionGroup2
+                            },
+                        ])
+
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate)
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate)
+
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_shift.xlsx')))
+                        .then(async workbook => {
+
+                            var i = 4
+                            listData1?.forEach((item, index) => {
+                                workbook.sheet(`Sheet1`).row(i).cell(1).value(index+1)
+                                workbook.sheet(`Sheet1`).row(i).cell(2).value(Number(item._id.day))
+                                workbook.sheet(`Sheet1`).row(i).cell(3).value('Ca chính')
+                                workbook.sheet(`Sheet1`).row(i).cell(4).value(item._id.staff.fullname)
+                                workbook.sheet(`Sheet1`).row(i).cell(5).value(Number(item.workingHours))
+                                // workbook.sheet(`Sheet1`).row(i).cell(5).value(index+1)
+                                // workbook.sheet(`Sheet1`).row(i).cell(6).value(index+1)
+                                
+                                i++
+                            })
+
+                            listData2?.forEach((item, index) => {
+                                workbook.sheet(`Sheet1`).row(i).cell(1).value(index+1)
+                                workbook.sheet(`Sheet1`).row(i).cell(2).value(Number(item._id.day))
+                                workbook.sheet(`Sheet1`).row(i).cell(3).value('Ca phụ')
+                                workbook.sheet(`Sheet1`).row(i).cell(4).value(item._id.staff.fullname)
+                                workbook.sheet(`Sheet1`).row(i).cell(5).value(Number(item.workingHours))
+                                // workbook.sheet(`Sheet1`).row(i).cell(5).value(index+1)
+                                // workbook.sheet(`Sheet1`).row(i).cell(6).value(index+1)
+                                
+                                i++
+                            })
+        
+                            const now = new Date()
+                            const filePath = '../../../files/temporary_uploads/'
+                            const fileName = `BangChamCong_${now.getTime()}.xlsx`
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+        
+                            await workbook.toFileAsync(pathWriteFile)
+                            const result = await uploadFileS3(pathWriteFile, fileName)
+        
+                            fs.unlinkSync(pathWriteFile)
+                            return resolve({ error: false, data: result?.Location, status: 200 })
+                        })
+    
+                        // return resolve({ error: false, data: listData})
+                    }
+
+                }else{
+                    return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
@@ -553,20 +728,7 @@ class Model extends BaseModel {
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
 
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                       
-                // }else{
-                //     conditionObj.$or = [
-                //         {admins: { $in: [userID] }},
-                //         {members: { $in: [userID] }}
-                //     ]
-                // }
-
                 return resolve({ error: false, data: infoAterGet, status: 200 })
-                // return resolve({ error: true, message: error.message, status: 500 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
