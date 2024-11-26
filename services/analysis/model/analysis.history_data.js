@@ -31,6 +31,8 @@ const ITEM__FUNDA_COLL            		        = require('../../item/database/item.
 const ITEM__WAREHOUSE_COLL            		    = require('../../item/database/item.warehouse-coll')
 const ITEM__GOODS_COLL            		        = require('../../item/database/item.goods-coll')
 const FNB_CUSTOMER_CARE_COLL                    = require('../../fnb/database/fnb.customer_care-coll');
+const FNB_ORDER_PRODUCT_COLL                    = require('../../fnb/database/fnb.order_product-coll');
+const FNB_PRODUCT_COLL                          = require('../../fnb/database/fnb.product-coll');
 const FNB_MISTAKE_COLL                          = require('../../fnb/database/fnb.mistake-coll');
 const DOCUMENT__DOC_COLL               			= require('../../document/database/document.doc-coll');
 const HUMAN__CONTACT_DOCUMENT_COLL              = require('../../human/database/human.contact_document-coll');
@@ -1435,7 +1437,7 @@ class Model extends BaseModel {
                 }
 
                 // Dữ liệu nhập liệu hồ sơ
-                if(option == 2){
+                else if(option == 2){
                     let conditionObj1 = { company: ObjectID(companyID), author: { $exists: true, $ne: null } }
                     let conditionObj2 = { company: ObjectID(companyID), userCreate: { $exists: true, $ne: null } }
                     let conditionObj3 = { company: ObjectID(companyID), userUpdate: { $exists: true, $ne: null } }
@@ -1518,63 +1520,169 @@ class Model extends BaseModel {
                     // console.log(listData3)
                     // console.log(listData4)
 
-                     // Modify the workbook.
-                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/common_input_report.xlsx')))
-                     .then(async workbook => {
-                        if(isValidDate(fromDate) && isValidDate(toDate)){
-                            workbook.sheet("Data").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
-                            workbook.sheet("Data1").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/common_input_report.xlsx')))
+                    .then(async workbook => {
+                    if(isValidDate(fromDate) && isValidDate(toDate)){
+                        workbook.sheet("Data").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                        workbook.sheet("Data1").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+                    }
+
+                    var i = 4
+                    listData1.forEach((item, index) =>{
+                        workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
+                        workbook.sheet("Data").row(i).cell(2).value(`${item?._id.author?._id}`)
+                        workbook.sheet("Data").row(i).cell(3).value(item?._id.author?.fullname)
+                        workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity))
+
+                        i++
+                    })
+
+                    for(var j = 4; j <= Number(listData1.length + 3); j++ ){
+                        let userID = workbook.sheet("Data").row(j).cell(2).value()
+                        for(const item of listData2){
+                            if(userID.toString() === item._id.author.toString()){
+                                workbook.sheet("Data").row(j).cell(5).value(Number(item?.quantity))
+                            }
                         }
-    
+                    }
+
+                    var i = 4
+                    listData3.forEach((item, index) =>{
+                        workbook.sheet("Data1").row(i).cell(1).value(Number(index + 1))
+                        workbook.sheet("Data1").row(i).cell(2).value(`${item?._id.author?._id}`)
+                        workbook.sheet("Data1").row(i).cell(3).value(item?._id.author?.fullname)
+                        workbook.sheet("Data1").row(i).cell(4).value(Number(item?.quantity))
+
+                        i++
+                    })
+
+                    for(var j = 4; j <= Number(listData3.length + 3); j++ ){
+                        let userID = workbook.sheet("Data1").row(j).cell(2).value()
+                        for(const item of listData4){
+                            if(userID.toString() === item._id.author.toString()){
+                                workbook.sheet("Data1").row(j).cell(5).value(Number(item?.quantity))
+                            }
+                        }
+                    }
+            
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `common_input_report${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+                }
+
+                // Doanh số bán hàng và sản phẩm
+                else if(option == 3){
+                    let yearFilter
+                    let currentYear = new Date().getFullYear()
+                    if(year && !isNaN(year)){
+                        yearFilter = Number(year)
+                    }else{
+                        yearFilter = Number(currentYear)
+                    }
+
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        funda: {$nin: [ObjectID("63dccfca4e334d0012d6f6de"),ObjectID("63dcd0802f92230012670b51")]}
+                    }
+
+                    let projectObj =  {
+                        year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                        month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                        week: { $week: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                        company : 1,
+                        funda : 1,
+                        quantity : 1,
+                        unitPrice : 1,
+                        amount : 1,
+                        createAt: 1,
+                        product: 1,
+                    }
+
+                    let conditionGroup1 = {
+                        _id: {  product: "$product", month: "$month" },
+                        quantity: { $sum: "$quantity" },
+                        amount: { $sum: "$amount" },
+                    }
+
+                    let conditionPopulate1 = {
+                        path: '_id.product',
+                        select: '_id name',
+                        model: 'fnb_product',
+                    }
+
+                    let listData1 = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $project: projectObj
+                        },
+                        {
+                            $match: {
+                                year: Number(yearFilter)
+                            }
+                        },
+                        {
+                            $group: conditionGroup1
+                        },
+                        // {
+                        //     $sort: {"quantity": -1}
+                        // },
+                    ])
+
+                    let listProduct = await FNB_PRODUCT_COLL.find({_id: {$in: listData1.map(item=>item._id.product)}}).select('name unit')
+
+                    if(listData1.length){
+                        await TIMESHEET__EXPERT_SALARY_COLL.populate(listData1, conditionPopulate1)
+                    }
+
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_product_report.xlsx')))
+                    .then(async workbook => {
+                   
                         var i = 4
                         listData1.forEach((item, index) =>{
-                         workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
-                         workbook.sheet("Data").row(i).cell(2).value(`${item?._id.author?._id}`)
-                         workbook.sheet("Data").row(i).cell(3).value(item?._id.author?.fullname)
-                         workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity))
+                            workbook.sheet("Sheet1").row(i).cell(1).value(Number(index + 1))
+                            workbook.sheet("Sheet1").row(i).cell(2).value(item?._id.product?.name)
+                            workbook.sheet("Sheet1").row(i).cell(3).value(Number(item?._id.month))
+                            workbook.sheet("Sheet1").row(i).cell(4).value(Number(yearFilter))
+                            workbook.sheet("Sheet1").row(i).cell(5).value(Number(item.quantity))
+                            workbook.sheet("Sheet1").row(i).cell(6).value(Number(item.amount/item.quantity))
+                            workbook.sheet("Sheet1").row(i).cell(7).value(Number(item.amount))
 
                             i++
-                        })
-
-                        for(var j = 4; j <= Number(listData1.length + 3); j++ ){
-                            let userID = workbook.sheet("Data").row(j).cell(2).value()
-                            for(const item of listData2){
-                                if(userID.toString() === item._id.author.toString()){
-                                    workbook.sheet("Data").row(j).cell(5).value(Number(item?.quantity))
-                                }
-                            }
-                        }
-
+                        })        
+                        
                         var i = 4
-                        listData3.forEach((item, index) =>{
-                         workbook.sheet("Data1").row(i).cell(1).value(Number(index + 1))
-                         workbook.sheet("Data1").row(i).cell(2).value(`${item?._id.author?._id}`)
-                         workbook.sheet("Data1").row(i).cell(3).value(item?._id.author?.fullname)
-                         workbook.sheet("Data1").row(i).cell(4).value(Number(item?.quantity))
+                        listProduct.forEach((item, index) =>{
+                            workbook.sheet("Sheet2").row(i).cell(1).value(Number(index + 1))
+                            workbook.sheet("Sheet2").row(i).cell(2).value(item?.name)
 
                             i++
-                        })
+                        }) 
+            
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `common_input_report${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
-                        for(var j = 4; j <= Number(listData3.length + 3); j++ ){
-                            let userID = workbook.sheet("Data1").row(j).cell(2).value()
-                            for(const item of listData4){
-                                if(userID.toString() === item._id.author.toString()){
-                                    workbook.sheet("Data1").row(j).cell(5).value(Number(item?.quantity))
-                                }
-                            }
-                        }
-               
-                         const now = new Date();
-                         const filePath = '../../../files/temporary_uploads/';
-                         const fileName = `common_input_report${now.getTime()}.xlsx`;
-                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-    
-                         await workbook.toFileAsync(pathWriteFile);
-                         const result = await uploadFileS3(pathWriteFile, fileName);
-    
-                         fs.unlinkSync(pathWriteFile);
-                         return resolve({ error: false, data: result?.Location, status: 200 });
-                     });
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+
+                    // return resolve({ error: false, data: listData1})
                 }
 
             } catch (error) {
