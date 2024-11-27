@@ -28,6 +28,7 @@ const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper
 const USER_COLL                         = require('../../auth/database/auth.user-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
 const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
+const ITEM__FUNDA_COLL            	    = require('../../item/database/item.funda-coll'); 
 const ITEM__POSITION_COLL            	= require('../../item/database/item.position-coll'); 
 // const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll');
 const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll');
@@ -538,7 +539,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({
-        option, companyID, userID, timesheetID
+        option, companyID, userID, timesheetID, month, year
     }){
         const that = this
         return new Promise(async (resolve) => {
@@ -550,9 +551,31 @@ class Model extends BaseModel {
                 })
 
                 if(!infoAppUser.error && infoAppUser.data.level == 0){
+                    // TẠO BẢNG CHẤM CÔNG CÁC CƠ SỞ THEO THÁNG
+                    function getLastDayOfMonth(year, month) {
+                        return new Date(year, month, 0)
+                    }
+
+                    if(!option){
+                        let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
+                        for(const item of listFunda){
+                            await that.insert({ 
+                                userCreate: userID, 
+                                companyID, 
+                                name: `Bảng chấm công theo ca Cơ sở ${item.name}`, 
+                                date: getLastDayOfMonth(year, month), 
+                                type: 2, // Sản xuất
+                                note: 'Convert từ dữ liệu ca làm việc Cơ sở', 
+                                assigneeID: userID, 
+                                fundaID: item._id, 
+                            })
+                        }
+
+                        return resolve({ error: false, message: 'Đồng bộ thành công' })
+                    }
 
                     // CẬP NHẬT CA LÀM VIỆC SANG BẢNG CHẤM CÔNG
-                    if(option == 1){
+                    else if(option == 1){
                         let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
 
                         let conditionObj = {
@@ -666,12 +689,27 @@ class Model extends BaseModel {
                                 name: item._id.staff.fullname, 
                                 date: `${year}-${month}-${item._id.day}`, 
                                 type: 2, 
-                                note: 'Chấm công từ Ca làm việc', 
+                                note: 'Chấm công Ca phụ', 
                                 hours: item.workingHours, 
                                 unitprice: 20000, // Tạm thời
                                 assigneeID: item._id.staff._id, 
                                 fundaID: infoTimeSheet.funda, 
-                                // subtype 
+                            })
+                        }
+
+                        for(const item of listData2){
+                            await that.insert({ 
+                                userCreate: userID, 
+                                companyID, 
+                                parentID: timesheetID, 
+                                name: item._id.staff.fullname, 
+                                date: `${year}-${month}-${item._id.day}`, 
+                                type: 2, 
+                                note: 'Chấm công Ca phụ', 
+                                hours: item.workingHours, 
+                                unitprice: 20000, // Tạm thời
+                                assigneeID: item._id.staff._id, 
+                                fundaID: infoTimeSheet.funda, 
                             })
                         }
 
@@ -975,8 +1013,8 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, month, companyID, assigneeID, projectID, ctx }){
-        // console.log({ userID, option, year, companyID })
+    getListByProperty({ userID, option, type, year, month, companyID, assigneeID, projectID }){
+        console.log({ userID, option, type, year, month, companyID, assigneeID, projectID })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -997,16 +1035,21 @@ class Model extends BaseModel {
                         parent: { $exists: true, $ne: null }
                     }
 
+                    if(!isNaN(type)){
+                        conditionObj.type = Number(type)
+                    }
+
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: conditionObj
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 hours: 1,
-                                amount: 1
+                                amount: 1,
+                                type: 1,
                             }
                         },
                         {
@@ -1040,8 +1083,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 hours: 1,
                                 amount: 1
                             }
@@ -1169,8 +1212,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 project: 1,
                                 position: 1,
                                 hours: 1,
@@ -1215,9 +1258,9 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
-                                day : {$dayOfMonth : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                day : {$dayOfMonth : { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 hours: 1,
                                 amount: 1
                             }
@@ -1261,8 +1304,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
-                                year : {$year : "$date"},
-                                month : {$month : "$date"},
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 project: 1,
                                 assignee: 1,
                                 hours: 1,
