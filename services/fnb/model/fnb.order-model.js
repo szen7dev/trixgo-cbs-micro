@@ -896,82 +896,82 @@ class Model extends BaseModel {
                 { new: true },
               );
 
-              const infoConfig = await ITEM__CONFIG_COLL.findOne({
-                company: infoFunda.company,
-                type: 1,
-                active: 1,
-              });
-              const { metadata: { template } } = infoConfig;
+              // /**
+              // * Bắn tin Zalo OA cho Người giới thiệu
+              // */
+              // const infoConfig = await ITEM__CONFIG_COLL.findOne({
+              //   company: infoFunda.company,
+              //   type: 1,
+              //   active: 1,
+              // });
+              // const { metadata: { template } } = infoConfig;
+              // if (infoConfig && template) {
+              //   const str = infoReferral.phone;
+              //   const removeFirst1 = `84${str.slice(1)}`;
+              //   let dataOA = {
+              //     phone: `${removeFirst1}`,
+              //     templateData: {
+              //       customer_name: infoReferral.name,
+              //       order_code: `C${Number(numberOfOrder + 1)}`,
+              //       price: amount,
+              //       date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
+              //       note: `Bạn mới ${infoCustomer.phone}`,
+              //     },
+              //     templateId: template.referral,
+              //     appId: infoConfig.channel,
+              //   };
+              //   await ctx.call(
+              //     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+              //     dataOA,
+              //   );
 
-              if (infoConfig && template) {
-                /**
-                * Bắn tin Zalo OA cho Người giới thiệu
-                */
-                const str = infoReferral.phone;
-                const removeFirst1 = `84${str.slice(1)}`;
-                let dataOA = {
-                  phone: `${removeFirst1}`,
-                  templateData: {
-                    customer_name: infoReferral.name,
-                    order_code: `C${Number(numberOfOrder + 1)}`,
-                    price: amount,
-                    date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                    note: `Bạn mới ${infoCustomer.phone}`,
-                  },
-                  templateId: template.referral,
-                  appId: infoConfig.channel,
-                };
-                await ctx.call(
-                  `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                  dataOA,
-                );
+              //   /**
+              //   * Bắn Zalo OA cho Người mới
+              //   */
+              //   const str2 = infoCustomer.phone;
+              //   const removeFirst2 = `84${str2.slice(1)}`;
 
-                /**
-                * Bắn Zalo OA cho Người mới
-                */
-                const str2 = infoCustomer.phone;
-                const removeFirst2 = `84${str2.slice(1)}`;
+              //   let dataOA2 = {
+              //     phone: `${removeFirst2}`,
+              //     templateData: {
+              //       customer_name: infoCustomer.name,
+              //       order_code: `C${Number(numberOfOrder + 1)}`,
+              //       price: amount,
+              //       date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
+              //       note: "Chi tiết xem link Winggo",
+              //     },
+              //     templateId: template.new_order,
+              //     appId: infoConfig.channel,
+              //   };
 
-                let dataOA2 = {
-                  phone: `${removeFirst2}`,
-                  templateData: {
-                    customer_name: infoCustomer.name,
-                    order_code: `C${Number(numberOfOrder + 1)}`,
-                    price: amount,
-                    date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                    note: "Chi tiết xem link Winggo",
-                  },
-                  templateId: template.new_order,
-                  appId: infoConfig.channel,
-                };
+              //   /**
+              //   * Bắn Zalo OA cho Công ty
+              //   */
+              //   let dataOA3 = {
+              //     phone: "84985199295",
+              //     templateData: {
+              //       customer_name: infoCustomer.name,
+              //       order_code: `C${Number(numberOfOrder + 1)}`,
+              //       price: amount,
+              //       date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
+              //       note: "Khách hàng mới",
+              //     },
+              //     templateId: template.new_order,
+              //     appId: infoConfig.channel,
+              //   };
 
-                /**
-                * Bắn Zalo OA cho Công ty
-                */
-                let dataOA3 = {
-                  phone: "84985199295",
-                  templateData: {
-                    customer_name: infoCustomer.name,
-                    order_code: `C${Number(numberOfOrder + 1)}`,
-                    price: amount,
-                    date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                    note: "Khách hàng mới",
-                  },
-                  templateId: template.new_order,
-                  appId: infoConfig.channel,
-                };
+              //   await Promise.all([
+              //     ctx.call(
+              //       `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+              //       dataOA2,
+              //     ),
+              //     ctx.call(
+              //       `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+              //       dataOA3,
+              //     ),
+              //   ]);
+              // }
 
-                await Promise.all([
-                  ctx.call(
-                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                    dataOA2,
-                  ),
-                  ctx.call(
-                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                    dataOA3,
-                  ),
-                ]);
-              }
             }
 
             /**
@@ -1062,9 +1062,7 @@ class Model extends BaseModel {
               dataOA1,
             )
 
-            // if(Number(amount) >= 50000){
-            if(Number(amount) >= 200000){
-            // if(1>0){
+            if(Number(total) >= 200000){
               let dataOA2 = {
                 phone: "84985199295",
                 templateData: {
@@ -1082,85 +1080,70 @@ class Model extends BaseModel {
                 `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                 dataOA2,
               )
-
-              // await ctx.call(
-              //   `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-              //   dataOA2,
-              // )
-              
-              // await ctx.call(
-              //   `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-              //   dataOA2,
-              // )
             }
           }
         }
 
-        /**
-         * QUẢN LÝ TIẾP THỊ LIÊN KẾT
-         * - Kinh doanh theo mạng lưới
-         * - Trả hoa hồng theo hệ thống
-         * - Lấy các cấp trên và trả hoa hồng theo cấp trên
-         */
-        if (affiliateID && checkObjectIDs(affiliateID)) {
-          let infoAffiliate = await ITEM__CONTACT_COLL.findById(affiliateID)
-            .select("nestedParents name sale")
-            .populate({
-              path: "nestedParents",
-              select: "level name phone",
-            });
-          // console.log('===========================================')
-          // console.log(infoAffiliate)
+        // /**
+        //  * QUẢN LÝ TIẾP THỊ LIÊN KẾT
+        //  * - Kinh doanh theo mạng lưới
+        //  * - Trả hoa hồng theo hệ thống
+        //  * - Lấy các cấp trên và trả hoa hồng theo cấp trên
+        //  */
+        // if (affiliateID && checkObjectIDs(affiliateID)) {
+        //   let infoAffiliate = await ITEM__CONTACT_COLL.findById(affiliateID)
+        //     .select("nestedParents name sale")
+        //     .populate({
+        //       path: "nestedParents",
+        //       select: "level name phone",
+        //     });
+        //   // console.log('===========================================')
+        //   // console.log(infoAffiliate)
 
-          // Xử lý trả hoa hồng cho cấp trên theo FNB_AFFILIATE_COM
-          let getMaxLevel = 1;
-          for (const item of infoAffiliate.nestedParents) {
-            if (item.level > getMaxLevel) {
-              getMaxLevel = item.level;
-            }
-          }
-          // console.log({getMaxLevel})
+        //   // Xử lý trả hoa hồng cho cấp trên theo FNB_AFFILIATE_COM
+        //   let getMaxLevel = 1;
+        //   for (const item of infoAffiliate.nestedParents) {
+        //     if (item.level > getMaxLevel) {
+        //       getMaxLevel = item.level;
+        //     }
+        //   }
+        //   // console.log({getMaxLevel})
 
-          // Trả cho Sale
-          await FNB_NETWORK_COM_MODEL.insert({
-            userID,
-            companyID: infoFunda.company,
-            orderID: infoAfterInsert._id,
-            customerID,
-            saleID: affiliateID,
-            amount,
-            uplineID: affiliateID,
-            level: 0, // Người cha đứng cạnh đầu tiên => cấp 1
-            rate: FNB_AFFILIATE_COM[0].rate,
-            commission: (Number(FNB_AFFILIATE_COM[0].rate) * amount) / 100,
-          });
+        //   // Trả cho Sale
+        //   await FNB_NETWORK_COM_MODEL.insert({
+        //     userID,
+        //     companyID: infoFunda.company,
+        //     orderID: infoAfterInsert._id,
+        //     customerID,
+        //     saleID: affiliateID,
+        //     amount,
+        //     uplineID: affiliateID,
+        //     level: 0, // Người cha đứng cạnh đầu tiên => cấp 1
+        //     rate: FNB_AFFILIATE_COM[0].rate,
+        //     commission: (Number(FNB_AFFILIATE_COM[0].rate) * amount) / 100,
+        //   });
 
-          for (const item of infoAffiliate.nestedParents) {
-            let networkLevel = Number(getMaxLevel - item.level + 1);
-            // console.log({networkLevel})
+        //   for (const item of infoAffiliate.nestedParents) {
+        //     let networkLevel = Number(getMaxLevel - item.level + 1);
+        //     // console.log({networkLevel})
 
-            let infoNetworkCom = await FNB_NETWORK_COM_MODEL.insert({
-              userID,
-              companyID: infoFunda.company,
-              orderID: infoAfterInsert._id,
-              customerID,
-              saleID: affiliateID,
-              amount,
-              uplineID: item._id,
-              level: networkLevel, // Người cha đứng cạnh đầu tiên => cấp 1
-              rate: FNB_AFFILIATE_COM[Number(networkLevel)].rate,
-              commission:
-                (Number(FNB_AFFILIATE_COM[Number(networkLevel)].rate) *
-                  amount) /
-                100,
-            });
-            // console.log({infoNetworkCom})
-          }
-        }
-
-        // Record Traffic
-        // if(getRequestAPI.permission == 1){
-        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
+        //     let infoNetworkCom = await FNB_NETWORK_COM_MODEL.insert({
+        //       userID,
+        //       companyID: infoFunda.company,
+        //       orderID: infoAfterInsert._id,
+        //       customerID,
+        //       saleID: affiliateID,
+        //       amount,
+        //       uplineID: item._id,
+        //       level: networkLevel, // Người cha đứng cạnh đầu tiên => cấp 1
+        //       rate: FNB_AFFILIATE_COM[Number(networkLevel)].rate,
+        //       commission:
+        //         (Number(FNB_AFFILIATE_COM[Number(networkLevel)].rate) *
+        //           amount) /
+        //         100,
+        //     });
+        //     // console.log({infoNetworkCom})
+        //   }
         // }
 
         return resolve({ error: false, data: infoAfterInsert });
