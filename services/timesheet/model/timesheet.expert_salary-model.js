@@ -1216,6 +1216,14 @@ class Model extends BaseModel {
                         }
                     }
 
+                    else if(option == 6){
+                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                    }
+
+                    else if(option == 7){
+                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                    }
+
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                 }
