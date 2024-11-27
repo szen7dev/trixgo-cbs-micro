@@ -1062,8 +1062,8 @@ class Model extends BaseModel {
               dataOA1,
             )
 
-            // if(Number(total) >= 50000){
-            if(Number(total) >= 200000){
+            // if(Number(amount) >= 50000){
+            if(Number(amount) >= 200000){
             // if(1>0){
               let dataOA2 = {
                 phone: "84985199295",
