@@ -13,6 +13,11 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Cơ sở
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : "funda"
+    },
     //_________Dự án
     project: {
         type: Schema.Types.ObjectId,
@@ -85,6 +90,8 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     unit: String,   
     //_________Ghi chú
     note: String, 
+    //_________Number of depreciation months: số tháng khấu hao
+    nods: { type: Number, default: 0 },
     //_________Đơn giá nhập
     unitprice: { type: Number, default: 0 },
     //_________Đơn giá niêm Yết
