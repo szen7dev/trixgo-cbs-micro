@@ -1047,7 +1047,7 @@ class Model extends BaseModel {
                         }
                     }
                     
-                    // ĐỒNG BỘ BẢNG LƯƠNG
+                    // ĐỒNG BỘ BẢNG LƯƠNG TỔNG HỢP
                     else if(option == 2){
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
@@ -1563,7 +1563,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
-        // console.log({ userID, option, year, month, companyID, projectID, assigneeID })
+        console.log({ userID, option, year, month, companyID, projectID, assigneeID })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -2294,8 +2294,8 @@ class Model extends BaseModel {
                             workbook.sheet('TongHop').row(16).cell(i).value(Number(item?.share))
                             workbook.sheet('TongHop').row(17).cell(i).value(Number(item?.other))
 
-                            workbook.sheet('TongHop').row(19).cell(i).value(Number(item?.paid))
-                            workbook.sheet('TongHop').row(20).cell(i).value(Number(item?.advance))
+                            workbook.sheet('TongHop').row(20).cell(i).value(Number(item?.paid))
+                            workbook.sheet('TongHop').row(21).cell(i).value(Number(item?.advance))
 
                             i++
                         })
