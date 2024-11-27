@@ -165,7 +165,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype } = ctx.params;
+                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype, typeTimesheet } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
                 // console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
@@ -181,7 +181,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype, ctx
+                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype, typeTimesheet
                     });
                 }
 

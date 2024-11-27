@@ -759,7 +759,7 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype, typeTimesheet }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -860,6 +860,11 @@ class Model extends BaseModel {
                     else if(option == 3){
                         conditionObj.work = workID;
                     }
+                }
+
+                // Phân loại chấm công
+                if(!isNaN(typeTimesheet)){
+                    conditionObj.type = typeTimesheet
                 }
 
                 // Chi tiết chấm công của userID đang truy cập
