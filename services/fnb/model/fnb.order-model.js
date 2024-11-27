@@ -1062,25 +1062,25 @@ class Model extends BaseModel {
               dataOA1,
             )
 
-            // if(Number(total) >= 200000){
-            //   let dataOA2 = {
-            //     phone: "84985199295",
-            //     templateData: {
-            //       customer_name: `Khách ${infoCustomer.phone}`,
-            //       order_code: `C${Number(numberOfOrder + 1)}`,
-            //       price: total,
-            //       date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-            //       // note: "Chi tiết xem linkProfile",
-            //       note: "Quan tâm OA tặng mã 200k",
-            //     },
-            //     templateId: template.new_order,
-            //     appId: infoConfig.channel
-            //   }
-            //   await ctx.call(
-            //     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-            //     dataOA2,
-            //   )
-            // }
+            if(Number(total) >= 200000){
+              let dataOA2 = {
+                phone: "84985199295",
+                templateData: {
+                  customer_name: `Khách ${infoCustomer.phone}`,
+                  order_code: `C${Number(numberOfOrder + 1)}`,
+                  price: total,
+                  date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                  // note: "Chi tiết xem linkProfile",
+                  note: "Quan tâm OA tặng mã 200k",
+                },
+                templateId: template.new_order,
+                appId: infoConfig.channel
+              }
+              await ctx.call(
+                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                dataOA2,
+              )
+            }
           }
         }
 
@@ -3483,9 +3483,6 @@ class Model extends BaseModel {
             });
             const { metadata: { template } } = infoConfig;
 
-            // console.log('111111111111111')
-            // console.log(infoConfig)
-  
             if (infoConfig && template) {  
               // Xử lý dữ liệu số điện thoại
               const str = infoCustomer.phone;
@@ -3509,30 +3506,6 @@ class Model extends BaseModel {
                 `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                 dataOA1,
               )
-  
-              // if(Number(total) >= 50000){
-              // if(Number(infoOrder.total) >= 200000){
-              if(1>0){
-                let dataOA2 = {
-                  phone: "84985199295",
-                  templateData: {
-                    customer_name: `Khách ${infoCustomer.phone}`,
-                    order_code: infoOrder.sign,
-                    price: infoOrder.total,
-                    date: moment(infoOrder.date).format("HH:mm DD/MM/YYYY"),
-                    note: "Quan tâm OA tặng mã 200k",
-                  },
-                  templateId: template.new_order,
-                  appId: infoConfig.channel
-                }
-                // console.log({dataOA2})
-                for (let i = 1; i <= 2; i++) {
-                  await ctx.call(
-                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                    dataOA2,
-                  )
-                }
-              }
             }
           }
         }
