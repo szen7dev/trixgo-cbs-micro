@@ -65,6 +65,19 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         default : 1
     },
     /**
+     * Phân loại tài sản, công cụ,...
+     * 1. Tài sản
+     * 2. Vật tư chính
+     * 3. Vật tư phụ/Nguyên liệu nhiên liệu
+     * 4. Công cụ dụng cụ
+     * 5. Hàng hóa/Cấu kiện/Thành phẩm
+     * 6. Văn phòng phẩm
+     */
+    subtype: {
+        type: Number,
+        default : 1
+    },
+    /**
      * Kích cỡ
      * 1-Size M
      * 2-Size L
@@ -90,6 +103,8 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     unit: String,   
     //_________Ghi chú
     note: String, 
+    //_________Ngày bắt đầu đưa vào sử dụng/hạch toán
+    date: { type: Date, default: Date.now },
     //_________Number of depreciation months: số tháng khấu hao
     nods: { type: Number, default: 0 },
     //_________Đơn giá nhập
