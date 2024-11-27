@@ -365,6 +365,10 @@ class Model extends BaseModel {
                     dataUpdate.timeApprover =  Date.now();
                 }
 
+                if(type){
+                    dataUpdate.type = type;
+                }
+
                 if(status){
                     dataUpdate.status = status;
                 }
@@ -417,6 +421,14 @@ class Model extends BaseModel {
                         keyError: "cannot_update",
                     })
                 
+                // Cập nhật cho các mẩu tin con
+                if(!infoAfterUpdate.parent && [1,2].includes(Number(type))){
+                    await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({parent: expertTimesheetID},{
+                        $set: {
+                            type: Number(type)
+                        }
+                    })
+                }
 
                 // Cập nhật cho mẩu tin cha
                 if(infoAfterUpdate.parent){
@@ -835,7 +847,7 @@ class Model extends BaseModel {
 
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = userID
-                        if(month & year){
+                        if(month && year){
                             conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                         }
                     }
@@ -851,7 +863,7 @@ class Model extends BaseModel {
 
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = userID
-                        if(month & year){
+                        if(month && year){
                             conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                         }
                     }
@@ -865,6 +877,10 @@ class Model extends BaseModel {
                 // Phân loại chấm công
                 if(!isNaN(typeTimesheet)){
                     conditionObj.type = typeTimesheet
+
+                    if(month && year){
+                        conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
+                    }
                 }
 
                 // Chi tiết chấm công của userID đang truy cập
@@ -880,7 +896,7 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = humanID
 
-                    if(month & year){
+                    if(month && year){
                         conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                     }
 

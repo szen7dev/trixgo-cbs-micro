@@ -351,7 +351,7 @@ class Model extends BaseModel {
 
                 // Chi tiết lỗi của userID
                 if(option && option == 1){
-                    if(month & year){
+                    if(month && year){
                         conditionObj.$where = `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(year)}`
                     }
                 }	
