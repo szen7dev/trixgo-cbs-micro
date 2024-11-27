@@ -1571,7 +1571,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
-        console.log({ userID, option, year, month, companyID, projectID, assigneeID })
+        // console.log({ userID, option, year, month, companyID, projectID, assigneeID })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -1589,7 +1589,8 @@ class Model extends BaseModel {
                 if(!option){
                     let conditionObj = {
                         company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null }
+                        parent: { $exists: true, $ne: null },
+                        project: { $exists: true, $ne: null },
                     }
 
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
@@ -1615,28 +1616,28 @@ class Model extends BaseModel {
                                 advance: 1,
                                 paid: 1,
                                 remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
+                                // subAllowance1: 1,
+                                // subAllowance2: 1,
+                                // subAllowance3: 1,
+                                // subAllowance4: 1,
+                                // subAllowance5: 1,
+                                // subAllowance6: 1,
+                                // subAllowance7: 1,
+                                // subAllowance8: 1,
+                                // subAllowance9: 1,
+                                // subAllowance10: 1,
+                                // subAllowance11: 1,
+                                // subAllowance12: 1,
+                                // subAllowance13: 1,
+                                // subAllowance14: 1,
+                                // subAllowance15: 1,
+                                // subAllowance16: 1,
+                                // subAllowance17: 1,
+                                // subAllowance18: 1,
+                                // subAllowance19: 1,
+                                // subAllowance20: 1,
+                                // subAllowance21: 1,
+                                // subAllowance22: 1,
                             }
                         },
                         {
