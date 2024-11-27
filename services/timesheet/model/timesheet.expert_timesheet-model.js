@@ -365,6 +365,10 @@ class Model extends BaseModel {
                     dataUpdate.timeApprover =  Date.now();
                 }
 
+                if(type){
+                    dataUpdate.type = type;
+                }
+
                 if(status){
                     dataUpdate.status = status;
                 }
@@ -417,6 +421,14 @@ class Model extends BaseModel {
                         keyError: "cannot_update",
                     })
                 
+                // Cập nhật cho các mẩu tin con
+                if(!infoAfterUpdate.parent && [1,2].includes(Number(type))){
+                    await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({parent: expertTimesheetID},{
+                        $set: {
+                            type: Number(type)
+                        }
+                    })
+                }
 
                 // Cập nhật cho mẩu tin cha
                 if(infoAfterUpdate.parent){
@@ -759,7 +771,7 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype, typeTimesheet }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -835,7 +847,7 @@ class Model extends BaseModel {
 
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = userID
-                        if(month & year){
+                        if(month && year){
                             conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                         }
                     }
@@ -851,7 +863,7 @@ class Model extends BaseModel {
 
                         conditionObj.parent = { $exists: true, $ne: null }
                         conditionObj.assignee = userID
-                        if(month & year){
+                        if(month && year){
                             conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                         }
                     }
@@ -859,6 +871,15 @@ class Model extends BaseModel {
                     // Chi tiết chấm công theo workID: gom nhóm theo Ngân sách
                     else if(option == 3){
                         conditionObj.work = workID;
+                    }
+                }
+
+                // Phân loại chấm công
+                if(!isNaN(typeTimesheet)){
+                    conditionObj.type = typeTimesheet
+
+                    if(month && year){
+                        conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                     }
                 }
 
@@ -875,7 +896,7 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: true, $ne: null }
                     conditionObj.assignee = humanID
 
-                    if(month & year){
+                    if(month && year){
                         conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                     }
 
