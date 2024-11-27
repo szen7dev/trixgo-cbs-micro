@@ -38,8 +38,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID }){
-        // console.log('1111111111111111')
+	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID, fundaID, nods, date }){
         // console.log({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID })
         return new Promise(async resolve => {
             try {
@@ -65,6 +64,10 @@ class Model extends BaseModel {
                     dataInsert.author = userID
                 }
 
+                if(fundaID && checkObjectIDs(fundaID)){
+                    dataInsert.funda = fundaID;
+                }
+
                 if(projectID && checkObjectIDs(projectID)){
                     dataInsert.project = projectID;
                 }
@@ -80,12 +83,20 @@ class Model extends BaseModel {
                     dataInsert.level = infoParent.level + 1;
                 }
 
+                if(date && date != ""){
+                    dataInsert.date = date;
+                }
+
                 if(sign && sign != ""){
                     dataInsert.sign = sign;
                 }
 
                 if(unit && unit != ""){
                     dataInsert.unit = unit;
+                }
+
+                if(!isNaN(nods)){
+                    dataInsert.nods = Number(nods);
                 }
 
                 if(!isNaN(duration)){
@@ -188,7 +199,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID }){
+	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date }){
         return new Promise(async resolve => {
             try {
 				let info = await ITEM__GOODS_COLL.findById(goodsID)
@@ -219,6 +230,10 @@ class Model extends BaseModel {
                     dataUpdate.category = categoryID;
                 }
 
+                if(fundaID && checkObjectIDs(fundaID)){
+                    dataUpdate.funda = fundaID;
+                }
+
                 if(imagesID && imagesID.length) {
                     dataUpdate.$addToSet = {
                         images: imagesID,
@@ -236,6 +251,14 @@ class Model extends BaseModel {
 
                 if(unit && unit != ""){
                     dataUpdate.unit = unit;
+                }
+
+                if(date && date != ""){
+                    dataUpdate.date = date;
+                }
+
+                if(!isNaN(nods)){
+                    dataUpdate.nods = Number(nods);
                 }
 
                 if(!isNaN(duration)){
