@@ -426,24 +426,6 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     /**
      * QUẢN LÝ THÔNG BÁO
      */
-    /**
-     * Những người được quyền truy cập
-     * 1-author (khi tạo việc xong thì add vào)
-     * 2-members của funda (thành viên đơn vị cơ sở)
-     */
-    // accessUsers: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "user"
-    // }],
-    /**
-     * Những user chưa xem công việc
-     * - Sẽ thêm user khi có thông báo mới => Chưa xem
-     * - Sẽ xóa user khi bấm xem => Đã xem
-     */
-    // news: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "user"
-    // }],
     //_________File/ảnh đính kèm
     files: [{
         type: Schema.Types.ObjectId,
