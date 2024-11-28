@@ -576,7 +576,13 @@ class Model extends BaseModel {
 
                     // CẬP NHẬT CA LÀM VIỆC SANG BẢNG CHẤM CÔNG
                     else if(option == 1){
+                        // Khởi tạo lại và đồng bộ
                         let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
+
+                        // Xóa dữ liệu cũ đang có???
+                        if(checkObjectIDs(infoTimeSheet.funda)){
+                            await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
+                        }
 
                         let conditionObj = {
                             company: ObjectID(companyID),
@@ -629,7 +635,7 @@ class Model extends BaseModel {
 
                         let month = Number(infoTimeSheet.date.getMonth()) + 1
                         let year = infoTimeSheet.date.getFullYear()
-                        console.log({ month, year })
+                        // console.log({ month, year })
 
                         let conditionObjTime = {
                             year: Number(year),
@@ -689,7 +695,7 @@ class Model extends BaseModel {
                                 name: item._id.staff.fullname, 
                                 date: `${year}-${month}-${item._id.day}`, 
                                 type: 2, 
-                                note: 'Chấm công Ca phụ', 
+                                note: 'Chấm công Ca chính', 
                                 hours: item.workingHours, 
                                 unitprice: 20000, // Tạm thời
                                 assigneeID: item._id.staff._id, 
