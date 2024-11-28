@@ -18,7 +18,7 @@ module.exports = {
         auth: "required",
         params: {
             name          : { type: "string" },
-            type          : { type: "number", optional: true  },
+            type          : { type: "number", optional: true },
             active        : { type: "number", optional: true  },
             channel       : { type: "string", optional: true },
             template      : { type: "string", optional: true },
@@ -54,9 +54,9 @@ module.exports = {
         auth: "required",
         params: {
             configID      : { type: "string" }, 
-            name          : { type: "string" },
-            type          : { type: "number", optional: true  },
-            active        : { type: "number", optional: true  },
+            name          : { type: "string", optional: true },
+            type          : { type: "number", optional: true },
+            active        : { type: "number", optional: true },
             channel       : { type: "string", optional: true },
             template      : { type: "string", optional: true },
             secretKey     : { type: "string", optional: true },
@@ -67,6 +67,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const { configID, name, type, active, channel, template, secretKey, tokenKey, metadata } = ctx.params;
+
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__CONFIG_MODEL.update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
