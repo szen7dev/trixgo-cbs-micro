@@ -28,6 +28,7 @@ const CF_ROUTINGS_ANALYSIS = {
     HISTORY_DATAS_CLONE_DATA                    : `${BASE_ROUTE}${HISTORY_DATAS}/clone_data`,
     HISTORY_DATAS_CONVERT_DATA                  : `${BASE_ROUTE}${HISTORY_DATAS}/convert_data`,
     HISTORY_DATAS_RESET_DATA                    : `${BASE_ROUTE}${HISTORY_DATAS}/reset_data`,
+    HISTORY_DATA_SEND_ZNS                       : `${BASE_ROUTE}${HISTORY_DATAS}/send-zns`,
 }
 
 exports.CF_ROUTINGS_ANALYSIS = CF_ROUTINGS_ANALYSIS;
