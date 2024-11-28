@@ -80,6 +80,15 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Number,
         default: 1
     },
+    /**
+     * Chính thức/Thử việc
+     * 1-Chính thức
+     * 2-Thử việc
+     */
+    official : {
+        type: Number,
+        default: 1
+    },
     //________Người thực hiện
     assignee: {
         type: Schema.Types.ObjectId,
