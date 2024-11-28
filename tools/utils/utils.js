@@ -593,6 +593,11 @@ exports.regexPhoneNumber = (phone) => {
     return phone.match(regexPhoneNumber) ? true : false;
 }
 
+exports.isValidVietnamPhoneNumber = (str) => {
+    const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+    return phoneRegex.test(str);
+}
+
 exports.parseUserAgent = (userAgent) => {
     // Use a library like 'ua-parser-js' for more sophisticated parsing
     userAgent = userAgent.toLowerCase();

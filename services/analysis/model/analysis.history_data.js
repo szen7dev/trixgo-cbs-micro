@@ -12,6 +12,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 const {
     isValidDate,
 }                                       = require('../../../tools/utils/time_utils')
+const { isValidVietnamPhoneNumber } 	= require("../../../tools/utils/utils");
 const { 
     DEVICE_TYPES,
  }                = require('../helper/analysis.keys-constant')
@@ -2030,6 +2031,15 @@ class Model extends BaseModel {
     sendZns({ userID, templateId, appId, start_date, expire, voucher_code, note, ctx }){
         return new Promise(async resolve => { 
             try {
+                /**
+                 * BA
+                 * 1. Lấy Danh sách các khách hàng mua hàng trong 30 ngày gần đây
+                 * 1. Lấy khách đã quan tâm OA
+                 * 2. Kiểm tra những khách hưa mua hàng 30 ngày gần đây
+                 */
+
+
+                // Bắn tin
                 let arrCus = [
                     {phone: '0985199295', sign: 'hiepnh', name: 'Nguyễn Hữu Hiệp'},
                     {phone: '0988115997', sign: 'hoangnh', name: 'Nguyễn Hữu Hoàng'},
@@ -2039,28 +2049,27 @@ class Model extends BaseModel {
                 ]
 
                 for(const item of arrCus){
-                    const removeFirst = `84${item.phone.slice(1)}`;
-                    let dataOA = {
-                        phone: `${removeFirst}`,
-                        // phone: "84985199295",
-                        templateData: {
-                            customer_name: item.name,
-                            customer_id: item.sign,
-                            start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
-                            expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
-                            voucher_code,
-                            note,
-                        },
-                        templateId, // Bắn OTP
-                        appId, // Zalo OA Trixgo
-                    };
-
-                    // console.log(dataOA)
-
-                    await ctx.call(
-                        `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                        dataOA,
-                    )
+                    if(isValidVietnamPhoneNumber(item.phone)){  
+                        let dataOA = {
+                            phone: `84${item.phone.slice(1)}`,
+                            // phone: "84985199295",
+                            templateData: {
+                                customer_name: item.name,
+                                customer_id: item.sign,
+                                start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                                voucher_code,
+                                note,
+                            },
+                            templateId,
+                            appId,
+                        }
+    
+                        await ctx.call(
+                            `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                            dataOA,
+                        )
+                    }
                 }
 
                 return resolve({ error: false, message: 'Xử lý thành công' });
