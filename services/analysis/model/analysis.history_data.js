@@ -16,6 +16,12 @@ const {
     DEVICE_TYPES,
  }                = require('../helper/analysis.keys-constant')
 
+const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
+const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant')
+const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant')
+const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant')
+const { CF_ACTIONS_ZALO }               = require("../../zalo_oa/helper/zalo.actions")
+
 /**
  * COLLECTIONS
  */
@@ -89,12 +95,8 @@ class Model extends BaseModel {
     }
 
     cloneData({ option, companyID, userID, orgProjectID, targetProjectID, copyPermission }){
-        // console.log({ option, companyID, userID, orgProjectID, targetProjectID, copyPermission })
-        const that = this
         return new Promise(async resolve => { 
-            try {
-                let conditionObj = {}
-                
+            try {                
                 // Cấu trúc dữ liệu công việc Dự án
                 if(option == 1){
                     let orgList = await PCM_PLAN_GROUP_COLL.find({project: orgProjectID}).select('name sign admins members')
@@ -148,7 +150,6 @@ class Model extends BaseModel {
     }
 
     convertData({ option, companyID, userID, page, unit, getNumber, newPassword, fundaID, warehouseID, contactID, fundasID, fromDate, toDate, month, year, docID, parentID, goodsID }){
-        // console.log({ option, companyID, page, unit, getNumber, newPassword })
         const that = this
         return new Promise(async resolve => { 
             try {
@@ -1151,7 +1152,6 @@ class Model extends BaseModel {
     }
 
     resetData({ option, companyID, page, unit, getNumber, newPassword, pass, salaryID }){
-        // console.log({ option, companyID, page, unit, getNumber, newPassword })
         return new Promise(async resolve => { 
             try {
                 if(pass && pass == 'Hiepnh1985@#'){
@@ -2026,6 +2026,39 @@ class Model extends BaseModel {
     //         }
     //     })
     // }
+
+    sendZns({ userID, templateId, appId, start_date, expire, voucher_code, note, ctx }){
+        return new Promise(async resolve => { 
+            try {
+                // const removeFirst1 = `84${strValid.slice(1)}`;
+                let dataOA = {
+                    // phone: `${removeFirst1}`,
+                    phone: "84985199295",
+                    templateData: {
+                        customer_name: 'Nguyễn Thị Yên',
+                        customer_id: 'WGO2006',
+                        start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                        expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                        voucher_code,
+                        note,
+                    },
+                    templateId, // Bắn OTP
+                    appId, // Zalo OA Trixgo
+                };
+                console.log(dataOA)
+
+                let infoZNS = await ctx.call(
+                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                    dataOA,
+                )
+                console.log(infoZNS)
+
+                return resolve({ error: false, message: 'Xử lý thành công' });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model

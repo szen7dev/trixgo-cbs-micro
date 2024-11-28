@@ -31,7 +31,7 @@ module.exports = {
 				const { _id: userID, company  } = ctx.meta.infoUser;
                 const { companyID, name, type, active, channel, template, secretKey, tokenKey, metadata } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 if(!companyID){
                     companyID = company._id
