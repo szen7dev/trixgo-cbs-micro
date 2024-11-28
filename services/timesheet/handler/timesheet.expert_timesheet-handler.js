@@ -29,11 +29,11 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype } = ctx.params;
+                let { parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({
-                    userCreate: userID, companyID: company._id, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, ctx
+                    userCreate: userID, companyID: company._id, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -75,13 +75,13 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
-                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype } = ctx.params;
+                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
                     expertTimesheetID, userID, projectID, name, location, type, assigneeID, hours, unitprice, amount, status, approver,
-                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype
+                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -165,7 +165,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype, typeTimesheet } = ctx.params;
+                let { expertTimesheetID, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype, shiftType, typeTimesheet } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
                 // console.log({ EXPERT_TIMESHEET_PARAMS: ctx.params })
@@ -181,7 +181,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.getList({
-                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype, typeTimesheet
+                        sortOption, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, option, month, year, humanID, sortOption, workID, type, subtype, shiftType, typeTimesheet
                     });
                 }
 

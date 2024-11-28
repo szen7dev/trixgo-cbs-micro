@@ -53,8 +53,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype }) {
-        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype })
+    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType }) {
+        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -173,6 +173,14 @@ class Model extends BaseModel {
                     dataInsert.hours = hours;
                 }
 
+                if(!isNaN(subtype)){
+                    dataInsert.subtype = subtype;
+                }
+
+                if(!isNaN(shiftType)){
+                    dataInsert.shiftType = shiftType;
+                }
+
                 /**
                  * Convert to query
                  */
@@ -224,8 +232,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype }){
-        // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype })
+    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType }){
+        // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -359,6 +367,10 @@ class Model extends BaseModel {
                             dataUpdate.amount = amount
                         }
                     }
+
+                    if(!isNaN(shiftType)){
+                        dataUpdate.shiftType = shiftType;
+                    }
                 }
 
                 if(approver){
@@ -471,13 +483,8 @@ class Model extends BaseModel {
                     if(listData.length){
                         numberOnLeave = Number(listData[0].hours)/8
                     }
-
-                    // let numberOnLeave = await TIMESHEET__EXPERT_TIMESHEET_COLL.count({ 
-                    //     assignee: infoAfterUpdate.assignee, 
-                    //     subtype: 2,
-                    //     $where: `return this.date.getFullYear() === ${Number(year)}`
-                    // })
                     
+                    // Cập nhật nghỉ phép vào User
                     await USER_COLL.findByIdAndUpdate(infoAfterUpdate.assignee, {
                         numberOnLeave: numberOnLeave
                     }, { new: true })
@@ -603,6 +610,7 @@ class Model extends BaseModel {
                             subWorkingHours : 1,
                             officialStaffSalar: 1,
                             trialStaffSalary: 1,
+                            shiftType: 1
                         }
 
                         let lookupObj = {
@@ -620,13 +628,36 @@ class Model extends BaseModel {
                         } 
 
                         let conditionGroup1 = {
-                            _id: {  staff: "$staff._id", day: "$day" },
+                            _id: { 
+                                staff: "$staff._id", 
+                                day: "$day", 
+                                // shiftType: "$shiftType",
+                                shiftGroup: {
+                                    $cond: [
+                                      { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
+                                      "G123",                     // Tên nhóm cho 1, 2, 3
+                                      "G4"                          // Tên nhóm cho shiftType = 4
+                                    ]
+                                }
+                            },
                             workingHours: { $sum: "$workingHours" },
                             amount: { $sum: { $multiply: [ "$workingHours", "$officialStaffSalar" ] } }
                         }
 
                         let conditionGroup2 = {
-                            _id: {  staff: "$staff._id", day: "$day" },
+                            // _id: {  staff: "$staff._id", day: "$day" },
+                            _id: { 
+                                staff: "$staff._id", 
+                                day: "$day", 
+                                // shiftType: "$shiftType",
+                                shiftGroup: {
+                                    $cond: [
+                                      { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
+                                      "G123",                     // Tên nhóm cho 1, 2, 3
+                                      "G4"                          // Tên nhóm cho shiftType = 4
+                                    ]
+                                }
+                            },
                             workingHours: { $sum: "$subWorkingHours" },
                             amount: { $sum: { $multiply: [ "$subWorkingHours", "$trialStaffSalary" ] } }
                         }
@@ -692,38 +723,75 @@ class Model extends BaseModel {
                         await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate)
 
                         for(const item of listData1){
-                            await that.insert({ 
-                                userCreate: userID, 
-                                companyID, 
-                                parentID: timesheetID, 
-                                name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                date: `${year}-${month}-${item._id.day}`, 
-                                type: 2, 
-                                note: 'Chấm công Ca chính', 
-                                hours: item.workingHours, 
-                                unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                assigneeID: item._id.staff._id, 
-                                fundaID: infoTimeSheet.funda, 
-                            })
+                            if(item._id.shiftGroup.toString() === 'G123'){
+                                await that.insert({ 
+                                    userCreate: userID, 
+                                    companyID, 
+                                    parentID: timesheetID, 
+                                    name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                                    date: `${year}-${month}-${item._id.day}`, 
+                                    type: 2, 
+                                    shiftType: 1, 
+                                    note: 'Ca chính-Ca ngày', 
+                                    hours: item.workingHours, 
+                                    unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                                    assigneeID: item._id.staff._id, 
+                                    fundaID: infoTimeSheet.funda, 
+                                })
+                            }else{
+                                await that.insert({ 
+                                    userCreate: userID, 
+                                    companyID, 
+                                    parentID: timesheetID, 
+                                    name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                                    date: `${year}-${month}-${item._id.day}`, 
+                                    type: 2, 
+                                    shiftType: 2, 
+                                    note: 'Ca chính-Ca đêm', 
+                                    hours: item.workingHours, 
+                                    unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                                    assigneeID: item._id.staff._id, 
+                                    fundaID: infoTimeSheet.funda, 
+                                })
+                            }
                         }
 
                         for(const item of listData2){
-                            await that.insert({ 
-                                userCreate: userID, 
-                                companyID, 
-                                parentID: timesheetID, 
-                                name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                date: `${year}-${month}-${item._id.day}`, 
-                                type: 2, 
-                                note: 'Chấm công Ca phụ', 
-                                hours: item.workingHours, 
-                                unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                assigneeID: item._id.staff._id, 
-                                fundaID: infoTimeSheet.funda, 
-                            })
+                            if(item._id.shiftGroup.toString() === 'G123'){
+                                await that.insert({ 
+                                    userCreate: userID, 
+                                    companyID, 
+                                    parentID: timesheetID, 
+                                    name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                                    date: `${year}-${month}-${item._id.day}`, 
+                                    type: 2, 
+                                    shiftType: 1, 
+                                    note: 'Ca phụ-Ca ngày', 
+                                    hours: item.workingHours, 
+                                    unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                                    assigneeID: item._id.staff._id, 
+                                    fundaID: infoTimeSheet.funda, 
+                                })
+                            }else{
+                                await that.insert({ 
+                                    userCreate: userID, 
+                                    companyID, 
+                                    parentID: timesheetID, 
+                                    name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                                    date: `${year}-${month}-${item._id.day}`, 
+                                    type: 2, 
+                                    shiftType: 2, 
+                                    note: 'Ca phụ-Ca đêm', 
+                                    hours: item.workingHours, 
+                                    unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                                    assigneeID: item._id.staff._id, 
+                                    fundaID: infoTimeSheet.funda, 
+                                })
+                            }
                         }
 
-                        return resolve({ error: false, data: listData1})
+                        // return resolve({ error: false, data: {listData1, listData2} })
+                        return resolve({ error: false, message: 'Đồng bộ thành công' })
                     }
 
                 }else{
@@ -779,7 +847,7 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype, typeTimesheet }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype, shiftType, typeTimesheet }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -916,6 +984,11 @@ class Model extends BaseModel {
                     conditionObj.subtype = Number(subtype)
                 }
 
+                // Ca làm việc
+                if(shiftType ){
+                    conditionObj.shiftType = Number(shiftType)
+                }
+
                 if(keyword){
                     keyword = stringUtils.removeAccents(keyword)
                     keyword = keyword.split(" ");
@@ -923,7 +996,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 

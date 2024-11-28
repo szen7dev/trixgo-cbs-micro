@@ -86,6 +86,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
      * 1-Sáng
      * 2-Chiều
      * 3-Tối
+     * 4-Đêm
      */
     shiftType: {
         type: Number,
