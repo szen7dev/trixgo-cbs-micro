@@ -236,7 +236,6 @@ class Model extends BaseModel {
      * Code:
      */
     update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official }){
-        // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -442,10 +441,11 @@ class Model extends BaseModel {
                     })
                 
                 // Cập nhật cho các mẩu tin con
-                if(!infoAfterUpdate.parent && [1,2].includes(Number(type))){
+                if(!infoAfterUpdate.parent && [1,2].includes(Number(type)) && [1,2].includes(Number(official))){
                     await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({parent: expertTimesheetID},{
                         $set: {
-                            type: Number(type)
+                            type: Number(type),
+                            official: Number(official),
                         }
                     })
                 }
@@ -617,7 +617,8 @@ class Model extends BaseModel {
                             subWorkingHours : 1,
                             officialStaffSalar: 1,
                             trialStaffSalary: 1,
-                            shiftType: 1
+                            shiftType: 1,
+                            official: 1,
                         }
 
                         let lookupObj = {
@@ -638,7 +639,7 @@ class Model extends BaseModel {
                             _id: { 
                                 staff: "$staff._id", 
                                 day: "$day", 
-                                // shiftType: "$shiftType",
+                                official: "$official",
                                 shiftGroup: {
                                     $cond: [
                                       { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
@@ -652,11 +653,10 @@ class Model extends BaseModel {
                         }
 
                         let conditionGroup2 = {
-                            // _id: {  staff: "$staff._id", day: "$day" },
                             _id: { 
                                 staff: "$staff._id", 
                                 day: "$day", 
-                                // shiftType: "$shiftType",
+                                official: "$official",
                                 shiftGroup: {
                                     $cond: [
                                       { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
@@ -677,7 +677,6 @@ class Model extends BaseModel {
 
                         let month = Number(infoTimeSheet.date.getMonth()) + 1
                         let year = infoTimeSheet.date.getFullYear()
-                        // console.log({ month, year })
 
                         let conditionObjTime = {
                             year: Number(year),
@@ -739,6 +738,7 @@ class Model extends BaseModel {
                                     date: `${year}-${month}-${item._id.day}`, 
                                     type: 2, 
                                     shiftType: 1, 
+                                    official: item._id.official, 
                                     note: 'Ca chính-Ca ngày', 
                                     hours: item.workingHours, 
                                     unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
@@ -754,6 +754,7 @@ class Model extends BaseModel {
                                     date: `${year}-${month}-${item._id.day}`, 
                                     type: 2, 
                                     shiftType: 2, 
+                                    official: item._id.official, 
                                     note: 'Ca chính-Ca đêm', 
                                     hours: item.workingHours, 
                                     unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
@@ -773,6 +774,7 @@ class Model extends BaseModel {
                                     date: `${year}-${month}-${item._id.day}`, 
                                     type: 2, 
                                     shiftType: 1, 
+                                    official: item._id.official, 
                                     note: 'Ca phụ-Ca ngày', 
                                     hours: item.workingHours, 
                                     unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
@@ -788,6 +790,7 @@ class Model extends BaseModel {
                                     date: `${year}-${month}-${item._id.day}`, 
                                     type: 2, 
                                     shiftType: 2, 
+                                    official: item._id.official, 
                                     note: 'Ca phụ-Ca đêm', 
                                     hours: item.workingHours, 
                                     unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
