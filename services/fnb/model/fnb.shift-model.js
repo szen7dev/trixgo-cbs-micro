@@ -52,9 +52,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        // console.log({ fundaID, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
-        const that = this
+    insert({ fundaID, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {        const that = this
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID) || !name)
@@ -75,6 +73,11 @@ class Model extends BaseModel {
                 // Chi phí ca làm việc
                 let a1 = Number(infoFunda.officialStaffSalar) || 0
                 let a2 = Number(infoFunda.trialStaffSalary) || 0
+                if(shiftType && !isNaN(shiftType) && shiftType == 4){
+                    a1 = Number(infoFunda.nightShiftStaffSalary) || 0
+                    a2 = Number(infoFunda.nightShiftStaffSalary) || 0
+                }
+
                 let a3 = Number(workingHours) || 0
                 let a4 = Number(subWorkingHours) || 0
                 let a5 = Number(staffsID.length) || 0
@@ -164,16 +167,14 @@ class Model extends BaseModel {
      * Author: 
      * Code:
      */
-    update({ companyID, shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        // console.log({ shiftID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
-        const that = this
+    update({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
                     return resolve({ error: true, message: 'shiftID__invalid', keyError: KEY_ERROR.PARAMS_INVALID })
                 
                 let infoShift = await FNB_SHIFT_COLL.findById(shiftID).select('_id funda')
-                let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name manager trialStaffSalary officialStaffSalar')
+                let infoFunda = await ITEM__FUNDA_COLL.findById(infoShift.funda).select('_id company name manager trialStaffSalary officialStaffSalar nightShiftStaffSalary')
 
                 let dataUpdate = { 
                     userUpdate: userID, 
@@ -217,7 +218,6 @@ class Model extends BaseModel {
                 }
 
                 if(FNB_ACC.man.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
-                    // console.log('==========111111111111')
                     if(staffsID && checkObjectIDs(staffsID)){
                         dataUpdate.staffs = staffsID;
                     }
@@ -235,10 +235,22 @@ class Model extends BaseModel {
                     }
 
                     // Chi phí ca làm việc
+                    let a1 = Number(infoFunda.officialStaffSalar) || 0
+                    let a2 = Number(infoFunda.trialStaffSalary) || 0
+                    if(shiftType && !isNaN(shiftType) && shiftType == 4){
+                        a1 = Number(infoFunda.nightShiftStaffSalary) || 0
+                        a2 = Number(infoFunda.nightShiftStaffSalary) || 0
+                    }
+
+                    let a3 = Number(workingHours) || 0
+                    let a4 = Number(subWorkingHours) || 0
+                    let a5 = Number(staffsID.length) || 0
+                    let a6 = Number(subStaffsID.length) || 0
+
                     if(checkObjectIDs(staffsID) || checkObjectIDs(subStaffsID)){
-                        dataUpdate.officialStaffSalar = Number(infoFunda.officialStaffSalar)
-                        dataUpdate.trialStaffSalary = Number(infoFunda.trialStaffSalary)
-                        dataUpdate.staffSalaryTotal = Number(infoFunda.officialStaffSalar)*Number(workingHours)*Number(staffsID.length) + Number(infoFunda.trialStaffSalary)*Number(subWorkingHours)*Number(subStaffsID.length)
+                        dataUpdate.officialStaffSalar = a1
+                        dataUpdate.trialStaffSalary = a2
+                        dataUpdate.staffSalaryTotal = a1*a3*a5 + a2*a4*a6
                     }
 
                     if(!isNaN(numberOfOpeningSizeM)){
@@ -257,7 +269,6 @@ class Model extends BaseModel {
                         dataUpdate.numberOfEotSizeL = Number(numberOfEotSizeL)
                     }
                 }else{
-                    // console.log('==========2222222222222222')
                     if(!isNaN(numberOfOpeningSizeM)){
                         dataUpdate.numberOfOpeningSizeM = Number(numberOfOpeningSizeM)
                     }
@@ -285,7 +296,6 @@ class Model extends BaseModel {
                  * CẬP NHẬT LẠI CHI PHÍ GIỜ LÀM CỦA NHÂN VIÊN
                  */
                 if(FNB_ACC.man.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
-                    // console.log('==========OKKKKKKKKKKKKKKKK1111111111111')
                     // Doanh số nhân viên
                     let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
                     for(const item of listOrders){
