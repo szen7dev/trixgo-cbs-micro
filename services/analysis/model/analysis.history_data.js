@@ -2029,7 +2029,7 @@ class Model extends BaseModel {
     //     })
     // }
 
-    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, ctx }){
+    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, isTest, ctx }){
         return new Promise(async resolve => { 
             try {
                 /**
@@ -2156,27 +2156,48 @@ class Model extends BaseModel {
                     // }
     
                     for(const item of listData){
-                        if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){  
-                            let dataOA = {
-                                // phone: `84${item?._id?.customer?.phone.slice(1)}`,
-                                phone: "84985199295",
-                                templateData: {
-                                    customer_name: `${item?._id?.customer?.phone}`,
-                                    customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
-                                    start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
-                                    expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
-                                    voucher_code,
-                                    note,
-                                },
-                                templateId,
-                                appId,
+                        if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){ 
+                            if(isTest){
+                                let dataOA = {
+                                    phone: "84985199295",
+                                    templateData: {
+                                        customer_name: `${item?._id?.customer?.phone}`,
+                                        customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
+                                        start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                        expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                                        voucher_code,
+                                        note,
+                                    },
+                                    templateId,
+                                    appId,
+                                }
+                                // console.log(dataOA)
+            
+                                await ctx.call(
+                                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                                    dataOA,
+                                )
+                            }else{
+                                let dataOA = {
+                                    phone: `84${item?._id?.customer?.phone.slice(1)}`,
+                                    templateData: {
+                                        customer_name: `${item?._id?.customer?.phone}`,
+                                        customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
+                                        start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                        expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                                        voucher_code,
+                                        note,
+                                    },
+                                    templateId,
+                                    appId,
+                                }
+                                // console.log(dataOA)
+            
+                                await ctx.call(
+                                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                                    dataOA,
+                                )
                             }
-                            // console.log(dataOA)
-        
-                            await ctx.call(
-                                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                                dataOA,
-                            )
                         }
 
                         // await FNB_VOUCHER_COLL.findByIdAndUpdate(infoVoucher._id, {
