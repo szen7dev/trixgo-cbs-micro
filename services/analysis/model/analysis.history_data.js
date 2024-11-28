@@ -12,6 +12,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 const {
     isValidDate,
 }                                       = require('../../../tools/utils/time_utils')
+const { isValidVietnamPhoneNumber } 	= require("../../../tools/utils/utils");
 const { 
     DEVICE_TYPES,
  }                = require('../helper/analysis.keys-constant')
@@ -2030,28 +2031,46 @@ class Model extends BaseModel {
     sendZns({ userID, templateId, appId, start_date, expire, voucher_code, note, ctx }){
         return new Promise(async resolve => { 
             try {
-                // const removeFirst1 = `84${strValid.slice(1)}`;
-                let dataOA = {
-                    // phone: `${removeFirst1}`,
-                    phone: "84985199295",
-                    templateData: {
-                        customer_name: 'Nguyễn Thị Yên',
-                        customer_id: 'WGO2006',
-                        start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
-                        expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
-                        voucher_code,
-                        note,
-                    },
-                    templateId, // Bắn OTP
-                    appId, // Zalo OA Trixgo
-                };
-                console.log(dataOA)
+                /**
+                 * BA
+                 * 1. Lấy Danh sách các khách hàng mua hàng trong 30 ngày gần đây
+                 * 1. Lấy khách đã quan tâm OA
+                 * 2. Kiểm tra những khách hưa mua hàng 30 ngày gần đây
+                 */
 
-                let infoZNS = await ctx.call(
-                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                    dataOA,
-                )
-                console.log(infoZNS)
+
+                // Bắn tin
+                let arrCus = [
+                    {phone: '0985199295', sign: 'hiepnh', name: 'Nguyễn Hữu Hiệp'},
+                    {phone: '0988115997', sign: 'hoangnh', name: 'Nguyễn Hữu Hoàng'},
+                    {phone: '0977385723', sign: 'yennt', name: 'Nguyễn Thị Yên'},
+                    {phone: '0985866331', sign: 'chinhnv', name: 'Nguyễn Văn Chính'},
+                    {phone: '0979560951', sign: 'toannd', name: 'Nguyễn Đắc Toàn'},
+                ]
+
+                for(const item of arrCus){
+                    if(isValidVietnamPhoneNumber(item.phone)){  
+                        let dataOA = {
+                            phone: `84${item.phone.slice(1)}`,
+                            // phone: "84985199295",
+                            templateData: {
+                                customer_name: item.name,
+                                customer_id: item.sign,
+                                start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                                voucher_code,
+                                note,
+                            },
+                            templateId,
+                            appId,
+                        }
+    
+                        await ctx.call(
+                            `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                            dataOA,
+                        )
+                    }
+                }
 
                 return resolve({ error: false, message: 'Xử lý thành công' });
             } catch (error) {
