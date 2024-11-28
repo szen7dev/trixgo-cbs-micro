@@ -596,11 +596,13 @@ class Model extends BaseModel {
                             day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
                             company : 1,
                             funda : 1,
+                            createAt: 1,
                             staffs : 1,
-                            workingHours : 1,
                             subStaffs : 1,
+                            workingHours : 1,
                             subWorkingHours : 1,
-                            createAt: 1
+                            officialStaffSalar: 1,
+                            trialStaffSalary: 1,
                         }
 
                         let lookupObj = {
@@ -620,11 +622,13 @@ class Model extends BaseModel {
                         let conditionGroup1 = {
                             _id: {  staff: "$staff._id", day: "$day" },
                             workingHours: { $sum: "$workingHours" },
+                            amount: { $sum: { $multiply: [ "$workingHours", "$officialStaffSalar" ] } }
                         }
 
                         let conditionGroup2 = {
                             _id: {  staff: "$staff._id", day: "$day" },
                             workingHours: { $sum: "$subWorkingHours" },
+                            amount: { $sum: { $multiply: [ "$subWorkingHours", "$trialStaffSalary" ] } }
                         }
 
                         let conditionPopulate = {
@@ -697,7 +701,7 @@ class Model extends BaseModel {
                                 type: 2, 
                                 note: 'Chấm công Ca chính', 
                                 hours: item.workingHours, 
-                                unitprice: 20000, // Tạm thời
+                                unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
                                 assigneeID: item._id.staff._id, 
                                 fundaID: infoTimeSheet.funda, 
                             })
@@ -713,7 +717,7 @@ class Model extends BaseModel {
                                 type: 2, 
                                 note: 'Chấm công Ca phụ', 
                                 hours: item.workingHours, 
-                                unitprice: 20000, // Tạm thời
+                                unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
                                 assigneeID: item._id.staff._id, 
                                 fundaID: infoTimeSheet.funda, 
                             })
