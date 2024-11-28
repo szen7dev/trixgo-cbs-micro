@@ -188,13 +188,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  option, templateId, appId, start_date, expire, voucher_code, note } = ctx.params;
+                let {  option, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity } = ctx.params;
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await ANALYSIS__HISTORY_DATA_MODEL.sendZns({
-                    option, companyID: company._id, userID, templateId, appId, start_date, expire, voucher_code, note, ctx
+                    option, companyID: company._id, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

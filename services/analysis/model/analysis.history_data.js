@@ -2028,51 +2028,160 @@ class Model extends BaseModel {
     //     })
     // }
 
-    sendZns({ userID, templateId, appId, start_date, expire, voucher_code, note, ctx }){
+    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, ctx }){
         return new Promise(async resolve => { 
             try {
                 /**
                  * BA
-                 * 1. Lấy Danh sách các khách hàng mua hàng trong 30 ngày gần đây
-                 * 1. Lấy khách đã quan tâm OA
-                 * 2. Kiểm tra những khách hưa mua hàng 30 ngày gần đây
+                 * 1. Lấy Danh sách các khách hàng mua hàng trong 30 ngày gần đây: doanh số cao nhất, kênh off/app....
+                 * 2. Lấy khách đã quan tâm OA
+                 * 3. Kiểm tra những khách hưa mua hàng 30 ngày gần đây
                  */
+                // let listContactOA = await ITEM__CONTACT_COLL.find({
+                //     company: ObjectID(companyID),
+                //     usedVouchers: {$in: [
+                //         ObjectID('64378d6618c77f00128abe93'), // ZOA
+                //         ObjectID('66095d0a0b315f001249d158'), // ZOA
+                //         ObjectID('66095d33c1da550011a6d2f8'), // ZOA
+                //         ObjectID('66095d53dc469e00123ac585'), // ZOA
+                //         ObjectID('66095d72dc469e00123ac586'), // ZOA
+                //         ObjectID('66095d910b315f001249d15a'), // ZOA
+                //         ObjectID('66095db6dc469e00123ac58a'), // ZOA
+                //     ]},
+                // })
+                // .select('name phone')
+                // .limit(9000)
+                // .lean()
 
+                // console.log(listContactOA.length)
 
-                // Bắn tin
-                let arrCus = [
-                    {phone: '0985199295', sign: 'hiepnh', name: 'Nguyễn Hữu Hiệp'},
-                    {phone: '0988115997', sign: 'hoangnh', name: 'Nguyễn Hữu Hoàng'},
-                    {phone: '0977385723', sign: 'yennt', name: 'Nguyễn Thị Yên'},
-                    {phone: '0985866331', sign: 'chinhnv', name: 'Nguyễn Văn Chính'},
-                    {phone: '0979560951', sign: 'toannd', name: 'Nguyễn Đắc Toàn'},
-                ]
+                let conditionObj = {
+                    company: ObjectID(companyID),
+                    // customer: {$in: listContactOA.map(item=>item._id)}
+                }
 
-                for(const item of arrCus){
-                    if(isValidVietnamPhoneNumber(item.phone)){  
-                        let dataOA = {
-                            phone: `84${item.phone.slice(1)}`,
-                            // phone: "84985199295",
-                            templateData: {
-                                customer_name: item.name,
-                                customer_id: item.sign,
-                                start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
-                                expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
-                                voucher_code,
-                                note,
-                            },
-                            templateId,
-                            appId,
-                        }
+                let conditionGroup = {
+                    _id: { customer: "$customer"},
+                    // number: { $sum: 1 },
+                    amount: { $sum: "$amount" },
+                    // total: { $sum: "$total" },
+                }
+
+                let conditionPopulate = {
+                    path: '_id.customer',
+                    select: '_id name phone',
+                    model: 'contact',
+                }
+
+                let sortBy = {"amount": -1}
+
+                if(salesChannel){
+                    conditionObj.salesChannel = +salesChannel
+                }
+
+                if(!isNaN(min)){
+                    conditionObj.amount = {$gte: Number(min)}
+                }
+
+                if (isValidDate(fromDate) && isValidDate(toDate)) {
+                    conditionObj.createAt = {
+                      $gte: new Date(fromDate),
+                      $lte: new Date(toDate),
+                    }
+                }
+                // console.log(conditionObj)
+
+                let listData = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $group: conditionGroup
+                    },
+                    {
+                        $sort: sortBy
+                    },
+                    {
+                        $limit: 10 // Giới hạn chỉ lấy 10,000 mẩu tin
+                    },
+                    // {
+                    //     $group: {
+                    //       _id: null, // Không cần nhóm thêm, chỉ tổng hợp toàn bộ
+                    //       totalAmount: { $sum: "$amount" } // Tổng cộng tất cả các giá trị amount
+                    //     }
+                    // }
+                ])
+                
+                // console.log(listData.length)
+                await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+
+                // // Bắn tin
+                // let arrCus = [
+                //     {phone: '0985199295', sign: 'hiepnh', name: 'Nguyễn Hữu Hiệp'},
+                //     {phone: '0988115997', sign: 'hoangnh', name: 'Nguyễn Hữu Hoàng'},
+                //     {phone: '0977385723', sign: 'yennt', name: 'Nguyễn Thị Yên'},
+                //     {phone: '0985866331', sign: 'chinhnv', name: 'Nguyễn Văn Chính'},
+                //     {phone: '0979560951', sign: 'toannd', name: 'Nguyễn Đắc Toàn'},
+                // ]
+
+                // for(const item of arrCus){
+                //     if(isValidVietnamPhoneNumber(item.phone)){  
+                //         let dataOA = {
+                //             phone: `84${item.phone.slice(1)}`,
+                //             // phone: "84985199295",
+                //             templateData: {
+                //                 customer_name: item.name,
+                //                 customer_id: item.sign,
+                //                 start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                //                 expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                //                 voucher_code,
+                //                 note,
+                //             },
+                //             templateId,
+                //             appId,
+                //         }
+
+                //         console.log(dataOA)
     
-                        await ctx.call(
-                            `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                            dataOA,
-                        )
+                //         await ctx.call(
+                //             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                //             dataOA,
+                //         )
+                //     }
+                // }
+
+                var i = 1
+                for(const item of listData){
+                    if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){  
+                        if(i <= quantity){
+                            let dataOA = {
+                                // phone: `84${item?._id?.customer?.phone.slice(1)}`,
+                                phone: "84985199295",
+                                templateData: {
+                                    customer_name: `${item?._id?.customer?.phone}`,
+                                    customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
+                                    start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                    expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                                    voucher_code,
+                                    note,
+                                },
+                                templateId,
+                                appId,
+                            }
+                            // console.log(dataOA)
+        
+                            await ctx.call(
+                                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                                dataOA,
+                            )
+    
+                            i++
+                        }
                     }
                 }
 
-                return resolve({ error: false, message: 'Xử lý thành công' });
+                return resolve({ error: false, message: 'Xử lý thành công' })
+                // return resolve({ error: false, data: listData })
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
