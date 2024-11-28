@@ -71,7 +71,15 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Number,
         default: 1
     },
-    
+    /**
+     * Phân loại ca làm việc (cập nhật theo funda)
+     * 1-Ca ngày
+     * 2-Ca đêm
+     */
+    shiftType: {
+        type: Number,
+        default: 1
+    },
     //________Người thực hiện
     assignee: {
         type: Schema.Types.ObjectId,
