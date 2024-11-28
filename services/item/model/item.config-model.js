@@ -98,16 +98,18 @@ class Model extends BaseModel {
      * Code: 19/9/2022
      */
     update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata }){
-        // console.log({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata })
         return new Promise(async (resolve) => {
             try {
-                if(!name || !checkObjectIDs(userID) || !checkObjectIDs(configID) )
+                if(!checkObjectIDs(userID) || !checkObjectIDs(configID) )
                     return resolve({ error: true, message: 'param_not_valid' });
                     
                 let dataUpdate = {
                     userUpdate: userID,
                     modifyAt: Date.now(),
-                    name,
+                }
+
+                if(name && name != ""){
+                    dataUpdate.name = name
                 }
 
                 if(channel && channel != ""){
