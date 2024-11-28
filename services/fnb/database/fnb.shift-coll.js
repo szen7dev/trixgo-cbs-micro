@@ -48,7 +48,7 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default: 0
     },
-    //_________Lương thử việc/giờ (Hiện đang sử dụng cho ca gãy)
+    //_________Lương nhân viên ca phụ
     trialStaffSalary: {
         type: Number,
         default: 0
