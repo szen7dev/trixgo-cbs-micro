@@ -562,7 +562,7 @@ class Model extends BaseModel {
                             await that.insert({ 
                                 userCreate: userID, 
                                 companyID, 
-                                name: `Bảng chấm công theo ca Cơ sở ${item.name}`, 
+                                name: `Bảng chấm công theo ca Cơ sở ${item.name} T${month}.${year} `, 
                                 date: getLastDayOfMonth(year, month), 
                                 type: 2, // Sản xuất
                                 note: 'Convert từ dữ liệu ca làm việc Cơ sở', 
@@ -692,7 +692,7 @@ class Model extends BaseModel {
                                 userCreate: userID, 
                                 companyID, 
                                 parentID: timesheetID, 
-                                name: item._id.staff.fullname, 
+                                name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
                                 date: `${year}-${month}-${item._id.day}`, 
                                 type: 2, 
                                 note: 'Chấm công Ca chính', 
@@ -708,7 +708,7 @@ class Model extends BaseModel {
                                 userCreate: userID, 
                                 companyID, 
                                 parentID: timesheetID, 
-                                name: item._id.staff.fullname, 
+                                name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
                                 date: `${year}-${month}-${item._id.day}`, 
                                 type: 2, 
                                 note: 'Chấm công Ca phụ', 
@@ -719,46 +719,6 @@ class Model extends BaseModel {
                             })
                         }
 
-                        // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_shift.xlsx')))
-                        // .then(async workbook => {
-
-                        //     var i = 4
-                        //     listData1?.forEach((item, index) => {
-                        //         workbook.sheet(`Sheet1`).row(i).cell(1).value(index+1)
-                        //         workbook.sheet(`Sheet1`).row(i).cell(2).value(Number(item._id.day))
-                        //         workbook.sheet(`Sheet1`).row(i).cell(3).value('Ca chính')
-                        //         workbook.sheet(`Sheet1`).row(i).cell(4).value(item._id.staff.fullname)
-                        //         workbook.sheet(`Sheet1`).row(i).cell(5).value(Number(item.workingHours))
-                        //         // workbook.sheet(`Sheet1`).row(i).cell(5).value(index+1)
-                        //         // workbook.sheet(`Sheet1`).row(i).cell(6).value(index+1)
-                                
-                        //         i++
-                        //     })
-
-                        //     listData2?.forEach((item, index) => {
-                        //         workbook.sheet(`Sheet1`).row(i).cell(1).value(index+1)
-                        //         workbook.sheet(`Sheet1`).row(i).cell(2).value(Number(item._id.day))
-                        //         workbook.sheet(`Sheet1`).row(i).cell(3).value('Ca phụ')
-                        //         workbook.sheet(`Sheet1`).row(i).cell(4).value(item._id.staff.fullname)
-                        //         workbook.sheet(`Sheet1`).row(i).cell(5).value(Number(item.workingHours))
-                        //         // workbook.sheet(`Sheet1`).row(i).cell(5).value(index+1)
-                        //         // workbook.sheet(`Sheet1`).row(i).cell(6).value(index+1)
-                                
-                        //         i++
-                        //     })
-        
-                        //     const now = new Date()
-                        //     const filePath = '../../../files/temporary_uploads/'
-                        //     const fileName = `BangChamCong_${now.getTime()}.xlsx`
-                        //     const pathWriteFile = path.resolve(__dirname, filePath, fileName)
-        
-                        //     await workbook.toFileAsync(pathWriteFile)
-                        //     const result = await uploadFileS3(pathWriteFile, fileName)
-        
-                        //     fs.unlinkSync(pathWriteFile)
-                        //     return resolve({ error: false, data: result?.Location, status: 200 })
-                        // })
-    
                         return resolve({ error: false, data: listData1})
                     }
 
@@ -1020,7 +980,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, type, year, month, companyID, assigneeID, projectID }){
-        console.log({ userID, option, type, year, month, companyID, assigneeID, projectID })
+        // console.log({ userID, option, type, year, month, companyID, assigneeID, projectID })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
