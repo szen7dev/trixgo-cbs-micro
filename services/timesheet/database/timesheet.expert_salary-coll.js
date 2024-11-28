@@ -48,6 +48,24 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 1
     },
+    /**
+     * Phân loại ca làm việc (cập nhật theo funda)
+     * 1-Ca ngày
+     * 2-Ca đêm
+     */
+    shiftType: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Chính thức/Thử việc
+     * 1-Chính thức
+     * 2-Thử việc
+     */
+    official : {
+        type: Number,
+        default: 1
+    },
     //________Nội dung (*)
     name: String,
     namecv: String,

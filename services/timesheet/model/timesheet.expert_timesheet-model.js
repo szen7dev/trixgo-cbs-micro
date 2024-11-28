@@ -53,8 +53,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType }) {
-        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType })
+    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official }) {
+        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -96,6 +96,7 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID
                     dataInsert.assignee = infoParent.assignee
                     dataInsert.type = infoParent.type;
+                    dataInsert.official = infoParent.official;
 
                     if(infoParent.assignee){
                         dataInsert.project = infoParent.assignee.department;
@@ -106,7 +107,6 @@ class Model extends BaseModel {
                         }
                     }
                 }
-
                 // console.log({_________1: unitprice2})
 
                 if(assigneeID){
@@ -132,7 +132,6 @@ class Model extends BaseModel {
                         dataInsert.assignee = userCreate;
                     }
                 }
-
                 // console.log({_________2: unitprice2})
 
                 if(checkObjectIDs(projectID)){
@@ -157,8 +156,20 @@ class Model extends BaseModel {
                     dataInsert.date = date;
                 }
 
-                if(type){
+                if(!isNaN(type)){
                     dataInsert.type = type;
+                }
+
+                if(!isNaN(subtype)){
+                    dataInsert.subtype = subtype;
+                }
+
+                if(!isNaN(shiftType)){
+                    dataInsert.shiftType = shiftType;
+                }
+
+                if(!isNaN(official)){
+                    dataInsert.official = official;
                 }
 
                 if(location && location != ""){
@@ -171,14 +182,6 @@ class Model extends BaseModel {
 
                 if(hours){
                     dataInsert.hours = hours;
-                }
-
-                if(!isNaN(subtype)){
-                    dataInsert.subtype = subtype;
-                }
-
-                if(!isNaN(shiftType)){
-                    dataInsert.shiftType = shiftType;
                 }
 
                 /**
@@ -232,8 +235,8 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType }){
-        // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType })
+    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official }){
+        // console.log({ expertTimesheetID, projectID, name, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -378,11 +381,15 @@ class Model extends BaseModel {
                     dataUpdate.timeApprover =  Date.now();
                 }
 
-                if(type){
+                if(!isNaN(type)){
                     dataUpdate.type = type;
                 }
 
-                if(status){
+                if(!isNaN(official)){
+                    dataUpdate.official = official;
+                }
+
+                if(!isNaN(status)){
                     dataUpdate.status = status;
                 }
 
@@ -847,7 +854,7 @@ class Model extends BaseModel {
      */
     getList({
         sortOption, parentID, workID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype, shiftType, typeTimesheet }) {
+        keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype, shiftType, official, typeTimesheet }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -987,6 +994,10 @@ class Model extends BaseModel {
                 // Ca làm việc
                 if(shiftType ){
                     conditionObj.shiftType = Number(shiftType)
+                }
+
+                if(official ){
+                    conditionObj.official = Number(official)
                 }
 
                 if(keyword){
