@@ -36,7 +36,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar }){
+	insert({ companyID, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
@@ -120,6 +120,9 @@ class Model extends BaseModel {
                 if(officialStaffSalar && !isNaN(officialStaffSalar)){
                     dataInsert.officialStaffSalar = +officialStaffSalar;
                 }
+                if(nightShiftStaffSalary && !isNaN(nightShiftStaffSalary)){
+                    dataInsert.nightShiftStaffSalary = +nightShiftStaffSalary;
+                }
 
                 //_________Bật hoặc tắt chiến dịch truyền thông
                 if(campaign && !isNaN(campaign) && [1, 2].includes(campaign)){
@@ -185,8 +188,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance }){
-        // console.log({ fundaID, platform, name, sign, description, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, imagesID, bankQrcode })
+	update({ fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -368,6 +370,9 @@ class Model extends BaseModel {
 
                 if(officialStaffSalar && !isNaN(officialStaffSalar)){
                     dataUpdate.officialStaffSalar = Number(officialStaffSalar)
+                }
+                if(nightShiftStaffSalary && !isNaN(nightShiftStaffSalary)){
+                    dataUpdate.nightShiftStaffSalary = +nightShiftStaffSalary;
                 }
 
                 if(lunchStaffAllowance && !isNaN(lunchStaffAllowance)){

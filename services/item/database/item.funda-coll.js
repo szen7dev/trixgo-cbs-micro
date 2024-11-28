@@ -309,10 +309,12 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
      */
     //_________Lương đào tạo/giờ
     trainStaffSalar: { type: Number, default: 0 },
-    //_________Lương thử việc/giờ
+    //_________Lương thử việc/giờ (Hiện đang sử dụng cho ca gãy)
     trialStaffSalary: { type: Number, default: 0 },
     //_________Lương chính thức/giờ
     officialStaffSalar: { type: Number, default: 0 },
+    //_________Lương ca đêm
+    nightShiftStaffSalary: { type: Number, default: 0 },
     //_________Phụ cấp ăn trưa/bữa
     lunchStaffAllowance: { type: Number, default: 0 },
     //_________Chi phí Food App
