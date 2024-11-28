@@ -52,8 +52,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ fundaID, email, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
-        // console.log({ fundaID, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, userID })
+    insert({ fundaID, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
+        // console.log({ fundaID, fullname, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -151,9 +151,6 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
-
-                // Cập nhật vào bảng chấm công
-                // await that.updateTimesheet({ companyID: infoFunda.company, shiftID: infoAfterInsert._id, userID })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -330,148 +327,8 @@ class Model extends BaseModel {
                         let infoOrder = await FNB_ORDER_COLL.findByIdAndUpdate(item._id, dataOrderUpdate, { new: true })
                     }
                 }
-                // console.log(infoAfterUpdate)
-
-                // Cập nhật vào bảng chấm công
-                // await that.updateTimesheet({ companyID, shiftID, userID })
 
                 return resolve({ error: false, data: infoAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message })
-            }
-        });
-    }
-
-    /**
-     * Name  : Cập nhật bảng chấm công => Khối gián tiếp
-     * Author: HiepNH
-     * Code  : 2/4/2023
-     */
-    updateTimesheet({ companyID, shiftID, userID }) {
-        // console.log({ companyID, shiftID, userID })
-        return new Promise(async resolve => {
-            try {
-                /**
-                 * 1. Tìm bảng chấm công trong tháng/chưa có thì tạo
-                    2. Tìm user trong bảng chấm công/chưa có thì tạo/có thì update
-                    3. Update chấm công sang (KL, đơn giá, thành tiền,...)
-                 */
-                // Bảng chấm công trong tháng
-                let infoShift = await FNB_SHIFT_COLL.findById(shiftID).populate({
-                    path: 'funda',
-                    select: 'name sign',
-                })
-                // console.log(infoShift)
-                // console.log({___________:infoShift.createAt.getMonth()})
-                // console.log({___________:infoShift.createAt.getFullYear()})
-
-                let infoTimesheet =  await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
-                    company: companyID, 
-                    type: 2,
-                    parent: { $exists: false },
-                    $where: 
-                    `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
-                })
-                // console.log({___________:infoTimesheet})
-
-                if(infoTimesheet){
-                    for(const item of infoShift.staffs){
-                        let checkExist = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
-                            parent: { $exists: true, $ne: null }, 
-                            shift: shiftID, 
-                            assignee: item,
-                            $where: 
-                            `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
-                        })
-                        // console.log({checkExist})
-    
-                        if(!checkExist){
-                            // console.log('111111111111111111111111111')
-                            // Tạo mới
-                            let info = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({ 
-                                userCreate: userID, 
-                                companyID, 
-                                parentID: infoTimesheet._id, 
-                                name: `${infoShift.name}_${infoShift.funda.name}`, 
-                                date: infoShift.createAt, 
-                                type: 2, 
-                                hours: infoShift.workingHours, 
-                                unitprice: infoShift.officialStaffSalar,
-                                fundaID: infoShift.funda._id,
-                                shiftID,
-                                assigneeID: item
-                            })
-                            // console.log({___________:info})
-                        }else{
-                            // console.log('222222222222222222222222222')
-                            // Cập nhật
-                            let info =  await TIMESHEET__EXPERT_TIMESHEET_COLL.findOneAndUpdate({
-                                shift: shiftID, 
-                                assignee: item,
-                                $where: 
-                            `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
-                            }, 
-                                {
-                                    name: `${infoShift.name}_${infoShift.funda.name}_updated`, 
-                                    hours: infoShift.workingHours, 
-                                    unitprice: infoShift.officialStaffSalar,
-                                    amount: Number(infoShift.workingHours * infoShift.officialStaffSalar),
-                                }, { new: true }
-                            );
-        
-                            // console.log(info)
-                        }
-                    }
-    
-                    for(const item of infoShift.subStaffs){
-                        let checkExist = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
-                            parent: { $exists: true, $ne: null },
-                            shift: shiftID, 
-                            assignee: item,
-                            $where: 
-                            `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
-                        })
-                        // console.log({checkExist})
-    
-                        if(!checkExist){
-                            // console.log('333333333333333333333333333')
-                            // Tạo mới
-                            let info = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({ 
-                                userCreate: userID, 
-                                companyID, 
-                                parentID: infoTimesheet._id, 
-                                name: `${infoShift.name}_ca gãy_${infoShift.funda.name}`, 
-                                date: infoShift.createAt, 
-                                type: 2, 
-                                hours: infoShift.subWorkingHours, 
-                                unitprice: infoShift.trialStaffSalary,
-                                fundaID: infoShift.funda._id,
-                                shiftID,
-                                assigneeID: item
-                            })
-                            // console.log({___________:info})
-                        }else{
-                            // console.log('44444444444444444444444444444')
-                            // Cập nhật
-                            let info =  await TIMESHEET__EXPERT_TIMESHEET_COLL.findOneAndUpdate({
-                                shift: shiftID, 
-                                assignee: item,
-                                $where: 
-                            `return this.date.getMonth() === ${Number(infoShift.createAt.getMonth())} && this.date.getFullYear() === ${Number(infoShift.createAt.getFullYear())}`
-                            }, 
-                                {
-                                    name: `${infoShift.name}_ca gãy_${infoShift.funda.name}_updated`, 
-                                    hours: infoShift.subWorkingHours, 
-                                    unitprice: infoShift.trialStaffSalary,
-                                    amount: Number(infoShift.subWorkingHours * infoShift.trialStaffSalary),
-                                }, { new: true }
-                            );
-                            // console.log(info)
-                        }
-                    }
-                }                
-
-                return resolve({ error: false });
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }

@@ -22,7 +22,7 @@ module.exports = {
             description         : { type: "string", optional: true },
             phone               : { type: "string", optional: true },
             bankAccount         : { type: "string", optional: true },
-            loyaltyPointsRate   : { type: "string", optional: true },
+            // loyaltyPointsRate   : { type: "string", optional: true },
             address             : { type: "string", optional: true },
             initialDay          : { type: "string", optional: true },
             parentID            : { type: "string", optional: true },
@@ -37,18 +37,18 @@ module.exports = {
             otherExpense        : { type: "number", optional: true },
             platform            : { type: "number", optional: true },
             activeCampaign      : { type: "array", optional: true },
-            trainStaffSalar     : { type: "string", optional: true },
-            trialStaffSalary    : { type: "string", optional: true },
-            officialStaffSalar  : { type: "string", optional: true },
+            // trainStaffSalar     : { type: "string", optional: true },
+            // trialStaffSalary    : { type: "string", optional: true },
+            // officialStaffSalar  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const { platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, parentID, materialExpenseRate,
-                     materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar } = ctx.params;
+                     materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -72,7 +72,7 @@ module.exports = {
             phone               : { type: "string", optional: true },
             bankAccount         : { type: "string", optional: true },
             bankQrcode          : { type: "array", optional: true },
-            loyaltyPointsRate   : { type: "string", optional: true },
+            // loyaltyPointsRate   : { type: "string", optional: true },
             initialDay          : { type: "string", optional: true },
             area                : { type: "string", optional: true },
             manager             : { type: "string", optional: true },
@@ -92,9 +92,9 @@ module.exports = {
             humanExpense        : { type: "number", optional: true },
             otherExpense        : { type: "number", optional: true },
             activeCampaign      : { type: "array", optional: true },
-            trainStaffSalar     : { type: "string", optional: true },
-            trialStaffSalary    : { type: "string", optional: true },
-            officialStaffSalar  : { type: "string", optional: true },
+            // trainStaffSalar     : { type: "string", optional: true },
+            // trialStaffSalary    : { type: "string", optional: true },
+            // officialStaffSalar  : { type: "string", optional: true },
             lunchStaffAllowance : { type: "number", optional: true },
             platform            : { type: "number", optional: true },
         },
@@ -103,13 +103,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const { fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
-                    adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  } = ctx.params;
-
-                // console.log({ fundaID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, trainStaffSalar, trialStaffSalary, officialStaffSalar })
+                    adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  } = ctx.params;
 
                 const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members,
                     admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense,
-                    otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, lunchStaffAllowance  });
+                    otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
