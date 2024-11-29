@@ -2056,7 +2056,7 @@ class Model extends BaseModel {
 
                 // console.log(listContactOA.length)
 
-                let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code})
+                let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code,  company: ObjectID(companyID)})
                 // console.log(infoVoucher)
 
                 if(infoVoucher){
