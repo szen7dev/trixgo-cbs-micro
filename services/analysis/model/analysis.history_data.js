@@ -2029,7 +2029,7 @@ class Model extends BaseModel {
     //     })
     // }
 
-    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, isTest, ctx }){
+    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, isTest, phoneTest, ctx }){
         return new Promise(async resolve => { 
             try {
                 /**
@@ -2159,7 +2159,7 @@ class Model extends BaseModel {
                         if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){ 
                             if(isTest){
                                 let dataOA = {
-                                    phone: "84985199295",
+                                    phone: phoneTest,
                                     templateData: {
                                         customer_name: `${item?._id?.customer?.phone}`,
                                         customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
@@ -2173,10 +2173,11 @@ class Model extends BaseModel {
                                 }
                                 // console.log(dataOA)
             
-                                await ctx.call(
+                                let info = await ctx.call(
                                     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                                     dataOA,
                                 )
+                                // console.log(info)
                             }else{
                                 let dataOA = {
                                     phone: `84${item?._id?.customer?.phone.slice(1)}`,
@@ -2193,10 +2194,11 @@ class Model extends BaseModel {
                                 }
                                 // console.log(dataOA)
             
-                                await ctx.call(
+                                let info = await ctx.call(
                                     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                                     dataOA,
                                 )
+                                // console.log(info)
                             }
                         }
 
