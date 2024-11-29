@@ -2092,8 +2092,10 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code,  company: ObjectID(companyID)})
+                let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code, company: ObjectID(companyID)})
                 // console.log(infoVoucher)
+
+                return resolve({ error: false, data: infoVoucher })
 
                 // if(infoVoucher){
                 //     let conditionObj = {
