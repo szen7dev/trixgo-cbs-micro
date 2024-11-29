@@ -2065,164 +2065,185 @@ class Model extends BaseModel {
                     {phone: '0979560951', sign: 'toannd', name: 'Nguyễn Đắc Toàn'},
                 ]
 
-                for(const item of arrCus){
-                    if(isValidVietnamPhoneNumber(item.phone)){  
+                // for(const item of arrCus){
+                //     if(isValidVietnamPhoneNumber(item.phone)){  
+                //         let dataOA = {
+                //             phone: `84${item.phone.slice(1)}`,
+                //             // phone: "84985199295",
+                //             templateData: {
+                //                 customer_name: item.name,
+                //                 customer_id: item.sign,
+                //                 // start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                //                 expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                //                 voucher_code,
+                //                 // note,
+                //             },
+                //             templateId,
+                //             appId,
+                //         }
+
+                //         console.log(dataOA)
+    
+                //         let info = await ctx.call(
+                //             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                //             dataOA,
+                //         )
+                //         console.log(info)
+                //     }
+                // }
+
+                 // return resolve({ error: false, message: 'Xử lý thành công' })
+
+                let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code, company: ObjectID(companyID)})
+                // console.log(infoVoucher)               
+
+                if(infoVoucher){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        // customer: {$in: listContactOA.map(item=>item._id)}
+                    }
+    
+                    let conditionGroup = {
+                        _id: { customer: "$customer"},
+                        // number: { $sum: 1 },
+                        amount: { $sum: "$amount" },
+                        // total: { $sum: "$total" },
+                    }
+    
+                    let conditionPopulate = {
+                        path: '_id.customer',
+                        select: '_id name phone',
+                        model: 'contact',
+                    }
+    
+                    let sortBy = {"amount": -1}
+    
+                    if(salesChannel){
+                        conditionObj.salesChannel = +salesChannel
+                    }
+    
+                    if(!isNaN(min)){
+                        conditionObj.amount = {$gte: Number(min)}
+                    }
+    
+                    if (isValidDate(fromDate) && isValidDate(toDate)) {
+                        conditionObj.createAt = {
+                          $gte: new Date(fromDate),
+                          $lte: new Date(toDate),
+                        }
+                    }
+                    // console.log(conditionObj)
+    
+                    let listData = await FNB_ORDER_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: conditionGroup
+                        },
+                        {
+                            $sort: sortBy
+                        },
+                        {
+                            $limit: Number(quantity) // Giới hạn chỉ lấy 10,000 mẩu tin
+                        },
+                        // {
+                        //     $group: {
+                        //       _id: null, // Không cần nhóm thêm, chỉ tổng hợp toàn bộ
+                        //       totalAmount: { $sum: "$amount" } // Tổng cộng tất cả các giá trị amount
+                        //     }
+                        // }
+                    ])
+                    
+                    // console.log(listData.length)
+                    await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+                    
+                    let arr = []
+                    if(isTest){
                         let dataOA = {
-                            phone: `84${item.phone.slice(1)}`,
-                            // phone: "84985199295",
+                            phone: phoneTest,
                             templateData: {
-                                customer_name: item.name,
-                                customer_id: item.sign,
-                                // start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                customer_name: `Nguyễn Hữu Hiệp-Test`,
+                                customer_id: `6688`,
+                                start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
                                 expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
                                 voucher_code,
-                                // note,
+                                note,
                             },
                             templateId,
                             appId,
                         }
-
-                        console.log(dataOA)
+                        // console.log(dataOA)
     
                         let info = await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                             dataOA,
                         )
-                        console.log(info)
+                        // console.log(info)
+
+                        let dataOA2 = {
+                            phone: "84985199295",
+                            templateData: {
+                              customer_name: `Khách 0985199295`,
+                              order_code: `C666888`,
+                              price: 100000,
+                              date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
+                              note: "Test nhận thông báo",
+                            },
+                            templateId: '257162',
+                            appId: '963380776351252177'
+                        }
+                        // console.log(dataOA2)
+
+                        let info2 = await ctx.call(
+                            `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                            dataOA2,
+                        )
+                        // console.log(info2)
+
+                        return resolve({ error: false, message: 'Xử lý thành công' })
+                    }else{
+                        for(const item of listData){
+                            if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){ 
+                                let dataOA = {
+                                    phone: `84${item?._id?.customer?.phone.slice(1)}`,
+                                    templateData: {
+                                        customer_name: `${item?._id?.customer?.phone}`,
+                                        customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
+                                        start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                        expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                                        voucher_code,
+                                        note,
+                                    },
+                                    templateId,
+                                    appId,
+                                }
+                                // console.log(dataOA)
+            
+                                let info = await ctx.call(
+                                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                                    dataOA,
+                                )
+                                // console.log(info)
+    
+                                arr.push(item)
+                            }
+                        }
+                        // console.log(arr)
+    
+                        if(arr.length){
+                            await FNB_VOUCHER_COLL.findByIdAndUpdate(infoVoucher._id, {
+                                $addToSet: {
+                                    receivers: arr.map(sub=>sub?._id?.customer?._id)
+                                }
+                            }, { new: true })
+                        }
+    
+                        return resolve({ error: false, message: 'Xử lý thành công' })
                     }
+                }else{
+                    return resolve({ error: true, message: 'Voucher không hợp lệ' })
                 }
-
-                // let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code, company: ObjectID(companyID)})
-                // console.log(infoVoucher)
-
-                return resolve({ error: false, message: 'Xử lý thành công' })
-
-                // if(infoVoucher){
-                //     let conditionObj = {
-                //         company: ObjectID(companyID),
-                //         // customer: {$in: listContactOA.map(item=>item._id)}
-                //     }
-    
-                //     let conditionGroup = {
-                //         _id: { customer: "$customer"},
-                //         // number: { $sum: 1 },
-                //         amount: { $sum: "$amount" },
-                //         // total: { $sum: "$total" },
-                //     }
-    
-                //     let conditionPopulate = {
-                //         path: '_id.customer',
-                //         select: '_id name phone',
-                //         model: 'contact',
-                //     }
-    
-                //     let sortBy = {"amount": -1}
-    
-                //     if(salesChannel){
-                //         conditionObj.salesChannel = +salesChannel
-                //     }
-    
-                //     if(!isNaN(min)){
-                //         conditionObj.amount = {$gte: Number(min)}
-                //     }
-    
-                //     if (isValidDate(fromDate) && isValidDate(toDate)) {
-                //         conditionObj.createAt = {
-                //           $gte: new Date(fromDate),
-                //           $lte: new Date(toDate),
-                //         }
-                //     }
-                //     // console.log(conditionObj)
-    
-                //     let listData = await FNB_ORDER_COLL.aggregate([
-                //         {
-                //             $match: conditionObj
-                //         },
-                //         {
-                //             $group: conditionGroup
-                //         },
-                //         {
-                //             $sort: sortBy
-                //         },
-                //         {
-                //             $limit: Number(quantity) // Giới hạn chỉ lấy 10,000 mẩu tin
-                //         },
-                //         // {
-                //         //     $group: {
-                //         //       _id: null, // Không cần nhóm thêm, chỉ tổng hợp toàn bộ
-                //         //       totalAmount: { $sum: "$amount" } // Tổng cộng tất cả các giá trị amount
-                //         //     }
-                //         // }
-                //     ])
-                    
-                //     // console.log(listData.length)
-                //     await FNB_ORDER_COLL.populate(listData, conditionPopulate)
-    
-                //     for(const item of listData){
-                //         if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){ 
-                //             if(isTest){
-                //                 let dataOA = {
-                //                     phone: phoneTest,
-                //                     templateData: {
-                //                         customer_name: `${item?._id?.customer?.phone}`,
-                //                         customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
-                //                         start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
-                //                         expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
-                //                         voucher_code,
-                //                         note,
-                //                     },
-                //                     templateId,
-                //                     appId,
-                //                 }
-                //                 // console.log(dataOA)
-            
-                //                 let info = await ctx.call(
-                //                     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                //                     dataOA,
-                //                 )
-                //                 // console.log(info)
-                //             }else{
-                //                 let dataOA = {
-                //                     phone: `84${item?._id?.customer?.phone.slice(1)}`,
-                //                     templateData: {
-                //                         customer_name: `${item?._id?.customer?.phone}`,
-                //                         customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
-                //                         start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
-                //                         expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
-                //                         voucher_code,
-                //                         note,
-                //                     },
-                //                     templateId,
-                //                     appId,
-                //                 }
-                //                 // console.log(dataOA)
-            
-                //                 let info = await ctx.call(
-                //                     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                //                     dataOA,
-                //                 )
-                //                 // console.log(info)
-                //             }
-                //         }
-
-                //         // await FNB_VOUCHER_COLL.findByIdAndUpdate(infoVoucher._id, {
-                //         //     $addToSet: {
-                //         //         receivers: item?._id?.customer?._id
-                //         //     }
-                //         // }, { new: true });
-                //     }
-
-                //     await FNB_VOUCHER_COLL.findByIdAndUpdate(infoVoucher._id, {
-                //         $addToSet: {
-                //             receivers: listData.map(sub=>sub?._id?.customer?._id)
-                //         }
-                //     }, { new: true });
-    
-                //     return resolve({ error: false, message: 'Xử lý thành công' })
-                //     // return resolve({ error: false, data: listData })
-                // }else{
-                //     return resolve({ error: true, message: 'Voucher không hợp lệ' })
-                // }
 
             } catch (error) {
                 return resolve({ error: true, message: error.message });
