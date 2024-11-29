@@ -2073,27 +2073,29 @@ class Model extends BaseModel {
                             templateData: {
                                 customer_name: item.name,
                                 customer_id: item.sign,
-                                start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                // start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
                                 expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
                                 voucher_code,
-                                note,
+                                // note,
                             },
                             templateId,
                             appId,
                         }
 
-                        // console.log(dataOA)
+                        console.log(dataOA)
     
                         let info = await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                             dataOA,
                         )
-                        // console.log(info)
+                        console.log(info)
                     }
                 }
 
-                let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code,  company: ObjectID(companyID)})
+                // let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code, company: ObjectID(companyID)})
                 // console.log(infoVoucher)
+
+                return resolve({ error: false, message: 'Xử lý thành công' })
 
                 // if(infoVoucher){
                 //     let conditionObj = {
