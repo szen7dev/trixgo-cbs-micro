@@ -2029,7 +2029,7 @@ class Model extends BaseModel {
     //     })
     // }
 
-    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, isTest, phoneTest, page=1, limit=500, ctx }){
+    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, max, quantity, isTest, phoneTest, page=1, limit=500, ctx }){
         return new Promise(async resolve => { 
             try {
                 if (Number(limit) > 500) {
@@ -2059,46 +2059,7 @@ class Model extends BaseModel {
                 // .select('name phone')
                 // .limit(9000)
                 // .lean()
-
                 // console.log(listContactOA.length)
-
-                // Bắn tin test
-                let arrCus = [
-                    {phone: '0985199295', sign: 'hiepnh', name: 'Nguyễn Hữu Hiệp'},
-                    {phone: '0988115997', sign: 'hoangnh', name: 'Nguyễn Hữu Hoàng'},
-                    {phone: '0977385723', sign: 'yennt', name: 'Nguyễn Thị Yên'},
-                    {phone: '0985866331', sign: 'chinhnv', name: 'Nguyễn Văn Chính'},
-                    {phone: '0979560951', sign: 'toannd', name: 'Nguyễn Đắc Toàn'},
-                ]
-
-                // for(const item of arrCus){
-                //     if(isValidVietnamPhoneNumber(item.phone)){  
-                //         let dataOA = {
-                //             phone: `84${item.phone.slice(1)}`,
-                //             // phone: "84985199295",
-                //             templateData: {
-                //                 customer_name: item.name,
-                //                 customer_id: item.sign,
-                //                 // start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
-                //                 expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
-                //                 voucher_code,
-                //                 // note,
-                //             },
-                //             templateId,
-                //             appId,
-                //         }
-
-                //         console.log(dataOA)
-    
-                //         let info = await ctx.call(
-                //             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                //             dataOA,
-                //         )
-                //         console.log(info)
-                //     }
-                // }
-
-                 // return resolve({ error: false, message: 'Xử lý thành công' })
 
                 let infoVoucher = await FNB_VOUCHER_COLL.findOne({sign: voucher_code, company: ObjectID(companyID)})
                 // console.log(infoVoucher)               
@@ -2130,6 +2091,10 @@ class Model extends BaseModel {
     
                     if(!isNaN(min)){
                         conditionObj.amount = {$gte: Number(min)}
+                    }else{
+                        if(!isNaN(max)){
+                            conditionObj.amount = {$lte: Number(max)}
+                        }
                     }
     
                     if (isValidDate(fromDate) && isValidDate(toDate)) {
@@ -2139,36 +2104,54 @@ class Model extends BaseModel {
                         }
                     }
                     // console.log(conditionObj)
-    
-                    let listData = await FNB_ORDER_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        },
-                        {
-                            $skip: (page - 1) * limit // Bỏ qua số mẫu tin dựa trên trang
-                        },
-                        {
-                            $limit: limit // Lấy đúng số lượng mẫu tin cho trang hiện tại
-                        },
-                        // {
-                        //     $limit: Number(quantity) // Giới hạn chỉ lấy 10,000 mẩu tin
-                        // },
-                        // {
-                        //     $group: {
-                        //       _id: null, // Không cần nhóm thêm, chỉ tổng hợp toàn bộ
-                        //       totalAmount: { $sum: "$amount" } // Tổng cộng tất cả các giá trị amount
-                        //     }
-                        // }
-                    ])
-                    
-                    // console.log(listData.length)
+
+                    let listData
+
+                    if(quantity){
+                        listData = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            },
+                            {
+                                $limit: Number(quantity) // Giới hạn chỉ lấy 10,000 mẩu tin
+                            },
+                            // {
+                            //     $group: {
+                            //       _id: null, // Không cần nhóm thêm, chỉ tổng hợp toàn bộ
+                            //       totalAmount: { $sum: "$amount" } // Tổng cộng tất cả các giá trị amount
+                            //     }
+                            // }
+                        ])
+                    }else{
+                        listData = await FNB_ORDER_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: conditionGroup
+                            },
+                            {
+                                $sort: sortBy
+                            },
+                            {
+                                $skip: (page - 1) * limit // Bỏ qua số mẫu tin dựa trên trang
+                            },
+                            {
+                                $limit: limit // Lấy đúng số lượng mẫu tin cho trang hiện tại
+                            },
+                        ])
+                    }
+                    console.log(listData.length)
+
                     await FNB_ORDER_COLL.populate(listData, conditionPopulate)
+
+                    // return resolve({ error: false, data: listData })
                     
                     let arr = []
                     if(isTest){
@@ -2226,8 +2209,9 @@ class Model extends BaseModel {
 
                             var i = 2
                             arr.forEach((item, index) =>{
+                                // console.log(item?._id?.customer)
                                 workbook.sheet("Sheet1").row(i).cell(1).value(`${item?._id?.customer?._id}`)
-                                workbook.sheet("Sheet1").row(i).cell(2).value(`${item?._id?.customer?._id.substring(0, 6)}`)
+                                workbook.sheet("Sheet1").row(i).cell(2).value(`${item?._id?.customer?._id.toString().substring(0, 6)}`)
                                 workbook.sheet("Sheet1").row(i).cell(3).value(item?._id?.customer?.name)
                                 workbook.sheet("Sheet1").row(i).cell(4).value(`${item?._id?.customer?.phone}`)
 
@@ -2287,8 +2271,9 @@ class Model extends BaseModel {
 
                             var i = 2
                             arr.forEach((item, index) =>{
+                                // console.log(item?._id?.customer)
                                 workbook.sheet("Sheet1").row(i).cell(1).value(`${item?._id?.customer?._id}`)
-                                workbook.sheet("Sheet1").row(i).cell(2).value(`${item?._id?.customer?._id.substring(0, 6)}`)
+                                workbook.sheet("Sheet1").row(i).cell(2).value(`${item?._id?.customer?._id.toString().substring(0, 6)}`)
                                 workbook.sheet("Sheet1").row(i).cell(3).value(item?._id?.customer?.name)
                                 workbook.sheet("Sheet1").row(i).cell(4).value(`${item?._id?.customer?.phone}`)
 
