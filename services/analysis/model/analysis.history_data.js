@@ -2205,25 +2205,25 @@ class Model extends BaseModel {
                     }else{
                         for(const item of listData){
                             if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){ 
-                                let dataOA = {
-                                    phone: `84${item?._id?.customer?.phone.slice(1)}`,
-                                    templateData: {
-                                        customer_name: `${item?._id?.customer?.phone}`,
-                                        customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
-                                        start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
-                                        expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
-                                        voucher_code,
-                                        note,
-                                    },
-                                    templateId,
-                                    appId,
-                                }
-                                // console.log(dataOA)
+                                // let dataOA = {
+                                //     phone: `84${item?._id?.customer?.phone.slice(1)}`,
+                                //     templateData: {
+                                //         customer_name: `${item?._id?.customer?.phone}`,
+                                //         customer_id: `${item?._id?.customer?._id.toString().substring(0, 6)}`,
+                                //         start_date: moment(new Date(start_date)).format("HH:mm DD/MM/YYYY"),
+                                //         expire: moment(new Date(expire)).format("HH:mm DD/MM/YYYY"),
+                                //         voucher_code,
+                                //         note,
+                                //     },
+                                //     templateId,
+                                //     appId,
+                                // }
+                                // // console.log(dataOA)
             
-                                let info = await ctx.call(
-                                    `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                                    dataOA,
-                                )
+                                // let info = await ctx.call(
+                                //     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                                //     dataOA,
+                                // )
                                 // console.log(info)
     
                                 arr.push(item)
