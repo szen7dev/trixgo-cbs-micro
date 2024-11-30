@@ -2029,9 +2029,15 @@ class Model extends BaseModel {
     //     })
     // }
 
-    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, isTest, phoneTest, ctx }){
+    sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, quantity, isTest, phoneTest, page=1, limit=500, ctx }){
         return new Promise(async resolve => { 
             try {
+                if (Number(limit) > 500) {
+                    limit = 500;
+                } else {
+                    limit = +Number(limit);
+                }
+
                 /**
                  * BA
                  * 1. Lấy Danh sách các khách hàng mua hàng trong 30 ngày gần đây: doanh số cao nhất, kênh off/app....
@@ -2145,8 +2151,14 @@ class Model extends BaseModel {
                             $sort: sortBy
                         },
                         {
-                            $limit: Number(quantity) // Giới hạn chỉ lấy 10,000 mẩu tin
+                            $skip: (page - 1) * limit // Bỏ qua số mẫu tin dựa trên trang
                         },
+                        {
+                            $limit: limit // Lấy đúng số lượng mẫu tin cho trang hiện tại
+                        },
+                        // {
+                        //     $limit: Number(quantity) // Giới hạn chỉ lấy 10,000 mẩu tin
+                        // },
                         // {
                         //     $group: {
                         //       _id: null, // Không cần nhóm thêm, chỉ tổng hợp toàn bộ
@@ -2215,7 +2227,7 @@ class Model extends BaseModel {
                             var i = 2
                             arr.forEach((item, index) =>{
                                 workbook.sheet("Sheet1").row(i).cell(1).value(`${item?._id?.customer?._id}`)
-                                workbook.sheet("Sheet1").row(i).cell(2).value(item?._id?.customer?.name.substring(0, 6))
+                                workbook.sheet("Sheet1").row(i).cell(2).value(`${item?._id?.customer?._id.substring(0, 6)}`)
                                 workbook.sheet("Sheet1").row(i).cell(3).value(item?._id?.customer?.name)
                                 workbook.sheet("Sheet1").row(i).cell(4).value(`${item?._id?.customer?.phone}`)
 
@@ -2276,7 +2288,7 @@ class Model extends BaseModel {
                             var i = 2
                             arr.forEach((item, index) =>{
                                 workbook.sheet("Sheet1").row(i).cell(1).value(`${item?._id?.customer?._id}`)
-                                workbook.sheet("Sheet1").row(i).cell(2).value(item?._id?.customer?.name.substring(0, 6))
+                                workbook.sheet("Sheet1").row(i).cell(2).value(`${item?._id?.customer?._id.substring(0, 6)}`)
                                 workbook.sheet("Sheet1").row(i).cell(3).value(item?._id?.customer?.name)
                                 workbook.sheet("Sheet1").row(i).cell(4).value(`${item?._id?.customer?.phone}`)
 
