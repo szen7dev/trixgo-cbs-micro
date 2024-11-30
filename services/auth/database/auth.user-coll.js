@@ -3,6 +3,16 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+/**
+ * db.collection.getIndexes(); // Kiểm tra các Index
+ * db.collection.dropIndex("phone_1"); // Xóa Index cũ đi
+    db.collection.updateMany(
+    { phone: { $exists: true } }, // Chỉ áp dụng với các tài liệu có trường phone
+    { $unset: { phone: "" } }    // Xóa trường phone
+    );
+ * db.collection.createIndex({ phone: 1 }, { unique: true, sparse: true }); // Tạo lại Index
+    //Với sparse: true, các tài liệu không có trường phone sẽ không được tính trong index và sẽ không gây lỗi vi phạm ràng buộc unique.
+ */
 module.exports  = DATABASE_MIDDLEWARE("user", {
     //_________Thuộc nền tảng
     platform:{
@@ -217,4 +227,4 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-})
+}) // Đảm bảo tự động tạo index

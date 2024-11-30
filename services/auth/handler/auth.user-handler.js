@@ -451,11 +451,6 @@ module.exports = {
      * Code: F0015
      * Author: Depv
      * Name: Get user by JWT token (for API GW authentication)
-     *
-     * @actions
-     * @param {String} token - JWT token
-     *
-     * @returns {Object} Resolved user
      */
      resolveToken: {
         cache: {
@@ -474,6 +469,7 @@ module.exports = {
             return infoUser;
         }
     },
+
     /**
      * Code: F0016
      * Author: Depv
@@ -624,15 +620,6 @@ module.exports = {
      * Perform a textual search with 'find' method
      *  phương án này chỉ dùng cho các trường hợp đơn giản (ko có tìm kiếm+phân trang)
      *  -> tối ưu: cần dùng text search riêng
-     *
-     *  db.message_messages.find(
-            { $text: { $search: "TRX Khánh Duy" } },
-            { score: { $meta: "textScore" } }
-            ).sort( { score: { $meta: "textScore" } } )
-
-            .projection({
-                content: 1
-        })
      */
     searchWithFind: {
         cache: {
