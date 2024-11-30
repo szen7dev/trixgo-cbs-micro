@@ -78,7 +78,7 @@ module.exports = {
                 let { expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, pependent } = ctx.params;
                 // console.log({ expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -175,7 +175,7 @@ module.exports = {
                 let { expertSalaryID, subtype, salary, onLeaveSalary, overtimeSalary, mealAllowance, punishment, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, option, month, year } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log({ EXPERT_SALARY_PARAMS: ctx.params })
+                console.log({ EXPERT_SALARY_PARAMS: ctx.params })
 
                 if(!companyID){
                     companyID = company._id

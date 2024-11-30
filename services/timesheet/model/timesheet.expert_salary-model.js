@@ -33,6 +33,7 @@ const TIMESHEET__EXPERT_SALARY_COLL     = require('../database/timesheet.expert_
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll')
 const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
+const ITEM__FUNDA_COLL                  = require('../../item/database/item.funda-coll');
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll');
 const e = require('express');
 // const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
@@ -95,11 +96,11 @@ class Model extends BaseModel {
                     members: [userCreate]
                 }
 
-                if(humanID){
+                if(checkObjectIDs(humanID)){
                     dataInsert.human = humanID;
                 }
 
-                if(projectID){
+                if(checkObjectIDs(projectID)){
                     dataInsert.project = projectID;
                 }
 
@@ -194,6 +195,13 @@ class Model extends BaseModel {
                         type: infoAfterInsert.type,
                     }
 
+                    if(checkObjectIDs(projectID)){
+                        let infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda')
+                        if(infoProject && infoProject.funda){
+                            dataInsertDetail.funda = infoProject.funda
+                        }
+                    }
+
                     if(Number(insuranceFee) > 0){
                         dataInsertDetail.insurance = Number(insuranceFee)
                     }
@@ -227,7 +235,6 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ expertSalaryID, type, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22 }){
-        // console.log({ expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22 })
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -250,8 +257,14 @@ class Model extends BaseModel {
                     dataUpdate.type = type;
                 }
 
+                let infoProject;
                 if(checkObjectIDs(projectID)){
+                    infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda name')
                     dataUpdate.project = projectID;
+
+                    if(infoProject && infoProject.funda){
+                        dataUpdate.funda = infoProject.funda
+                    }
                 }
 
                 if(checkObjectIDs(humanID)){
@@ -446,7 +459,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO CHI TIẾT LƯƠNG CON
                  */
                 if(!infoAfterUpdate.parent){
-                    // console.log('555555555555555555555555555')
+                    console.log('555555555555555555555555555')
                     // console.log( {date: infoAfterUpdate.date})
 
                     // Cập nhật số nhân sự bảng lương
@@ -464,12 +477,20 @@ class Model extends BaseModel {
                     //     await TIMESHEET__EXPERT_SALARY_COLL.updateMany({parent: expertSalaryID},{$set: {convertFactor: convertFactor}})
                     // }
 
-                    // Cập nhật ngày tháng
-                    await TIMESHEET__EXPERT_SALARY_COLL.updateMany({parent: expertSalaryID},{$set: {
+                    let dataUpdateNew = {
                         date: infoAfterUpdate.date,
                         userUpdate: userID,
                         modifyAt: Date.now()
-                    }})
+                    }
+
+                    if(checkObjectIDs(projectID)){
+                        if(infoProject && infoProject.funda){
+                            dataUpdateNew.funda = infoProject.funda
+                        }
+                    }
+
+                    // Cập nhật ngày tháng
+                    await TIMESHEET__EXPERT_SALARY_COLL.updateMany({parent: expertSalaryID},{$set: dataUpdateNew})
                 }
 
                 /**
@@ -957,7 +978,7 @@ class Model extends BaseModel {
     syncData({
         companyID, userID, email, option, salaryID, orderID, arrUser
     }){
-        // console.log({companyID, userID, email, option, salaryID, orderID})
+        console.log({companyID, userID, email, option, salaryID, orderID})
         const that = this
         return new Promise(async (resolve) => {
             try {
