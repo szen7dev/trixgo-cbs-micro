@@ -105,7 +105,7 @@ module.exports = {
                 const { fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
                     adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  } = ctx.params;
 
-                    // console.log(ctx.params)
+                    console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members,
                     admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense,

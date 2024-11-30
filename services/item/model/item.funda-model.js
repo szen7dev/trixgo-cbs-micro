@@ -200,6 +200,7 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	update({ fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
+        // console.log({ fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -411,9 +412,11 @@ class Model extends BaseModel {
 
                 // Cập nhật Project
                 if(project && checkObjectIDs(project)){
-                    await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(project, {
+                    let info = await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(project, {
                         funda: fundaID
                     }, { new: true });
+
+                    console.log(info)
                 }
 
                 /**
