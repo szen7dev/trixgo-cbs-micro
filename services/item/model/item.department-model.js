@@ -882,7 +882,7 @@ class Model extends BaseModel {
      */
     getList({ companyID, keyword, type, userID, isMember, isBudget, limit = 20, lastestID, select, populates={} }) {
         // console.log('==============Danh mục dự án=>DÙNG CHUNG')
-        // console.log({ companyID, keyword, type, userID, isMember, isBudget, limit, lastestID, select, populates })
+        console.log({ companyID, keyword, type, userID, isMember, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 let conditionObj  = {};

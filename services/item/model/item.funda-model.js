@@ -21,6 +21,7 @@ const { getCurrentPage }			    = require('../../../tools/utils/calculate_current
 /**
  * COLLECTIONS
  */
+const ITEM__DEPARTMENT_COLL            			= require('../database/item.department-coll');
 const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
 const ITEM__AREA_COLL            				= require('../database/item.area-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
@@ -36,7 +37,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary }){
+	insert({ companyID, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, project }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
@@ -73,6 +74,10 @@ class Model extends BaseModel {
                 // Link danh bạ
                 if(infoContact){
                     dataInsert.contact = infoContact._id;
+                }
+
+                if(project && checkObjectIDs(project)){
+                    dataInsert.project = project;
                 }
 
                 if(checkObjectIDs(activeCampaign)){
@@ -175,8 +180,14 @@ class Model extends BaseModel {
                     await ITEM__FUNDA_COLL.findByIdAndUpdate(parentID, { $inc: { amountChilds: 1 }}, { new: true });
                 }
 
-                return resolve({ error: false, data: infoAfterInsert });
+                // Cập nhật Project
+                if(project && checkObjectIDs(project)){
+                    await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(project, {
+                        funda: infoAfterInsert._id
+                    }, { new: true });
+                }
 
+                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -188,7 +199,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, projectID, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
+	update({ fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -220,8 +231,8 @@ class Model extends BaseModel {
                     dataUpdate.activeCampaign = activeCampaign;
                 }
 
-                if(projectID && checkObjectIDs(projectID)){
-                    dataUpdate.project = projectID;
+                if(project && checkObjectIDs(project)){
+                    dataUpdate.project = project;
                 }
 
                 if(manager && checkObjectIDs(manager)){
@@ -397,6 +408,13 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "cannot_update" })
+
+                // Cập nhật Project
+                if(project && checkObjectIDs(project)){
+                    await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(project, {
+                        funda: fundaID
+                    }, { new: true });
+                }
 
                 /**
                  * CẬP NHẬT LẠI FNB

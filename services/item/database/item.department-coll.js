@@ -12,6 +12,11 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Link với cơ sở
+    funda: {
+        type: Schema.Types.ObjectId,
+        ref : "funda"
+    },
     //_________Phần tử cha
     parent: {
         type: Schema.Types.ObjectId,

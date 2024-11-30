@@ -9,8 +9,6 @@ const { renderStatusCodeAndResponse }           = require('../../../tools/utils/
 const ITEM__DEPARTMENT_MODEL                   = require('../model/item.department-model').MODEL;
 
 module.exports = {
-
-
     /**
 	 * Dev: HiepNH
 	 * Func: Thêm dự án/phòng ban

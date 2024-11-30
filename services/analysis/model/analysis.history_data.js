@@ -2204,6 +2204,14 @@ class Model extends BaseModel {
                             }
                         }
 
+                        if(arr.length){
+                            await FNB_VOUCHER_COLL.findByIdAndUpdate(infoVoucher._id, {
+                                $addToSet: {
+                                    receivers: arr.map(sub=>sub?._id?.customer?._id)
+                                }
+                            }, { new: true })
+                        }
+
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_zns.xlsx')))
                         .then(async workbook => {
 
