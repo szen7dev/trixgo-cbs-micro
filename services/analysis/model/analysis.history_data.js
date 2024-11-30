@@ -2201,7 +2201,38 @@ class Model extends BaseModel {
                         )
                         // console.log(info2)
 
-                        return resolve({ error: false, message: 'Xử lý thành công' })
+                        // return resolve({ error: false, message: 'Xử lý thành công' })
+
+                        for(const item of listData){
+                            if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){     
+                                arr.push(item)
+                            }
+                        }
+
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_zns.xlsx')))
+                        .then(async workbook => {
+
+                            var i = 2
+                            arr.forEach((item, index) =>{
+                                workbook.sheet("Sheet1").row(i).cell(1).value(`${item?._id?.customer?._id}`)
+                                workbook.sheet("Sheet1").row(i).cell(2).value(item?._id?.customer?.name.substring(0, 6))
+                                workbook.sheet("Sheet1").row(i).cell(3).value(item?._id?.customer?.name)
+                                workbook.sheet("Sheet1").row(i).cell(4).value(`${item?._id?.customer?.phone}`)
+
+                                i++
+                            })
+
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `contact_zns${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
                     }else{
                         for(const item of listData){
                             if(isValidVietnamPhoneNumber(item?._id?.customer?.phone)){ 
@@ -2238,8 +2269,33 @@ class Model extends BaseModel {
                                 }
                             }, { new: true })
                         }
+
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_zns.xlsx')))
+                        .then(async workbook => {
+
+                            var i = 2
+                            arr.forEach((item, index) =>{
+                                workbook.sheet("Sheet1").row(i).cell(1).value(`${item?._id?.customer?._id}`)
+                                workbook.sheet("Sheet1").row(i).cell(2).value(item?._id?.customer?.name.substring(0, 6))
+                                workbook.sheet("Sheet1").row(i).cell(3).value(item?._id?.customer?.name)
+                                workbook.sheet("Sheet1").row(i).cell(4).value(`${item?._id?.customer?.phone}`)
+
+                                i++
+                            })
+
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `contact_zns${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
     
-                        return resolve({ error: false, message: 'Xử lý thành công' })
+                        // return resolve({ error: false, message: 'Xử lý thành công' })
                     }
                 }else{
                     return resolve({ error: true, message: 'Voucher không hợp lệ' })
