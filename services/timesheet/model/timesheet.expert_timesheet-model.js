@@ -564,7 +564,8 @@ class Model extends BaseModel {
                     userID
                 })
 
-                if(!infoAppUser.error && infoAppUser.data.level == 0){
+                if(1 > 0){
+                // if(!infoAppUser.error && infoAppUser.data.level == 0){
                     /**
                      * TẠO BẢNG CHẤM CÔNG CÁC CƠ SỞ THEO THÁNG
                      */
