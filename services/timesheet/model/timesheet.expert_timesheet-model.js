@@ -614,209 +614,210 @@ class Model extends BaseModel {
                         // Xóa dữ liệu cũ đang có???
                         if(checkObjectIDs(infoTimeSheet.funda)){
                             await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
+                            await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(timesheetID)
                         }
 
-                        let conditionObj = {
-                            company: ObjectID(companyID),
-                            funda: ObjectID(infoTimeSheet.funda),
-                            // parent: { $exists: true, $ne: null }
-                        }
+                        // let conditionObj = {
+                        //     company: ObjectID(companyID),
+                        //     funda: ObjectID(infoTimeSheet.funda),
+                        //     // parent: { $exists: true, $ne: null }
+                        // }
 
-                        let projectObj =  {
-                            year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
-                            month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
-                            day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
-                            company : 1,
-                            funda : 1,
-                            createAt: 1,
-                            staffs : 1,
-                            subStaffs : 1,
-                            workingHours : 1,
-                            subWorkingHours : 1,
-                            officialStaffSalar: 1,
-                            trialStaffSalary: 1,
-                            shiftType: 1,
-                            official: 1,
-                        }
+                        // let projectObj =  {
+                        //     year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                        //     month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                        //     day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                        //     company : 1,
+                        //     funda : 1,
+                        //     createAt: 1,
+                        //     staffs : 1,
+                        //     subStaffs : 1,
+                        //     workingHours : 1,
+                        //     subWorkingHours : 1,
+                        //     officialStaffSalar: 1,
+                        //     trialStaffSalary: 1,
+                        //     shiftType: 1,
+                        //     official: 1,
+                        // }
 
-                        let lookupObj = {
-                            from: "users",
-                            localField: "staffs",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+                        // let lookupObj = {
+                        //     from: "users",
+                        //     localField: "staffs",
+                        //     foreignField: "_id",
+                        //     as: "staff"
+                        // } 
         
-                        let lookupSubObj = {
-                            from: "users",
-                            localField: "subStaffs",
-                            foreignField: "_id",
-                            as: "staff"
-                        } 
+                        // let lookupSubObj = {
+                        //     from: "users",
+                        //     localField: "subStaffs",
+                        //     foreignField: "_id",
+                        //     as: "staff"
+                        // } 
 
-                        let conditionGroup1 = {
-                            _id: { 
-                                staff: "$staff._id", 
-                                day: "$day", 
-                                official: "$official",
-                                shiftGroup: {
-                                    $cond: [
-                                      { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
-                                      "G123",                     // Tên nhóm cho 1, 2, 3
-                                      "G4"                          // Tên nhóm cho shiftType = 4
-                                    ]
-                                }
-                            },
-                            workingHours: { $sum: "$workingHours" },
-                            amount: { $sum: { $multiply: [ "$workingHours", "$officialStaffSalar" ] } }
-                        }
+                        // let conditionGroup1 = {
+                        //     _id: { 
+                        //         staff: "$staff._id", 
+                        //         day: "$day", 
+                        //         official: "$official",
+                        //         shiftGroup: {
+                        //             $cond: [
+                        //               { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
+                        //               "G123",                     // Tên nhóm cho 1, 2, 3
+                        //               "G4"                          // Tên nhóm cho shiftType = 4
+                        //             ]
+                        //         }
+                        //     },
+                        //     workingHours: { $sum: "$workingHours" },
+                        //     amount: { $sum: { $multiply: [ "$workingHours", "$officialStaffSalar" ] } }
+                        // }
 
-                        let conditionGroup2 = {
-                            _id: { 
-                                staff: "$staff._id", 
-                                day: "$day", 
-                                official: "$official",
-                                shiftGroup: {
-                                    $cond: [
-                                      { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
-                                      "G123",                     // Tên nhóm cho 1, 2, 3
-                                      "G4"                          // Tên nhóm cho shiftType = 4
-                                    ]
-                                }
-                            },
-                            workingHours: { $sum: "$subWorkingHours" },
-                            amount: { $sum: { $multiply: [ "$subWorkingHours", "$trialStaffSalary" ] } }
-                        }
+                        // let conditionGroup2 = {
+                        //     _id: { 
+                        //         staff: "$staff._id", 
+                        //         day: "$day", 
+                        //         official: "$official",
+                        //         shiftGroup: {
+                        //             $cond: [
+                        //               { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
+                        //               "G123",                     // Tên nhóm cho 1, 2, 3
+                        //               "G4"                          // Tên nhóm cho shiftType = 4
+                        //             ]
+                        //         }
+                        //     },
+                        //     workingHours: { $sum: "$subWorkingHours" },
+                        //     amount: { $sum: { $multiply: [ "$subWorkingHours", "$trialStaffSalary" ] } }
+                        // }
 
-                        let conditionPopulate = {
-                            path: '_id.staff',
-                            select: '_id fullname',
-                            model: 'user',
-                        }
+                        // let conditionPopulate = {
+                        //     path: '_id.staff',
+                        //     select: '_id fullname',
+                        //     model: 'user',
+                        // }
 
-                        let month = Number(infoTimeSheet.date.getMonth()) + 1
-                        let year = infoTimeSheet.date.getFullYear()
+                        // let month = Number(infoTimeSheet.date.getMonth()) + 1
+                        // let year = infoTimeSheet.date.getFullYear()
 
-                        let conditionObjTime = {
-                            year: Number(year),
-                            month: Number(month),
-                        }
+                        // let conditionObjTime = {
+                        //     year: Number(year),
+                        //     month: Number(month),
+                        // }
 
-                        let listData1 = await FNB_SHIFT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project: projectObj
-                            },
-                            { 
-                                $lookup: lookupObj
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $match: conditionObjTime
-                            },
-                            {
-                                $group: conditionGroup1
-                            },
-                        ])
+                        // let listData1 = await FNB_SHIFT_COLL.aggregate([
+                        //     {
+                        //         $match: conditionObj
+                        //     },
+                        //     {
+                        //         $project: projectObj
+                        //     },
+                        //     { 
+                        //         $lookup: lookupObj
+                        //     },
+                        //     {
+                        //         $unwind: "$staff"
+                        //     },
+                        //     {
+                        //         $match: conditionObjTime
+                        //     },
+                        //     {
+                        //         $group: conditionGroup1
+                        //     },
+                        // ])
 
-                        let listData2 = await FNB_SHIFT_COLL.aggregate([
-                            {
-                                $match: conditionObj
-                            },
-                            {
-                                $project: projectObj
-                            },
-                            { 
-                                $lookup: lookupSubObj
-                            },
-                            {
-                                $unwind: "$staff"
-                            },
-                            {
-                                $match: conditionObjTime
-                            },
-                            {
-                                $group: conditionGroup2
-                            },
-                        ])
+                        // let listData2 = await FNB_SHIFT_COLL.aggregate([
+                        //     {
+                        //         $match: conditionObj
+                        //     },
+                        //     {
+                        //         $project: projectObj
+                        //     },
+                        //     { 
+                        //         $lookup: lookupSubObj
+                        //     },
+                        //     {
+                        //         $unwind: "$staff"
+                        //     },
+                        //     {
+                        //         $match: conditionObjTime
+                        //     },
+                        //     {
+                        //         $group: conditionGroup2
+                        //     },
+                        // ])
 
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate)
-                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate)
+                        // await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate)
+                        // await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate)
 
-                        for(const item of listData1){
-                            if(item._id.shiftGroup.toString() === 'G123'){
-                                await that.insert({ 
-                                    userCreate: userID, 
-                                    companyID, 
-                                    parentID: timesheetID, 
-                                    name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                    date: `${year}-${month}-${item._id.day}`, 
-                                    type: 2, 
-                                    shiftType: 1, 
-                                    official: item._id.official, 
-                                    note: 'Ca chính-Ca ngày', 
-                                    hours: item.workingHours, 
-                                    unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                    assigneeID: item._id.staff._id, 
-                                    fundaID: infoTimeSheet.funda, 
-                                })
-                            }else{
-                                await that.insert({ 
-                                    userCreate: userID, 
-                                    companyID, 
-                                    parentID: timesheetID, 
-                                    name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                    date: `${year}-${month}-${item._id.day}`, 
-                                    type: 2, 
-                                    shiftType: 2, 
-                                    official: item._id.official, 
-                                    note: 'Ca chính-Ca đêm', 
-                                    hours: item.workingHours, 
-                                    unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                    assigneeID: item._id.staff._id, 
-                                    fundaID: infoTimeSheet.funda, 
-                                })
-                            }
-                        }
+                        // for(const item of listData1){
+                        //     if(item._id.shiftGroup.toString() === 'G123'){
+                        //         await that.insert({ 
+                        //             userCreate: userID, 
+                        //             companyID, 
+                        //             parentID: timesheetID, 
+                        //             name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                        //             date: `${year}-${month}-${item._id.day}`, 
+                        //             type: 2, 
+                        //             shiftType: 1, 
+                        //             official: item._id.official, 
+                        //             note: 'Ca chính-Ca ngày', 
+                        //             hours: item.workingHours, 
+                        //             unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                        //             assigneeID: item._id.staff._id, 
+                        //             fundaID: infoTimeSheet.funda, 
+                        //         })
+                        //     }else{
+                        //         await that.insert({ 
+                        //             userCreate: userID, 
+                        //             companyID, 
+                        //             parentID: timesheetID, 
+                        //             name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                        //             date: `${year}-${month}-${item._id.day}`, 
+                        //             type: 2, 
+                        //             shiftType: 2, 
+                        //             official: item._id.official, 
+                        //             note: 'Ca chính-Ca đêm', 
+                        //             hours: item.workingHours, 
+                        //             unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                        //             assigneeID: item._id.staff._id, 
+                        //             fundaID: infoTimeSheet.funda, 
+                        //         })
+                        //     }
+                        // }
 
-                        for(const item of listData2){
-                            if(item._id.shiftGroup.toString() === 'G123'){
-                                await that.insert({ 
-                                    userCreate: userID, 
-                                    companyID, 
-                                    parentID: timesheetID, 
-                                    name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                    date: `${year}-${month}-${item._id.day}`, 
-                                    type: 2, 
-                                    shiftType: 1, 
-                                    official: item._id.official, 
-                                    note: 'Ca phụ-Ca ngày', 
-                                    hours: item.workingHours, 
-                                    unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                    assigneeID: item._id.staff._id, 
-                                    fundaID: infoTimeSheet.funda, 
-                                })
-                            }else{
-                                await that.insert({ 
-                                    userCreate: userID, 
-                                    companyID, 
-                                    parentID: timesheetID, 
-                                    name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                    date: `${year}-${month}-${item._id.day}`, 
-                                    type: 2, 
-                                    shiftType: 2, 
-                                    official: item._id.official, 
-                                    note: 'Ca phụ-Ca đêm', 
-                                    hours: item.workingHours, 
-                                    unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                    assigneeID: item._id.staff._id, 
-                                    fundaID: infoTimeSheet.funda, 
-                                })
-                            }
-                        }
+                        // for(const item of listData2){
+                        //     if(item._id.shiftGroup.toString() === 'G123'){
+                        //         await that.insert({ 
+                        //             userCreate: userID, 
+                        //             companyID, 
+                        //             parentID: timesheetID, 
+                        //             name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                        //             date: `${year}-${month}-${item._id.day}`, 
+                        //             type: 2, 
+                        //             shiftType: 1, 
+                        //             official: item._id.official, 
+                        //             note: 'Ca phụ-Ca ngày', 
+                        //             hours: item.workingHours, 
+                        //             unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                        //             assigneeID: item._id.staff._id, 
+                        //             fundaID: infoTimeSheet.funda, 
+                        //         })
+                        //     }else{
+                        //         await that.insert({ 
+                        //             userCreate: userID, 
+                        //             companyID, 
+                        //             parentID: timesheetID, 
+                        //             name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                        //             date: `${year}-${month}-${item._id.day}`, 
+                        //             type: 2, 
+                        //             shiftType: 2, 
+                        //             official: item._id.official, 
+                        //             note: 'Ca phụ-Ca đêm', 
+                        //             hours: item.workingHours, 
+                        //             unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                        //             assigneeID: item._id.staff._id, 
+                        //             fundaID: infoTimeSheet.funda, 
+                        //         })
+                        //     }
+                        // }
 
                         // return resolve({ error: false, data: {listData1, listData2} })
                         return resolve({ error: false, message: 'Đồng bộ thành công' })
