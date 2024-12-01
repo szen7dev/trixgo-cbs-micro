@@ -1279,6 +1279,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, message: 'Cập nhật thành công' })
                     }
 
+                    // THÊM NHÂN SỰ VÀO BẢNG LƯƠNG
                     else if(option == 7){
                         let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
 
@@ -1326,59 +1327,46 @@ class Model extends BaseModel {
                         }
                         await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData, conditionPopulate)
 
-                        console.log(listData.length)
-                        console.log(listData)
+                        // console.log(listData.length)
+                        // console.log(listData)
 
                         for(const item of listData){
-                            let dataInsertDetail = {
-                                userCreate: userID,
-                                name: 'Default',
-                                // admins: [userID],
-                                // members: [userID],
-                                human: item._id.assignee._id,
-                                parent: salaryID, // Bảng lương cha
-                                company: infoSalary.company,
-                                project: item._id.assignee.department,
-                                position: item._id.assignee.position,
-                                date: infoSalary.date,
-                                type: infoSalary.type,
-                                funda: infoSalary.funda,
-                                salary: Number(item.amount),
+                            // Kiểm tra xem nhân sự đã tồn tại chưa, chưa thì mới tạo
+                            let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                                parent: ObjectID(salaryID),
+                                human: item._id.assignee._id
+                            })
+                            .select('name date funda parent')
+                            // console.log(info)
+
+                            if(!info){
+                                let dataInsertDetail = {
+                                    company: infoSalary.company,
+                                    userCreate: userID,
+                                    name: 'Default',
+                                    human: item._id.assignee._id,
+                                    parent: salaryID, // Bảng lương cha
+                                    project: item._id.assignee.department,
+                                    position: item._id.assignee.position,
+                                    date: infoSalary.date,
+                                    type: infoSalary.type,
+                                    funda: infoSalary.funda,
+                                    salary: Number(item.amount),
+                                }
+            
+                                await this.insertData(dataInsertDetail)
                             }
-        
-                            // if(checkObjectIDs(projectID)){
-                            //     let infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda')
-                            //     if(infoProject && infoProject.funda){
-                            //         dataInsertDetail.funda = infoProject.funda
-                            //     }
-                            // }
-        
-                            // if(Number(insuranceFee) > 0){
-                            //     dataInsertDetail.insurance = Number(insuranceFee)
-                            // }
-        
-                            // if(Number(union) > 0){
-                            //     dataInsertDetail.union = Number(union)
-                            // }
-        
-                            // if(Number(share) > 0){
-                            //     dataInsertDetail.share = Number(share)
-                            // }
-        
-                            await this.insertData(dataInsertDetail)
                         }
 
-                        
-                        // Danh sách nhân sự chấm công của cơ sở
-                        // FNB_SHIFT_COLL
-                        // TIMESHEET__EXPERT_TIMESHEET_COLL
-
-
-                        // Danh sách nhân sự chấm theo Ca của cơ sở
-
-                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                        return resolve({ error: false, message: 'Cập nhật thành công' })
                     }
 
+                    // ĐỒNG BỘ BẢNG LƯƠNG
+                    else if(option == 8){
+                       
+
+                        return resolve({ error: false, message: 'Cập nhật thành công' })
+                    }
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                 }
