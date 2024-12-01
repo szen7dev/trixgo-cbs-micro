@@ -541,8 +541,6 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            // year : {$year : "$date"},
-                            // month : {$month : "$date"},
                             year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             date: 1,
@@ -583,8 +581,6 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            // year : {$year : "$date"},
-                            // month : {$month : "$date"},
                             year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             date: 1,
@@ -624,8 +620,6 @@ class Model extends BaseModel {
                     },
                     {
                         $project: {
-                            // year : {$year : "$date"},
-                            // month : {$month : "$date"},
                             year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             date: 1,
@@ -680,7 +674,8 @@ class Model extends BaseModel {
                 // console.log(arr3)
 
                 for(const item of dataUser){
-                    let hours1 = 0, hours2 = 0, hours3 = 0, salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
+                    let hours1 = 0, hours2 = 0, hours3 = 0
+                    let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
                     
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
@@ -746,7 +741,218 @@ class Model extends BaseModel {
                     }
                 }
               
-                return resolve({ error: false, status: 200 });
+                return resolve({ error: false, status: 200 })
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: Cập nhật chấm công theo Cơ sở vào các Chi tiết của Bảng lương
+     * Author: HiepNH
+     * Code: 1/12/2024
+     */
+    updateValueFundaTimesheet({ dataUser, expertSalaryID, companyID }){
+        return new Promise(async (resolve) => {
+            try {
+                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
+                if(!infoSalary)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 })
+
+                // console.log(infoSalary)
+
+                let month = Number(infoSalary.date.getMonth()) + 1
+                let year = infoSalary.date.getFullYear()
+                // console.log({month,year})
+
+                /**
+                 * Lương chính thức
+                 */
+                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            funda: ObjectID(infoSalary.funda), // Theo cơ sở
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null },
+                            official: 1,
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            date: 1,
+                            assignee: 1,
+                            hours: 1,
+                            amount: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee' },
+                            // _id: {  },
+                            quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData1)
+
+                /**
+                 * Lương thử việc => Đưa về phụ cấp
+                 */
+                let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            funda: ObjectID(infoSalary.funda), // Theo cơ sở
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null },
+                            official: 2,
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            date: 1,
+                            assignee: 1,
+                            hours: 1,
+                            amount: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee' },
+                            // _id: {  },
+                            quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData2)
+
+                let arr1 = [], arr2 = []
+                listData1.forEach(item=>{
+                    let key = item._id.assignee;
+                    if (!Array.isArray(arr1[key])) {
+                        arr1[key] = [];
+                    }
+                    arr1[key].push(item)
+                })
+
+                listData2.forEach(item=>{
+                    let key = item._id.assignee;
+                    if (!Array.isArray(arr2[key])) {
+                        arr2[key] = [];
+                    }
+                    arr2[key].push(item)
+                })
+
+                for(const item of dataUser){
+                    let hours1 = 0, hours4 = 0
+                    let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
+                    let subAllowance13 = 0 // Đặt làm phụ cấp Thử việc
+
+                    let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                        parent: expertSalaryID,
+                        human: item,
+                    })
+
+                    // Lấy giá trị ban đầu
+                    salary = info.salary
+                    onLeaveSalary = info.onLeaveSalary
+                    overtimeSalary = info.overtimeSalary
+                    reward = info.reward
+                    revenueBonus = info.revenueBonus
+                    mealAllowance = info.mealAllowance
+                    punishment = info.punishment
+                    insurance = info.insurance
+                    pitax = info.pitax
+                    union = info.union
+                    share = info.share
+                    other = info.other
+                    advance = info.advance
+                    paid = info.paid
+                    kpiFactor = info.kpiFactor
+                    hours1 = info.hours1
+                    hours4 = info.hours4
+                    subAllowance13 = info.subAllowance13
+                
+                    if(info){
+                        if(arr1[item]){
+                            hours1 = Number(arr1[item][0].quantity).toFixed(2)
+                            salary = Number(arr1[item][0].amount).toFixed(0)
+                        }
+
+                        if(arr2[item]){
+                            hours4 = Number(arr2[item][0].quantity).toFixed(2)
+                            mealAllowance = Number(arr2[item][0].amount).toFixed(0)
+                            subAllowance13 = Number(arr2[item][0].amount).toFixed(0) // Đặt làm phụ cấp Thử việc
+                        }
+                    }
+
+                //    // Lấy giá trị ban đầu
+                //     onLeaveSalary = info.onLeaveSalary
+                //     overtimeSalary = info.overtimeSalary
+                //     reward = info.reward
+                //     revenueBonus = info.revenueBonus
+                //     mealAllowance = info.mealAllowance
+                //     punishment = info.punishment
+                //     insurance = info.insurance
+                //     pitax = info.pitax
+                //     union = info.union
+                //     share = info.share
+                //     other = info.other
+                //     advance = info.advance
+                //     paid = info.paid
+                //     kpiFactor = info.kpiFactor
+
+                    remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
+
+                    let dataUpdate =  {
+                        hours1,
+                        hours4,
+                        kpiFactor,
+                        salary,
+                        onLeaveSalary,
+                        overtimeSalary,
+                        reward,
+                        revenueBonus,
+                        mealAllowance,
+                        punishment,
+                        insurance,
+                        pitax,
+                        union,
+                        share,
+                        other,
+                        advance,
+                        paid,
+                        remaining,
+                        subAllowance13
+                    }
+                    // console.log(dataUpdate)
+
+                    if(info){
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    }
+                }
+              
+                return resolve({ error: false, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -770,6 +976,7 @@ class Model extends BaseModel {
                     executor: { $exists: true, $ne: null }
                 }
 
+                // Cập nhật theo Cơ sở
                 if(infoSalary.funda){
                     conditionObj = {
                         funda: ObjectID(infoSalary.funda),
@@ -1378,8 +1585,17 @@ class Model extends BaseModel {
                         let dataUser = listData.map(item=>item.human.toString())
                         // console.log(dataUser)
 
+                        /**
+                         * Cập nhật chấm công vào các Chi tiết của Bảng lương:
+                         * - Tách chính thức
+                         * - Tách thử việc
+                         */
+                        await that.updateValueFundaTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
+
                         // Cập nhật KPI vào các chi tiết của Bảng lương
                         await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
+
+                        // Cập nhật Thưởng doanh số vào các chi tiết của Bảng lương
 
                         // Tổng hợp các chi tiết lương vào Bảng lương: 
                         await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
