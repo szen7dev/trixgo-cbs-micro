@@ -2560,6 +2560,7 @@ class Model extends BaseModel {
                                 day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                 hours: 1,
                                 subtype: 1,
+                                amount: 1,
                                 assignee: 1,
                             }
                         },
@@ -2573,6 +2574,7 @@ class Model extends BaseModel {
                             $group: {
                                 _id: { assignee: '$assignee', day: '$day', subtype: '$subtype' }, //fix lại bị sai ở đây nếu 1 ngày có 2 Subtype
                                 quantity: { $sum: "$hours" },
+                                amount: { $sum: "$amount" },
                             }
                         },
                     ])
@@ -2671,6 +2673,12 @@ class Model extends BaseModel {
                          workbook.sheet("Data4").row(i).cell(4).value(`${item.position.name}`)
                          workbook.sheet("Data4").row(i).cell(5).value(`${item._id}`)
 
+                         workbook.sheet("Data5").row(i).cell(1).value(Number(index+1))
+                         workbook.sheet("Data5").row(i).cell(2).value(item.fullname)
+                         workbook.sheet("Data5").row(i).cell(3).value(`${item.department.name}`)
+                         workbook.sheet("Data5").row(i).cell(4).value(`${item.position.name}`)
+                         workbook.sheet("Data5").row(i).cell(5).value(`${item._id}`)
+
                          i++
                      })
 
@@ -2682,6 +2690,9 @@ class Model extends BaseModel {
                                 if(item._id.day == j && userID.toString() === item._id.assignee.toString()){
                                     workbook.sheet("Data2").row(i).cell(j + 5).value(item.quantity);
                                     workbook.sheet("Data3").row(i).cell(j + 5).value(1);
+                                    if (checkObjectIDs(parentID)) {
+                                        workbook.sheet("Data5").row(i).cell(j + 5).value(item.amount);
+                                    }
 
                                     if(item._id.subtype == 1){
                                         workbook.sheet("Data4").row(i).cell(j + 5).value('x');

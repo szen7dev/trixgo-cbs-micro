@@ -336,7 +336,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
                 let { humanID, parentID, option, year, month, fromDate, toDate } = ctx.params;
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await FIN__CASH_BOOK_MODEL.exportExcel({
                     userID, companyID: company._id, humanID, parentID, userID, option, year, month, fromDate, toDate
