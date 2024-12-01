@@ -758,28 +758,41 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    updateValueKpi({ dataUser, expertSalaryID, userID, companyID }){
+    updateValueKpi({ dataUser, expertSalaryID, userID, companyID, fundaID }){
         return new Promise(async (resolve) => {
             try {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 if(!infoSalary)
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
 
+                let conditionObj = {
+                    company: ObjectID(companyID),
+                    executor: { $exists: true, $ne: null }
+                }
+
+                if(infoSalary.funda){
+                    conditionObj = {
+                        funda: ObjectID(infoSalary.funda),
+                        executor: { $exists: true, $ne: null }
+                    }
+                }
+
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
 
                 // Danh sách phân loại lỗi theo nhân sự
                 let listData = await FNB_MISTAKE_COLL.aggregate([
+                    // {
+                    //     $match: {
+                    //         company: ObjectID(companyID),
+                    //         executor: { $exists: true, $ne: null }
+                    //     }
+                    // },
                     {
-                        $match: {
-                            company: ObjectID(companyID),
-                            executor: { $exists: true, $ne: null }
-                        }
+                        $match: conditionObj
                     },
                     {
                         $project: {
-                            // year : {$year : "$createAt"},
-                            // month : {$month : "$createAt"},
                             year : {$year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
                             month : {$month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
                             executor: 1,
@@ -975,9 +988,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    syncData({
-        companyID, userID, email, option, salaryID, orderID, arrUser, fundaID, year, month
-    }){
+    syncData({ companyID, userID, email, option, salaryID, orderID, arrUser, fundaID, year, month }){
         console.log({companyID, userID, email, option, salaryID, orderID, fundaID, year, month})
         const that = this
         return new Promise(async (resolve) => {
@@ -1073,7 +1084,6 @@ class Model extends BaseModel {
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                         let dataUser = listData.map(item=>item.human.toString())
-
                         // console.log(listData)
                         // console.log(dataUser)
 
@@ -1363,7 +1373,16 @@ class Model extends BaseModel {
 
                     // ĐỒNG BỘ BẢNG LƯƠNG
                     else if(option == 8){
-                       
+                        // Danh sách userID trong bảng lương
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
+                        let dataUser = listData.map(item=>item.human.toString())
+                        // console.log(dataUser)
+
+                        // Cập nhật KPI vào các chi tiết của Bảng lương
+                        await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
+
+                        // Tổng hợp các chi tiết lương vào Bảng lương: 
+                        await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
 
                         return resolve({ error: false, message: 'Cập nhật thành công' })
                     }
