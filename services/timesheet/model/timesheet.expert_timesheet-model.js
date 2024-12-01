@@ -565,7 +565,9 @@ class Model extends BaseModel {
                 })
 
                 if(!infoAppUser.error && infoAppUser.data.level == 0){
-                    // TẠO BẢNG CHẤM CÔNG CÁC CƠ SỞ THEO THÁNG
+                    /**
+                     * TẠO BẢNG CHẤM CÔNG CÁC CƠ SỞ THEO THÁNG
+                     */
                     function getLastDayOfMonth(year, month) {
                         return new Date(year, month, 0)
                     }
@@ -573,22 +575,37 @@ class Model extends BaseModel {
                     if(!option){
                         let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
                         for(const item of listFunda){
-                            await that.insert({ 
-                                userCreate: userID, 
-                                companyID, 
-                                name: `Bảng chấm công theo ca Cơ sở ${item.name} T${month}.${year} `, 
-                                date: getLastDayOfMonth(year, month), 
-                                type: 2, // Sản xuất
-                                note: 'Convert từ dữ liệu ca làm việc Cơ sở', 
-                                assigneeID: userID, 
-                                fundaID: item._id, 
+                            // Kiểm tra xem bảng đã tồn tại hay chưa, nếu chưa thì tạo mới
+                            let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
+                                company: ObjectID(companyID),
+                                funda: ObjectID(item._id),
+                                $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`,
+                                parent: { $exists: false }
                             })
+                            .select('name date')
+                            // console.log(info)
+
+                            if(!info){
+                                await that.insert({ 
+                                    userCreate: userID, 
+                                    companyID, 
+                                    name: `Bảng chấm công theo ca Cơ sở ${item.name} T${month}.${year} `, 
+                                    date: getLastDayOfMonth(year, month), 
+                                    type: 2, // Sản xuất
+                                    note: 'Convert từ dữ liệu ca làm việc Cơ sở', 
+                                    assigneeID: userID, 
+                                    fundaID: item._id, 
+                                    projectID: item?.project
+                                })
+                            }
                         }
 
                         return resolve({ error: false, message: 'Đồng bộ thành công' })
                     }
 
-                    // CẬP NHẬT CA LÀM VIỆC SANG BẢNG CHẤM CÔNG
+                    /**
+                     * CẬP NHẬT CA LÀM VIỆC SANG BẢNG CHẤM CÔNG
+                     */
                     else if(option == 1){
                         // Khởi tạo lại và đồng bộ
                         let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)

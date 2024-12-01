@@ -41,8 +41,8 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     }],
     /**
      * Phân loại
-     * 1 quản lý
-     * 2 sản xuất
+     * 1 Quản lý
+     * 2 Sản xuất
      */
     type: {
         type: Number,

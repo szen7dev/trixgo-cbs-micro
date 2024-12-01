@@ -78,7 +78,7 @@ module.exports = {
                 let { expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, pependent } = ctx.params;
                 // console.log({ expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other })
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -132,13 +132,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, salaryID, orderID, arrUser } = ctx.params;
+                let { option, salaryID, orderID, fundaID, arrUser, year, month } = ctx.params;
                 // console.log(ctx.params)
 
 				const { _id: userID, company, email } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.syncData({
-                    userID, companyID: company._id, email, option, salaryID, orderID, arrUser
+                    userID, companyID: company._id, email, option, salaryID, orderID, fundaID, arrUser, year, month
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
