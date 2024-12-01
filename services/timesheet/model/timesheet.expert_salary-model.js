@@ -37,6 +37,7 @@ const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistak
 const ITEM__FUNDA_COLL                  = require('../../item/database/item.funda-coll')
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
 const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll');
+const FNB_ORDER_COLL                    = require('../../fnb/database/fnb.order-coll');
 
 const STORE_ORDER_COLL                  = require("../../store/database/store.order-coll");
 const STORE_ORDER_PRODUCT_COLL          = require('../../store/database/store.order_product-coll');
@@ -1095,6 +1096,230 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Cập nhật Doanh số cá nhân
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
+    updateRevenueKpi({ dataUser, expertSalaryID, userID, companyID, fundaID }){
+        // console.log('=================================')
+        // console.log({ dataUser, expertSalaryID, userID, companyID, fundaID })
+        return new Promise(async (resolve) => {
+            try {
+                function calculateRevenue(totalSold, priceLevels) {
+                    let revenue = 0;
+                    let remaining = totalSold;
+                
+                    // Duyệt qua từng mức giá trong priceLevels
+                    for (let i = 0; i < priceLevels.length; i++) {
+                        let level = priceLevels[i];
+                        
+                        // Số lượng sản phẩm bán ở mức hiện tại
+                        let quantityAtLevel = Math.min(remaining, level.quantity);
+                        
+                        // Tính doanh thu cho mức giá này
+                        revenue += quantityAtLevel * level.price;
+                        
+                        // Giảm số lượng còn lại
+                        remaining -= quantityAtLevel;
+                
+                        // Nếu không còn sản phẩm để bán, thoát khỏi vòng lặp
+                        if (remaining <= 0) break;
+                    }
+                
+                    return revenue;
+                }
+                
+                // Ví dụ sử dụng hàm
+                const priceLevels = [
+                    { quantity: 99, price: 100 }, // 100 cốc đầu x 100
+                    { quantity: 401, price: 200 }, // 200 cốc tiếp theo x 200
+                    { quantity: 500, price: 300 }, // 200 cốc tiếp theo x 200
+                    { quantity: 10000, price: 350 }, // 200 cốc tiếp theo x 200
+                ];
+                
+                // const totalSold = 300;
+                // const totalRevenue1 = calculateRevenue(656, priceLevels);
+                // const totalRevenue2 = calculateRevenue(1592, priceLevels);
+                // const totalRevenue3 = calculateRevenue(883, priceLevels);
+                // const totalRevenue4 = calculateRevenue(351, priceLevels);
+                // const totalRevenue5 = calculateRevenue(2013, priceLevels);
+                
+                // console.log(`Tổng doanh thu: ${totalRevenue1}`);
+                // console.log(`Tổng doanh thu: ${totalRevenue2}`);
+                // console.log(`Tổng doanh thu: ${totalRevenue3}`);
+                // console.log(`Tổng doanh thu: ${totalRevenue4}`);
+                // console.log(`Tổng doanh thu: ${totalRevenue5}`);
+
+                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
+                // console.log(infoSalary)
+                if(!infoSalary)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 })
+
+                let conditionObj = {
+                    company: ObjectID(companyID),
+                    status: 5,
+                    avgQuantityPerStaff: { $exists: true, $ne: null },
+                }
+
+                // Cập nhật theo Cơ sở
+                if(infoSalary.funda){
+                    conditionObj = {
+                        funda: ObjectID(infoSalary.funda),
+                        status: 5,
+                        avgQuantityPerStaff: { $exists: true, $ne: null },
+                    }
+                }
+
+                let month = Number(infoSalary.date.getMonth()) + 1
+                let year = infoSalary.date.getFullYear()
+
+                // let conditionPopulate = {
+                //     path: "_id.staff",
+                //     select: "_id fullname department",
+                //     populate: {
+                //       path: "department",
+                //       select: "_id name",
+                //       model: "department",
+                //     },
+                //     model: "user",
+                // }
+
+                let conditionObjYear = {
+                    year: Number(year),
+                    month: Number(month),
+                }
+
+                let projectObj = {
+                    year: { $year: "$createAt" },
+                    month: { $month: "$createAt" },
+                    company: 1,
+                    funda: 1,
+                    createAt: 1,
+                    assignee: 1,
+                    executor: 1,
+                    total: 1,
+                    amount: 1,
+                    avgQuantityPerStaff: 1,
+                }
+
+                let lookupObj = {
+                    from: "users",
+                    localField: "assignee",
+                    foreignField: "_id",
+                    as: "staff",
+                }
+
+                let conditionGroup = {
+                    _id: { staff: "$staff._id" },
+                    avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                }
+
+                let sortBy = { avgQuantityPerStaff: -1 };
+
+                let listData = await FNB_ORDER_COLL.aggregate([
+                    {
+                      $match: conditionObj,
+                    },
+                    {
+                      $project: projectObj,
+                    },
+                    {
+                      $match: conditionObjYear,
+                    },
+                    {
+                      $lookup: lookupObj,
+                    },
+                    {
+                      $unwind: "$staff",
+                    },
+                    {
+                      $group: conditionGroup,
+                    },
+                    {
+                        $sort: sortBy,
+                    },
+                ]);
+                
+                // await FNB_SHIFT_COLL.populate(listData, conditionPopulate);
+                // console.log(listData[0])
+                // console.log(listData[1])
+                // console.log(listData[2])
+
+                let arr = []
+                listData.forEach(item=>{
+                    let key = item._id.staff;
+                    if (!Array.isArray(arr[key])) {
+                        arr[key] = [];
+                    }
+                    arr[key].push(item)
+                })
+
+                for(const item of dataUser){
+                    let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
+                    
+                    let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                        parent: expertSalaryID,
+                        human: item,
+                    })
+
+                    // Lấy giá trị ban đầu
+                    salary = info.salary
+                    onLeaveSalary = info.onLeaveSalary
+                    overtimeSalary = info.overtimeSalary
+                    reward = info.reward
+                    revenueBonus = info.revenueBonus
+                    mealAllowance = info.mealAllowance
+                    punishment = info.punishment
+                    insurance = info.insurance
+                    pitax = info.pitax
+                    union = info.union
+                    share = info.share
+                    other = info.other
+                    advance = info.advance
+                    paid = info.paid
+                    kpiFactor = info.kpiFactor
+
+                    if(info){
+                        if(arr[item]){
+                            revenueBonus = calculateRevenue(Number(arr[item][0].avgQuantityPerStaff), priceLevels)
+                        }
+                    }
+
+                    remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
+
+                    let dataUpdate =  {
+                        kpiFactor,
+                        salary,
+                        onLeaveSalary,
+                        overtimeSalary,
+                        reward,
+                        revenueBonus,
+                        mealAllowance,
+                        punishment,
+                        insurance,
+                        pitax,
+                        union,
+                        share,
+                        other,
+                        advance,
+                        paid,
+                        remaining
+                    }
+
+                    if(info){
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
+                    }
+                }
+
+                return resolve({ error: false, status: 200 })
+                // return resolve({ error: false, data: listData })
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    /**
      * Name: Tổng hợp các chi tiết lương vào Bảng lương
      * Author: HiepNH
      * Code: 22/11/2023
@@ -1596,6 +1821,7 @@ class Model extends BaseModel {
                         await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
 
                         // Cập nhật Thưởng doanh số vào các chi tiết của Bảng lương
+                        await that.updateRevenueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
 
                         // Tổng hợp các chi tiết lương vào Bảng lương: 
                         await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
