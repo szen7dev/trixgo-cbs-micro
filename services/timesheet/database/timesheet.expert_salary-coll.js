@@ -41,8 +41,8 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     }],
     /**
      * Phân loại
-     * 1 quản lý
-     * 2 sản xuất
+     * 1 Quản lý
+     * 2 Sản xuất
      */
     type: {
         type: Number,
@@ -116,7 +116,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
-    //________Thưởng thành tích/đóng góp
+    //________Thưởng thành tích/đóng góp (KPI gán lỗi)
     reward: {
         type: Number,
         default: 0 
@@ -247,7 +247,7 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 1
     },
-    //________Điểm vi phạm
+    //________Điểm vi phạm (KPI gán lỗi)
     punishment: {
         type: Number,
         default: 0 

@@ -29,14 +29,14 @@ const { SALARY_RESET_PERMISSION }       = require('../helper/timesheet.keys-cons
 /**
  * COLLECTIONS
  */
+// const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../database/timesheet.expert_salary-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll')
 const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
-const ITEM__FUNDA_COLL                  = require('../../item/database/item.funda-coll');
-const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll');
-const e = require('express');
-// const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
+const ITEM__FUNDA_COLL                  = require('../../item/database/item.funda-coll')
+const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
+const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll');
 
 const STORE_ORDER_COLL                  = require("../../store/database/store.order-coll");
 const STORE_ORDER_PRODUCT_COLL          = require('../../store/database/store.order_product-coll');
@@ -758,28 +758,41 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    updateValueKpi({ dataUser, expertSalaryID, userID, companyID }){
+    updateValueKpi({ dataUser, expertSalaryID, userID, companyID, fundaID }){
         return new Promise(async (resolve) => {
             try {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 if(!infoSalary)
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
 
+                let conditionObj = {
+                    company: ObjectID(companyID),
+                    executor: { $exists: true, $ne: null }
+                }
+
+                if(infoSalary.funda){
+                    conditionObj = {
+                        funda: ObjectID(infoSalary.funda),
+                        executor: { $exists: true, $ne: null }
+                    }
+                }
+
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
 
                 // Danh sách phân loại lỗi theo nhân sự
                 let listData = await FNB_MISTAKE_COLL.aggregate([
+                    // {
+                    //     $match: {
+                    //         company: ObjectID(companyID),
+                    //         executor: { $exists: true, $ne: null }
+                    //     }
+                    // },
                     {
-                        $match: {
-                            company: ObjectID(companyID),
-                            executor: { $exists: true, $ne: null }
-                        }
+                        $match: conditionObj
                     },
                     {
                         $project: {
-                            // year : {$year : "$createAt"},
-                            // month : {$month : "$createAt"},
                             year : {$year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
                             month : {$month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
                             executor: 1,
@@ -975,10 +988,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    syncData({
-        companyID, userID, email, option, salaryID, orderID, arrUser
-    }){
-        console.log({companyID, userID, email, option, salaryID, orderID})
+    syncData({ companyID, userID, email, option, salaryID, orderID, arrUser, fundaID, year, month }){
+        console.log({companyID, userID, email, option, salaryID, orderID, fundaID, year, month})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -1073,7 +1084,6 @@ class Model extends BaseModel {
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                         let dataUser = listData.map(item=>item.human.toString())
-
                         // console.log(listData)
                         // console.log(dataUser)
 
@@ -1237,14 +1247,145 @@ class Model extends BaseModel {
                         }
                     }
 
+                    // TẠO BẢNG LƯƠNG CÁC CƠ SỞ THEO THÁNG
                     else if(option == 6){
-                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                        function getLastDayOfMonth(year, month) {
+                            return new Date(year, month, 0)
+                        }
+
+                        // console.log(getLastDayOfMonth(year, month))
+    
+                        let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
+                        for(const item of listFunda){
+                            // Kiểm tra xem bảng đã tồn tại hay chưa, nếu chưa thì tạo mới
+                            let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                                company: ObjectID(companyID),
+                                funda: ObjectID(item._id),
+                                $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`,
+                                parent: { $exists: false }
+                            })
+                            .select('name date funda')
+                            // console.log(info)
+
+                            if(!info){
+                                let infoAfterInsert = await this.insertData({
+                                    userCreate: userID, 
+                                    company: companyID, 
+                                    admins: [userID],
+                                    members: [userID],
+                                    name: `Bảng lương Cơ sở ${item.name} T${month}.${year}`, 
+                                    namecv: stringUtils.removeAccents(`Bảng lương Cơ sở ${item.name} T${month}.${year}`), 
+                                    date: getLastDayOfMonth(year, month), 
+                                    type: 2, // Sản xuất
+                                    assigneeID: userID, 
+                                    funda: item._id, 
+                                    project: item?.project
+                                })
+
+                                // console.log(infoAfterInsert)
+                            }
+                        }
+
+                        return resolve({ error: false, message: 'Cập nhật thành công' })
                     }
 
+                    // THÊM NHÂN SỰ VÀO BẢNG LƯƠNG
                     else if(option == 7){
-                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                        let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
+
+                        let month = Number(infoSalary.date.getMonth()) + 1
+                        let year = infoSalary.date.getFullYear()
+
+                        let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                            {
+                                $match: {
+                                    company: ObjectID(companyID),
+                                    funda: ObjectID(fundaID),
+                                    parent: { $exists: true, $ne: null },
+                                    assignee: { $exists: true, $ne: null },
+                                }
+                            },
+                            {
+                                $project: {
+                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    date: 1,
+                                    assignee: 1,
+                                    hours: 1,
+                                    amount: 1,
+                                }
+                            },
+                            {
+                                $match: {
+                                    year: Number(year),
+                                    month: Number(month),
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: { assignee: '$assignee' },
+                                    quantity: { $sum: "$hours" },
+                                    amount: { $sum: "$amount" },
+                                }
+                            },
+                        ])
+
+                        let conditionPopulate = {
+                            path: '_id.assignee',
+                            select: '_id fullname department position',
+                            model: 'user',
+                        }
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData, conditionPopulate)
+
+                        // console.log(listData.length)
+                        // console.log(listData)
+
+                        for(const item of listData){
+                            // Kiểm tra xem nhân sự đã tồn tại chưa, chưa thì mới tạo
+                            let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                                parent: ObjectID(salaryID),
+                                human: item._id.assignee._id
+                            })
+                            .select('name date funda parent')
+                            // console.log(info)
+
+                            if(!info){
+                                let dataInsertDetail = {
+                                    company: infoSalary.company,
+                                    userCreate: userID,
+                                    name: 'Default',
+                                    human: item._id.assignee._id,
+                                    parent: salaryID, // Bảng lương cha
+                                    project: item._id.assignee.department,
+                                    position: item._id.assignee.position,
+                                    date: infoSalary.date,
+                                    type: infoSalary.type,
+                                    funda: infoSalary.funda,
+                                    salary: Number(item.amount),
+                                }
+            
+                                await this.insertData(dataInsertDetail)
+                            }
+                        }
+
+                        return resolve({ error: false, message: 'Cập nhật thành công' })
                     }
 
+                    // ĐỒNG BỘ BẢNG LƯƠNG
+                    else if(option == 8){
+                        // Danh sách userID trong bảng lương
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
+                        let dataUser = listData.map(item=>item.human.toString())
+                        // console.log(dataUser)
+
+                        // Cập nhật KPI vào các chi tiết của Bảng lương
+                        await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
+
+                        // Tổng hợp các chi tiết lương vào Bảng lương: 
+                        await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
+
+                        return resolve({ error: false, message: 'Cập nhật thành công' })
+                    }
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                 }
@@ -1592,7 +1733,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
-        // console.log({ userID, option, year, month, companyID, projectID, assigneeID })
+        console.log({ userID, option, year, month, companyID, projectID, assigneeID })
         return new Promise(async resolve => {
             try {
                 // Record Traffic

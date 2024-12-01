@@ -1618,7 +1618,7 @@ class Model extends BaseModel {
                                         workbook.sheet("BangLuongUpdate").row(i).cell(26).value(`${item?.human?._id}`)  
 
                                         // Giảm trừ gia cảnh
-                                        workbook.sheet("BangLuongUpdate").row(i).cell(28).value(Number(item?.human?.contacts[0]?.nods))
+                                        workbook.sheet("BangLuongUpdate").row(i).cell(28).value(item?.human?.contacts[0] ? Number(item?.human?.contacts[0]?.nods) : 0)
 
                                         workbook.sheet("BangLuongUpdate").row(i).cell(29).value(Number(item.subAllowance1)) 
                                         workbook.sheet("BangLuongUpdate").row(i).cell(30).value(Number(item.subAllowance2)) 
@@ -1695,7 +1695,7 @@ class Model extends BaseModel {
                                         workbook.sheet("BangLuongDienGiai").row(i).cell(26).value(`${item?.human?._id}`)  
     
                                         // Giảm trừ gia cảnh
-                                        workbook.sheet("BangLuongDienGiai").row(i).cell(28).value(Number(item?.human?.contacts[0]?.nods))
+                                        workbook.sheet("BangLuongDienGiai").row(i).cell(28).value(item?.human?.contacts[0] ? Number(item?.human?.contacts[0]?.nods) : 0)
     
                                         // workbook.sheet("BangLuongDienGiai").row(i).cell(29).value(Number(item.subAllowance1)) 
                                         // workbook.sheet("BangLuongDienGiai").row(i).cell(30).value(Number(item.subAllowance2)) 
