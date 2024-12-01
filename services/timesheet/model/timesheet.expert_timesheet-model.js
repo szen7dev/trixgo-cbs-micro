@@ -620,7 +620,6 @@ class Model extends BaseModel {
                         let conditionObj = {
                             company: ObjectID(companyID),
                             funda: ObjectID(infoTimeSheet.funda),
-                            // parent: { $exists: true, $ne: null }
                         }
 
                         let projectObj =  {
