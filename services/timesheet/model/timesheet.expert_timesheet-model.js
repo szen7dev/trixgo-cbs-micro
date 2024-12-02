@@ -154,6 +154,12 @@ class Model extends BaseModel {
                 // Áp dụng cho việc tạo Hàng loạt theo cơ sở
                 if(checkObjectIDs(fundaID)){
                     dataInsert.funda = fundaID;
+
+                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                    if(infoFunda && checkObjectIDs(infoFunda.manager)){
+                        dataInsert.admins = [userCreate, infoFunda.manager]
+                        dataInsert.members = [userCreate, infoFunda.manager]
+                    }
                 }
 
                 if(checkObjectIDs(shiftID)){
@@ -865,8 +871,8 @@ class Model extends BaseModel {
                         if(!infoAppUser.error && infoAppUser.data.level == 0){
                             let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
 
-                            // if(1 > 0){
-                            if(infoTimeSheet.convert == 2){
+                            if(1 > 0){
+                            // if(infoTimeSheet.convert == 2){
                                 if(checkObjectIDs(infoTimeSheet.funda)){
                                     await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
                                     await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(timesheetID)
@@ -1146,7 +1152,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, type, year, month, companyID, assigneeID, projectID }){
-        // console.log({ userID, option, type, year, month, companyID, assigneeID, projectID })
+        console.log({ userID, option, type, year, month, companyID, assigneeID, projectID })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
