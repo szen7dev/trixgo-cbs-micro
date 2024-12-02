@@ -66,7 +66,6 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid }) {
-        // console.log({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid })
         return new Promise(async resolve => {
             try {
                 if(!name){
@@ -76,17 +75,6 @@ class Model extends BaseModel {
                         keyError: "name_invalid",
                     });
                 }
-
-                // let year = new Date(date).getFullYear()
-                // let month = new Date(date).getMonth()
-                // let checkExists = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                //     company: companyID,
-                //     parent: { $exists: false },
-                //     $where:
-                //     `return this.date.getMonth() === ${Number(month)} && this.date.getFullYear() === ${Number(year)}`
-                // })
-                // if(checkExists)
-                //     return resolve({ error: true, message: `Bảng lương tháng ${month + 1} năm ${year} đã tồn tại - ${checkExists.name}` })
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
@@ -101,8 +89,14 @@ class Model extends BaseModel {
                     dataInsert.human = humanID;
                 }
 
+                let infoProject;
                 if(checkObjectIDs(projectID)){
-                    dataInsert.project = projectID;
+                    dataInsert.project = projectID
+
+                    infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda name')
+                    if(infoProject && checkObjectIDs(infoProject.funda)){
+                        dataInsert.funda = infoProject.funda
+                    }
                 }
 
                 if(date){
@@ -197,8 +191,7 @@ class Model extends BaseModel {
                     }
 
                     if(checkObjectIDs(projectID)){
-                        let infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda')
-                        if(infoProject && infoProject.funda){
+                        if(infoProject && checkObjectIDs(infoProject.funda)){
                             dataInsertDetail.funda = infoProject.funda
                         }
                     }
@@ -258,12 +251,13 @@ class Model extends BaseModel {
                     dataUpdate.type = type;
                 }
 
+                // Bảng lương
                 let infoProject;
                 if(checkObjectIDs(projectID)){
                     infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda name')
                     dataUpdate.project = projectID;
 
-                    if(infoProject && infoProject.funda){
+                    if(infoProject && checkObjectIDs(infoProject.funda)){
                         dataUpdate.funda = infoProject.funda
                     }
                 }
@@ -460,9 +454,6 @@ class Model extends BaseModel {
                  * CẬP NHẬT VÀO CHI TIẾT LƯƠNG CON
                  */
                 if(!infoAfterUpdate.parent){
-                    console.log('555555555555555555555555555')
-                    // console.log( {date: infoAfterUpdate.date})
-
                     // Cập nhật số nhân sự bảng lương
                     let numberOfHuman = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: expertSalaryID})
                     if(numberOfHuman){
@@ -472,11 +463,6 @@ class Model extends BaseModel {
                             numberOfHuman
                         }, { new: true })
                     }
-
-                    // // Cập nhật hệ số chuyển đổi vào Chi tiết lương
-                    // if(convertFactor){
-                    //     await TIMESHEET__EXPERT_SALARY_COLL.updateMany({parent: expertSalaryID},{$set: {convertFactor: convertFactor}})
-                    // }
 
                     let dataUpdateNew = {
                         date: infoAfterUpdate.date,
@@ -765,7 +751,6 @@ class Model extends BaseModel {
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
-                // console.log({month,year})
 
                 /**
                  * Lương chính thức
@@ -799,7 +784,6 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { assignee: '$assignee' },
-                            // _id: {  },
                             quantity: { $sum: "$hours" },
                             amount: { $sum: "$amount" },
                         }
@@ -839,7 +823,6 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { assignee: '$assignee' },
-                            // _id: {  },
                             quantity: { $sum: "$hours" },
                             amount: { $sum: "$amount" },
                         }
@@ -872,6 +855,7 @@ class Model extends BaseModel {
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
                         human: item,
+                        funda: ObjectID(infoSalary.funda)
                     })
 
                     // Lấy giá trị ban đầu
@@ -906,22 +890,6 @@ class Model extends BaseModel {
                             subAllowance13 = Number(arr2[item][0].amount).toFixed(0) // Đặt làm phụ cấp Thử việc
                         }
                     }
-
-                //    // Lấy giá trị ban đầu
-                //     onLeaveSalary = info.onLeaveSalary
-                //     overtimeSalary = info.overtimeSalary
-                //     reward = info.reward
-                //     revenueBonus = info.revenueBonus
-                //     mealAllowance = info.mealAllowance
-                //     punishment = info.punishment
-                //     insurance = info.insurance
-                //     pitax = info.pitax
-                //     union = info.union
-                //     share = info.share
-                //     other = info.other
-                //     advance = info.advance
-                //     paid = info.paid
-                //     kpiFactor = info.kpiFactor
 
                     remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
@@ -1421,7 +1389,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({ companyID, userID, email, option, salaryID, orderID, arrUser, fundaID, year, month }){
-        console.log({companyID, userID, email, option, salaryID, orderID, fundaID, year, month})
+        // console.log({companyID, userID, email, option, salaryID, orderID, fundaID, year, month})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -1684,8 +1652,6 @@ class Model extends BaseModel {
                         function getLastDayOfMonth(year, month) {
                             return new Date(year, month, 0)
                         }
-
-                        // console.log(getLastDayOfMonth(year, month))
     
                         let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
                         for(const item of listFunda){
@@ -1756,8 +1722,6 @@ class Model extends BaseModel {
                             {
                                 $group: {
                                     _id: { assignee: '$assignee' },
-                                    quantity: { $sum: "$hours" },
-                                    amount: { $sum: "$amount" },
                                 }
                             },
                         ])
@@ -1769,10 +1733,8 @@ class Model extends BaseModel {
                         }
                         await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData, conditionPopulate)
 
-                        // console.log(listData.length)
-                        // console.log(listData)
-
                         for(const item of listData){
+
                             // Kiểm tra xem nhân sự đã tồn tại chưa, chưa thì mới tạo
                             let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                                 parent: ObjectID(salaryID),
@@ -1793,7 +1755,6 @@ class Model extends BaseModel {
                                     date: infoSalary.date,
                                     type: infoSalary.type,
                                     funda: infoSalary.funda,
-                                    salary: Number(item.amount),
                                 }
             
                                 await this.insertData(dataInsertDetail)

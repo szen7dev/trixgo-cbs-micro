@@ -30,8 +30,8 @@ const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_
 const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
 const ITEM__FUNDA_COLL            	    = require('../../item/database/item.funda-coll'); 
 const ITEM__POSITION_COLL            	= require('../../item/database/item.position-coll'); 
-// const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll');
 const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll');
+const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
@@ -54,7 +54,6 @@ class Model extends BaseModel {
      * Code:
      */
     insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official }) {
-        // console.log({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -134,9 +133,17 @@ class Model extends BaseModel {
                 }
                 // console.log({_________2: unitprice2})
 
+                // Bảng chấm công Cha
+                let infoProject;
                 if(checkObjectIDs(projectID)){
                     dataInsert.project = projectID;
+
+                    infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda')
+                    if(infoProject && checkObjectIDs(infoProject.funda)){
+                        dataInsert.funda = infoProject.funda
+                    }
                 }else{
+                    // Chi tiết chấm công
                     if(!infoParent || !infoParent.assignee){
                         let infoUser = await USER_COLL.findById(userCreate)
                         dataInsert.project = infoUser.department;
@@ -144,6 +151,7 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Áp dụng cho việc tạo Hàng loạt theo cơ sở
                 if(checkObjectIDs(fundaID)){
                     dataInsert.funda = fundaID;
                 }
@@ -256,13 +264,21 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                if(projectID){
+                // Bảng chấm công
+                let infoProject;
+                if(checkObjectIDs(projectID)){
+                    infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda name')
                     dataUpdate.project = projectID;
+
+                    if(infoProject && checkObjectIDs(infoProject.funda)){
+                        dataUpdate.funda = infoProject.funda
+                    }
                 }
 
                 let unitprice2 = 0, hours2 = 0
+
+                // Chi tiết chấm công
                 let infoAssignee
-                
                 if(checkObjectIDs(assigneeID)){
                     dataUpdate.assignee = assigneeID;
 
@@ -432,7 +448,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true });
+                let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) 
                     return resolve({
                         error: true,
@@ -442,12 +458,22 @@ class Model extends BaseModel {
                 
                 // Cập nhật cho các mẩu tin con
                 if(!infoAfterUpdate.parent && [1,2].includes(Number(type)) && [1,2].includes(Number(official))){
-                    await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({parent: expertTimesheetID},{
-                        $set: {
-                            type: Number(type),
-                            official: Number(official),
-                        }
-                    })
+                    if(infoProject && checkObjectIDs(infoProject.funda)){
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({parent: expertTimesheetID},{
+                            $set: {
+                                type: Number(type),
+                                official: Number(official),
+                                funda: infoProject.funda,
+                            }
+                        })
+                    }else{
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({parent: expertTimesheetID},{
+                            $set: {
+                                type: Number(type),
+                                official: Number(official),
+                            }
+                        })
+                    }
                 }
 
                 // Cập nhật cho mẩu tin cha
@@ -566,13 +592,13 @@ class Model extends BaseModel {
 
                 if(1 > 0){
                 // if(!infoAppUser.error && infoAppUser.data.level == 0){
-                    /**
-                     * TẠO BẢNG CHẤM CÔNG CÁC CƠ SỞ THEO THÁNG
-                     */
                     function getLastDayOfMonth(year, month) {
                         return new Date(year, month, 0)
                     }
-
+                    
+                    /**
+                     * TẠO BẢNG CHẤM CÔNG CÁC CƠ SỞ THEO THÁNG
+                     */
                     if(!option){
                         let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
                         for(const item of listFunda){
@@ -620,7 +646,6 @@ class Model extends BaseModel {
                         let conditionObj = {
                             company: ObjectID(companyID),
                             funda: ObjectID(infoTimeSheet.funda),
-                            // parent: { $exists: true, $ne: null }
                         }
 
                         let projectObj =  {
