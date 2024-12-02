@@ -89,6 +89,15 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Number,
         default: 1
     },
+    /**
+     * Bảng chấm công convert từ Ca làm việc
+     * 1-Bình thường
+     * 2-Convert
+     */
+    convert : {
+        type: Number,
+        default: 1
+    },
     //________Người thực hiện
     assignee: {
         type: Schema.Types.ObjectId,
