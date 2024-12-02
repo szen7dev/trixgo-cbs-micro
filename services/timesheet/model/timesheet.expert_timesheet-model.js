@@ -862,19 +862,22 @@ class Model extends BaseModel {
                      * XÓA BẢNG CHẤM CÔNG
                      */
                     else if(option == 2){
-                        // Khởi tạo lại và đồng bộ
-                        let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
+                        if(!infoAppUser.error && infoAppUser.data.level == 0){
+                            let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
 
-                        if(1 > 0){
-                        // if(infoTimeSheet.convert == 2){
-                            if(checkObjectIDs(infoTimeSheet.funda)){
-                                await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
-                                await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(timesheetID)
-                            }
-                            return resolve({ error: false, message: 'Đồng bộ thành công' })   
-                        }else{
+                            // if(1 > 0){
+                            if(infoTimeSheet.convert == 2){
+                                if(checkObjectIDs(infoTimeSheet.funda)){
+                                    await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
+                                    await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(timesheetID)
+                                }
+                                return resolve({ error: false, message: 'Đồng bộ thành công' })   
+                            }else{
+                                return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                            }  
+                        } else{
                             return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
-                        }                  
+                        }              
                     }
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
