@@ -200,21 +200,24 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date }){
+        // console.log({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date })
         return new Promise(async resolve => {
             try {
 				let info = await ITEM__GOODS_COLL.findById(goodsID)
 				if (!info)
 					return resolve({ error: true, message: 'can_not_get_info' })
 
-                let checkName = await ITEM__GOODS_COLL.findOne({
-					company: info.company,
-					name: name.trim(),
-					_id: {
-						$ne: goodsID
-					}
-					});
-				if(checkName)
-					return resolve({ error: true, message: "name_existed" });
+                if (name && name != '') {
+                    let checkName = await ITEM__GOODS_COLL.findOne({
+                        company: info.company,
+                        name: name.trim(),
+                        _id: {
+                            $ne: goodsID
+                        }
+                        });
+                    if(checkName)
+                        return resolve({ error: true, message: "name_existed" })
+                }
 
                 let dataUpdate = {
                     userUpdate: userID,
