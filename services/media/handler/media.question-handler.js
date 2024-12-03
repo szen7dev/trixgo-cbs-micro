@@ -26,7 +26,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { name, note, goodsID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -58,7 +58,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { questionID, name, note } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
@@ -119,11 +119,15 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { questionID, goodsID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { companyID, questionID, goodsID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
 
                 let resultAfterCallHandler;
                 if (questionID) {
@@ -131,7 +135,7 @@ module.exports = {
                         questionID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await MEDIA_QUESTION_MODEL.getList({ companyID: company._id, goodsID, keyword, limit, lastestID, select, populates, sortKey });
+                    resultAfterCallHandler = await MEDIA_QUESTION_MODEL.getList({ companyID, goodsID, keyword, limit, lastestID, select, populates, sortKey });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
