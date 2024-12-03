@@ -208,6 +208,7 @@ class Model extends BaseModel {
 	 * Date: 9/4/2022
 	 */
 	getInfo({ companyID, mediaID, slug, select, populates }) {
+		// console.log({ companyID, mediaID, slug, select, populates })
 		return new Promise(async resolve => {
 			try {
 				if (populates && typeof populates === 'string') {
@@ -229,6 +230,7 @@ class Model extends BaseModel {
 						.select(select)
 						.populate(populates)
 						.lean();
+						console.log(info)
 
 						if (!info) return resolve({ error: true, message: 'cannot_get' })
 
