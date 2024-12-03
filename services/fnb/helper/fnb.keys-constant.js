@@ -35,6 +35,7 @@ exports.FNB_SHIFT_TYPES = [
     { value: 1, text: 'Sáng' },
     { value: 2, text: 'Chiều' },
     { value: 3, text: 'Tối' },
+    { value: 4, text: 'Đêm' },
 ]
 
 exports.FNB_SEASONS = [
