@@ -173,7 +173,8 @@ class Model extends BaseModel {
           try {
               let sortBy;
               let conditionObj = { };
-              let keys = ['createAt__-1', '_id__-1'];
+            //   let keys = ['createAt__-1', '_id__-1'];
+              let keys = ['createAt__1', '_id__1'];
 
               if (limit > 50) {
                   limit = 50
