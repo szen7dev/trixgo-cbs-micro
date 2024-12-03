@@ -449,12 +449,12 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, projectID, parentID, menuSlug, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
+        option, companyID, projectID, parentID, menuSlug, fundaID, type, isParent, status, usage, isListParentOfListChilds, forCustomer,
         keyword, limit = 10, lastestID, select, populates = {}, sortDirection = '-1' }) {
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
+                if(limit > 50){
+                    limit = 50
                 } else{
                     limit = +limit;
                 }
@@ -462,6 +462,10 @@ class Model extends BaseModel {
                 let sortBy;
                 let conditionObj = { };
                 let keys	 = [`createAt__${sortDirection}`, `_id__${sortDirection}`];
+
+                if(option && option == 1){
+                    conditionObj.parent = { $exists: true, $ne: null }
+                }
 
                 if(fundaID && checkObjectIDs(fundaID)){
                     conditionObj.fundas = {$in: [fundaID]}
@@ -537,6 +541,8 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
+
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
