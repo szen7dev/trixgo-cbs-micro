@@ -5312,13 +5312,8 @@ class Model extends BaseModel {
         };
 
         if(!option){
-          if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){  
-            let obj = JSON.parse(queryFnb);
-            if (obj.fromDate && obj.toDate) {
-              currentMonth = new Date(obj.toDate).getMonth() + 1;
-              currentYear = new Date(obj.toDate).getFullYear();
-            }
-
+          // if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){  
+            
             let conditionGroup = {};
             let conditionPopulate = {}, sortBy = { "_id.month": -1, avgQuantityPerStaff: -1 };
   
@@ -5326,8 +5321,43 @@ class Model extends BaseModel {
               company: ObjectID(companyID),
               status: 5,
               avgQuantityPerStaff: { $exists: true, $ne: null },
-            };
+            }
 
+            let conditionErObj = {
+              company: ObjectID(companyID),
+            }
+
+            let obj = JSON.parse(queryFnb)
+            if (obj.fromDate && obj.toDate) {
+              currentMonth = new Date(obj.toDate).getMonth() + 1;
+              currentYear = new Date(obj.toDate).getFullYear();
+            }
+
+            if(obj.fundasID && obj.fundasID.length){
+              let arrFun = obj.fundasID.map((item) => ObjectID(item));
+
+              if (arrFun.length) {
+                conditionObj.funda = { $in: arrFun };
+                conditionErObj.funda = { $in: arrFun };
+              }
+            }else{
+              let listFundaIsMember = await ITEM__FUNDA_COLL.find({
+                members: { $in: [userID] },
+              });
+              let fundasIDIsMember = listFundaIsMember.map((item) =>
+                ObjectID(item._id),
+              );
+              if (fundasIDIsMember.length) {
+                conditionObj.funda = { $in: fundasIDIsMember };
+                conditionErObj.funda = { $in: fundasIDIsMember };
+              } else {
+                conditionObj.funda = { $in: [] };
+                conditionErObj.funda = { $in: [] };
+              }
+            }
+            console.log(conditionObj)
+            console.log(conditionErObj)
+            
             let lookupObj = {
               from: "users",
               localField: "assignee",
@@ -5355,9 +5385,7 @@ class Model extends BaseModel {
              */
             let listDataErr = await FNB_MISTAKE_COLL.aggregate([
               {
-                $match: {
-                  company: ObjectID(companyID),
-                },
+                $match: conditionErObj,
               },
               {
                 $project: projectObj,
@@ -5371,7 +5399,8 @@ class Model extends BaseModel {
               {
                 $sort: { "_id.month": -1 },
               },
-            ]);
+            ])
+
             await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr);
   
             /**
@@ -5488,13 +5517,13 @@ class Model extends BaseModel {
                 status: 200,
               });
             });
-          } else {
-            return resolve({
-              error: true,
-              message: "Bạn không có quyền",
-              status: 500,
-            });
-          }
+          // } else {
+          //   return resolve({
+          //     error: true,
+          //     message: "Bạn không có quyền",
+          //     status: 500,
+          //   });
+          // }
         }else{
           let listDataErr = await FNB_MISTAKE_COLL.aggregate([
             {
