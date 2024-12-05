@@ -3481,31 +3481,34 @@ class Model extends BaseModel {
               type: 1,
               active: 1,
             });
-            const { metadata: { template } } = infoConfig;
 
-            if (infoConfig && template) {  
-              // Xử lý dữ liệu số điện thoại
-              const str = infoCustomer.phone;
-              const removeFirst1 = `84${str.slice(1)}`;
+            if(infoConfig){
+              const { metadata: { template } } = infoConfig;
+
+              if (infoConfig && template) {  
+                // Xử lý dữ liệu số điện thoại
+                const str = infoCustomer.phone;
+                const removeFirst1 = `84${str.slice(1)}`;
+    
+                let dataOA1 = {
+                  phone: `${removeFirst1}`,
+                  templateData: {
+                    customer_name: `Khách ${infoCustomer.phone}`,
+                    order_code: infoOrder.sign,
+                    price: infoOrder.total,
+                    date: moment(infoOrder.date).format("HH:mm DD/MM/YYYY"),
+                    note: "Quan tâm OA tặng mã 200k",
+                  },
+                  templateId: template.new_order,
+                  appId: infoConfig.channel,
+                }
   
-              let dataOA1 = {
-                phone: `${removeFirst1}`,
-                templateData: {
-                  customer_name: `Khách ${infoCustomer.phone}`,
-                  order_code: infoOrder.sign,
-                  price: infoOrder.total,
-                  date: moment(infoOrder.date).format("HH:mm DD/MM/YYYY"),
-                  note: "Quan tâm OA tặng mã 200k",
-                },
-                templateId: template.new_order,
-                appId: infoConfig.channel,
+                // console.log({dataOA1})
+                await ctx.call(
+                  `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                  dataOA1,
+                )
               }
-
-              // console.log({dataOA1})
-              await ctx.call(
-                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                dataOA1,
-              )
             }
           }
         }
