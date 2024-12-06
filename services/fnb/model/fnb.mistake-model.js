@@ -152,13 +152,13 @@ class Model extends BaseModel {
                     dataUpdate.type = Number(type);
                 }
 
-                if(!isNaN(amount) && Number(amount) > 0){
-                    dataUpdate.amount = Number(amount);
-                }
+                // if(!isNaN(amount) && Number(amount) > 0){
+                //     dataUpdate.amount = Number(amount);
+                // }
 
-                if(!isNaN(bonus) && Number(bonus) > 0){
-                    dataUpdate.bonus = Number(bonus);
-                }
+                // if(!isNaN(bonus) && Number(bonus) > 0){
+                //     dataUpdate.bonus = Number(bonus);
+                // }
 
                 if(date && date != ""){
                     dataUpdate.date = date;
