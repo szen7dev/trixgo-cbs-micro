@@ -16,6 +16,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Schema.Types.ObjectId,
         ref : "funda"
     },
+    //_________Ngày tháng
+    date: { type: Date, default: Date.now },
     //_________Nội dung
     name: String,
     //_________Ghi chú

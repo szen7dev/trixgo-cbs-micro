@@ -133,7 +133,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderMistakeID, type, amount, bonus, note, userID}) {
+    update({ orderMistakeID, date, type, amount, bonus, note, userID}) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderMistakeID))
@@ -151,6 +151,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(bonus)){
                     dataUpdate.bonus = Number(bonus);
+                }
+
+                if(date && date != ""){
+                    dataUpdate.date = date;
                 }
 
                 if(note && note != ""){

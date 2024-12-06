@@ -262,7 +262,7 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default: 5
     },
-    //_________Ngày tháng đơn hàng
+    //_________Ngày tháng
     date: { type: Date, default: Date.now },
     //_________Nội dung
     name: String,
