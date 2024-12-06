@@ -1389,7 +1389,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({ companyID, userID, email, option, salaryID, orderID, arrUser, fundaID, year, month }){
-        // console.log({companyID, userID, email, option, salaryID, orderID, fundaID, year, month})
+        // console.log({ companyID, userID, email, option, salaryID, orderID, arrUser, fundaID, year, month })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -1761,10 +1761,15 @@ class Model extends BaseModel {
                             }
                         }
 
+                        // Cập nhật số nhân sự vào Bảng lương cha
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(salaryID, {
+                            numberOfHuman: Number(listData.length)
+                        }, { new: true })
+
                         return resolve({ error: false, message: 'Cập nhật thành công' })
                     }
 
-                    // ĐỒNG BỘ BẢNG LƯƠNG
+                    // ĐỒNG BỘ BẢNG LƯƠNG THEO CƠ SỞ
                     else if(option == 8){
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
