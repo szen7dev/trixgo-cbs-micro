@@ -44,6 +44,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 1
     },
+    //_________Ngày tháng
+    date: { type: Date, default: Date.now },
     //_________Lỗi mắc phải
     mistake: {
         type: Schema.Types.ObjectId,

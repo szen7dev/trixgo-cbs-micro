@@ -57,23 +57,24 @@ module.exports = {
         auth: "required",
         params: {
             orderMistakeID      : { type: "string", optional: true },
-            mistakeID           : { type: "string" },
-            executorID          : { type: "string" },
-            fundaID             : { type: "string" },
-            orderID             : { type: "string", optional: true },
-            type                : { type: "number", optional: true },
-            amount              : { type: "number", optional: true },
-            bonus               : { type: "number", optional: true },
-            note                : { type: "string", optional: true },
+            mistakeID           : { type: "string", optional: true },
+            // executorID          : { type: "string", optional: true },
+            // fundaID             : { type: "string", optional: true },
+            // orderID             : { type: "string", optional: true },
+            // type                : { type: "number", optional: true },
+            // amount              : { type: "number", optional: true },
+            // bonus               : { type: "number", optional: true },
+            // note                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderMistakeID, mistakeID, executorID, fundaID, orderID, type, amount, bonus, note } = ctx.params;
-				const { _id: userID } = ctx.meta.infoUser;
+                let {  orderMistakeID, mistakeID, date, executorID, fundaID, orderID, type, amount, bonus, note } = ctx.params;
+
+				const { _id: userID } = ctx.meta.infoUser;                
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.update({
-                    orderMistakeID, userID,
+                    orderMistakeID, userID, date,
                     executorID, fundaID, orderID, type, amount, bonus, note
                 });
 
