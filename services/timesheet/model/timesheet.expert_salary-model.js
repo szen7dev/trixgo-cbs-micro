@@ -1069,8 +1069,6 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     updateRevenueKpi({ dataUser, expertSalaryID, userID, companyID, fundaID }){
-        // console.log('=================================')
-        // console.log({ dataUser, expertSalaryID, userID, companyID, fundaID })
         return new Promise(async (resolve) => {
             try {
                 function calculateRevenue(totalSold, priceLevels) {
@@ -1104,19 +1102,6 @@ class Model extends BaseModel {
                     { quantity: 500, price: 300 }, // 200 cốc tiếp theo x 200
                     { quantity: 50000, price: 350 }, // 200 cốc tiếp theo x 200
                 ];
-                
-                // const totalSold = 300;
-                // const totalRevenue1 = calculateRevenue(1001, priceLevels);
-                // const totalRevenue2 = calculateRevenue(1500, priceLevels);
-                // const totalRevenue3 = calculateRevenue(3000, priceLevels);
-                // const totalRevenue4 = calculateRevenue(5000, priceLevels);
-                // const totalRevenue5 = calculateRevenue(15000, priceLevels);
-                
-                // console.log(`Tổng doanh thu: ${totalRevenue1}`);
-                // console.log(`Tổng doanh thu: ${totalRevenue2}`);
-                // console.log(`Tổng doanh thu: ${totalRevenue3}`);
-                // console.log(`Tổng doanh thu: ${totalRevenue4}`);
-                // console.log(`Tổng doanh thu: ${totalRevenue5}`);
 
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 if(!infoSalary)
@@ -1167,10 +1152,8 @@ class Model extends BaseModel {
 
                 let conditionGroup = {
                     _id: { staff: "$staff._id" },
-                    avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+                    avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" }
                 }
-
-                // let sortBy = { avgQuantityPerStaff: -1 };
 
                 let listData = await FNB_ORDER_COLL.aggregate([
                     {
@@ -1191,9 +1174,6 @@ class Model extends BaseModel {
                     {
                       $group: conditionGroup,
                     },
-                    // {
-                    //     $sort: sortBy,
-                    // },
                 ])
 
                 let arr = []
@@ -1485,9 +1465,7 @@ class Model extends BaseModel {
                     else if(option == 3){
                         if(SALARY_RESET_PERMISSION.includes(email)){
                             let numberDetail = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: salaryID})
-                            // console.log({numberDetail})
                             if(numberDetail == 0){
-                                // console.log('=======================')
                                 await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
                                 await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
                                 return resolve({ error: false, data: 'Hành động thành công' })
@@ -1636,7 +1614,15 @@ class Model extends BaseModel {
                         }
     
                         let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
+                        
                         for(const item of listFunda){
+                            let arrPermission = []
+                            if(checkObjectIDs(item.manager)){
+                                arrPermission = [userID, item.manager]
+                            }else{
+                                arrPermission = [userID]
+                            }
+
                             // Kiểm tra xem bảng đã tồn tại hay chưa, nếu chưa thì tạo mới
                             let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                                 company: ObjectID(companyID),
@@ -1651,8 +1637,8 @@ class Model extends BaseModel {
                                 let infoAfterInsert = await this.insertData({
                                     userCreate: userID, 
                                     company: companyID, 
-                                    admins: [userID],
-                                    members: [userID],
+                                    admins: arrPermission,
+                                    members: arrPermission,
                                     name: `Bảng lương Cơ sở ${item.name} T${month}.${year}`, 
                                     namecv: stringUtils.removeAccents(`Bảng lương Cơ sở ${item.name} T${month}.${year}`), 
                                     date: getLastDayOfMonth(year, month), 
@@ -1756,7 +1742,6 @@ class Model extends BaseModel {
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                         let dataUser = listData.map(item=>item.human.toString())
-                        // console.log(dataUser)
 
                         /**
                          * Cập nhật chấm công vào các Chi tiết của Bảng lương:

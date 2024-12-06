@@ -874,7 +874,6 @@ class Model extends BaseModel {
                     if(!infoAppUser.error && infoAppUser.data.level == 0){
                         let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
 
-                        // if(1>0){
                         if(infoTimeSheet.convert == 2){
                             if(checkObjectIDs(infoTimeSheet.funda)){
                                 await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
