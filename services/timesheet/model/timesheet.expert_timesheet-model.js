@@ -601,16 +601,15 @@ class Model extends BaseModel {
                     userID
                 })
 
-                if(1 > 0){
-                // if(!infoAppUser.error && infoAppUser.data.level == 0){
-                    function getLastDayOfMonth(year, month) {
-                        return new Date(year, month, 0)
-                    }
-                    
-                    /**
-                     * TẠO BẢNG CHẤM CÔNG CÁC CƠ SỞ THEO THÁNG
-                     */
-                    if(!option){
+                function getLastDayOfMonth(year, month) {
+                    return new Date(year, month, 0)
+                }
+                
+                /**
+                 * TẠO BẢNG CHẤM CÔNG CÁC CƠ SỞ THEO THÁNG
+                 */
+                if(!option){
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
                         let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
                         for(const item of listFunda){
                             // Kiểm tra xem bảng đã tồn tại hay chưa, nếu chưa thì tạo mới
@@ -641,253 +640,253 @@ class Model extends BaseModel {
                         }
 
                         return resolve({ error: false, message: 'Đồng bộ thành công' })
+                    }else{
+                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                     }
+                }
 
-                    /**
-                     * CẬP NHẬT CA LÀM VIỆC SANG BẢNG CHẤM CÔNG
-                     */
-                    else if(option == 1){
-                        // Khởi tạo lại và đồng bộ
+                /**
+                 * CẬP NHẬT CA LÀM VIỆC SANG BẢNG CHẤM CÔNG
+                 */
+                else if(option == 1){
+                    // Khởi tạo lại và đồng bộ
+                    let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
+
+                    if(infoTimeSheet.convert == 2){
+                        if(infoTimeSheet.official == 1){
+                            // Xóa dữ liệu cũ đang có???
+                            if(checkObjectIDs(infoTimeSheet.funda)){
+                                await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
+                            }
+
+                            let conditionObj = {
+                                company: ObjectID(companyID),
+                                funda: ObjectID(infoTimeSheet.funda),
+                            }
+
+                            let projectObj =  {
+                                year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                                month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                                day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
+                                company : 1,
+                                funda : 1,
+                                createAt: 1,
+                                staffs : 1,
+                                subStaffs : 1,
+                                workingHours : 1,
+                                subWorkingHours : 1,
+                                officialStaffSalar: 1,
+                                trialStaffSalary: 1,
+                                shiftType: 1,
+                                official: 1,
+                            }
+
+                            let lookupObj = {
+                                from: "users",
+                                localField: "staffs",
+                                foreignField: "_id",
+                                as: "staff"
+                            } 
+            
+                            let lookupSubObj = {
+                                from: "users",
+                                localField: "subStaffs",
+                                foreignField: "_id",
+                                as: "staff"
+                            } 
+
+                            let conditionGroup1 = {
+                                _id: { 
+                                    staff: "$staff._id", 
+                                    day: "$day", 
+                                    official: "$official",
+                                    shiftGroup: {
+                                        $cond: [
+                                        { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
+                                        "G123",                     // Tên nhóm cho 1, 2, 3
+                                        "G4"                          // Tên nhóm cho shiftType = 4
+                                        ]
+                                    }
+                                },
+                                workingHours: { $sum: "$workingHours" },
+                                amount: { $sum: { $multiply: [ "$workingHours", "$officialStaffSalar" ] } }
+                            }
+
+                            let conditionGroup2 = {
+                                _id: { 
+                                    staff: "$staff._id", 
+                                    day: "$day", 
+                                    official: "$official",
+                                    shiftGroup: {
+                                        $cond: [
+                                        { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
+                                        "G123",                     // Tên nhóm cho 1, 2, 3
+                                        "G4"                          // Tên nhóm cho shiftType = 4
+                                        ]
+                                    }
+                                },
+                                workingHours: { $sum: "$subWorkingHours" },
+                                amount: { $sum: { $multiply: [ "$subWorkingHours", "$trialStaffSalary" ] } }
+                            }
+
+                            let conditionPopulate = {
+                                path: '_id.staff',
+                                select: '_id fullname',
+                                model: 'user',
+                            }
+
+                            let month = Number(infoTimeSheet.date.getMonth()) + 1
+                            let year = infoTimeSheet.date.getFullYear()
+
+                            let conditionObjTime = {
+                                year: Number(year),
+                                month: Number(month),
+                            }
+
+                            let listData1 = await FNB_SHIFT_COLL.aggregate([
+                                {
+                                    $match: conditionObj
+                                },
+                                {
+                                    $project: projectObj
+                                },
+                                { 
+                                    $lookup: lookupObj
+                                },
+                                {
+                                    $unwind: "$staff"
+                                },
+                                {
+                                    $match: conditionObjTime
+                                },
+                                {
+                                    $group: conditionGroup1
+                                },
+                            ])
+
+                            let listData2 = await FNB_SHIFT_COLL.aggregate([
+                                {
+                                    $match: conditionObj
+                                },
+                                {
+                                    $project: projectObj
+                                },
+                                { 
+                                    $lookup: lookupSubObj
+                                },
+                                {
+                                    $unwind: "$staff"
+                                },
+                                {
+                                    $match: conditionObjTime
+                                },
+                                {
+                                    $group: conditionGroup2
+                                },
+                            ])
+
+                            await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate)
+                            await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate)
+
+                            for(const item of listData1){
+                                if(item._id.shiftGroup.toString() === 'G123'){
+                                    await that.insert({ 
+                                        userCreate: userID, 
+                                        companyID, 
+                                        parentID: timesheetID, 
+                                        name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                                        date: `${year}-${month}-${item._id.day}`, 
+                                        type: 2, 
+                                        shiftType: 1, 
+                                        official: item._id.official, 
+                                        note: 'Ca chính-Ca ngày', 
+                                        hours: item.workingHours, 
+                                        unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                                        assigneeID: item._id.staff._id, 
+                                        fundaID: infoTimeSheet.funda, 
+                                    })
+                                }else{
+                                    await that.insert({ 
+                                        userCreate: userID, 
+                                        companyID, 
+                                        parentID: timesheetID, 
+                                        name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                                        date: `${year}-${month}-${item._id.day}`, 
+                                        type: 2, 
+                                        shiftType: 2, 
+                                        official: item._id.official, 
+                                        note: 'Ca chính-Ca đêm', 
+                                        hours: item.workingHours, 
+                                        unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                                        assigneeID: item._id.staff._id, 
+                                        fundaID: infoTimeSheet.funda, 
+                                    })
+                                }
+                            }
+
+                            for(const item of listData2){
+                                if(item._id.shiftGroup.toString() === 'G123'){
+                                    await that.insert({ 
+                                        userCreate: userID, 
+                                        companyID, 
+                                        parentID: timesheetID, 
+                                        name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                                        date: `${year}-${month}-${item._id.day}`, 
+                                        type: 2, 
+                                        shiftType: 1, 
+                                        official: item._id.official, 
+                                        note: 'Ca phụ-Ca ngày', 
+                                        hours: item.workingHours, 
+                                        unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                                        assigneeID: item._id.staff._id, 
+                                        fundaID: infoTimeSheet.funda, 
+                                    })
+                                }else{
+                                    await that.insert({ 
+                                        userCreate: userID, 
+                                        companyID, 
+                                        parentID: timesheetID, 
+                                        name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
+                                        date: `${year}-${month}-${item._id.day}`, 
+                                        type: 2, 
+                                        shiftType: 2, 
+                                        official: item._id.official, 
+                                        note: 'Ca phụ-Ca đêm', 
+                                        hours: item.workingHours, 
+                                        unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
+                                        assigneeID: item._id.staff._id, 
+                                        fundaID: infoTimeSheet.funda, 
+                                    })
+                                }
+                            }
+
+                            return resolve({ error: false, message: 'Đồng bộ thành công' }) 
+                        }else{
+                            return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                        }   
+                    }                         
+                }
+
+                /**
+                 * XÓA BẢNG CHẤM CÔNG
+                 */
+                else if(option == 2){
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
                         let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
 
+                        // if(1>0){
                         if(infoTimeSheet.convert == 2){
-                            if(infoTimeSheet.official == 1){
-                                // Xóa dữ liệu cũ đang có???
-                                if(checkObjectIDs(infoTimeSheet.funda)){
-                                    await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
-                                }
-
-                                let conditionObj = {
-                                    company: ObjectID(companyID),
-                                    funda: ObjectID(infoTimeSheet.funda),
-                                }
-
-                                let projectObj =  {
-                                    year: { $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
-                                    month: { $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
-                                    day: { $dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" } },
-                                    company : 1,
-                                    funda : 1,
-                                    createAt: 1,
-                                    staffs : 1,
-                                    subStaffs : 1,
-                                    workingHours : 1,
-                                    subWorkingHours : 1,
-                                    officialStaffSalar: 1,
-                                    trialStaffSalary: 1,
-                                    shiftType: 1,
-                                    official: 1,
-                                }
-
-                                let lookupObj = {
-                                    from: "users",
-                                    localField: "staffs",
-                                    foreignField: "_id",
-                                    as: "staff"
-                                } 
-                
-                                let lookupSubObj = {
-                                    from: "users",
-                                    localField: "subStaffs",
-                                    foreignField: "_id",
-                                    as: "staff"
-                                } 
-
-                                let conditionGroup1 = {
-                                    _id: { 
-                                        staff: "$staff._id", 
-                                        day: "$day", 
-                                        official: "$official",
-                                        shiftGroup: {
-                                            $cond: [
-                                            { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
-                                            "G123",                     // Tên nhóm cho 1, 2, 3
-                                            "G4"                          // Tên nhóm cho shiftType = 4
-                                            ]
-                                        }
-                                    },
-                                    workingHours: { $sum: "$workingHours" },
-                                    amount: { $sum: { $multiply: [ "$workingHours", "$officialStaffSalar" ] } }
-                                }
-
-                                let conditionGroup2 = {
-                                    _id: { 
-                                        staff: "$staff._id", 
-                                        day: "$day", 
-                                        official: "$official",
-                                        shiftGroup: {
-                                            $cond: [
-                                            { $in: ["$shiftType", [1, 2, 3]] }, // Kiểm tra shiftType thuộc nhóm 1, 2, 3
-                                            "G123",                     // Tên nhóm cho 1, 2, 3
-                                            "G4"                          // Tên nhóm cho shiftType = 4
-                                            ]
-                                        }
-                                    },
-                                    workingHours: { $sum: "$subWorkingHours" },
-                                    amount: { $sum: { $multiply: [ "$subWorkingHours", "$trialStaffSalary" ] } }
-                                }
-
-                                let conditionPopulate = {
-                                    path: '_id.staff',
-                                    select: '_id fullname',
-                                    model: 'user',
-                                }
-
-                                let month = Number(infoTimeSheet.date.getMonth()) + 1
-                                let year = infoTimeSheet.date.getFullYear()
-
-                                let conditionObjTime = {
-                                    year: Number(year),
-                                    month: Number(month),
-                                }
-
-                                let listData1 = await FNB_SHIFT_COLL.aggregate([
-                                    {
-                                        $match: conditionObj
-                                    },
-                                    {
-                                        $project: projectObj
-                                    },
-                                    { 
-                                        $lookup: lookupObj
-                                    },
-                                    {
-                                        $unwind: "$staff"
-                                    },
-                                    {
-                                        $match: conditionObjTime
-                                    },
-                                    {
-                                        $group: conditionGroup1
-                                    },
-                                ])
-
-                                let listData2 = await FNB_SHIFT_COLL.aggregate([
-                                    {
-                                        $match: conditionObj
-                                    },
-                                    {
-                                        $project: projectObj
-                                    },
-                                    { 
-                                        $lookup: lookupSubObj
-                                    },
-                                    {
-                                        $unwind: "$staff"
-                                    },
-                                    {
-                                        $match: conditionObjTime
-                                    },
-                                    {
-                                        $group: conditionGroup2
-                                    },
-                                ])
-
-                                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate)
-                                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData2, conditionPopulate)
-
-                                for(const item of listData1){
-                                    if(item._id.shiftGroup.toString() === 'G123'){
-                                        await that.insert({ 
-                                            userCreate: userID, 
-                                            companyID, 
-                                            parentID: timesheetID, 
-                                            name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                            date: `${year}-${month}-${item._id.day}`, 
-                                            type: 2, 
-                                            shiftType: 1, 
-                                            official: item._id.official, 
-                                            note: 'Ca chính-Ca ngày', 
-                                            hours: item.workingHours, 
-                                            unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                            assigneeID: item._id.staff._id, 
-                                            fundaID: infoTimeSheet.funda, 
-                                        })
-                                    }else{
-                                        await that.insert({ 
-                                            userCreate: userID, 
-                                            companyID, 
-                                            parentID: timesheetID, 
-                                            name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                            date: `${year}-${month}-${item._id.day}`, 
-                                            type: 2, 
-                                            shiftType: 2, 
-                                            official: item._id.official, 
-                                            note: 'Ca chính-Ca đêm', 
-                                            hours: item.workingHours, 
-                                            unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                            assigneeID: item._id.staff._id, 
-                                            fundaID: infoTimeSheet.funda, 
-                                        })
-                                    }
-                                }
-
-                                for(const item of listData2){
-                                    if(item._id.shiftGroup.toString() === 'G123'){
-                                        await that.insert({ 
-                                            userCreate: userID, 
-                                            companyID, 
-                                            parentID: timesheetID, 
-                                            name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                            date: `${year}-${month}-${item._id.day}`, 
-                                            type: 2, 
-                                            shiftType: 1, 
-                                            official: item._id.official, 
-                                            note: 'Ca phụ-Ca ngày', 
-                                            hours: item.workingHours, 
-                                            unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                            assigneeID: item._id.staff._id, 
-                                            fundaID: infoTimeSheet.funda, 
-                                        })
-                                    }else{
-                                        await that.insert({ 
-                                            userCreate: userID, 
-                                            companyID, 
-                                            parentID: timesheetID, 
-                                            name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
-                                            date: `${year}-${month}-${item._id.day}`, 
-                                            type: 2, 
-                                            shiftType: 2, 
-                                            official: item._id.official, 
-                                            note: 'Ca phụ-Ca đêm', 
-                                            hours: item.workingHours, 
-                                            unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
-                                            assigneeID: item._id.staff._id, 
-                                            fundaID: infoTimeSheet.funda, 
-                                        })
-                                    }
-                                }
-
-                                return resolve({ error: false, message: 'Đồng bộ thành công' }) 
-                            }else{
-                                return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
-                            }   
-                        }                         
-                    }
-
-                    /**
-                     * XÓA BẢNG CHẤM CÔNG
-                     */
-                    else if(option == 2){
-                        if(!infoAppUser.error && infoAppUser.data.level == 0){
-                            let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
-
-                            // if(1>0){
-                            if(infoTimeSheet.convert == 2){
-                                if(checkObjectIDs(infoTimeSheet.funda)){
-                                    await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
-                                    await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(timesheetID)
-                                }
-                                return resolve({ error: false, message: 'Đồng bộ thành công' })   
-                            }else{
-                                return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
-                            }  
-                        } else{
+                            if(checkObjectIDs(infoTimeSheet.funda)){
+                                await TIMESHEET__EXPERT_TIMESHEET_COLL.deleteMany({parent: timesheetID})
+                                await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndDelete(timesheetID)
+                            }
+                            return resolve({ error: false, message: 'Đồng bộ thành công' })   
+                        }else{
                             return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
-                        }              
-                    }
-                }else{
-                    return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                        }  
+                    } else{
+                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                    }              
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
