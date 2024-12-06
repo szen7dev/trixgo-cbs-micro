@@ -1102,15 +1102,15 @@ class Model extends BaseModel {
                     { quantity: 99, price: 100 }, // 100 cốc đầu x 100
                     { quantity: 401, price: 200 }, // 200 cốc tiếp theo x 200
                     { quantity: 500, price: 300 }, // 200 cốc tiếp theo x 200
-                    { quantity: 10000, price: 350 }, // 200 cốc tiếp theo x 200
+                    { quantity: 50000, price: 350 }, // 200 cốc tiếp theo x 200
                 ];
                 
                 // const totalSold = 300;
-                // const totalRevenue1 = calculateRevenue(656, priceLevels);
-                // const totalRevenue2 = calculateRevenue(1592, priceLevels);
-                // const totalRevenue3 = calculateRevenue(883, priceLevels);
-                // const totalRevenue4 = calculateRevenue(351, priceLevels);
-                // const totalRevenue5 = calculateRevenue(2013, priceLevels);
+                // const totalRevenue1 = calculateRevenue(1001, priceLevels);
+                // const totalRevenue2 = calculateRevenue(1500, priceLevels);
+                // const totalRevenue3 = calculateRevenue(3000, priceLevels);
+                // const totalRevenue4 = calculateRevenue(5000, priceLevels);
+                // const totalRevenue5 = calculateRevenue(15000, priceLevels);
                 
                 // console.log(`Tổng doanh thu: ${totalRevenue1}`);
                 // console.log(`Tổng doanh thu: ${totalRevenue2}`);
@@ -1119,7 +1119,6 @@ class Model extends BaseModel {
                 // console.log(`Tổng doanh thu: ${totalRevenue5}`);
 
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
-                // console.log(infoSalary)
                 if(!infoSalary)
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
 
@@ -1140,17 +1139,6 @@ class Model extends BaseModel {
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
-
-                // let conditionPopulate = {
-                //     path: "_id.staff",
-                //     select: "_id fullname department",
-                //     populate: {
-                //       path: "department",
-                //       select: "_id name",
-                //       model: "department",
-                //     },
-                //     model: "user",
-                // }
 
                 let conditionObjYear = {
                     year: Number(year),
@@ -1182,7 +1170,7 @@ class Model extends BaseModel {
                     avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
                 }
 
-                let sortBy = { avgQuantityPerStaff: -1 };
+                // let sortBy = { avgQuantityPerStaff: -1 };
 
                 let listData = await FNB_ORDER_COLL.aggregate([
                     {
@@ -1203,15 +1191,10 @@ class Model extends BaseModel {
                     {
                       $group: conditionGroup,
                     },
-                    {
-                        $sort: sortBy,
-                    },
-                ]);
-                
-                // await FNB_SHIFT_COLL.populate(listData, conditionPopulate);
-                // console.log(listData[0])
-                // console.log(listData[1])
-                // console.log(listData[2])
+                    // {
+                    //     $sort: sortBy,
+                    // },
+                ])
 
                 let arr = []
                 listData.forEach(item=>{
@@ -1249,7 +1232,7 @@ class Model extends BaseModel {
 
                     if(info){
                         if(arr[item]){
-                            revenueBonus = calculateRevenue(Number(arr[item][0].avgQuantityPerStaff), priceLevels)
+                            revenueBonus = Math.round(calculateRevenue(Number(arr[item][0].avgQuantityPerStaff), priceLevels) / 1000) * 1000
                         }
                     }
 
@@ -1280,7 +1263,6 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, status: 200 })
-                // return resolve({ error: false, data: listData })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
