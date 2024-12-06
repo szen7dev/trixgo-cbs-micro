@@ -133,13 +133,20 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderMistakeID, date, type, amount, bonus, note, userID}) {
+    update({ orderMistakeID, date, type, amount, bonus, note, userID }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(orderMistakeID))
+                let info = await FNB_MISTAKE_COLL.findById(orderMistakeID)
+                if(!info)
                     return resolve({ error: true, message: 'orderMistakeID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                if(info.userCreate.toString() != userID.toString())
+                    return resolve({ error: true, message: 'Bạn không có quyền cập nhật', keyError: KEY_ERROR.PARAMS_INVALID });
+
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                };
              
                 if(!isNaN(type)){
                     dataUpdate.type = Number(type);
@@ -160,16 +167,11 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataUpdate.note = note;
                 }
-                // console.log({ dataUpdate })
 
                 let infoAfterUpdate = await FNB_MISTAKE_COLL.findByIdAndUpdate(orderMistakeID, dataUpdate, { new: true });
 
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
-
-                /**
-                 * THÔNG BÁO SOCKET VÀ CLOUD MSS
-                 */
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
