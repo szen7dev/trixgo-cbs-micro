@@ -102,7 +102,7 @@ class Model extends BaseModel {
         })
     }
 
-    getList({ appID, companyID,
+    getList({ appID, companyID, level,
         limit = 50, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -125,6 +125,11 @@ class Model extends BaseModel {
                 if(companyID){
                     conditionObj.company = companyID;
                 }
+
+                if(!isNaN(level)){
+                    conditionObj.level = +level;
+                }
+
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))

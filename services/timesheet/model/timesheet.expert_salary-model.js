@@ -1609,6 +1609,14 @@ class Model extends BaseModel {
 
                     // TẠO BẢNG LƯƠNG CÁC CƠ SỞ THEO THÁNG
                     else if(option == 6){
+                        // Danh sách Admin ứng dụng
+                        let listAppUser = await AUTH__APP_USER.getList({
+                            appID: "61e049cffdebf77b072d1b14",
+                            companyID, 
+                            level: 0,
+                            select: 'user level'
+                        })
+
                         function getLastDayOfMonth(year, month) {
                             return new Date(year, month, 0)
                         }
@@ -1616,11 +1624,13 @@ class Model extends BaseModel {
                         let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
                         
                         for(const item of listFunda){
-                            let arrPermission = []
+                            let arrPermission = [userID]
                             if(checkObjectIDs(item.manager)){
-                                arrPermission = [userID, item.manager]
-                            }else{
-                                arrPermission = [userID]
+                                arrPermission.push(item.manager)
+                            }
+
+                            if(!listAppUser.error){
+                                arrPermission.push(...listAppUser.data.listRecords.map(item=>item.user))
                             }
 
                             // Kiểm tra xem bảng đã tồn tại hay chưa, nếu chưa thì tạo mới
