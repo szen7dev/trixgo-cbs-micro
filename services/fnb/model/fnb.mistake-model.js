@@ -133,7 +133,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    update({ orderMistakeID, date, type, amount, bonus, note, userID }) {
+    update({ orderMistakeID, date, type, amount, bonus, note, status, userID }) {
         return new Promise(async resolve => {
             try {
                 let info = await FNB_MISTAKE_COLL.findById(orderMistakeID)
@@ -159,6 +159,10 @@ class Model extends BaseModel {
                 // if(!isNaN(bonus) && Number(bonus) > 0){
                 //     dataUpdate.bonus = Number(bonus);
                 // }
+
+                if(!isNaN(status) && [1,2].includes(Number(status))){
+                    dataUpdate.status = Number(status);
+                }
 
                 if(date && date != ""){
                     dataUpdate.date = date;

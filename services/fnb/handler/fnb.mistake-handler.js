@@ -69,13 +69,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {  orderMistakeID, mistakeID, date, executorID, fundaID, orderID, type, amount, bonus, note } = ctx.params;
+                let {  orderMistakeID, mistakeID, date, executorID, fundaID, orderID, type, amount, bonus, note, status } = ctx.params;
 
 				const { _id: userID } = ctx.meta.infoUser;                
 
                 let resultAfterCallHandler = await FNB_MISTAKE_MODEL.update({
                     orderMistakeID, userID, date,
-                    executorID, fundaID, orderID, type, amount, bonus, note
+                    executorID, fundaID, orderID, type, amount, bonus, note, status
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

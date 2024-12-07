@@ -64,9 +64,9 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
     //_________Ghi chú xử lý lỗi
     note: String,
     /**
-     * Tình trạng xử lý
-     * 1-Chưa xử lý
-     * 2-Hoàn thành
+     * Trạng thái
+     * 1-Hoàn thành
+     * 2-Hủy
      */
     status: {
         type: Number,
