@@ -699,7 +699,7 @@ class Model extends BaseModel {
                     {
                         $match: {
                             year: Number(year),
-                            month: Number(year),
+                            month: Number(month),
                             dayOfWeek: 1,
                         }
                     },
@@ -710,7 +710,7 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                console.log(listDataDay2)
+                // console.log(listDataDay2)
 
                 let arr1 = [], arr2 = [], arr3 = [], arrDay1 = [], arrDay2 = []
                 listData.forEach(item=>{
