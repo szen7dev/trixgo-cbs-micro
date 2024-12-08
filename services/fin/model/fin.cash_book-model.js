@@ -1404,9 +1404,9 @@ class Model extends BaseModel {
                             .sort({project: 1})
 
                             // Tổng hợp chấm công trong tháng
-                            let yearFilter = new Date(infoParent.date).getFullYear()
-                            let monthFilter = new Date(infoParent.date).getMonth() + 1
-                            // console.log({yearFilter,monthFilter})
+                            let year = new Date(infoParent.date).getFullYear()
+                            let month = new Date(infoParent.date).getMonth() + 1
+                            console.log({month,year, companyID})
 
                             let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                                 {
@@ -1431,8 +1431,8 @@ class Model extends BaseModel {
                                 },
                                 {
                                     $match: {
-                                        year: Number(yearFilter),
-                                        month: Number(monthFilter),
+                                        year: Number(year),
+                                        month: Number(month),
                                     }
                                 },
                                 {
@@ -1442,7 +1442,7 @@ class Model extends BaseModel {
                                     }
                                 }
                             ])
-                            // console.log(listData1)
+                            console.log(listData1)
 
                             // Lấy các ngày chủ nhật đi làm
                             let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -1467,8 +1467,8 @@ class Model extends BaseModel {
                                 },
                                 {
                                     $match: {
-                                        year: Number(yearFilter),
-                                        month: Number(monthFilter),
+                                        year: Number(year),
+                                        month: Number(month),
                                         dayOfWeek: 1,
                                     }
                                 },
@@ -1479,7 +1479,7 @@ class Model extends BaseModel {
                                     }
                                 }
                             ])
-                            // console.log(listData2)
+                            console.log(listData2)
 
                             // Chấm tăng ca (>8h)
                             // let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
@@ -1487,7 +1487,7 @@ class Model extends BaseModel {
                             //     parent: { $exists: true, $ne: null },
                             //     assignee: { $exists: true, $ne: null },
                             //     hours: { $gt: 8 },
-                            //     $where: `return this.date.getMonth() === ${Number(monthFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
+                            //     $where: `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                             // })
                             // .populate({
                             //     path: 'assignee',
@@ -1552,7 +1552,7 @@ class Model extends BaseModel {
                                 }
 
                                 workbook.sheet("BangLuongPay").range("A4:F1000").clear();
-                                workbook.sheet("PhuCap").row(2).cell(23).value(countDayIndexInMonth(0, yearFilter, Number(monthFilter - 1)))
+                                workbook.sheet("PhuCap").row(2).cell(23).value(countDayIndexInMonth(0, year, Number(month - 1)))
 
                                 var i = 4
                                 listData.forEach((item, index) =>{
