@@ -81,6 +81,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     },
     //_______Ngày tháng
     date: { type: Date, default: Date.now },
+    /**
+     * NGÀY CÔNG
+     * Số giờ làm
+     * Số ngày làm
+     */
     //________Số giờ làm việc (chính thức)
     hours1: {
         type: Number,
@@ -101,6 +106,19 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 0 
     },
+    //________Số ngày công đi làm
+    nowds: {
+        type: Number,
+        default: 0 
+    },
+    //________Số ngày công đi làm vào ngày Chủ nhật
+    nowdsos: {
+        type: Number,
+        default: 0 
+    },
+    /**
+     * LƯƠNG
+     */
     //________Lương
     salary: {
         type: Number,
