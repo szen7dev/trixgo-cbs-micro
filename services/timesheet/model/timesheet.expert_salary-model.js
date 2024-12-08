@@ -637,13 +637,14 @@ class Model extends BaseModel {
                     },
                 ])
 
-                 // Lấy các ngày đi làm Thông thường
-                 let listDataDay1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                // Lấy các ngày đi làm Thông thường
+                let listDataDay1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
                             company: ObjectID(companyID),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null },
+                            hours: {$gt: 0},
                             subtype: 1, // Đi làm Thông thường
                         }
                     },
@@ -667,7 +668,8 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { assignee: '$assignee' },
-                            quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
+                            quantity: { $sum: {$divide: ["$hours", 8]} }, // Chia quantity theo giờ cho 8
+                            // quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
                         }
                     },
                     // // Giai đoạn 1: Nhóm theo assignee và dayOfWeek
@@ -695,6 +697,7 @@ class Model extends BaseModel {
                             company: ObjectID(companyID),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null },
+                            hours: {$gt: 0},
                             subtype: 1, // Đi làm Thông thường
                         }
                     },
@@ -724,7 +727,8 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { assignee: '$assignee' },
-                            quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
+                            quantity: { $sum: {$divide: ["$hours", 8]} }, // Chia quantity theo giờ cho 8
+                            // quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
                         }
                     },
                     // // Giai đoạn 1: Nhóm theo assignee và dayOfWeek

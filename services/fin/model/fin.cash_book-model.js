@@ -1406,16 +1406,16 @@ class Model extends BaseModel {
                             // Tổng hợp chấm công trong tháng
                             let year = new Date(infoParent.date).getFullYear()
                             let month = new Date(infoParent.date).getMonth() + 1
-                            console.log({month,year, companyID})
+                            // console.log({month,year, companyID})
 
+                            // Lấy các ngày đi làm Thông thường
                             let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                                 {
                                     $match: {
                                         company: ObjectID(companyID),
                                         parent: { $exists: true, $ne: null },
                                         assignee: { $exists: true, $ne: null },
-                                        hours: {$gt: 0}, // Khối lượng
-                                        amount: {$gt: 0}, // Thành tiền
+                                        hours: {$gt: 0},
                                         subtype: 1, // Đi làm Thông thường
                                     }
                                 },
@@ -1438,11 +1438,12 @@ class Model extends BaseModel {
                                 {
                                     $group: {
                                         _id: { assignee: '$assignee' },
-                                        quantity: { $sum: 1 },
+                                        quantity: { $sum: {$divide: ["$hours", 8]} }, // Chia quantity theo giờ cho 8
+                                        // quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
                                     }
-                                }
+                                },
                             ])
-                            console.log(listData1)
+                            // console.log(listData1)
 
                             // Lấy các ngày chủ nhật đi làm
                             let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -1475,11 +1476,12 @@ class Model extends BaseModel {
                                 {
                                     $group: {
                                         _id: { assignee: '$assignee' },
-                                        quantity: { $sum: 1 },
+                                        quantity: { $sum: {$divide: ["$hours", 8]} }, // Chia quantity theo giờ cho 8
+                                        // quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
                                     }
-                                }
+                                },
                             ])
-                            console.log(listData2)
+                            // console.log(listData2)
 
                             // Chấm tăng ca (>8h)
                             // let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
