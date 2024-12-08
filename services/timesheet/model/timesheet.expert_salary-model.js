@@ -3124,8 +3124,10 @@ class Model extends BaseModel {
                     })
                 }
 
-                // TỔNG HỢP KPI TOÀN BỘ CÔNG TY
+                // TỔNG HỢP KPI TOÀN BỘ CÔNG TY (không gồm nhượng quyền)
                 else if(option == 2){
+                    let listFunda = await ITEM__FUNDA_COLL.find({internal: 1}).select('name')
+                    
                     let conditionPopulate1 = {
                         path: '_id.funda',
                         select: '_id name',
@@ -3142,6 +3144,7 @@ class Model extends BaseModel {
                         {
                             $match: {
                                 company: ObjectID(companyID),
+                                funda: {$in: listFunda.map(item=>ObjectID(item._id))},
                                 status: 5, // Chỉ lấy đơn hoàn thành
                             }
                         },
@@ -3179,6 +3182,7 @@ class Model extends BaseModel {
                         {
                             $match: {
                                 company: ObjectID(companyID),
+                                // funda: {$in: listFunda.map(item=>ObjectID(item._id))},
                                 parent: { $exists: true, $ne: null },
                                 funda: { $exists: true, $ne: null },
                             }
