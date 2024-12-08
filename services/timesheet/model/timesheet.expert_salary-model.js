@@ -3209,11 +3209,35 @@ class Model extends BaseModel {
                     ])
                     // console.log(listData2)
 
+                    let arrHuman = listData.map(item => item?._id?.funda?.manager?.fullname)
+                    let arrNew = Array.from(
+                        arrHuman.reduce((acc, name) => {
+                          acc.set(name, (acc.get(name) || 0) + 1);
+                          return acc;
+                        }, new Map())
+                      ).map(([name, number]) => ({ name, number }));
+                    //   console.log(arrNew)
+
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/kpi_combine.xlsx')))
                         .then(async workbook => {
-    
+
+                            var i = 4
+                            arrNew.forEach((item, index) =>{
+                                workbook.sheet('TongHop').row(i).cell(1).value(index + 1)
+                                workbook.sheet('TongHop').row(i).cell(2).value(item.name)
+                                workbook.sheet('TongHop').row(i).cell(3).value(`T${month}_${year}`)
+                                workbook.sheet('TongHop').row(i).cell(4).value(Number(item.number))
+                              
+                                i++
+                            })
+
                             var i = 4
                             listData.forEach((item, index) =>{
+                                workbook.sheet('KPI').row(i).cell(1).value(index + 1)
+                                workbook.sheet('KPI').row(i).cell(2).value(item?._id?.funda?.name)
+                                workbook.sheet('KPI').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
+                                workbook.sheet('KPI').row(i).cell(4).value(`T${month}_${year}`)
+
                                 workbook.sheet('1.DoanhSo').row(i).cell(1).value(index + 1)
                                 workbook.sheet('1.DoanhSo').row(i).cell(2).value(item?._id?.funda?.name)
                                 workbook.sheet('1.DoanhSo').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
