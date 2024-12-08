@@ -69,6 +69,7 @@ class Model extends BaseModel {
                     number: countMistake | 1, 
                     funda: infoFunda._id, 
                     company: infoFunda.company,
+                    manager: infoFunda?.manager,
                 }
 
                 if(infoMistake && infoMistake.grade){

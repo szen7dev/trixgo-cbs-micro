@@ -25,6 +25,7 @@ const ITEM__DEPARTMENT_COLL            			= require('../database/item.department
 const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
 const ITEM__AREA_COLL            				= require('../database/item.area-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
+const FNB_MISTAKE_COLL                          = require('../../fnb/database/fnb.mistake-coll');
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
@@ -418,7 +419,12 @@ class Model extends BaseModel {
                         funda: fundaID
                     }, { new: true });
 
-                    console.log(info)
+                    // console.log(info)
+                }
+
+                // Cập nhật Quản lý vào các lỗi đã gán
+                if(checkObjectIDs(infoAfterUpdate.manager)){
+                    await FNB_MISTAKE_COLL.updateMany({funda: fundaID},{$set: {manager: infoAfterUpdate.manager}})
                 }
 
                 /**

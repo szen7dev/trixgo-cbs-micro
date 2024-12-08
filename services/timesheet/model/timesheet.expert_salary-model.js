@@ -3297,6 +3297,8 @@ class Model extends BaseModel {
                 // TỔNG HỢP ĐÁNH GIÁ NHÂN VIÊN
                 else if(option == 4){
                     let listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID)}).select('name')
+
+                    
                     
                     let conditionPopulate1 = {
                         path: '_id.funda',
