@@ -506,16 +506,17 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     updateValueTimesheet({ dataUser, expertSalaryID, companyID }){
+        // console.log({ dataUser, expertSalaryID, companyID })
         return new Promise(async (resolve) => {
             try {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 if(!infoSalary)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
-
-                let month = Number(infoSalary.date.getMonth()) + 1
+                
                 let year = infoSalary.date.getFullYear()
-
-                // console.log({month,year})
+                let month = Number(infoSalary.date.getMonth()) + 1
+                
+                // console.log({month,year, companyID})
 
                 /**
                  * Lương
@@ -635,9 +636,83 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-                // console.log(listData3)
 
-                let arr1 = [], arr2 = [], arr3 = []
+                 // Lấy các ngày đi làm Thông thường
+                 let listDataDay1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null },
+                            hours: {$gt: 0}, // Khối lượng
+                            amount: {$gt: 0}, // Thành tiền
+                            subtype: 1, // Đi làm Thông thường
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            amount: 1,
+                            hours: 1,
+                            subtype: 1,
+                            assignee: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee' },
+                            quantity: { $sum: 1 },
+                        }
+                    }
+                ])
+                // console.log(listDataDay1)
+
+                
+                // Lấy các ngày đi làm Chủ nhật
+                let listDataDay2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null },
+                            hours: {$gt: 0},
+                            subtype: 1, // Đi làm Thông thường
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            dayOfWeek: { $dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            hours: 1,
+                            subtype: 1,
+                            assignee: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                            dayOfWeek: 1,
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee' },
+                            quantity: { $sum: 1 },
+                        }
+                    }
+                ])
+                // console.log(listDataDay2)
+
+                let arr1 = [], arr2 = [], arr3 = [], arrDay1 = [], arrDay2 = []
                 listData.forEach(item=>{
                     let key = item._id.assignee;
                     if (!Array.isArray(arr1[key])) {
@@ -662,12 +737,28 @@ class Model extends BaseModel {
                     arr3[key].push(item)
                 })
 
+                listDataDay1.forEach(item=>{
+                    let key = item._id.assignee;
+                    if (!Array.isArray(arrDay1[key])) {
+                        arrDay1[key] = [];
+                    }
+                    arrDay1[key].push(item)
+                })
+
+                listDataDay2.forEach(item=>{
+                    let key = item._id.assignee;
+                    if (!Array.isArray(arrDay2[key])) {
+                        arrDay2[key] = [];
+                    }
+                    arrDay2[key].push(item)
+                })
+
                 // console.log(arr1)
                 // console.log(arr2)
                 // console.log(arr3)
 
                 for(const item of dataUser){
-                    let hours1 = 0, hours2 = 0, hours3 = 0
+                    let hours1 = 0, hours2 = 0, hours3 = 0, nowds = 0, nowdsos = 0
                     let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
                     
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
@@ -690,6 +781,14 @@ class Model extends BaseModel {
                             hours3 = Number(arr3[item][0].quantity).toFixed(2)
                             overtimeSalary = Number(arr3[item][0].amount).toFixed(0)
                         }
+
+                        if(arrDay1[item]){
+                            nowds = Number(arrDay1[item][0].quantity).toFixed(2)
+                        }
+
+                        if(arrDay2[item]){
+                            nowdsos = Number(arrDay2[item][0].quantity).toFixed(2)
+                        }
             
                         reward = info.reward
                         revenueBonus = info.revenueBonus
@@ -711,6 +810,8 @@ class Model extends BaseModel {
                         hours1,
                         hours2,
                         hours3,
+                        nowds,
+                        nowdsos,
                         kpiFactor,
                         salary,
                         onLeaveSalary,
