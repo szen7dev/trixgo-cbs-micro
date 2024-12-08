@@ -3125,8 +3125,15 @@ class Model extends BaseModel {
                 }
 
                 // TỔNG HỢP KPI TOÀN BỘ CÔNG TY (không gồm nhượng quyền)
-                else if(option == 2){
-                    let listFunda = await ITEM__FUNDA_COLL.find({internal: 1}).select('name')
+                else if(option == 2 || option == 3){
+                    let listFunda
+                    if(option == 2 ){
+                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 1}).select('name')
+                    }else{
+                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 2}).select('name')
+                    }
+                    // console.log(listFunda)
+                    // console.log(listFunda.length)
                     
                     let conditionPopulate1 = {
                         path: '_id.funda',
@@ -3171,6 +3178,9 @@ class Model extends BaseModel {
                                 total: { $sum: "$total" },
                             }
                         },
+                        {
+                            $sort: {"_id.funda": 1}
+                        },
                     ])
                     if(listData.length){
                         await FNB_ORDER_COLL.populate(listData, conditionPopulate1)
@@ -3182,9 +3192,8 @@ class Model extends BaseModel {
                         {
                             $match: {
                                 company: ObjectID(companyID),
-                                // funda: {$in: listFunda.map(item=>ObjectID(item._id))},
+                                funda: {$in: listFunda.map(item=>ObjectID(item._id))},
                                 parent: { $exists: true, $ne: null },
-                                funda: { $exists: true, $ne: null },
                             }
                         },
                         {
@@ -3211,6 +3220,9 @@ class Model extends BaseModel {
                             }
                         },
                     ])
+                    if(listData2.length){
+                        await FNB_ORDER_COLL.populate(listData2, conditionPopulate1)
+                    }
                     // console.log(listData2)
 
                     let arrHuman = listData.map(item => item?._id?.funda?.manager?.fullname)
@@ -3241,6 +3253,7 @@ class Model extends BaseModel {
                                 workbook.sheet('KPI').row(i).cell(2).value(item?._id?.funda?.name)
                                 workbook.sheet('KPI').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
                                 workbook.sheet('KPI').row(i).cell(4).value(`T${month}_${year}`)
+                                workbook.sheet('KPI').row(i).cell(8).value(Number(500000)) // Tạm tính KPI nguyên liệu
 
                                 workbook.sheet('1.DoanhSo').row(i).cell(1).value(index + 1)
                                 workbook.sheet('1.DoanhSo').row(i).cell(2).value(item?._id?.funda?.name)
@@ -3253,21 +3266,18 @@ class Model extends BaseModel {
                                 workbook.sheet('2.NhanSu').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
                                 workbook.sheet('2.NhanSu').row(i).cell(4).value(`T${month}_${year}`)
                                 workbook.sheet('2.NhanSu').row(i).cell(5).value(Number(item?.total))
-                                workbook.sheet('2.NhanSu').row(i).cell(15).value(`${item._id?.funda?._id}`)
                               
                                 i++
                             })
 
                             var i = 4
                             listData2.forEach((item, index) =>{
-                                for(var j=4; j<= Number(listData.length + 3); j++ ){
-                                    let fundaID = workbook.sheet('2.NhanSu').row(j).cell(15).value()
-
-                                    if(fundaID.toString() === item._id?.funda.toString() ){
-                                        workbook.sheet('2.NhanSu').row(i).cell(8).value(Number(item?.subAllowance13))
-                                        workbook.sheet('2.NhanSu').row(i).cell(9).value(Number(item?.salary))
-                                    }
-                                }
+                                workbook.sheet('2.NhanSu').row(i).cell(1).value(index + 1)
+                                workbook.sheet('2.NhanSu').row(i).cell(2).value(item?._id?.funda?.name)
+                                workbook.sheet('2.NhanSu').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
+                                workbook.sheet('2.NhanSu').row(i).cell(4).value(`T${month}_${year}`)
+                                workbook.sheet('2.NhanSu').row(i).cell(8).value(Number(item?.subAllowance13))
+                                workbook.sheet('2.NhanSu').row(i).cell(9).value(Number(item?.salary))
                               
                                 i++
                             })
