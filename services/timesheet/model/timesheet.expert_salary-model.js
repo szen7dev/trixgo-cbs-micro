@@ -1747,7 +1747,7 @@ class Model extends BaseModel {
                         return resolve({ error: false, message: 'Cập nhật thành công' })
                     }
 
-                    // ĐỒNG BỘ BẢNG LƯƠNG THEO CƠ SỞ
+                    // ĐỒNG BỘ BẢNG LƯƠNG THEO CƠ SỞ: ÁP DỤNG FNB_SHIFT/STORE_SHIFT
                     else if(option == 8){
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')

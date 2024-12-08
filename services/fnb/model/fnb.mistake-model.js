@@ -21,6 +21,8 @@ const FNB_ORDER_COLL                           = require('../database/fnb.order-
 const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
 
+const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
+
 /**
  * import inter-model, exter-model
  */
@@ -140,25 +142,33 @@ class Model extends BaseModel {
                 if(!info)
                     return resolve({ error: true, message: 'orderMistakeID invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                if(info.userCreate.toString() != userID.toString())
-                    return resolve({ error: true, message: 'Bạn không có quyền cập nhật', keyError: KEY_ERROR.PARAMS_INVALID });
-
                 let dataUpdate = { 
                     userUpdate: userID, 
                     modifyAt: new Date() 
                 };
+
+                //___________Quyền truy cập ứng dụng
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049cffdebf77b072d1b14", // Chấm công tính lương
+                    userID
+                })
+
+                if(!infoAppUser.error && infoAppUser.data.level == 0){
+                    if(!isNaN(amount) && Number(amount) > 0){
+                        dataUpdate.amount = Number(amount);
+                    }
+    
+                    if(!isNaN(bonus) && Number(bonus) > 0){
+                        dataUpdate.bonus = Number(bonus);
+                    }
+                }else{
+                    if(info.userCreate.toString() != userID.toString())
+                        return resolve({ error: true, message: 'Bạn không có quyền cập nhật', keyError: KEY_ERROR.PARAMS_INVALID });
+                }
              
                 if(!isNaN(type)){
                     dataUpdate.type = Number(type);
                 }
-
-                // if(!isNaN(amount) && Number(amount) > 0){
-                //     dataUpdate.amount = Number(amount);
-                // }
-
-                // if(!isNaN(bonus) && Number(bonus) > 0){
-                //     dataUpdate.bonus = Number(bonus);
-                // }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     dataUpdate.status = Number(status);
