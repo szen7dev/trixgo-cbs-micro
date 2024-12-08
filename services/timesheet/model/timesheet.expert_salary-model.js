@@ -506,7 +506,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     updateValueTimesheet({ dataUser, expertSalaryID, companyID }){
-        console.log({ dataUser, expertSalaryID, companyID })
+        // console.log({ dataUser, expertSalaryID, companyID })
         return new Promise(async (resolve) => {
             try {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
@@ -516,7 +516,7 @@ class Model extends BaseModel {
                 let year = infoSalary.date.getFullYear()
                 let month = Number(infoSalary.date.getMonth()) + 1
                 
-                console.log({month,year, companyID})
+                // console.log({month,year, companyID})
 
                 /**
                  * Lương
