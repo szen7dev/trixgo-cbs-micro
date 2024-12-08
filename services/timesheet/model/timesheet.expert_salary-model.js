@@ -2879,7 +2879,7 @@ class Model extends BaseModel {
      * Name: Download Template Excel
      * Date: 25/11/2024
      */
-    exportExcel({ companyID, year, month, userID }) {
+    exportExcel({ option, companyID, year, month, userID }) {
        return new Promise(async resolve => {
            try {
             let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -2888,250 +2888,376 @@ class Model extends BaseModel {
             })
 
             if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                let conditionMatchObj = {}
-                if(year && !isNaN(year)){
-                    conditionMatchObj.year = Number(year)
-                }
 
-                if(month && !isNaN(month)){
-                    conditionMatchObj.month = Number(month)
-                }
-
-                let conditionPopulate1 = {
-                    path: '_id.project',
-                    select: '_id name',
-                    model: 'department'
-                }
-
-                // let conditionPopulate2 = {
-                //     path: '_id.human',
-                //     select: '_id fullname department position',
-                //     model: 'user',
-                //     populate: {
-                //         path: 'department',
-                //         select: '_id name',
-                //         model: 'department',
-                //     },
-                // }
-
-                let rawData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
-                    {
-                        $match: {
-                            company: ObjectID(companyID),
-                            parent: { $exists: true, $ne: null },
-                            project: { $exists: true, $ne: null },
-                        }
-                    },
-                    {
-                        $project : {
-                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            project: 1,
-                            position: 1,
-                            date: 1,
-                            salary: 1,
-                            onLeaveSalary: 1,
-                            overtimeSalary: 1,
-                            revenueBonus: 1,
-                            reward: 1,
-                            mealAllowance: 1,
-                            punishment: 1,
-                            insurance: 1,
-                            pitax: 1,
-                            union: 1,
-                            share: 1,
-                            other: 1,
-                            paid: 1,
-                            advance: 1
-                        }
-                    },
-                    {
-                        $match: conditionMatchObj
-                    },
-                    {
-                        $group: {
-                            // _id: { project: "$project", position: "$position" },
-                            _id: { project: "$project" },
-                            human: { $sum: 1 },
-                            salary: { $sum: "$salary" },
-                            onLeaveSalary: { $sum: "$onLeaveSalary" },
-                            overtimeSalary: { $sum: "$overtimeSalary" },
-                            revenueBonus: { $sum: "$revenueBonus" },
-                            reward: { $sum: "$reward" },
-                            mealAllowance: { $sum: "$mealAllowance" },
-                            punishment: { $sum: "$punishment" },
-                            insurance: { $sum: "$insurance" },
-                            pitax: { $sum: "$pitax" },
-                            union: { $sum: "$union" },
-                            share: { $sum: "$share" },
-                            other: { $sum: "$other" },
-                            paid: { $sum: "$paid" },
-                            advance: { $sum: "$advance" }
-                        }
-                    },
-                ])
-
-                if(rawData.length){
-                    await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData, conditionPopulate1)
-                }
-
-                let rawData2 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
-                    {
-                        $match: {
-                            company: ObjectID(companyID),
-                            parent: { $exists: true, $ne: null },
-                            human: { $exists: true, $ne: null },
-                        }
-                    },
-                    {
-                        $project : {
-                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            human: 1,
-                            project: 1,
-                            position: 1,
-                            date: 1,
-                            salary: 1,
-                            onLeaveSalary: 1,
-                            overtimeSalary: 1,
-                            revenueBonus: 1,
-                            reward: 1,
-                            mealAllowance: 1,
-                            punishment: 1,
-                            insurance: 1,
-                            pitax: 1,
-                            union: 1,
-                            share: 1,
-                            other: 1,
-                            paid: 1,
-                            advance: 1
-                        }
-                    },
-                    {
-                        $match: conditionMatchObj
-                    },
-                    // {
-                    //     $sort: {"project": 1, "position": 1}
-                    // },
-                    {
-                        $group: {
-                            _id: { human: "$human" },
-                            salary: { $sum: "$salary" },
-                            onLeaveSalary: { $sum: "$onLeaveSalary" },
-                            overtimeSalary: { $sum: "$overtimeSalary" },
-                            revenueBonus: { $sum: "$revenueBonus" },
-                            reward: { $sum: "$reward" },
-                            mealAllowance: { $sum: "$mealAllowance" },
-                            punishment: { $sum: "$punishment" },
-                            insurance: { $sum: "$insurance" },
-                            pitax: { $sum: "$pitax" },
-                            union: { $sum: "$union" },
-                            share: { $sum: "$share" },
-                            other: { $sum: "$other" },
-                            paid: { $sum: "$paid" },
-                            advance: { $sum: "$advance" }
-                        }
-                    },
-                ])
-
-                let conditionPopulate2 = {
-                    path: '_id.human',
-                    select: '_id fullname department position',
-                    model: 'user',
-                    populate: {
-                        path: 'department',
+                // TỔNG HỢP LƯƠNG TOÀN BỘ CÔNG TY
+                if(option == 1){
+                    let conditionMatchObj = {}
+                    if(year && !isNaN(year)){
+                        conditionMatchObj.year = Number(year)
+                    }
+    
+                    if(month && !isNaN(month)){
+                        conditionMatchObj.month = Number(month)
+                    }
+    
+                    let conditionPopulate1 = {
+                        path: '_id.project',
                         select: '_id name',
-                        model: 'department',
-                    },
+                        model: 'department'
+                    }
+    
+                    let conditionPopulate2 = {
+                        path: '_id.human',
+                        select: '_id fullname department position',
+                        model: 'user',
+                        populate: {
+                            path: 'department',
+                            select: '_id name',
+                            model: 'department',
+                        },
+                    }
+    
+                    let rawData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                parent: { $exists: true, $ne: null },
+                                project: { $exists: true, $ne: null },
+                            }
+                        },
+                        {
+                            $project : {
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                project: 1,
+                                position: 1,
+                                date: 1,
+                                salary: 1,
+                                onLeaveSalary: 1,
+                                overtimeSalary: 1,
+                                revenueBonus: 1,
+                                reward: 1,
+                                mealAllowance: 1,
+                                punishment: 1,
+                                insurance: 1,
+                                pitax: 1,
+                                union: 1,
+                                share: 1,
+                                other: 1,
+                                paid: 1,
+                                advance: 1
+                            }
+                        },
+                        {
+                            $match: conditionMatchObj
+                        },
+                        {
+                            $group: {
+                                // _id: { project: "$project", position: "$position" },
+                                _id: { project: "$project" },
+                                human: { $sum: 1 },
+                                salary: { $sum: "$salary" },
+                                onLeaveSalary: { $sum: "$onLeaveSalary" },
+                                overtimeSalary: { $sum: "$overtimeSalary" },
+                                revenueBonus: { $sum: "$revenueBonus" },
+                                reward: { $sum: "$reward" },
+                                mealAllowance: { $sum: "$mealAllowance" },
+                                punishment: { $sum: "$punishment" },
+                                insurance: { $sum: "$insurance" },
+                                pitax: { $sum: "$pitax" },
+                                union: { $sum: "$union" },
+                                share: { $sum: "$share" },
+                                other: { $sum: "$other" },
+                                paid: { $sum: "$paid" },
+                                advance: { $sum: "$advance" }
+                            }
+                        },
+                    ])
+    
+                    if(rawData.length){
+                        await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData, conditionPopulate1)
+                    }
+    
+                    let rawData2 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                parent: { $exists: true, $ne: null },
+                                human: { $exists: true, $ne: null },
+                            }
+                        },
+                        {
+                            $project : {
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                human: 1,
+                                project: 1,
+                                position: 1,
+                                date: 1,
+                                salary: 1,
+                                onLeaveSalary: 1,
+                                overtimeSalary: 1,
+                                revenueBonus: 1,
+                                reward: 1,
+                                mealAllowance: 1,
+                                punishment: 1,
+                                insurance: 1,
+                                pitax: 1,
+                                union: 1,
+                                share: 1,
+                                other: 1,
+                                paid: 1,
+                                advance: 1
+                            }
+                        },
+                        {
+                            $match: conditionMatchObj
+                        },
+                        {
+                            $group: {
+                                _id: { human: "$human" },
+                                salary: { $sum: "$salary" },
+                                onLeaveSalary: { $sum: "$onLeaveSalary" },
+                                overtimeSalary: { $sum: "$overtimeSalary" },
+                                revenueBonus: { $sum: "$revenueBonus" },
+                                reward: { $sum: "$reward" },
+                                mealAllowance: { $sum: "$mealAllowance" },
+                                punishment: { $sum: "$punishment" },
+                                insurance: { $sum: "$insurance" },
+                                pitax: { $sum: "$pitax" },
+                                union: { $sum: "$union" },
+                                share: { $sum: "$share" },
+                                other: { $sum: "$other" },
+                                paid: { $sum: "$paid" },
+                                advance: { $sum: "$advance" }
+                            }
+                        },
+                    ])
+    
+                    if(rawData2.length){
+                        await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData2, conditionPopulate2)
+    
+                        // Sắp xếp dữ liệu
+                        rawData2.sort((a, b) => {
+                            const departmentA = a._id.human.department?.name || ""; // Lấy tên department
+                            const departmentB = b._id.human.department?.name || "";
+                            const fullnameA = a._id.human.fullname || ""; // Lấy tên người
+                            const fullnameB = b._id.human.fullname || "";
+                        
+                            // Ưu tiên sắp xếp theo department.name, sau đó fullname
+                            if (departmentA < departmentB) return -1;
+                            if (departmentA > departmentB) return 1;
+                            return fullnameA.localeCompare(fullnameB);
+                        });
+                    }
+    
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_combine.xlsx')))
+                        .then(async workbook => {
+    
+                            var i = 4
+                            rawData.forEach((item, index) =>{
+                                workbook.sheet('TongHop').row(2).cell(i).value(`${item._id.project.name}`)
+                                workbook.sheet('TongHop').row(3).cell(i).value(Number(item?.human))
+    
+                                workbook.sheet('TongHop').row(5).cell(i).value(Number(item?.salary))
+                                workbook.sheet('TongHop').row(6).cell(i).value(Number(item?.onLeaveSalary))
+                                workbook.sheet('TongHop').row(7).cell(i).value(Number(item?.overtimeSalary))
+                                workbook.sheet('TongHop').row(8).cell(i).value(Number(item?.revenueBonus))
+                                workbook.sheet('TongHop').row(9).cell(i).value(Number(item?.reward))
+                                workbook.sheet('TongHop').row(10).cell(i).value(Number(item?.mealAllowance))
+    
+                                workbook.sheet('TongHop').row(12).cell(i).value(Number(item?.punishment))
+                                workbook.sheet('TongHop').row(13).cell(i).value(Number(item?.insurance))
+                                workbook.sheet('TongHop').row(14).cell(i).value(Number(item?.pitax))
+                                workbook.sheet('TongHop').row(15).cell(i).value(Number(item?.union))
+                                workbook.sheet('TongHop').row(16).cell(i).value(Number(item?.share))
+                                workbook.sheet('TongHop').row(17).cell(i).value(Number(item?.other))
+    
+                                workbook.sheet('TongHop').row(20).cell(i).value(Number(item?.paid))
+                                workbook.sheet('TongHop').row(21).cell(i).value(Number(item?.advance))
+    
+                                i++
+                            })
+    
+                            var i = 3
+                            rawData2.forEach((item, index) =>{
+                                workbook.sheet('TongHop2').row(i).cell(1).value(index + 1)
+                                workbook.sheet('TongHop2').row(i).cell(2).value(item?._id?.human?.fullname)
+                                workbook.sheet('TongHop2').row(i).cell(3).value(item?._id?.human?.department?.name)
+    
+                                workbook.sheet('TongHop2').row(i).cell(5).value(Number(item?.salary))
+                                workbook.sheet('TongHop2').row(i).cell(6).value(Number(item?.onLeaveSalary))
+                                workbook.sheet('TongHop2').row(i).cell(7).value(Number(item?.overtimeSalary))
+                                workbook.sheet('TongHop2').row(i).cell(8).value(Number(item?.revenueBonus))
+                                workbook.sheet('TongHop2').row(i).cell(9).value(Number(item?.reward))
+                                workbook.sheet('TongHop2').row(i).cell(10).value(Number(item?.mealAllowance))
+    
+                                workbook.sheet('TongHop2').row(i).cell(11).formula(`=SUM(E${i}:J${i})`)
+    
+                                workbook.sheet('TongHop2').row(i).cell(12).value(Number(item?.punishment))
+                                workbook.sheet('TongHop2').row(i).cell(13).value(Number(item?.insurance))
+                                workbook.sheet('TongHop2').row(i).cell(14).value(Number(item?.pitax))
+                                workbook.sheet('TongHop2').row(i).cell(15).value(Number(item?.union))
+                                workbook.sheet('TongHop2').row(i).cell(16).value(Number(item?.share))
+                                workbook.sheet('TongHop2').row(i).cell(17).value(Number(item?.other))
+    
+                                workbook.sheet('TongHop2').row(i).cell(18).formula(`=SUM(L${i}:Q${i})`)
+                                workbook.sheet('TongHop2').row(i).cell(19).formula(`=K${i}-R${i}`)
+    
+                                workbook.sheet('TongHop2').row(i).cell(20).value(Number(item?.paid))
+                                workbook.sheet('TongHop2').row(i).cell(21).value(Number(item?.advance))
+                                workbook.sheet('TongHop2').row(i).cell(22).formula(`=S${i}-T${i}-U${i}`)
+    
+                                i++
+                            })
+                
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `salary_combine${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+    
+                            await workbook.toFileAsync(pathWriteFile)
+                            const result = await uploadFileS3(pathWriteFile, fileName)
+    
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 })
+                    })
                 }
 
-                if(rawData2.length){
-                    await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData2, conditionPopulate2)
+                // TỔNG HỢP KPI TOÀN BỘ CÔNG TY
+                else if(option == 2){
+                    let conditionPopulate1 = {
+                        path: '_id.funda',
+                        select: '_id name',
+                        model: 'funda',
+                        populate: {
+                            path: 'manager',
+                            select: '_id fullname',
+                            model: 'user',
+                        },
+                    }
 
-                    rawData2.sort((a, b) => {
-                        const departmentA = a._id.human.department?.name || ""; // Lấy tên department
-                        const departmentB = b._id.human.department?.name || "";
-                        const fullnameA = a._id.human.fullname || ""; // Lấy tên người
-                        const fullnameB = b._id.human.fullname || "";
-                    
-                        // Ưu tiên sắp xếp theo department.name, sau đó fullname
-                        if (departmentA < departmentB) return -1;
-                        if (departmentA > departmentB) return 1;
-                        return fullnameA.localeCompare(fullnameB);
-                    });
+                    // Doanh số cơ sở
+                    let listData = await FNB_ORDER_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                status: 5, // Chỉ lấy đơn hoàn thành
+                            }
+                        },
+                        {
+                            $project: {
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                date: 1,
+                                funda: 1,
+                                amount: 1,
+                                total: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(year),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { funda: "$funda" },
+                                // amount: { $sum: "$amount" },
+                                total: { $sum: "$total" },
+                            }
+                        },
+                    ])
+                    if(listData.length){
+                        await FNB_ORDER_COLL.populate(listData, conditionPopulate1)
+                    }
+                    // console.log(listData)
+
+                    // Lương cơ sở
+                    let listData2 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                parent: { $exists: true, $ne: null },
+                                funda: { $exists: true, $ne: null },
+                            }
+                        },
+                        {
+                            $project : {
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                funda: 1,
+                                date: 1,
+                                salary: 1,
+                                subAllowance13: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(year),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { funda: "$funda" },
+                                salary: { $sum: "$salary" },
+                                subAllowance13: { $sum: "$subAllowance13" },
+                            }
+                        },
+                    ])
+                    // console.log(listData2)
+
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/kpi_combine.xlsx')))
+                        .then(async workbook => {
+    
+                            var i = 4
+                            listData.forEach((item, index) =>{
+                                workbook.sheet('1.DoanhSo').row(i).cell(1).value(index + 1)
+                                workbook.sheet('1.DoanhSo').row(i).cell(2).value(item?._id?.funda?.name)
+                                workbook.sheet('1.DoanhSo').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
+                                workbook.sheet('1.DoanhSo').row(i).cell(4).value(`T${month}_${year}`)
+                                workbook.sheet('1.DoanhSo').row(i).cell(5).value(Number(item?.total))
+
+                                workbook.sheet('2.NhanSu').row(i).cell(1).value(index + 1)
+                                workbook.sheet('2.NhanSu').row(i).cell(2).value(item?._id?.funda?.name)
+                                workbook.sheet('2.NhanSu').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
+                                workbook.sheet('2.NhanSu').row(i).cell(4).value(`T${month}_${year}`)
+                                workbook.sheet('2.NhanSu').row(i).cell(5).value(Number(item?.total))
+                                workbook.sheet('2.NhanSu').row(i).cell(15).value(`${item._id?.funda?._id}`)
+                              
+                                i++
+                            })
+
+                            var i = 4
+                            listData2.forEach((item, index) =>{
+                                for(var j=4; j<= Number(listData.length + 3); j++ ){
+                                    let fundaID = workbook.sheet('2.NhanSu').row(j).cell(15).value()
+
+                                    if(fundaID.toString() === item._id?.funda.toString() ){
+                                        workbook.sheet('2.NhanSu').row(i).cell(8).value(Number(item?.subAllowance13))
+                                        workbook.sheet('2.NhanSu').row(i).cell(9).value(Number(item?.salary))
+                                    }
+                                }
+                              
+                                i++
+                            })
+                
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `kpi_combine${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+    
+                            await workbook.toFileAsync(pathWriteFile)
+                            const result = await uploadFileS3(pathWriteFile, fileName)
+    
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 })
+                    })
+
+                    // return resolve({ error: false, message: "Hoàn thành", data: listData, status: 200 });
                 }
-
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_combine.xlsx')))
-                    .then(async workbook => {
-
-                        var i = 4
-                        rawData.forEach((item, index) =>{
-                            workbook.sheet('TongHop').row(2).cell(i).value(`${item._id.project.name}`)
-                            workbook.sheet('TongHop').row(3).cell(i).value(Number(item?.human))
-
-                            workbook.sheet('TongHop').row(5).cell(i).value(Number(item?.salary))
-                            workbook.sheet('TongHop').row(6).cell(i).value(Number(item?.onLeaveSalary))
-                            workbook.sheet('TongHop').row(7).cell(i).value(Number(item?.overtimeSalary))
-                            workbook.sheet('TongHop').row(8).cell(i).value(Number(item?.revenueBonus))
-                            workbook.sheet('TongHop').row(9).cell(i).value(Number(item?.reward))
-                            workbook.sheet('TongHop').row(10).cell(i).value(Number(item?.mealAllowance))
-
-                            workbook.sheet('TongHop').row(12).cell(i).value(Number(item?.punishment))
-                            workbook.sheet('TongHop').row(13).cell(i).value(Number(item?.insurance))
-                            workbook.sheet('TongHop').row(14).cell(i).value(Number(item?.pitax))
-                            workbook.sheet('TongHop').row(15).cell(i).value(Number(item?.union))
-                            workbook.sheet('TongHop').row(16).cell(i).value(Number(item?.share))
-                            workbook.sheet('TongHop').row(17).cell(i).value(Number(item?.other))
-
-                            workbook.sheet('TongHop').row(20).cell(i).value(Number(item?.paid))
-                            workbook.sheet('TongHop').row(21).cell(i).value(Number(item?.advance))
-
-                            i++
-                        })
-
-                        var i = 3
-                        rawData2.forEach((item, index) =>{
-                            workbook.sheet('TongHop2').row(i).cell(1).value(index + 1)
-                            workbook.sheet('TongHop2').row(i).cell(2).value(item?._id?.human?.fullname)
-                            workbook.sheet('TongHop2').row(i).cell(3).value(item?._id?.human?.department?.name)
-
-                            workbook.sheet('TongHop2').row(i).cell(5).value(Number(item?.salary))
-                            workbook.sheet('TongHop2').row(i).cell(6).value(Number(item?.onLeaveSalary))
-                            workbook.sheet('TongHop2').row(i).cell(7).value(Number(item?.overtimeSalary))
-                            workbook.sheet('TongHop2').row(i).cell(8).value(Number(item?.revenueBonus))
-                            workbook.sheet('TongHop2').row(i).cell(9).value(Number(item?.reward))
-                            workbook.sheet('TongHop2').row(i).cell(10).value(Number(item?.mealAllowance))
-
-                            workbook.sheet('TongHop2').row(i).cell(11).formula(`=SUM(E${i}:J${i})`)
-
-                            workbook.sheet('TongHop2').row(i).cell(12).value(Number(item?.punishment))
-                            workbook.sheet('TongHop2').row(i).cell(13).value(Number(item?.insurance))
-                            workbook.sheet('TongHop2').row(i).cell(14).value(Number(item?.pitax))
-                            workbook.sheet('TongHop2').row(i).cell(15).value(Number(item?.union))
-                            workbook.sheet('TongHop2').row(i).cell(16).value(Number(item?.share))
-                            workbook.sheet('TongHop2').row(i).cell(17).value(Number(item?.other))
-
-                            workbook.sheet('TongHop2').row(i).cell(18).formula(`=SUM(L${i}:Q${i})`)
-                            workbook.sheet('TongHop2').row(i).cell(19).formula(`=K${i}-R${i}`)
-
-                            workbook.sheet('TongHop2').row(i).cell(20).value(Number(item?.paid))
-                            workbook.sheet('TongHop2').row(i).cell(21).value(Number(item?.advance))
-                            workbook.sheet('TongHop2').row(i).cell(22).formula(`=S${i}-T${i}-U${i}`)
-
-                            i++
-                        })
-            
-                        const now = new Date();
-                        const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `salary_combine${now.getTime()}.xlsx`;
-                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
-
-                        await workbook.toFileAsync(pathWriteFile)
-                        const result = await uploadFileS3(pathWriteFile, fileName)
-
-                        fs.unlinkSync(pathWriteFile);
-                        return resolve({ error: false, data: result?.Location, status: 200 })
-                })
             }else{
                 return resolve({ error: true, message: "Can't get data", status: 403 });
             }

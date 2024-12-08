@@ -248,11 +248,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { year, month } = ctx.params;
+                let { option, year, month } = ctx.params;
                 console.log(ctx.params)
 
                 const resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.exportExcel({
-                    companyID: company._id, year, month, userID
+                    companyID: company._id, option, year, month, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

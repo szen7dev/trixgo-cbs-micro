@@ -141,7 +141,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, platform, isListParentOfListChilds, isMember } = ctx.params;
+                let { option, fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, platform, isListParentOfListChilds, isMember } = ctx.params;
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -156,7 +157,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__FUNDA_MODEL.getList({
-                        companyID, lastestID, keyword, select, limit, populates, parentID, platform, isListParentOfListChilds, isMember, userID
+                        option, companyID, lastestID, keyword, select, limit, populates, parentID, platform, isListParentOfListChilds, isMember, userID
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
