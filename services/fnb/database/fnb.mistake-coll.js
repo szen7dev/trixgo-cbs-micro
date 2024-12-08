@@ -44,6 +44,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_mistake", {
         type: Number,
         default: 1
     },
+    /**
+     * Phân loại cấp độ
+     */
+    grade: {
+        type: Number,
+        default: 1
+    },
     //_________Ngày tháng
     date: { type: Date, default: Date.now },
     //_________Lỗi mắc phải

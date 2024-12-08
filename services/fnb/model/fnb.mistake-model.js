@@ -20,6 +20,7 @@ const ITEM__FUNDA_COLL            			   = require('../../item/database/item.fund
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
+const ITEM__DOCTYPE_COLL                        = require('../../item/database/item.doctype-coll');
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
@@ -56,6 +57,8 @@ class Model extends BaseModel {
                     infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
                 }
 
+                let infoMistake = await ITEM__DOCTYPE_COLL.findById(mistakeID)
+
                 let countMistake = await FNB_MISTAKE_COLL.count({executor: executorID, mistake: mistakeID})
                 // console.log({countMistake})
 
@@ -66,6 +69,10 @@ class Model extends BaseModel {
                     number: countMistake | 1, 
                     funda: infoFunda._id, 
                     company: infoFunda.company,
+                }
+
+                if(infoMistake && infoMistake.grade){
+                    dataInsert.grade = Number(infoMistake.grade)
                 }
 
                 let infoOrder;

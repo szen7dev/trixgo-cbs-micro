@@ -31,16 +31,16 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, salesChannel } = ctx.params;
+                let { type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, salesChannel, grade } = ctx.params;
 
                 if(!companyID){
                     companyID = company._id;
                 }
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.insert({
-                    type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel
+                    type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel, grade
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -68,12 +68,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { doctypeID, name, description, sign, unit, amount, alert, salesChannel, linkItemID } = ctx.params;
+                const { doctypeID, name, description, sign, unit, amount, alert, salesChannel, grade, linkItemID } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.update({
-                    doctypeID, name, description, sign, unit, amount, alert, userID, salesChannel, linkItemID
+                    doctypeID, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

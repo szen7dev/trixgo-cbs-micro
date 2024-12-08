@@ -93,6 +93,13 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
         type: Number,
         default: 1
     },
+    /**
+     * Phân loại cấp độ
+     */
+    grade: {
+        type: Number,
+        default: 1
+    },
     //_________Số phần tử con
     amountChilds:  {
         type: Number,
