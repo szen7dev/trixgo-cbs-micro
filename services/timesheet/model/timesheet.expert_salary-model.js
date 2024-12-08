@@ -3397,9 +3397,9 @@ class Model extends BaseModel {
                             factorSum: { $sum: { $multiply: ["$count", "$multiplier"] } }, // Tính tổng factor sum
                           },
                         },
-                        {
-                            $sort: {"factorSum": -1}
-                        }
+                        // {
+                        //     $sort: {"factorSum": -1}
+                        // }
                     ])
                     
                     let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -3433,6 +3433,9 @@ class Model extends BaseModel {
                                 hours: { $sum: "$hours" },
                             }
                         },
+                        {
+                            $sort: {"hours": -1}
+                        }
                     ])
                     // console.log(listData1)
                     // console.log(listData2)
@@ -3470,6 +3473,8 @@ class Model extends BaseModel {
                         arr2[key].push(item)
                     })
 
+                    // return resolve({ error: false, message: "Hoàn thành", data: listData2, status: 200 });
+
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_achievement_points.xlsm')))
                         .then(async workbook => {
 
@@ -3480,15 +3485,29 @@ class Model extends BaseModel {
                                 workbook.sheet('TongHop').row(i).cell(3).value(item?.department?.name)
                                 workbook.sheet('TongHop').row(i).cell(4).value(`T${month}_${year}`)
 
+                                let factor = 0, hour = 0
                                 if(arr1[item?._id]){
+                                    factor = Number(arr1[item?._id][0].factorSum)
                                     workbook.sheet('TongHop').row(i).cell(5).value(Number(arr1[item?._id][0].factorSum))
                                 }
 
                                 if(arr2[item?._id]){
+                                    hour = Number(arr2[item?._id][0].hours)
+
                                     workbook.sheet('TongHop').row(i).cell(6).value(Number(arr2[item?._id][0].hours))
                                 }
 
-                                workbook.sheet('TongHop').row(i).cell(7).formula(`=E${i}/F${i}`)
+                                workbook.sheet('TongHop').row(i).cell(5).value(Number(factor))
+                                workbook.sheet('TongHop').row(i).cell(6).value(Number(hour))
+
+                                if(hour != 0){
+                                    workbook.sheet('TongHop').row(i).cell(7).formula(`=E${i}/F${i}`)
+                                }else{
+                                    workbook.sheet('TongHop').row(i).cell(7).value(0)
+                                }
+
+                                // workbook.sheet('TongHop').row(i).cell(7).formula(`=E${i}/F${i}`)
+                                // workbook.sheet('TongHop').row(i).cell(7).formula(`=IF(F${i}<>0;E${i}/F${i};0)`)
                               
                                 i++
                             })
@@ -3504,8 +3523,6 @@ class Model extends BaseModel {
                             fs.unlinkSync(pathWriteFile);
                             return resolve({ error: false, data: result?.Location, status: 200 })
                     })
-
-                    // return resolve({ error: false, message: "Hoàn thành", data: listData2, status: 200 });
                 }
             }else{
                 return resolve({ error: true, message: "Can't get data", status: 403 });
