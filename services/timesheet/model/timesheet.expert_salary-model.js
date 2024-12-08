@@ -644,8 +644,6 @@ class Model extends BaseModel {
                             company: ObjectID(companyID),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null },
-                            hours: {$gt: 0}, // Khối lượng
-                            amount: {$gt: 0}, // Thành tiền
                             subtype: 1, // Đi làm Thông thường
                         }
                     },
@@ -697,7 +695,6 @@ class Model extends BaseModel {
                             company: ObjectID(companyID),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null },
-                            hours: {$gt: 0},
                             subtype: 1, // Đi làm Thông thường
                         }
                     },
