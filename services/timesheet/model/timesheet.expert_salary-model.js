@@ -2903,16 +2903,16 @@ class Model extends BaseModel {
                     model: 'department'
                 }
 
-                let conditionPopulate2 = {
-                    path: '_id.human',
-                    select: '_id fullname department position',
-                    model: 'user',
-                    populate: {
-                        path: 'department',
-                        select: '_id name',
-                        model: 'department',
-                    },
-                }
+                // let conditionPopulate2 = {
+                //     path: '_id.human',
+                //     select: '_id fullname department position',
+                //     model: 'user',
+                //     populate: {
+                //         path: 'department',
+                //         select: '_id name',
+                //         model: 'department',
+                //     },
+                // }
 
                 let rawData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                     {
@@ -3010,6 +3010,9 @@ class Model extends BaseModel {
                     {
                         $match: conditionMatchObj
                     },
+                    // {
+                    //     $sort: {"project": 1, "position": 1}
+                    // },
                     {
                         $group: {
                             _id: { human: "$human" },
@@ -3031,8 +3034,31 @@ class Model extends BaseModel {
                     },
                 ])
 
+                let conditionPopulate2 = {
+                    path: '_id.human',
+                    select: '_id fullname department position',
+                    model: 'user',
+                    populate: {
+                        path: 'department',
+                        select: '_id name',
+                        model: 'department',
+                    },
+                }
+
                 if(rawData2.length){
                     await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData2, conditionPopulate2)
+
+                    rawData2.sort((a, b) => {
+                        const departmentA = a._id.human.department?.name || ""; // Lấy tên department
+                        const departmentB = b._id.human.department?.name || "";
+                        const fullnameA = a._id.human.fullname || ""; // Lấy tên người
+                        const fullnameB = b._id.human.fullname || "";
+                    
+                        // Ưu tiên sắp xếp theo department.name, sau đó fullname
+                        if (departmentA < departmentB) return -1;
+                        if (departmentA > departmentB) return 1;
+                        return fullnameA.localeCompare(fullnameB);
+                    });
                 }
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_combine.xlsx')))
