@@ -13,6 +13,7 @@ const stringUtils					    = require('../../../tools/utils/string_utils')
  * COLLECTIONS
  */
 const ITEM__DOCTYPE_COLL                = require('../database/item.doctype-coll');
+const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
 
 class Model extends BaseModel {
 
@@ -25,8 +26,7 @@ class Model extends BaseModel {
      * Func: Insert doctype
      * Date: 22/02/2022
      */
-    insert({ type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel }) {
-        // console.log({ type, name, description, sign, unit, amount, companyID, parent, linkItemID, level, userID, salesChannel })
+    insert({ type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel, grade }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !type || !DOCTYPE_TYPE.includes(+type) || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
@@ -68,6 +68,10 @@ class Model extends BaseModel {
 
                 if(amount){
                     dataInsert.amount = Number(amount);
+                }
+
+                if(!isNaN(grade) && [1,2,3,4].includes(Number(grade))){
+                    dataInsert.grade = Number(grade);
                 }
 
                 if(salesChannel){
@@ -115,8 +119,7 @@ class Model extends BaseModel {
      * Func: Update doctype
      * Date: 22/02/2022
      */
-    update({ doctypeID, name, description, sign, unit, amount, alert, userID, salesChannel, linkItemID }) {
-        // console.log({ doctypeID, name, description, sign, unit, amount, userID, salesChannel, linkItemID })
+    update({ doctypeID, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID }) {
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -148,6 +151,20 @@ class Model extends BaseModel {
 
                 if(salesChannel){
                     dataUpdate.salesChannel = Number(salesChannel);
+                }
+
+                if(!isNaN(grade) && [1,2,3,4].includes(Number(grade))){
+                    dataUpdate.grade = Number(grade);
+
+                    // Cập nhật các phân loại cho lỗi
+                    await FNB_MISTAKE_COLL.updateMany(
+                        {mistake: doctypeID},
+                        {
+                            $set: {
+                                grade: Number(grade)
+                            }
+                        }
+                    )
                 }
 
                 if(linkItemID && checkObjectIDs(linkItemID)){
