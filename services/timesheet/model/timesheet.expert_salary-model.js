@@ -644,8 +644,6 @@ class Model extends BaseModel {
                             company: ObjectID(companyID),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null },
-                            hours: {$gt: 0}, // Khối lượng
-                            amount: {$gt: 0}, // Thành tiền
                             subtype: 1, // Đi làm Thông thường
                         }
                     },
@@ -653,6 +651,7 @@ class Model extends BaseModel {
                         $project: {
                             year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            dayOfWeek: { $dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             amount: 1,
                             hours: 1,
                             subtype: 1,
@@ -668,9 +667,23 @@ class Model extends BaseModel {
                     {
                         $group: {
                             _id: { assignee: '$assignee' },
-                            quantity: { $sum: 1 },
+                            quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
                         }
-                    }
+                    },
+                    // // Giai đoạn 1: Nhóm theo assignee và dayOfWeek
+                    // {
+                    //     $group: {
+                    //         _id: { assignee: '$assignee', dayOfWeek: "$dayOfWeek" },
+                    //         quantity: { $sum: 1 },
+                    //     }
+                    // },
+                    // // Giai đoạn 2: Nhóm lại chỉ theo assignee, tổng hợp quantity
+                    // {
+                    //     $group: {
+                    //         _id: { assignee: "$_id.assignee" }, // Chỉ nhóm theo assignee
+                    //         quantity: { $sum: "$quantity" }, // Tổng quantity từ dayOfWeek
+                    //     },
+                    // },
                 ])
                 // console.log(listDataDay1)
 
@@ -682,7 +695,6 @@ class Model extends BaseModel {
                             company: ObjectID(companyID),
                             parent: { $exists: true, $ne: null },
                             assignee: { $exists: true, $ne: null },
-                            hours: {$gt: 0},
                             subtype: 1, // Đi làm Thông thường
                         }
                     },
@@ -703,12 +715,32 @@ class Model extends BaseModel {
                             dayOfWeek: 1,
                         }
                     },
+                    // {
+                    //     $group: {
+                    //         _id: { assignee: '$assignee' },
+                    //         quantity: { $sum: 1 },
+                    //     }
+                    // },
                     {
                         $group: {
                             _id: { assignee: '$assignee' },
-                            quantity: { $sum: 1 },
+                            quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
                         }
-                    }
+                    },
+                    // // Giai đoạn 1: Nhóm theo assignee và dayOfWeek
+                    // {
+                    //     $group: {
+                    //         _id: { assignee: '$assignee', dayOfWeek: "$dayOfWeek" },
+                    //         quantity: { $sum: 1 },
+                    //     }
+                    // },
+                    // // Giai đoạn 2: Nhóm lại chỉ theo assignee, tổng hợp quantity
+                    // {
+                    //     $group: {
+                    //         _id: { assignee: "$_id.assignee" }, // Chỉ nhóm theo assignee
+                    //         quantity: { $sum: "$quantity" }, // Tổng quantity từ dayOfWeek
+                    //     },
+                    // },
                 ])
                 // console.log(listDataDay2)
 
