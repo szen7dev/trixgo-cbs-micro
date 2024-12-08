@@ -3128,12 +3128,46 @@ class Model extends BaseModel {
                 else if(option == 2 || option == 3){
                     let listFunda
                     if(option == 2 ){
-                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 1}).select('name')
+                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 1}).select('name manager')
                     }else{
-                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 2}).select('name')
+                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 2}).select('name manager')
                     }
                     // console.log(listFunda)
                     // console.log(listFunda.length)
+
+                    // Danh sách lỗi nhân viên: Không bao gồm các lỗi do Quản lý gán
+                    let listMistake = await FNB_MISTAKE_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                funda: {$in: listFunda.map(item=>ObjectID(item._id))},
+                                userCreate: {$nin: listFunda.map(item=>ObjectID(item.manager))}, // Không lấy các lỗi do các Quản lý tự gán
+                                status: 1, // Chỉ lấy hoàn thành
+                            }
+                        },
+                        {
+                            $project: {
+                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                date: 1,
+                                funda: 1,
+                                amount: 1,
+                                total: 1,
+                            }
+                        },
+                        {
+                            $match: {
+                                year: Number(year),
+                                month: Number(month),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { funda: "$funda" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
                     
                     let conditionPopulate1 = {
                         path: '_id.funda',
@@ -3219,14 +3253,24 @@ class Model extends BaseModel {
                                 subAllowance13: { $sum: "$subAllowance13" },
                             }
                         },
-                        {
-                            $sort: {"_id.funda": 1}
-                        },
                     ])
-                    if(listData2.length){
-                        await FNB_ORDER_COLL.populate(listData2, conditionPopulate1)
-                    }
-                    // console.log(listData2)
+
+                    let arr1 = [], arr2 = [], arr3 = []
+                    listMistake.forEach(item=>{
+                        let key = item._id.funda;
+                        if (!Array.isArray(arr1[key])) {
+                            arr1[key] = [];
+                        }
+                        arr1[key].push(item)
+                    })
+
+                    listData2.forEach(item=>{
+                        let key = item._id.funda;
+                        if (!Array.isArray(arr2[key])) {
+                            arr2[key] = [];
+                        }
+                        arr2[key].push(item)
+                    })
 
                     let arrHuman = listData.map(item => item?._id?.funda?.manager?.fullname)
                     let arrNew = Array.from(
@@ -3258,23 +3302,26 @@ class Model extends BaseModel {
                                 workbook.sheet('KPI').row(i).cell(4).value(`T${month}_${year}`)
                                 workbook.sheet('KPI').row(i).cell(8).value(Number(500000)) // Tạm tính KPI nguyên liệu
 
+                                if(arr1[item?._id?.funda?._id]){
+                                    workbook.sheet('KPI').row(i).cell(15).value(Number(arr1[item?._id?.funda?._id][0].amount))
+                                }
+
                                 workbook.sheet('1.DoanhSo').row(i).cell(1).value(index + 1)
                                 workbook.sheet('1.DoanhSo').row(i).cell(2).value(item?._id?.funda?.name)
                                 workbook.sheet('1.DoanhSo').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
                                 workbook.sheet('1.DoanhSo').row(i).cell(4).value(`T${month}_${year}`)
                                 workbook.sheet('1.DoanhSo').row(i).cell(5).value(Number(item?.total))
-                              
-                                i++
-                            })
 
-                            var i = 4
-                            listData2.forEach((item, index) =>{
                                 workbook.sheet('2.NhanSu').row(i).cell(1).value(index + 1)
                                 workbook.sheet('2.NhanSu').row(i).cell(2).value(item?._id?.funda?.name)
                                 workbook.sheet('2.NhanSu').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
                                 workbook.sheet('2.NhanSu').row(i).cell(4).value(`T${month}_${year}`)
-                                workbook.sheet('2.NhanSu').row(i).cell(8).value(Number(item?.subAllowance13))
-                                workbook.sheet('2.NhanSu').row(i).cell(9).value(Number(item?.salary))
+                                workbook.sheet('2.NhanSu').row(i).cell(5).value(Number(item?.total))
+
+                                if(arr2[item?._id?.funda?._id]){
+                                    workbook.sheet('2.NhanSu').row(i).cell(8).value(Number(arr2[item?._id?.funda?._id][0].subAllowance13))
+                                    workbook.sheet('2.NhanSu').row(i).cell(9).value(Number(arr2[item?._id?.funda?._id][0].salary))
+                                }
                               
                                 i++
                             })
@@ -3298,7 +3345,7 @@ class Model extends BaseModel {
                 else if(option == 4){
                     let listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID)}).select('name')
 
-                    
+
                     
                     let conditionPopulate1 = {
                         path: '_id.funda',
