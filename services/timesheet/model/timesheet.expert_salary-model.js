@@ -3141,7 +3141,7 @@ class Model extends BaseModel {
                             $match: {
                                 company: ObjectID(companyID),
                                 funda: {$in: listFunda.map(item=>ObjectID(item._id))},
-                                manager: {$nin: listFunda.map(item=>ObjectID(item.manager))}, // Không lấy các lỗi do các Quản lý tự gán
+                                userCreate: {$nin: listFunda.map(item=>ObjectID(item.manager))}, // Không lấy các lỗi do các Quản lý tự gán
                                 status: 1, // Chỉ lấy hoàn thành
                             }
                         },
