@@ -2897,6 +2897,23 @@ class Model extends BaseModel {
                     conditionMatchObj.month = Number(month)
                 }
 
+                let conditionPopulate1 = {
+                    path: '_id.project',
+                    select: '_id name',
+                    model: 'department'
+                }
+
+                // let conditionPopulate2 = {
+                //     path: '_id.human',
+                //     select: '_id fullname department position',
+                //     model: 'user',
+                //     populate: {
+                //         path: 'department',
+                //         select: '_id name',
+                //         model: 'department',
+                //     },
+                // }
+
                 let rawData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                     {
                         $match: {
@@ -2953,22 +2970,95 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-                // console.log(rawData);      
 
-                let conditionPopulate1 = {
-                    path: '_id.project',
-                    select: '_id name',
-                    model: 'department'
-                }
-
-                // let conditionPopulate2= {
-                //     path: '_id.position',
-                //     select: '_id name',
-                //     model: 'position'
-                // }       
-                
                 if(rawData.length){
                     await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData, conditionPopulate1)
+                }
+
+                let rawData2 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            human: { $exists: true, $ne: null },
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            human: 1,
+                            project: 1,
+                            position: 1,
+                            date: 1,
+                            salary: 1,
+                            onLeaveSalary: 1,
+                            overtimeSalary: 1,
+                            revenueBonus: 1,
+                            reward: 1,
+                            mealAllowance: 1,
+                            punishment: 1,
+                            insurance: 1,
+                            pitax: 1,
+                            union: 1,
+                            share: 1,
+                            other: 1,
+                            paid: 1,
+                            advance: 1
+                        }
+                    },
+                    {
+                        $match: conditionMatchObj
+                    },
+                    // {
+                    //     $sort: {"project": 1, "position": 1}
+                    // },
+                    {
+                        $group: {
+                            _id: { human: "$human" },
+                            salary: { $sum: "$salary" },
+                            onLeaveSalary: { $sum: "$onLeaveSalary" },
+                            overtimeSalary: { $sum: "$overtimeSalary" },
+                            revenueBonus: { $sum: "$revenueBonus" },
+                            reward: { $sum: "$reward" },
+                            mealAllowance: { $sum: "$mealAllowance" },
+                            punishment: { $sum: "$punishment" },
+                            insurance: { $sum: "$insurance" },
+                            pitax: { $sum: "$pitax" },
+                            union: { $sum: "$union" },
+                            share: { $sum: "$share" },
+                            other: { $sum: "$other" },
+                            paid: { $sum: "$paid" },
+                            advance: { $sum: "$advance" }
+                        }
+                    },
+                ])
+
+                let conditionPopulate2 = {
+                    path: '_id.human',
+                    select: '_id fullname department position',
+                    model: 'user',
+                    populate: {
+                        path: 'department',
+                        select: '_id name',
+                        model: 'department',
+                    },
+                }
+
+                if(rawData2.length){
+                    await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData2, conditionPopulate2)
+
+                    rawData2.sort((a, b) => {
+                        const departmentA = a._id.human.department?.name || ""; // Lấy tên department
+                        const departmentB = b._id.human.department?.name || "";
+                        const fullnameA = a._id.human.fullname || ""; // Lấy tên người
+                        const fullnameB = b._id.human.fullname || "";
+                    
+                        // Ưu tiên sắp xếp theo department.name, sau đó fullname
+                        if (departmentA < departmentB) return -1;
+                        if (departmentA > departmentB) return 1;
+                        return fullnameA.localeCompare(fullnameB);
+                    });
                 }
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_combine.xlsx')))
@@ -2995,6 +3085,38 @@ class Model extends BaseModel {
 
                             workbook.sheet('TongHop').row(20).cell(i).value(Number(item?.paid))
                             workbook.sheet('TongHop').row(21).cell(i).value(Number(item?.advance))
+
+                            i++
+                        })
+
+                        var i = 3
+                        rawData2.forEach((item, index) =>{
+                            workbook.sheet('TongHop2').row(i).cell(1).value(index + 1)
+                            workbook.sheet('TongHop2').row(i).cell(2).value(item?._id?.human?.fullname)
+                            workbook.sheet('TongHop2').row(i).cell(3).value(item?._id?.human?.department?.name)
+
+                            workbook.sheet('TongHop2').row(i).cell(5).value(Number(item?.salary))
+                            workbook.sheet('TongHop2').row(i).cell(6).value(Number(item?.onLeaveSalary))
+                            workbook.sheet('TongHop2').row(i).cell(7).value(Number(item?.overtimeSalary))
+                            workbook.sheet('TongHop2').row(i).cell(8).value(Number(item?.revenueBonus))
+                            workbook.sheet('TongHop2').row(i).cell(9).value(Number(item?.reward))
+                            workbook.sheet('TongHop2').row(i).cell(10).value(Number(item?.mealAllowance))
+
+                            workbook.sheet('TongHop2').row(i).cell(11).formula(`=SUM(E${i}:J${i})`)
+
+                            workbook.sheet('TongHop2').row(i).cell(12).value(Number(item?.punishment))
+                            workbook.sheet('TongHop2').row(i).cell(13).value(Number(item?.insurance))
+                            workbook.sheet('TongHop2').row(i).cell(14).value(Number(item?.pitax))
+                            workbook.sheet('TongHop2').row(i).cell(15).value(Number(item?.union))
+                            workbook.sheet('TongHop2').row(i).cell(16).value(Number(item?.share))
+                            workbook.sheet('TongHop2').row(i).cell(17).value(Number(item?.other))
+
+                            workbook.sheet('TongHop2').row(i).cell(18).formula(`=SUM(L${i}:Q${i})`)
+                            workbook.sheet('TongHop2').row(i).cell(19).formula(`=K${i}-R${i}`)
+
+                            workbook.sheet('TongHop2').row(i).cell(20).value(Number(item?.paid))
+                            workbook.sheet('TongHop2').row(i).cell(21).value(Number(item?.advance))
+                            workbook.sheet('TongHop2').row(i).cell(22).formula(`=S${i}-T${i}-U${i}`)
 
                             i++
                         })
