@@ -26,6 +26,8 @@ const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
 const ITEM__AREA_COLL            				= require('../database/item.area-coll');
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 
+const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
+
 class Model extends BaseModel {
 
     constructor() {
@@ -475,12 +477,8 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        companyID, parentID, platform, isListParentOfListChilds, isMember,
+        option, companyID, parentID, platform, isListParentOfListChilds, isMember,
         keyword, limit = 40, lastestID, select, populates= {}, userID } ) {
-        // console.log({companyID, parentID, platform, isListParentOfListChilds, isMember,
-        //     keyword, limit, lastestID, select, populates, userID})
-        //     console.log('========================')
-        // console.log('ĐƠN VỊ CƠ SỞ========================')
         return new Promise(async (resolve) => {
             try {
                 if(limit > 50){
@@ -504,12 +502,27 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(isMember && isMember == 1){
-                    conditionObj.members = { $in: [userID] }
-                    conditionObj.company = companyID
+                if(!option){
+                    if(isMember && isMember == 1){
+                        conditionObj.members = { $in: [userID] }
+                        conditionObj.company = companyID
+                    }else{
+                        conditionObj.members = { $in: [userID] }
+                        conditionObj.company = companyID
+                    }
                 }else{
-                    conditionObj.members = { $in: [userID] }
-                    conditionObj.company = companyID
+                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "5f5234b2880c2f26c8df8c13", // Danh mục
+                        userID
+                    })
+
+                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                        // Admin ứng dụng Item
+                        conditionObj.company = companyID
+                    }else{
+                        conditionObj.members = { $in: [userID] }
+                        conditionObj.company = companyID
+                    }
                 }
 
                 // Chỉ lấy danh sách cha hoặc con
