@@ -3407,6 +3407,7 @@ class Model extends BaseModel {
                             $match: {
                                 company: ObjectID(companyID),
                                 parent: { $exists: true, $ne: null },
+                                hours: {$gt: 0},
                                 type: 2, // Sản xuất
                             }
                         },
@@ -3469,7 +3470,7 @@ class Model extends BaseModel {
                         arr2[key].push(item)
                     })
 
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_achievement_points.xlsx')))
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_achievement_points.xlsm')))
                         .then(async workbook => {
 
                             var i = 3
@@ -3487,14 +3488,14 @@ class Model extends BaseModel {
                                     workbook.sheet('TongHop').row(i).cell(6).value(Number(arr2[item?._id][0].hours))
                                 }
 
-                                workbook.sheet('TongHop').row(i).cell(7).formula(`=F${i}*E${i}`)
+                                workbook.sheet('TongHop').row(i).cell(7).formula(`=E${i}/F${i}`)
                               
                                 i++
                             })
 
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `achievement_points${now.getTime()}.xlsx`;
+                            const fileName = `achievement_points${now.getTime()}.xlsm`;
                             const pathWriteFile = path.resolve(__dirname, filePath, fileName)
     
                             await workbook.toFileAsync(pathWriteFile)
