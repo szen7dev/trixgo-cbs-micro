@@ -1942,7 +1942,7 @@ class Model extends BaseModel {
                                         let userID = workbook.sheet("PhuCap").row(i).cell(1).value()
 
                                         if(userID && userID.toString() === item?._id?.assignee.toString()){
-                                            workbook.sheet("PhuCap").row(i).cell(29).value(Number(item.quantity));
+                                            workbook.sheet("PhuCap").row(i).cell(29).value(Number(item.quantity).toFixed(0));
                                         }
                                     }
                                 })
@@ -1955,7 +1955,7 @@ class Model extends BaseModel {
                                         let userID = workbook.sheet("PhuCap").row(i).cell(1).value()
 
                                         if(userID && userID.toString() === item?._id?.assignee.toString()){
-                                            workbook.sheet("PhuCap").row(i).cell(30).value(Number(item.quantity));
+                                            workbook.sheet("PhuCap").row(i).cell(30).value(Number(item.quantity).toFixed(0));
                                         }
                                     }
                                 })
