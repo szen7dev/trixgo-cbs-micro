@@ -3128,18 +3128,20 @@ class Model extends BaseModel {
                 else if(option == 2 || option == 3){
                     let listFunda
                     if(option == 2 ){
-                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 1}).select('name')
+                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 1}).select('name manager')
                     }else{
-                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 2}).select('name')
+                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 2}).select('name manager')
                     }
                     // console.log(listFunda)
                     // console.log(listFunda.length)
 
+                    // Danh sách lỗi nhân viên: Không bao gồm các lỗi do Quản lý gán
                     let listMistake = await FNB_MISTAKE_COLL.aggregate([
                         {
                             $match: {
                                 company: ObjectID(companyID),
                                 funda: {$in: listFunda.map(item=>ObjectID(item._id))},
+                                manager: {$nin: listFunda.map(item=>ObjectID(item.manager))}, // Không lấy các lỗi do các Quản lý tự gán
                                 status: 1, // Chỉ lấy hoàn thành
                             }
                         },
