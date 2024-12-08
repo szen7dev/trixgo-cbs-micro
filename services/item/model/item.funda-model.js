@@ -422,10 +422,10 @@ class Model extends BaseModel {
                     // console.log(info)
                 }
 
-                // Cập nhật Quản lý vào các lỗi đã gán
-                if(checkObjectIDs(infoAfterUpdate.manager)){
-                    await FNB_MISTAKE_COLL.updateMany({funda: fundaID},{$set: {manager: infoAfterUpdate.manager}})
-                }
+                // // Cập nhật Quản lý vào các lỗi đã gán
+                // if(checkObjectIDs(infoAfterUpdate.manager)){
+                //     await FNB_MISTAKE_COLL.updateMany({funda: fundaID},{$set: {manager: infoAfterUpdate.manager}})
+                // }
 
                 /**
                  * CẬP NHẬT LẠI FNB
