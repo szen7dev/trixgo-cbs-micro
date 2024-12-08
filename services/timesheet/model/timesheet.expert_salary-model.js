@@ -3219,6 +3219,9 @@ class Model extends BaseModel {
                                 subAllowance13: { $sum: "$subAllowance13" },
                             }
                         },
+                        {
+                            $sort: {"_id.funda": 1}
+                        },
                     ])
                     if(listData2.length){
                         await FNB_ORDER_COLL.populate(listData2, conditionPopulate1)
