@@ -3260,12 +3260,6 @@ class Model extends BaseModel {
                                 workbook.sheet('1.DoanhSo').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
                                 workbook.sheet('1.DoanhSo').row(i).cell(4).value(`T${month}_${year}`)
                                 workbook.sheet('1.DoanhSo').row(i).cell(5).value(Number(item?.total))
-
-                                workbook.sheet('2.NhanSu').row(i).cell(1).value(index + 1)
-                                workbook.sheet('2.NhanSu').row(i).cell(2).value(item?._id?.funda?.name)
-                                workbook.sheet('2.NhanSu').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
-                                workbook.sheet('2.NhanSu').row(i).cell(4).value(`T${month}_${year}`)
-                                workbook.sheet('2.NhanSu').row(i).cell(5).value(Number(item?.total))
                               
                                 i++
                             })
