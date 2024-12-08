@@ -3174,7 +3174,6 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { funda: "$funda" },
-                                // amount: { $sum: "$amount" },
                                 total: { $sum: "$total" },
                             }
                         },
@@ -3194,6 +3193,7 @@ class Model extends BaseModel {
                                 company: ObjectID(companyID),
                                 funda: {$in: listFunda.map(item=>ObjectID(item._id))},
                                 parent: { $exists: true, $ne: null },
+                                type: 2, // Sản xuất
                             }
                         },
                         {
