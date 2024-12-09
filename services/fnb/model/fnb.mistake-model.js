@@ -157,7 +157,7 @@ class Model extends BaseModel {
 
                 //___________Quyền truy cập ứng dụng
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                    appID: "61e049cffdebf77b072d1b14", // Chấm công tính lương
+                    appID: "5eabfdc72171391e5f6a0468", // Quản lý công việc
                     userID
                 })
 
