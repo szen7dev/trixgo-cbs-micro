@@ -5264,7 +5264,7 @@ class Model extends BaseModel {
    * https://docs.google.com/document/d/1hRYD5pLK7G3n37-Cs-N732cifa1Z3-W1dV8sTSRInfY/edit
    */
   exportExcel({ option, companyID, year, month, email, userID, queryFnb }) {
-    // console.log({ option, companyID, year, month, userID, queryFnb })
+    console.log({ option, companyID, year, month, email, userID, queryFnb })
     return new Promise(async (resolve) => {
       try {
         let yearFilter;
@@ -5283,13 +5283,12 @@ class Model extends BaseModel {
           date: 1,
           company: 1,
           funda: 1,
-          createAt: 1,
           assignee: 1,
           executor: 1,
           total: 1,
           amount: 1,
           avgQuantityPerStaff: 1,
-        };
+        }
 
         let conditionObjYear = {
           year: Number(yearFilter),
@@ -5354,8 +5353,6 @@ class Model extends BaseModel {
                 conditionErObj.funda = { $in: [] };
               }
             }
-            // console.log(conditionObj)
-            // console.log(conditionErObj)
             
             let lookupObj = {
               from: "users",
@@ -5454,8 +5451,6 @@ class Model extends BaseModel {
                   .row(i)
                   .cell(3)
                   .value(`${item?._id.staff?.department?.name}`);
-                // workbook.sheet("DoanhSo").row(i).cell(5).value(item?.number);
-                // workbook.sheet("DoanhSo").row(i).cell(6).value(item?.avgTotalPerStaff);
                 workbook
                   .sheet("DoanhSo")
                   .row(i)
@@ -5563,9 +5558,6 @@ class Model extends BaseModel {
                     year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                     month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                     date: 1,
-                    // year : {$year : "$createAt"},
-                    // month : {$month : "$createAt"},
-                    createAt: 1,
                     company : 1,
                     funda : 1,
                     mistake : 1,
@@ -5610,9 +5602,6 @@ class Model extends BaseModel {
                       year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                       month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                       date: 1,
-                      // year : {$year : "$createAt"},
-                      // month : {$month : "$createAt"},
-                      createAt: 1,
                       company : 1,
                       funda : 1,
                       mistake : 1,
@@ -5718,7 +5707,7 @@ class Model extends BaseModel {
         console.log({ error });
         return resolve({ error: true, message: error.message, status: 500 });
       }
-    });
+    })
   }
 
   /**
