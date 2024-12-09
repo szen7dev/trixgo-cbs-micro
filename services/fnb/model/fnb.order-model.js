@@ -5264,7 +5264,7 @@ class Model extends BaseModel {
    * https://docs.google.com/document/d/1hRYD5pLK7G3n37-Cs-N732cifa1Z3-W1dV8sTSRInfY/edit
    */
   exportExcel({ option, companyID, year, month, email, userID, queryFnb }) {
-    console.log({ option, companyID, year, month, userID, queryFnb })
+    // console.log({ option, companyID, year, month, userID, queryFnb })
     return new Promise(async (resolve) => {
       try {
         let yearFilter;
@@ -5278,8 +5278,9 @@ class Model extends BaseModel {
         }
 
         let projectObj = {
-          year: { $year: "$createAt" },
-          month: { $month: "$createAt" },
+          year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+          month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+          date: 1,
           company: 1,
           funda: 1,
           createAt: 1,
@@ -5311,9 +5312,7 @@ class Model extends BaseModel {
           model: "user",
         };
 
-        if(!option){
-          // if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) || FNB_ACC.taichinh.includes(email.toString())){  
-            
+        if(!option){            
             let conditionGroup = {};
             let conditionPopulate = {}, sortBy = { "_id.month": -1, avgQuantityPerStaff: -1 };
   
@@ -5355,8 +5354,8 @@ class Model extends BaseModel {
                 conditionErObj.funda = { $in: [] };
               }
             }
-            console.log(conditionObj)
-            console.log(conditionErObj)
+            // console.log(conditionObj)
+            // console.log(conditionErObj)
             
             let lookupObj = {
               from: "users",
@@ -5516,14 +5515,7 @@ class Model extends BaseModel {
                 data: result?.Location,
                 status: 200,
               });
-            });
-          // } else {
-          //   return resolve({
-          //     error: true,
-          //     message: "Bạn không có quyền",
-          //     status: 500,
-          //   });
-          // }
+            })
         }else{
           let listDataErr = await FNB_MISTAKE_COLL.aggregate([
             {
@@ -5548,12 +5540,7 @@ class Model extends BaseModel {
 
           let listData  = await FNB_MISTAKE_COLL.find({ 
             company: ObjectID(companyID),
-            $where: `return this.createAt.getFullYear() === ${Number(yearFilter)}`,
-            // $where: `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(yearFilter)}`,
-            // createAt: {
-            //     $gte: moment(fromDate).toDate(),
-            //     $lte: moment(toDate).toDate(),
-            // }
+            $where: `return this.date.getFullYear() === ${Number(yearFilter)}`,
           })
           .populate({
               path: "funda mistake executor userCreate",
@@ -5563,7 +5550,7 @@ class Model extends BaseModel {
                   select: "fullname"
               }
           })
-          .sort({createAt: -1})
+          .sort({date: -1})
 
           let listDataErrCombine3 = await FNB_MISTAKE_COLL.aggregate([
             {
@@ -5573,8 +5560,11 @@ class Model extends BaseModel {
             },
             {
                 $project :  {
-                    year : {$year : "$createAt"},
-                    month : {$month : "$createAt"},
+                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                    date: 1,
+                    // year : {$year : "$createAt"},
+                    // month : {$month : "$createAt"},
                     createAt: 1,
                     company : 1,
                     funda : 1,
@@ -5617,8 +5607,11 @@ class Model extends BaseModel {
               },
               {
                   $project :  {
-                      year : {$year : "$createAt"},
-                      month : {$month : "$createAt"},
+                      year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                      month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                      date: 1,
+                      // year : {$year : "$createAt"},
+                      // month : {$month : "$createAt"},
                       createAt: 1,
                       company : 1,
                       funda : 1,
@@ -5679,7 +5672,7 @@ class Model extends BaseModel {
             var i = 3;
             listData?.forEach((item, index) => {
                 workbook.sheet("ChiTietLoi").row(i).cell(1).value(Number(index+1));
-                workbook.sheet("ChiTietLoi").row(i).cell(2).value(item.createAt);
+                workbook.sheet("ChiTietLoi").row(i).cell(2).value(item?.date);
                 workbook.sheet("ChiTietLoi").row(i).cell(3).value(item?.executor?.fullname);
                 workbook.sheet("ChiTietLoi").row(i).cell(4).value(item?.funda?.name);
                 workbook.sheet("ChiTietLoi").row(i).cell(5).value((item?.funda?.manager?.fullname));
@@ -5900,7 +5893,7 @@ class Model extends BaseModel {
                   .cell(1)
                   .value(Number(index + 1));
                 workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                workbook.sheet("Order").row(i).cell(3).value(item.createAt);
+                workbook.sheet("Order").row(i).cell(3).value(item?.createAt);
                 workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
                 workbook
                   .sheet("Order")
@@ -6128,9 +6121,12 @@ class Model extends BaseModel {
               }
 
               let projectObj = {
-                year: { $year: "$createAt" },
-                month: { $month: "$createAt" },
-                day: { $dayOfMonth: "$createAt" },
+                year : {$year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                month : {$month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                day : {$dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                // year: { $year: "$createAt" },
+                // month: { $month: "$createAt" },
+                // day: { $dayOfMonth: "$createAt" },
                 company: 1,
                 funda: 1,
                 createAt: 1,
@@ -7041,63 +7037,6 @@ class Model extends BaseModel {
       }
     });
   }
-
-  /**
-   * Dev: HiepNH
-   * Func: Tải Khách hàng tiềm năng
-   * Date: 4/2/2023
-   */
-  // exportExcel3({ companyID, email, year, month, userID }) {
-  //     // console.log({ companyID, email, year, month, userID })
-  //     const that = this
-  //     return new Promise(async resolve => {
-  //         try {
-  //             if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) ){
-  //             // if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString()) ){
-  //                 // console.log('1111111111111')
-  //                 let { data: listData } = await that.getListByProperty({ companyID, option: 8, userID })
-
-  //                 // Modify the workbook.
-  //                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_loyalty_customer.xlsx')))
-  //                 .then(async workbook => {
-  //                     var i = 3;
-  //                     listData?.forEach((item, index) => {
-  //                         workbook.sheet("Customer").row(i).cell(1).value(Number(index+1));
-  //                         workbook.sheet("Customer").row(i).cell(2).value(item?._id?.customer?.name);
-  //                         workbook.sheet("Customer").row(i).cell(3).value(item?._id?.customer?.funda?.name);
-  //                         workbook.sheet("Customer").row(i).cell(4).value(item?._id?.customer?.phone);
-  //                         workbook.sheet("Customer").row(i).cell(5).value(item?.numberOfOrders);
-  //                         workbook.sheet("Customer").row(i).cell(6).value(item?.numberOfProducts);
-  //                         workbook.sheet("Customer").row(i).cell(7).value(item?.total);
-  //                         workbook.sheet("Customer").row(i).cell(8).value(item?.discount);
-  //                         workbook.sheet("Customer").row(i).cell(9).value(item?.salesoff);
-  //                         workbook.sheet("Customer").row(i).cell(10).value(item?.credit);
-  //                         workbook.sheet("Customer").row(i).cell(11).value(item?.amount);
-  //                         workbook.sheet("Customer").row(i).cell(12).value(item?._id?.customer?.note);
-  //                         i++
-  //                     });
-
-  //                     const now = new Date();
-  //                     const filePath = '../../../files/temporary_uploads/';
-  //                     const fileName = `BaoCaoKhachHang_${now.getTime()}.xlsx`;
-  //                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-  //                     await workbook.toFileAsync(pathWriteFile);
-  //                     const result = await uploadFileS3(pathWriteFile, fileName);
-
-  //                     fs.unlinkSync(pathWriteFile);
-  //                     return resolve({ error: false, data: result?.Location, status: 200 })
-  //                 })
-  //             }else{
-  //                 // console.log('2222222222222222')
-  //                 return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
-  //             }
-  //         } catch (error) {
-  //             console.log({ error })
-  //             return resolve({ error: true, message: error.message, status: 500 });
-  //         }
-  //     })
-  // }
 }
 
 exports.MODEL = new Model();

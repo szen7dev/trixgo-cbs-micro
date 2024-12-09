@@ -797,7 +797,7 @@ class Model extends BaseModel {
                                         name: `${item._id.staff.fullname} ngày ${item._id.day}/${month}/${year}`, 
                                         date: `${year}-${month}-${item._id.day}`, 
                                         type: 2, 
-                                        shiftType: 1, 
+                                        shiftType: 1, // Ca ngày
                                         official: item._id.official, 
                                         note: 'Ca chính-Ca ngày', 
                                         hours: item.workingHours, 
@@ -815,7 +815,7 @@ class Model extends BaseModel {
                                         type: 2, 
                                         shiftType: 2, 
                                         official: item._id.official, 
-                                        note: 'Ca chính-Ca đêm', 
+                                        note: 'Ca chính-Ca đêm', // Ca đêm
                                         hours: item.workingHours, 
                                         unitprice: item.workingHours != 0 ? item.amount/item.workingHours : 0,
                                         assigneeID: item._id.staff._id, 
