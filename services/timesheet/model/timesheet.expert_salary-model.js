@@ -23,7 +23,7 @@ const {
   validateParamsObjectID
 }  = require('../../../tools/utils/utils');
 const stringUtils					    = require('../../../tools/utils/string_utils')
-const { SALARY_RESET_PERMISSION }       = require('../helper/timesheet.keys-constant')
+const { SALARY_RESET_PERMISSION, SALARY_DOWNLOAD_ALL_PERMISSION } = require('../helper/timesheet.keys-constant')
 
 
 /**
@@ -2002,15 +2002,7 @@ class Model extends BaseModel {
      */
     getInfo({ expertSalaryID, userID, select, populates }) {
         return new Promise(async (resolve) => {
-            try {
-                // Record Traffic
-                // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                //     appID: "61e049cffdebf77b072d1b14",
-                //     userID
-                // })
-                
+            try {                
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -2891,30 +2883,35 @@ class Model extends BaseModel {
     exportExcel({ option, companyID, year, month, userID }) {
        return new Promise(async resolve => {
            try {
-            let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                appID: "61e049cffdebf77b072d1b14",
-                userID
-            })
+            // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+            //     appID: "61e049cffdebf77b072d1b14",
+            //     userID
+            // })
 
-            if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+            // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
+                
+            // }else{
+            //     return resolve({ error: true, message: "Can't get data", status: 403 });
+            // }
 
-                // TỔNG HỢP LƯƠNG TOÀN BỘ CÔNG TY
-                if(option == 1){
+            // TỔNG HỢP LƯƠNG TOÀN BỘ CÔNG TY
+            if(option == 1){
+                if(SALARY_DOWNLOAD_ALL_PERMISSION.includes(email)){
                     let conditionMatchObj = {}
                     if(year && !isNaN(year)){
                         conditionMatchObj.year = Number(year)
                     }
-    
+
                     if(month && !isNaN(month)){
                         conditionMatchObj.month = Number(month)
                     }
-    
+
                     let conditionPopulate1 = {
                         path: '_id.project',
                         select: '_id name',
                         model: 'department'
                     }
-    
+
                     let conditionPopulate2 = {
                         path: '_id.human',
                         select: '_id fullname department position',
@@ -2925,7 +2922,7 @@ class Model extends BaseModel {
                             model: 'department',
                         },
                     }
-    
+
                     let rawData = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                         {
                             $match: {
@@ -2982,11 +2979,11 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-    
+
                     if(rawData.length){
                         await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData, conditionPopulate1)
                     }
-    
+
                     let rawData2 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                         {
                             $match: {
@@ -3042,10 +3039,10 @@ class Model extends BaseModel {
                             }
                         },
                     ])
-    
+
                     if(rawData2.length){
                         await TIMESHEET__EXPERT_SALARY_COLL.populate(rawData2, conditionPopulate2)
-    
+
                         // Sắp xếp dữ liệu
                         rawData2.sort((a, b) => {
                             const departmentA = a._id.human.department?.name || ""; // Lấy tên department
@@ -3059,64 +3056,64 @@ class Model extends BaseModel {
                             return fullnameA.localeCompare(fullnameB);
                         });
                     }
-    
+
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/salary_combine.xlsx')))
                         .then(async workbook => {
-    
+
                             var i = 4
                             rawData.forEach((item, index) =>{
                                 workbook.sheet('TongHop').row(2).cell(i).value(`${item._id.project.name}`)
                                 workbook.sheet('TongHop').row(3).cell(i).value(Number(item?.human))
-    
+
                                 workbook.sheet('TongHop').row(5).cell(i).value(Number(item?.salary))
                                 workbook.sheet('TongHop').row(6).cell(i).value(Number(item?.onLeaveSalary))
                                 workbook.sheet('TongHop').row(7).cell(i).value(Number(item?.overtimeSalary))
                                 workbook.sheet('TongHop').row(8).cell(i).value(Number(item?.revenueBonus))
                                 workbook.sheet('TongHop').row(9).cell(i).value(Number(item?.reward))
                                 workbook.sheet('TongHop').row(10).cell(i).value(Number(item?.mealAllowance))
-    
+
                                 workbook.sheet('TongHop').row(12).cell(i).value(Number(item?.punishment))
                                 workbook.sheet('TongHop').row(13).cell(i).value(Number(item?.insurance))
                                 workbook.sheet('TongHop').row(14).cell(i).value(Number(item?.pitax))
                                 workbook.sheet('TongHop').row(15).cell(i).value(Number(item?.union))
                                 workbook.sheet('TongHop').row(16).cell(i).value(Number(item?.share))
                                 workbook.sheet('TongHop').row(17).cell(i).value(Number(item?.other))
-    
+
                                 workbook.sheet('TongHop').row(20).cell(i).value(Number(item?.paid))
                                 workbook.sheet('TongHop').row(21).cell(i).value(Number(item?.advance))
-    
+
                                 i++
                             })
-    
+
                             var i = 3
                             rawData2.forEach((item, index) =>{
                                 workbook.sheet('TongHop2').row(i).cell(1).value(index + 1)
                                 workbook.sheet('TongHop2').row(i).cell(2).value(item?._id?.human?.fullname)
                                 workbook.sheet('TongHop2').row(i).cell(3).value(item?._id?.human?.department?.name)
-    
+
                                 workbook.sheet('TongHop2').row(i).cell(5).value(Number(item?.salary))
                                 workbook.sheet('TongHop2').row(i).cell(6).value(Number(item?.onLeaveSalary))
                                 workbook.sheet('TongHop2').row(i).cell(7).value(Number(item?.overtimeSalary))
                                 workbook.sheet('TongHop2').row(i).cell(8).value(Number(item?.revenueBonus))
                                 workbook.sheet('TongHop2').row(i).cell(9).value(Number(item?.reward))
                                 workbook.sheet('TongHop2').row(i).cell(10).value(Number(item?.mealAllowance))
-    
+
                                 workbook.sheet('TongHop2').row(i).cell(11).formula(`=SUM(E${i}:J${i})`)
-    
+
                                 workbook.sheet('TongHop2').row(i).cell(12).value(Number(item?.punishment))
                                 workbook.sheet('TongHop2').row(i).cell(13).value(Number(item?.insurance))
                                 workbook.sheet('TongHop2').row(i).cell(14).value(Number(item?.pitax))
                                 workbook.sheet('TongHop2').row(i).cell(15).value(Number(item?.union))
                                 workbook.sheet('TongHop2').row(i).cell(16).value(Number(item?.share))
                                 workbook.sheet('TongHop2').row(i).cell(17).value(Number(item?.other))
-    
+
                                 workbook.sheet('TongHop2').row(i).cell(18).formula(`=SUM(L${i}:Q${i})`)
                                 workbook.sheet('TongHop2').row(i).cell(19).formula(`=K${i}-R${i}`)
-    
+
                                 workbook.sheet('TongHop2').row(i).cell(20).value(Number(item?.paid))
                                 workbook.sheet('TongHop2').row(i).cell(21).value(Number(item?.advance))
                                 workbook.sheet('TongHop2').row(i).cell(22).formula(`=S${i}-T${i}-U${i}`)
-    
+
                                 i++
                             })
                 
@@ -3124,417 +3121,417 @@ class Model extends BaseModel {
                             const filePath = '../../../files/temporary_uploads/';
                             const fileName = `salary_combine${now.getTime()}.xlsx`;
                             const pathWriteFile = path.resolve(__dirname, filePath, fileName)
-    
+
                             await workbook.toFileAsync(pathWriteFile)
                             const result = await uploadFileS3(pathWriteFile, fileName)
-    
+
                             fs.unlinkSync(pathWriteFile);
                             return resolve({ error: false, data: result?.Location, status: 200 })
                     })
+                }else{
+                    return resolve({ error: true, message: 'Bạn không có quyền' })
                 }
+            }
 
-                // TỔNG HỢP KPI TOÀN BỘ CÔNG TY (không gồm nhượng quyền)
-                else if(option == 2 || option == 3){
-                    let listFunda
-                    if(option == 2 ){
-                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 1}).select('name manager')
-                    }else{
-                        listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 2}).select('name manager')
-                    }
-                    // console.log(listFunda)
-                    // console.log(listFunda.length)
-
-                    // Danh sách lỗi nhân viên: Không bao gồm các lỗi do Quản lý gán
-                    let listMistake = await FNB_MISTAKE_COLL.aggregate([
-                        {
-                            $match: {
-                                company: ObjectID(companyID),
-                                funda: {$in: listFunda.map(item=>ObjectID(item._id))},
-                                userCreate: {$nin: listFunda.map(item=>ObjectID(item.manager))}, // Không lấy các lỗi do các Quản lý tự gán
-                                status: 1, // Chỉ lấy hoàn thành
-                            }
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                date: 1,
-                                funda: 1,
-                                amount: 1,
-                                total: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(year),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { funda: "$funda" },
-                                amount: { $sum: "$amount" },
-                            }
-                        },
-                    ])
-                    
-                    let conditionPopulate1 = {
-                        path: '_id.funda',
-                        select: '_id name',
-                        model: 'funda',
-                        populate: {
-                            path: 'manager',
-                            select: '_id fullname',
-                            model: 'user',
-                        },
-                    }
-
-                    // Doanh số cơ sở
-                    let listData = await FNB_ORDER_COLL.aggregate([
-                        {
-                            $match: {
-                                company: ObjectID(companyID),
-                                funda: {$in: listFunda.map(item=>ObjectID(item._id))},
-                                status: 5, // Chỉ lấy đơn hoàn thành
-                            }
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                date: 1,
-                                funda: 1,
-                                amount: 1,
-                                total: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(year),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { funda: "$funda" },
-                                total: { $sum: "$total" },
-                            }
-                        },
-                        {
-                            $sort: {"_id.funda": 1}
-                        },
-                    ])
-                    if(listData.length){
-                        await FNB_ORDER_COLL.populate(listData, conditionPopulate1)
-                    }
-                    // console.log(listData)
-
-                    // Lương cơ sở
-                    let listData2 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
-                        {
-                            $match: {
-                                company: ObjectID(companyID),
-                                funda: {$in: listFunda.map(item=>ObjectID(item._id))},
-                                parent: { $exists: true, $ne: null },
-                                type: 2, // Sản xuất
-                            }
-                        },
-                        {
-                            $project : {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                funda: 1,
-                                date: 1,
-                                salary: 1,
-                                subAllowance13: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(year),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { funda: "$funda" },
-                                salary: { $sum: "$salary" },
-                                subAllowance13: { $sum: "$subAllowance13" },
-                            }
-                        },
-                    ])
-
-                    let arr1 = [], arr2 = [], arr3 = []
-                    listMistake.forEach(item=>{
-                        let key = item._id.funda;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
-                        }
-                        arr1[key].push(item)
-                    })
-
-                    listData2.forEach(item=>{
-                        let key = item._id.funda;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
-
-                    let arrHuman = listData.map(item => item?._id?.funda?.manager?.fullname)
-                    let arrNew = Array.from(
-                        arrHuman.reduce((acc, name) => {
-                          acc.set(name, (acc.get(name) || 0) + 1);
-                          return acc;
-                        }, new Map())
-                      ).map(([name, number]) => ({ name, number }));
-                    //   console.log(arrNew)
-
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/kpi_combine.xlsx')))
-                        .then(async workbook => {
-
-                            var i = 4
-                            arrNew.forEach((item, index) =>{
-                                workbook.sheet('TongHop').row(i).cell(1).value(index + 1)
-                                workbook.sheet('TongHop').row(i).cell(2).value(item.name)
-                                workbook.sheet('TongHop').row(i).cell(3).value(`T${month}_${year}`)
-                                workbook.sheet('TongHop').row(i).cell(4).value(Number(item.number))
-                              
-                                i++
-                            })
-
-                            var i = 4
-                            listData.forEach((item, index) =>{
-                                workbook.sheet('KPI').row(i).cell(1).value(index + 1)
-                                workbook.sheet('KPI').row(i).cell(2).value(item?._id?.funda?.name)
-                                workbook.sheet('KPI').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
-                                workbook.sheet('KPI').row(i).cell(4).value(`T${month}_${year}`)
-                                workbook.sheet('KPI').row(i).cell(8).value(Number(500000)) // Tạm tính KPI nguyên liệu
-
-                                if(arr1[item?._id?.funda?._id]){
-                                    workbook.sheet('KPI').row(i).cell(15).value(Number(arr1[item?._id?.funda?._id][0].amount))
-                                }
-
-                                workbook.sheet('1.DoanhSo').row(i).cell(1).value(index + 1)
-                                workbook.sheet('1.DoanhSo').row(i).cell(2).value(item?._id?.funda?.name)
-                                workbook.sheet('1.DoanhSo').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
-                                workbook.sheet('1.DoanhSo').row(i).cell(4).value(`T${month}_${year}`)
-                                workbook.sheet('1.DoanhSo').row(i).cell(5).value(Number(item?.total))
-
-                                workbook.sheet('2.NhanSu').row(i).cell(1).value(index + 1)
-                                workbook.sheet('2.NhanSu').row(i).cell(2).value(item?._id?.funda?.name)
-                                workbook.sheet('2.NhanSu').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
-                                workbook.sheet('2.NhanSu').row(i).cell(4).value(`T${month}_${year}`)
-                                workbook.sheet('2.NhanSu').row(i).cell(5).value(Number(item?.total))
-
-                                if(arr2[item?._id?.funda?._id]){
-                                    workbook.sheet('2.NhanSu').row(i).cell(8).value(Number(arr2[item?._id?.funda?._id][0].subAllowance13))
-                                    workbook.sheet('2.NhanSu').row(i).cell(9).value(Number(arr2[item?._id?.funda?._id][0].salary))
-                                }
-                              
-                                i++
-                            })
-                
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `kpi_combine${now.getTime()}.xlsx`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
-    
-                            await workbook.toFileAsync(pathWriteFile)
-                            const result = await uploadFileS3(pathWriteFile, fileName)
-    
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 })
-                    })
-
-                    // return resolve({ error: false, message: "Hoàn thành", data: listData, status: 200 });
+            // TỔNG HỢP KPI TOÀN BỘ CÔNG TY (không gồm nhượng quyền)
+            else if(option == 2 || option == 3){
+                let listFunda
+                if(option == 2 ){
+                    listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 1}).select('name manager')
+                }else{
+                    listFunda = await ITEM__FUNDA_COLL.find({company: ObjectID(companyID), internal: 2}).select('name manager')
                 }
+                // console.log(listFunda)
+                // console.log(listFunda.length)
 
-                // TỔNG HỢP ĐÁNH GIÁ NHÂN VIÊN
-                else if(option == 4){
-                    let listData1 = await FNB_MISTAKE_COLL.aggregate([
-                        {
-                          $match: {
+                // Danh sách lỗi nhân viên: Không bao gồm các lỗi do Quản lý gán
+                let listMistake = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                        $match: {
                             company: ObjectID(companyID),
+                            funda: {$in: listFunda.map(item=>ObjectID(item._id))},
+                            userCreate: {$nin: listFunda.map(item=>ObjectID(item.manager))}, // Không lấy các lỗi do các Quản lý tự gán
                             status: 1, // Chỉ lấy hoàn thành
-                          },
-                        },
-                        {
-                          $project: {
-                            year: { $year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
-                            month: { $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             date: 1,
                             funda: 1,
-                            executor: 1,
-                            grade: 1,
                             amount: 1,
                             total: 1,
-                          },
-                        },
-                        {
-                          $match: {
+                        }
+                    },
+                    {
+                        $match: {
                             year: Number(year),
                             month: Number(month),
-                          },
-                        },
-                        {
-                          $group: {
-                            _id: { executor: "$executor", grade: "$grade" }, // Gom nhóm theo executor và grade
-                            count: { $sum: 1 }, // Đếm số tài liệu trong từng nhóm
-                            amount: { $sum: "$amount" }, // Tính tổng amount nếu cần
-                          },
-                        },
-                        {
-                          $addFields: {
-                            multiplier: {
-                              $switch: {
-                                branches: [
-                                  { case: { $eq: ["$_id.grade", 1] }, then: 0.3 },
-                                  { case: { $eq: ["$_id.grade", 2] }, then: 0.5 },
-                                  { case: { $eq: ["$_id.grade", 3] }, then: 1 },
-                                  { case: { $eq: ["$_id.grade", 4] }, then: 2 },
-                                ],
-                                default: 0,
-                              },
-                            },
-                          },
-                        },
-                        {
-                          $group: {
-                            // _id: null, // Tổng hợp toàn bộ
-                            _id: { human: "$_id.executor" }, 
-                            factorSum: { $sum: { $multiply: ["$count", "$multiplier"] } }, // Tính tổng factor sum
-                          },
-                        },
-                        // {
-                        //     $sort: {"factorSum": -1}
-                        // }
-                    ])
-                    
-                    let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                        {
-                            $match: {
-                                company: ObjectID(companyID),
-                                parent: { $exists: true, $ne: null },
-                                hours: {$gt: 0},
-                                type: 2, // Sản xuất
-                            }
-                        },
-                        {
-                            $project : {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                funda: 1,
-                                date: 1,
-                                assignee: 1,
-                                hours: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(year),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { human: "$assignee" },
-                                hours: { $sum: "$hours" },
-                            }
-                        },
-                        {
-                            $sort: {"hours": -1}
                         }
-                    ])
-                    // console.log(listData1)
-                    // console.log(listData2)
-
-                    let listUser = await AUTH__USER_COLL.find({
-                        _id: {
-                          $in: [
-                            ...listData1.map(item => item._id.human), 
-                            ...listData2.map(item => item._id.human)
-                          ]
+                    },
+                    {
+                        $group: {
+                            _id: { funda: "$funda" },
+                            amount: { $sum: "$amount" },
                         }
-                    })
-                    .select('fullname department position')
-                    .populate(
-                        {
-                            path: 'department',
-                            select: '_id name',
-                        }
-                    ) 
-
-                    let arr1 = [], arr2 = [], arr3 = []
-                    listData1.forEach(item=>{
-                        let key = item._id.human;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
-                        }
-                        arr1[key].push(item)
-                    })
-
-                    listData2.forEach(item=>{
-                        let key = item._id.human;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
-
-                    // return resolve({ error: false, message: "Hoàn thành", data: listData2, status: 200 });
-
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_achievement_points.xlsm')))
-                        .then(async workbook => {
-
-                            var i = 3
-                            listUser.forEach((item, index) =>{
-                                workbook.sheet('TongHop').row(i).cell(1).value(index + 1)
-                                workbook.sheet('TongHop').row(i).cell(2).value(item?.fullname)
-                                workbook.sheet('TongHop').row(i).cell(3).value(item?.department?.name)
-                                workbook.sheet('TongHop').row(i).cell(4).value(`T${month}_${year}`)
-
-                                let factor = 0, hour = 0
-                                if(arr1[item?._id]){
-                                    factor = Number(arr1[item?._id][0].factorSum)
-                                    workbook.sheet('TongHop').row(i).cell(5).value(Number(arr1[item?._id][0].factorSum))
-                                }
-
-                                if(arr2[item?._id]){
-                                    hour = Number(arr2[item?._id][0].hours)
-
-                                    workbook.sheet('TongHop').row(i).cell(6).value(Number(arr2[item?._id][0].hours))
-                                }
-
-                                workbook.sheet('TongHop').row(i).cell(5).value(Number(factor))
-                                workbook.sheet('TongHop').row(i).cell(6).value(Number(hour))
-
-                                if(hour != 0){
-                                    workbook.sheet('TongHop').row(i).cell(7).formula(`=E${i}/F${i}`)
-                                }else{
-                                    workbook.sheet('TongHop').row(i).cell(7).value(0)
-                                }
-
-                                // workbook.sheet('TongHop').row(i).cell(7).formula(`=E${i}/F${i}`)
-                                // workbook.sheet('TongHop').row(i).cell(7).formula(`=IF(F${i}<>0;E${i}/F${i};0)`)
-                              
-                                i++
-                            })
-
-                            const now = new Date();
-                            const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `achievement_points${now.getTime()}.xlsm`;
-                            const pathWriteFile = path.resolve(__dirname, filePath, fileName)
-    
-                            await workbook.toFileAsync(pathWriteFile)
-                            const result = await uploadFileS3(pathWriteFile, fileName)
-    
-                            fs.unlinkSync(pathWriteFile);
-                            return resolve({ error: false, data: result?.Location, status: 200 })
-                    })
+                    },
+                ])
+                
+                let conditionPopulate1 = {
+                    path: '_id.funda',
+                    select: '_id name',
+                    model: 'funda',
+                    populate: {
+                        path: 'manager',
+                        select: '_id fullname',
+                        model: 'user',
+                    },
                 }
-            }else{
-                return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                // Doanh số cơ sở
+                let listData = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            funda: {$in: listFunda.map(item=>ObjectID(item._id))},
+                            status: 5, // Chỉ lấy đơn hoàn thành
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            date: 1,
+                            funda: 1,
+                            amount: 1,
+                            total: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { funda: "$funda" },
+                            total: { $sum: "$total" },
+                        }
+                    },
+                    {
+                        $sort: {"_id.funda": 1}
+                    },
+                ])
+                if(listData.length){
+                    await FNB_ORDER_COLL.populate(listData, conditionPopulate1)
+                }
+                // console.log(listData)
+
+                // Lương cơ sở
+                let listData2 = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            funda: {$in: listFunda.map(item=>ObjectID(item._id))},
+                            parent: { $exists: true, $ne: null },
+                            type: 2, // Sản xuất
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            funda: 1,
+                            date: 1,
+                            salary: 1,
+                            subAllowance13: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { funda: "$funda" },
+                            salary: { $sum: "$salary" },
+                            subAllowance13: { $sum: "$subAllowance13" },
+                        }
+                    },
+                ])
+
+                let arr1 = [], arr2 = [], arr3 = []
+                listMistake.forEach(item=>{
+                    let key = item._id.funda;
+                    if (!Array.isArray(arr1[key])) {
+                        arr1[key] = [];
+                    }
+                    arr1[key].push(item)
+                })
+
+                listData2.forEach(item=>{
+                    let key = item._id.funda;
+                    if (!Array.isArray(arr2[key])) {
+                        arr2[key] = [];
+                    }
+                    arr2[key].push(item)
+                })
+
+                let arrHuman = listData.map(item => item?._id?.funda?.manager?.fullname)
+                let arrNew = Array.from(
+                    arrHuman.reduce((acc, name) => {
+                      acc.set(name, (acc.get(name) || 0) + 1);
+                      return acc;
+                    }, new Map())
+                  ).map(([name, number]) => ({ name, number }));
+                //   console.log(arrNew)
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/kpi_combine.xlsx')))
+                    .then(async workbook => {
+
+                        var i = 4
+                        arrNew.forEach((item, index) =>{
+                            workbook.sheet('TongHop').row(i).cell(1).value(index + 1)
+                            workbook.sheet('TongHop').row(i).cell(2).value(item.name)
+                            workbook.sheet('TongHop').row(i).cell(3).value(`T${month}_${year}`)
+                            workbook.sheet('TongHop').row(i).cell(4).value(Number(item.number))
+                          
+                            i++
+                        })
+
+                        var i = 4
+                        listData.forEach((item, index) =>{
+                            workbook.sheet('KPI').row(i).cell(1).value(index + 1)
+                            workbook.sheet('KPI').row(i).cell(2).value(item?._id?.funda?.name)
+                            workbook.sheet('KPI').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
+                            workbook.sheet('KPI').row(i).cell(4).value(`T${month}_${year}`)
+                            workbook.sheet('KPI').row(i).cell(8).value(Number(500000)) // Tạm tính KPI nguyên liệu
+
+                            if(arr1[item?._id?.funda?._id]){
+                                workbook.sheet('KPI').row(i).cell(15).value(Number(arr1[item?._id?.funda?._id][0].amount))
+                            }
+
+                            workbook.sheet('1.DoanhSo').row(i).cell(1).value(index + 1)
+                            workbook.sheet('1.DoanhSo').row(i).cell(2).value(item?._id?.funda?.name)
+                            workbook.sheet('1.DoanhSo').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
+                            workbook.sheet('1.DoanhSo').row(i).cell(4).value(`T${month}_${year}`)
+                            workbook.sheet('1.DoanhSo').row(i).cell(5).value(Number(item?.total))
+
+                            workbook.sheet('2.NhanSu').row(i).cell(1).value(index + 1)
+                            workbook.sheet('2.NhanSu').row(i).cell(2).value(item?._id?.funda?.name)
+                            workbook.sheet('2.NhanSu').row(i).cell(3).value(item?._id?.funda?.manager?.fullname)
+                            workbook.sheet('2.NhanSu').row(i).cell(4).value(`T${month}_${year}`)
+                            workbook.sheet('2.NhanSu').row(i).cell(5).value(Number(item?.total))
+
+                            if(arr2[item?._id?.funda?._id]){
+                                workbook.sheet('2.NhanSu').row(i).cell(8).value(Number(arr2[item?._id?.funda?._id][0].subAllowance13))
+                                workbook.sheet('2.NhanSu').row(i).cell(9).value(Number(arr2[item?._id?.funda?._id][0].salary))
+                            }
+                          
+                            i++
+                        })
+            
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `kpi_combine${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+
+                        await workbook.toFileAsync(pathWriteFile)
+                        const result = await uploadFileS3(pathWriteFile, fileName)
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 })
+                })
+
+                // return resolve({ error: false, message: "Hoàn thành", data: listData, status: 200 });
+            }
+
+            // TỔNG HỢP ĐÁNH GIÁ NHÂN VIÊN
+            else if(option == 4){
+                let listData1 = await FNB_MISTAKE_COLL.aggregate([
+                    {
+                      $match: {
+                        company: ObjectID(companyID),
+                        status: 1, // Chỉ lấy hoàn thành
+                      },
+                    },
+                    {
+                      $project: {
+                        year: { $year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
+                        month: { $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
+                        date: 1,
+                        funda: 1,
+                        executor: 1,
+                        grade: 1,
+                        amount: 1,
+                        total: 1,
+                      },
+                    },
+                    {
+                      $match: {
+                        year: Number(year),
+                        month: Number(month),
+                      },
+                    },
+                    {
+                      $group: {
+                        _id: { executor: "$executor", grade: "$grade" }, // Gom nhóm theo executor và grade
+                        count: { $sum: 1 }, // Đếm số tài liệu trong từng nhóm
+                        amount: { $sum: "$amount" }, // Tính tổng amount nếu cần
+                      },
+                    },
+                    {
+                      $addFields: {
+                        multiplier: {
+                          $switch: {
+                            branches: [
+                              { case: { $eq: ["$_id.grade", 1] }, then: 0.3 },
+                              { case: { $eq: ["$_id.grade", 2] }, then: 0.5 },
+                              { case: { $eq: ["$_id.grade", 3] }, then: 1 },
+                              { case: { $eq: ["$_id.grade", 4] }, then: 2 },
+                            ],
+                            default: 0,
+                          },
+                        },
+                      },
+                    },
+                    {
+                      $group: {
+                        // _id: null, // Tổng hợp toàn bộ
+                        _id: { human: "$_id.executor" }, 
+                        factorSum: { $sum: { $multiply: ["$count", "$multiplier"] } }, // Tính tổng factor sum
+                      },
+                    },
+                    // {
+                    //     $sort: {"factorSum": -1}
+                    // }
+                ])
+                
+                let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            hours: {$gt: 0},
+                            type: 2, // Sản xuất
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            funda: 1,
+                            date: 1,
+                            assignee: 1,
+                            hours: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { human: "$assignee" },
+                            hours: { $sum: "$hours" },
+                        }
+                    },
+                    {
+                        $sort: {"hours": -1}
+                    }
+                ])
+                // console.log(listData1)
+                // console.log(listData2)
+
+                let listUser = await AUTH__USER_COLL.find({
+                    _id: {
+                      $in: [
+                        ...listData1.map(item => item._id.human), 
+                        ...listData2.map(item => item._id.human)
+                      ]
+                    }
+                })
+                .select('fullname department position')
+                .populate(
+                    {
+                        path: 'department',
+                        select: '_id name',
+                    }
+                ) 
+
+                let arr1 = [], arr2 = [], arr3 = []
+                listData1.forEach(item=>{
+                    let key = item._id.human;
+                    if (!Array.isArray(arr1[key])) {
+                        arr1[key] = [];
+                    }
+                    arr1[key].push(item)
+                })
+
+                listData2.forEach(item=>{
+                    let key = item._id.human;
+                    if (!Array.isArray(arr2[key])) {
+                        arr2[key] = [];
+                    }
+                    arr2[key].push(item)
+                })
+
+                // return resolve({ error: false, message: "Hoàn thành", data: listData2, status: 200 });
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/export_achievement_points.xlsm')))
+                    .then(async workbook => {
+
+                        var i = 3
+                        listUser.forEach((item, index) =>{
+                            workbook.sheet('TongHop').row(i).cell(1).value(index + 1)
+                            workbook.sheet('TongHop').row(i).cell(2).value(item?.fullname)
+                            workbook.sheet('TongHop').row(i).cell(3).value(item?.department?.name)
+                            workbook.sheet('TongHop').row(i).cell(4).value(`T${month}_${year}`)
+
+                            let factor = 0, hour = 0
+                            if(arr1[item?._id]){
+                                factor = Number(arr1[item?._id][0].factorSum)
+                                workbook.sheet('TongHop').row(i).cell(5).value(Number(arr1[item?._id][0].factorSum))
+                            }
+
+                            if(arr2[item?._id]){
+                                hour = Number(arr2[item?._id][0].hours)
+
+                                workbook.sheet('TongHop').row(i).cell(6).value(Number(arr2[item?._id][0].hours))
+                            }
+
+                            workbook.sheet('TongHop').row(i).cell(5).value(Number(factor))
+                            workbook.sheet('TongHop').row(i).cell(6).value(Number(hour))
+
+                            if(hour != 0){
+                                workbook.sheet('TongHop').row(i).cell(7).formula(`=E${i}/F${i}`)
+                            }else{
+                                workbook.sheet('TongHop').row(i).cell(7).value(0)
+                            }
+
+                            // workbook.sheet('TongHop').row(i).cell(7).formula(`=E${i}/F${i}`)
+                            // workbook.sheet('TongHop').row(i).cell(7).formula(`=IF(F${i}<>0;E${i}/F${i};0)`)
+                          
+                            i++
+                        })
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `achievement_points${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+
+                        await workbook.toFileAsync(pathWriteFile)
+                        const result = await uploadFileS3(pathWriteFile, fileName)
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 })
+                })
             }
            } catch (error) {
                return resolve({ error: true, message: error.message, status: 500 });
