@@ -20,7 +20,8 @@ const ITEM__FUNDA_COLL            			   = require('../../item/database/item.fund
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-const ITEM__DOCTYPE_COLL                        = require('../../item/database/item.doctype-coll');
+const ITEM__DOCTYPE_COLL                       = require('../../item/database/item.doctype-coll');
+const AUTH__USER_COLL                          = require('../../auth/database/auth.user-coll')
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
@@ -323,7 +324,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit = 10, lastestID, select, populates, sortKey, month, year, userID, option }) {
-        // console.log({ companyID, fundasID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, userID, option })
+        // console.log({ companyID, fundasID, executorID, orderID, mistakeID, fromDate, toDate, salesChannel, keyword, limit, lastestID, select, populates, sortKey, month, year, userID, option })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -334,7 +335,7 @@ class Model extends BaseModel {
 
                 let conditionObj = {company: companyID}
                 let sortBy;
-                let keys	 = ['createAt__-1', '_id__-1'];
+                let keys	 = ['date__-1', '_id__-1'];
                 // console.log(keys)
                 // keys = JSON.parse(sortKey)
                 // console.log(keys)
@@ -372,7 +373,7 @@ class Model extends BaseModel {
 
                 // Phân loại theo thời khoảng
                 if(fromDate && toDate){
-                    conditionObj.createAt = {
+                    conditionObj.date = {
                         $gte: new Date(fromDate),
                         $lte: new Date(toDate),
                     }
@@ -381,7 +382,7 @@ class Model extends BaseModel {
                 // Chi tiết lỗi của userID
                 if(option && option == 1){
                     if(month && year){
-                        conditionObj.$where = `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(year)}`
+                        conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
                     }
                 }	
 
@@ -403,12 +404,12 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    const regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.$or = [
-                        { name: regSearch },
-                        { sign: regSearch },
-                    ]
+                    let listUser = await AUTH__USER_COLL.find({company: companyID, fullname: new RegExp(keyword, 'i')})
+                    .select('_id fullname')
+                    .limit(20)
+
+                    conditionObj.executor = {$in: listUser.map(item=>item._id)}
                 }
 
                 if(select && typeof select === 'string'){
@@ -504,7 +505,7 @@ class Model extends BaseModel {
 
                     // Phân loại theo thời khoảng
                     if(fromDate && toDate){
-                        conditionObj.createAt = {
+                        conditionObj.date = {
                             $gte: new Date(fromDate),
                             $lte: new Date(toDate),
                         }
@@ -717,9 +718,9 @@ class Model extends BaseModel {
                             },
                             {
                                 $project : {
-                                    year : {$year : "$createAt"},
-                                    month : {$month : "$createAt"},
-                                    hour : {$hour : "$createAt"},
+                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    hour : {$hour: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                                     funda : 1,
                                     mistake : 1,
                                     order : 1,
@@ -891,9 +892,9 @@ class Model extends BaseModel {
                     },
                     {
                         $project :  {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            createAt: 1,
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            date: 1,
                             company : 1,
                             funda : 1,
                             mistake : 1,
@@ -917,7 +918,6 @@ class Model extends BaseModel {
                     }
                 ])
                 await FNB_MISTAKE_COLL.populate(listDataErrCombine3, conditionPopulate)
-                // console.log(listDataErrCombine3)
 
                 let listDataErrCombine4 = await FNB_MISTAKE_COLL.aggregate([
                     {
@@ -927,9 +927,9 @@ class Model extends BaseModel {
                     },
                     {
                         $project :  {
-                            year : {$year : "$createAt"},
-                            month : {$month : "$createAt"},
-                            createAt: 1,
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            date: 1,
                             company : 1,
                             funda : 1,
                             mistake : 1,
@@ -956,7 +956,7 @@ class Model extends BaseModel {
 
                 let listData  = await FNB_MISTAKE_COLL.find({ 
                     company: ObjectID(companyID),
-                    createAt: {
+                    date: {
                         $gte: moment(fromDate).toDate(),
                         $lte: moment(toDate).toDate(),
                     }
@@ -969,8 +969,7 @@ class Model extends BaseModel {
                         select: "fullname"
                     }
                 })
-                .sort({createAt: -1})
-                // console.log(listData)
+                .sort({date: -1})
                
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_mistake.xlsx')))
@@ -1000,7 +999,7 @@ class Model extends BaseModel {
                     var i = 3;
                     listData?.forEach((item, index) => {
                         workbook.sheet("ErrorReport").row(i).cell(1).value(Number(index+1));
-                        workbook.sheet("ErrorReport").row(i).cell(2).value(item.createAt);
+                        workbook.sheet("ErrorReport").row(i).cell(2).value(item?.date);
                         workbook.sheet("ErrorReport").row(i).cell(3).value(item?.executor?.fullname);
                         workbook.sheet("ErrorReport").row(i).cell(4).value(item?.funda?.name);
                         workbook.sheet("ErrorReport").row(i).cell(5).value((item?.funda?.manager?.fullname));
