@@ -20,26 +20,6 @@ module.exports = {
             name                : { type: "string" },
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
-            phone               : { type: "string", optional: true },
-            bankAccount         : { type: "string", optional: true },
-            // loyaltyPointsRate   : { type: "string", optional: true },
-            address             : { type: "string", optional: true },
-            initialDay          : { type: "string", optional: true },
-            parentID            : { type: "string", optional: true },
-            area                : { type: "string" },
-            campaign            : { type: "number", optional: true },
-            internal            : { type: "number", optional: true },
-            materialExpenseRate : { type: "number", optional: true },
-            materialExpense     : { type: "number", optional: true },
-            planExpense         : { type: "number", optional: true },
-            utilityExpense      : { type: "number", optional: true },
-            humanExpense        : { type: "number", optional: true },
-            otherExpense        : { type: "number", optional: true },
-            platform            : { type: "number", optional: true },
-            activeCampaign      : { type: "array", optional: true },
-            // trainStaffSalar     : { type: "string", optional: true },
-            // trialStaffSalary    : { type: "string", optional: true },
-            // officialStaffSalar  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
@@ -67,43 +47,16 @@ module.exports = {
             name                : { type: "string", optional: true },
             sign                : { type: "string", optional: true },
             description         : { type: "string", optional: true },
-            address             : { type: "string", optional: true },
-            phone               : { type: "string", optional: true },
-            bankAccount         : { type: "string", optional: true },
-            bankQrcode          : { type: "array", optional: true },
-            initialDay          : { type: "string", optional: true },
-            area                : { type: "string", optional: true },
-            members             : { type: "array", optional: true },
-            membersRemove       : { type: "array", optional: true },
-            admins              : { type: "array", optional: true },
-            adminsRemove        : { type: "array", optional: true },
-            getNotification     : { type: "array", optional: true },
-            getNotificationRemove     : { type: "array", optional: true },
-            imagesID            : { type: "array", optional: true },
-            campaign            : { type: "number", optional: true },
-            internal            : { type: "number", optional: true },
-            materialExpenseRate : { type: "number", optional: true },
-            materialExpense     : { type: "number", optional: true },
-            planExpense         : { type: "number", optional: true },
-            utilityExpense      : { type: "number", optional: true },
-            humanExpense        : { type: "number", optional: true },
-            otherExpense        : { type: "number", optional: true },
-            activeCampaign      : { type: "array", optional: true },
-            lunchStaffAllowance : { type: "number", optional: true },
-            platform            : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove,
-                    adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  } = ctx.params;
+                const { fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  } = ctx.params;
 
                     console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members,
-                    admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense,
-                    otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ userID, fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
