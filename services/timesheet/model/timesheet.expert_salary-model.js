@@ -1101,19 +1101,13 @@ class Model extends BaseModel {
 
                 // Danh sách phân loại lỗi theo nhân sự
                 let listData = await FNB_MISTAKE_COLL.aggregate([
-                    // {
-                    //     $match: {
-                    //         company: ObjectID(companyID),
-                    //         executor: { $exists: true, $ne: null }
-                    //     }
-                    // },
                     {
                         $match: conditionObj
                     },
                     {
                         $project: {
-                            year : {$year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
-                            month : {$month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             executor: 1,
                             amount: 1,
                             bonus: 1
