@@ -169,10 +169,11 @@ class Model extends BaseModel {
                     if(!isNaN(bonus) && Number(bonus) > 0){
                         dataUpdate.bonus = Number(bonus);
                     }
-                }else{
-                    if(info.userCreate.toString() != userID.toString())
-                        return resolve({ error: true, message: 'Bạn không có quyền cập nhật', keyError: KEY_ERROR.PARAMS_INVALID });
                 }
+                // else{
+                //     if(info.userCreate.toString() != userID.toString())
+                //         return resolve({ error: true, message: 'Bạn không có quyền cập nhật', keyError: KEY_ERROR.PARAMS_INVALID });
+                // }
              
                 if(!isNaN(type)){
                     dataUpdate.type = Number(type);
