@@ -189,7 +189,6 @@ class Model extends BaseModel {
     /**
      * Name: Get info subject 
      * Author: Depv 
-     * Code: F02504
      */
     getInfo({ subjectID, userID, select, populates, ctx }) { 
         return new Promise(async (resolve) => {

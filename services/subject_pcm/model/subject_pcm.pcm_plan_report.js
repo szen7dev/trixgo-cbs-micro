@@ -222,7 +222,6 @@ class Model extends BaseModel {
     /**
      * Name: Get info pcm_plan_report
      * Author: Depv
-     * Code: F02504
      */
     getInfo({ reportID, select, populates= {} }) {
         return new Promise(async (resolve) => {

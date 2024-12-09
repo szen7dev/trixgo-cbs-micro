@@ -924,7 +924,6 @@ module.exports = {
 
 		//---------------------------🏁 START SEARVICE TRAINING 🏁--------------------------------//
 		//______traning subject
-		//F02504 || F02505
 		[`GET ${CF_ROUTINGS_TRAINING.TRAINING__SUBJECT}`] :
 		[`${CF_DOMAIN_SERVICES.TRAINING}.${CF_ACTIONS_TRAINING.TRAINING__SUBJECT_GET_INFO_AND_GET_LIST}`],
 

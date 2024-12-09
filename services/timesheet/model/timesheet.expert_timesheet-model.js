@@ -87,7 +87,7 @@ class Model extends BaseModel {
                         select: '_id department position contacts',
                         populate: {
                             path: 'contacts',
-                            select: 'name sallary'
+                            select: 'name sallary annualWorkingHours'
                         }
                     })
 
@@ -102,11 +102,11 @@ class Model extends BaseModel {
                         dataInsert.position = infoParent.assignee.position;
 
                         if(infoParent.assignee?.contacts && infoParent.assignee?.contacts[0]?.sallary){
-                            unitprice2 = Number(Number(infoParent.assignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
+                            unitprice2 = Number(Number(infoParent.assignee.contacts[0].sallary * 12 / infoParent.assignee.contacts[0].annualWorkingHours)).toFixed(0)
                         }
                     }
                 }
-                // console.log({_________1: unitprice2})
+                // console.log({_________cre1: unitprice2})
 
                 if(assigneeID){
                     dataInsert.assignee = assigneeID;
@@ -115,7 +115,7 @@ class Model extends BaseModel {
                     .select('department position contacts')
                     .populate({
                         path: 'contacts',
-                        select: 'name sallary'
+                        select: 'name sallary annualWorkingHours'
                     })
 
                     if(infoAssignee){
@@ -123,7 +123,7 @@ class Model extends BaseModel {
                         dataInsert.position = infoAssignee.position;
 
                         if(infoAssignee.contacts && infoAssignee?.contacts[0]?.sallary){
-                            unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
+                            unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / infoAssignee.contacts[0].annualWorkingHours)).toFixed(0)
                         }
                     }
                 }else{
@@ -131,7 +131,7 @@ class Model extends BaseModel {
                         dataInsert.assignee = userCreate;
                     }
                 }
-                // console.log({_________2: unitprice2})
+                // console.log({_________cre2: unitprice2})
 
                 // Bảng chấm công Cha
                 let infoProject;
@@ -297,7 +297,7 @@ class Model extends BaseModel {
                     .select('department position contacts')
                     .populate({
                         path: 'contacts',
-                        select: 'name sallary'
+                        select: 'name sallary annualWorkingHours'
                     })
 
                     if(infoAssignee){
@@ -305,7 +305,7 @@ class Model extends BaseModel {
                         dataUpdate.position = infoAssignee.position;
                     }
                 }
-                // console.log({unitprice2})
+                // console.log({_________up1: unitprice2})
 
                 if(location && location != ""){
                     dataUpdate.location = location;
@@ -349,8 +349,9 @@ class Model extends BaseModel {
 
                     // Nếu chọn thay đổi người thực hiện
                     if(checkObjectIDs(assigneeID) && infoAssignee.contacts && infoAssignee.contacts[0]?.sallary){
-                        unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / 2504)).toFixed(0)
+                        unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / infoAssignee.contacts[0].annualWorkingHours)).toFixed(0)
                     }
+                    // console.log({_________up2: unitprice2})
 
                     let amount  = Number(hours2 * unitprice2).toFixed(0)
     
@@ -376,20 +377,19 @@ class Model extends BaseModel {
                             .select('contacts')
                             .populate({
                                 path: 'contacts',
-                                select: 'company sallaryBasic'
+                                select: 'company sallaryBasic annualWorkingHours'
                             })
-                            // console.log(infoUser)
     
                             let unitprice2New = 0
                             if(infoUser.contacts && infoUser.contacts.length){
                                 for(const contact of infoUser.contacts){
                                     if(contact.company.toString() === infoTimeSheetID.company.toString() && contact.sallaryBasic){
                                         // Tính toán cho 1 năm 365 ngày - 52 ngày nghỉ (tuần nghỉ 1 ngày)*8h. Tổng lương cơ bản * 12 tháng
-                                        unitprice2New = Number(unitprice2New) + Number(contact.sallaryBasic*12/(8*(365-52)))
+                                        unitprice2New = Number(unitprice2New) + Number(contact.sallaryBasic * 12 / contact.annualWorkingHours)
                                     }
                                 }
                             }
-                            // console.log(unitprice2New)
+                            // console.log({_________up3: unitprice2New})
     
                             let amount  = hours * Number(unitprice2New).toFixed(0)
                             dataUpdate.unitprice = Number(unitprice2New).toFixed(0)
