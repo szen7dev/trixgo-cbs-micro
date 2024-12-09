@@ -1076,10 +1076,9 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     downloadTemplateExcel({ option, companyID, parentID, salaryID, templateID, year, userID }) {
-        // console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
+        console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
         return new Promise(async resolve => {
             try {
-                // let option = 3
                 /**
                  * IMPORT SỔ QUỸ
                  */
@@ -1364,6 +1363,9 @@ class Model extends BaseModel {
                         let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID)
                         .select('type name status date note salary userCreate admins members')
 
+                        /**
+                         * KIỂM SOÁT QUYỀN ĐƯỢC TẢI
+                         */
                         let checkPermission = 1 // Không có quyền
                         let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
                             appID: "61e049cffdebf77b072d1b14",
@@ -2008,7 +2010,10 @@ class Model extends BaseModel {
                                 fs.unlinkSync(pathWriteFile);
                                 return resolve({ error: false, data: result?.Location, status: 200 })
                             })
-                        }else{
+                        }
+                        
+                        // Không có quyền thì tải về dữ liệu trắng
+                        else{
                             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/Book1.xlsx')))
                             .then(async workbook => {
                                 const now = new Date();
