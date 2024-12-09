@@ -174,6 +174,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     contractExpire: { type: Date, default: null },
     //_________Ngày bổ nhiệm/miễn nhiệm
     appointDate: { type: Date, default: null },
+    //_________Số giờ quy định làm việc/1 năm: =(365-52 tuần*1 ngày nghỉ/tuần)*8
+    annualWorkingHours: { type: Number, default: 2504 },
     //_________Lương
     sallary: { type: Number, default: 0 },
     //_________Hệ số lương
