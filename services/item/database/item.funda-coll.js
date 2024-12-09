@@ -317,22 +317,20 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     nightShiftStaffSalary: { type: Number, default: 0 },
     //_________Phụ cấp ăn trưa/bữa
     lunchStaffAllowance: { type: Number, default: 0 },
-    //_________Chi phí Food App
-    appExpense: { type: Number, default: 0 },
-    //_________Chi phí Food App
-    appExpense: { type: Number, default: 0 },
-    //_________Chi phí nguyên liệu (%)
-    materialExpenseRate: { type: Number, default: 30 },
-    //_________Chi phí nguyên liệu (giá trị)
-    materialExpense: { type: Number, default: 0 },
+
     //_________Chi phí thuê mặt bằng
     planExpense: { type: Number, default: 0 },
     //_________Chi phí điện nước, internet
     utilityExpense: { type: Number, default: 0 },
     //_________Chi phí lương nhân viên
     humanExpense: { type: Number, default: 0 },
-    //_________Chi phí khác
-    otherExpense: { type: Number, default: 0 },
+    //_________% Chi phí Bán hàng
+    sellingExpenseRate: { type: Number, default: 40 },
+    //_________% Chi phí nguyên liệu
+    materialExpenseRate: { type: Number, default: 30 },
+    //_________% Chi phí khác
+    otherExpenseRate: { type: Number, default: 1 },
+    
     /**
      * PHÂN QUYỀN TRUY CẬP
      */

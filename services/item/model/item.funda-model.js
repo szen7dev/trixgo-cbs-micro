@@ -40,7 +40,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, project }){
+	insert({ companyID, parentID, userID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(area))
@@ -150,14 +150,6 @@ class Model extends BaseModel {
                  /**
                  * Chi phí vận hành
                  */
-                if(!isNaN(materialExpenseRate)){
-                    dataInsert.materialExpenseRate = Number(materialExpenseRate);
-                }
-
-                if(!isNaN(materialExpense)){
-                    dataInsert.materialExpense = Number(materialExpense);
-                }
-
                 if(!isNaN(planExpense)){
                     dataInsert.planExpense = Number(planExpense);
                 }
@@ -170,8 +162,16 @@ class Model extends BaseModel {
                     dataInsert.humanExpense = Number(humanExpense);
                 }
 
-                if(!isNaN(otherExpense)){
-                    dataInsert.otherExpense = Number(otherExpense);
+                if(!isNaN(sellingExpenseRate)){
+                    dataInsert.sellingExpenseRate = Number(sellingExpenseRate);
+                }
+
+                if(!isNaN(materialExpenseRate)){
+                    dataInsert.materialExpenseRate = Number(materialExpenseRate);
+                }
+
+                if(!isNaN(otherExpenseRate)){
+                    dataInsert.otherExpenseRate = Number(otherExpenseRate);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -202,8 +202,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
-        // console.log({ fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance })
+	update({ userID, fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -348,33 +347,6 @@ class Model extends BaseModel {
                     dataUpdate.loyaltyPointsRate = +loyaltyPointsRate;
                 }
 
-                /**
-                 * Chi phí vận hành
-                 */
-                if(!isNaN(materialExpenseRate)){
-                    dataUpdate.materialExpenseRate = Number(materialExpenseRate);
-                }
-
-                if(!isNaN(materialExpense)){
-                    dataUpdate.materialExpense = Number(materialExpense);
-                }
-
-                if(!isNaN(planExpense)){
-                    dataUpdate.planExpense = Number(planExpense);
-                }
-
-                if(!isNaN(utilityExpense)){
-                    dataUpdate.utilityExpense = Number(utilityExpense);
-                }
-
-                if(!isNaN(humanExpense)){
-                    dataUpdate.humanExpense = Number(humanExpense);
-                }
-
-                if(!isNaN(otherExpense)){
-                    dataUpdate.otherExpense = Number(otherExpense);
-                }
-
                 if(trainStaffSalar && !isNaN(trainStaffSalar)){
                     dataUpdate.trainStaffSalar = Number(trainStaffSalar)
                 }
@@ -395,6 +367,33 @@ class Model extends BaseModel {
                 }
 
                 /**
+                 * Chi phí vận hành
+                 */
+                if(!isNaN(planExpense)){
+                    dataUpdate.planExpense = Number(planExpense);
+                }
+
+                if(!isNaN(utilityExpense)){
+                    dataUpdate.utilityExpense = Number(utilityExpense);
+                }
+
+                if(!isNaN(humanExpense)){
+                    dataUpdate.humanExpense = Number(humanExpense);
+                }
+
+                if(!isNaN(sellingExpenseRate)){
+                    dataUpdate.sellingExpenseRate = Number(sellingExpenseRate);
+                }
+
+                if(!isNaN(materialExpenseRate)){
+                    dataUpdate.materialExpenseRate = Number(materialExpenseRate);
+                }
+
+                if(!isNaN(otherExpenseRate)){
+                    dataUpdate.otherExpenseRate = Number(otherExpenseRate);
+                }
+
+                /**
                  * Cập nhật nhiều dữ liệu addToSet cùng 1 lúc
                  */
                 if(dataAddToset){
@@ -407,7 +406,6 @@ class Model extends BaseModel {
                 if(dataPullAll){
                     dataUpdate.$pullAll = dataPullAll;
                 }
-                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
@@ -418,14 +416,7 @@ class Model extends BaseModel {
                     let info = await ITEM__DEPARTMENT_COLL.findByIdAndUpdate(project, {
                         funda: fundaID
                     }, { new: true });
-
-                    // console.log(info)
                 }
-
-                // // Cập nhật Quản lý vào các lỗi đã gán
-                // if(checkObjectIDs(infoAfterUpdate.manager)){
-                //     await FNB_MISTAKE_COLL.updateMany({funda: fundaID},{$set: {manager: infoAfterUpdate.manager}})
-                // }
 
                 /**
                  * CẬP NHẬT LẠI FNB
