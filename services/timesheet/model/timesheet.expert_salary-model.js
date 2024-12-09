@@ -2959,7 +2959,6 @@ class Model extends BaseModel {
                         },
                         {
                             $group: {
-                                // _id: { project: "$project", position: "$position" },
                                 _id: { project: "$project" },
                                 human: { $sum: 1 },
                                 salary: { $sum: "$salary" },
@@ -3768,6 +3767,144 @@ class Model extends BaseModel {
 
                         fs.unlinkSync(pathWriteFile);
                         return resolve({ error: false, data: result?.Location, status: 200 })
+                })
+            }
+
+            // BÁO CÁO NHANH LÃI LỖ
+            else if(option == 6){
+
+                // Doanh số cơ sở
+                let listData = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $facet: {
+                            data1:[
+                                {
+                                    $match: {
+                                        company: ObjectID(companyID),
+                                        status: 5, // Chỉ lấy đơn hoàn thành
+                                        salesChannel: 1, // DS off
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        date: 1,
+                                        funda: 1,
+                                        total: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(year),
+                                        month: Number(month),
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { funda: "$funda" },
+                                        total: { $sum: "$total" },
+                                    }
+                                },
+                            ],
+                            data2:[
+                                {
+                                    $match: {
+                                        company: ObjectID(companyID),
+                                        status: 5, // Chỉ lấy đơn hoàn thành
+                                        salesChannel: {$in: [2,3,4,5,6,7,8,9,10,11]}, // DS off
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        date: 1,
+                                        funda: 1,
+                                        total: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(year),
+                                        month: Number(month),
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { funda: "$funda" },
+                                        total: { $sum: "$total" },
+                                    }
+                                },
+                            ],
+                        }
+                    }
+                ])
+
+                let arr1 = [], arr2 = [], arr3 = []
+                listData[0].data1.forEach(item=>{
+                    let key = item._id.funda;
+                    if (!Array.isArray(arr1[key])) {
+                        arr1[key] = [];
+                    }
+                    arr1[key].push(item)
+                })
+
+                listData[0].data2.forEach(item=>{
+                    let key = item._id.funda;
+                    if (!Array.isArray(arr2[key])) {
+                        arr2[key] = [];
+                    }
+                    arr2[key].push(item)
+                })
+
+                let arr = [...listData[0].data1.map(item=>ObjectID(item._id.funda)), ...listData[0].data2.map(item=>ObjectID(item._id.funda))]
+
+                let listFunda = await ITEM__FUNDA_COLL.find({_id: {$in: arr}})
+                .select('_id name sign manager planExpense utilityExpense humanExpense sellingExpenseRate materialExpenseRate otherExpenseRate')
+                .populate({
+                    path: 'manager',
+                    select: 'fullname'
+                })
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/quick_report.xlsx')))
+                    .then(async workbook => {
+
+                    var i = 4
+                    listFunda.forEach((item, index) =>{
+                        workbook.sheet('BaoCao').row(i).cell(1).value(index + 1)
+                        workbook.sheet('BaoCao').row(i).cell(2).value(item?.name)
+                        workbook.sheet('BaoCao').row(i).cell(3).value(item?.manager?.fullname)
+                        workbook.sheet('BaoCao').row(i).cell(4).value(`T${month}_${year}`)
+                        workbook.sheet('BaoCao').row(i).cell(8).value(Number(3500000))
+                        workbook.sheet('BaoCao').row(i).cell(9).value(Number(item?.planExpense))
+                        workbook.sheet('BaoCao').row(i).cell(10).value(Number(item?.utilityExpense))
+                        workbook.sheet('BaoCao').row(i).cell(11).value(Number(item?.humanExpense))
+                        workbook.sheet('BaoCao').row(i).cell(12).value(Number(item?.sellingExpenseRate))
+                        workbook.sheet('BaoCao').row(i).cell(13).value(Number(item?.materialExpenseRate))
+                        workbook.sheet('BaoCao').row(i).cell(14).value(Number(item?.otherExpenseRate))
+
+                        if(arr1[item?._id]){
+                            workbook.sheet('BaoCao').row(i).cell(5).value(Number(arr1[item?._id][0].total))
+                        }
+
+                        if(arr2[item?._id]){
+                            workbook.sheet('BaoCao').row(i).cell(6).value(Number(arr2[item?._id][0].total))
+                        }
+                        
+                        i++
+                    })
+        
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    const fileName = `quick_report${now.getTime()}.xlsx`;
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName)
+
+                    await workbook.toFileAsync(pathWriteFile)
+                    const result = await uploadFileS3(pathWriteFile, fileName)
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 })                    
                 })
             }
 
