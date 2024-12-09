@@ -407,7 +407,6 @@ class Model extends BaseModel {
 
                     let listUser = await AUTH__USER_COLL.find({company: companyID, fullname: new RegExp(keyword, 'i')})
                     .select('_id fullname')
-                    .limit(20)
 
                     conditionObj.executor = {$in: listUser.map(item=>item._id)}
                 }
@@ -418,7 +417,6 @@ class Model extends BaseModel {
 
                     select = JSON.parse(select);
                 }
-                // console.log(conditionObj)
  
                 let conditionObjOrg = { ...conditionObj };
 
