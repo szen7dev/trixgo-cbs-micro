@@ -2880,7 +2880,7 @@ class Model extends BaseModel {
      * Name: Download Template Excel
      * Date: 25/11/2024
      */
-    exportExcel({ option, companyID, year, month, userID }) {
+    exportExcel({ option, companyID, year, month, email, userID }) {
        return new Promise(async resolve => {
            try {
             // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
