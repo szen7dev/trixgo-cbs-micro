@@ -1085,14 +1085,16 @@ class Model extends BaseModel {
 
                 let conditionObj = {
                     company: ObjectID(companyID),
-                    executor: { $exists: true, $ne: null }
+                    executor: { $exists: true, $ne: null },
+                    status: 1 // Các lỗi hoàn thành
                 }
 
                 // Cập nhật theo Cơ sở
                 if(infoSalary.funda){
                     conditionObj = {
                         funda: ObjectID(infoSalary.funda),
-                        executor: { $exists: true, $ne: null }
+                        executor: { $exists: true, $ne: null },
+                        status: 1 // Các lỗi hoàn thành
                     }
                 }
 
