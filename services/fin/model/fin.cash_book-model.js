@@ -1371,18 +1371,18 @@ class Model extends BaseModel {
                             appID: "61e049cffdebf77b072d1b14",
                             userID
                         })
+                        if((!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0)){
+                            checkPermission = Number(checkPermission) + 1
+                        }
                         if(infoParent.userCreate.toString() === userID.toString()){
                             checkPermission = Number(checkPermission) + 1
                         }
                         if(infoParent.admins.includes(userID)){
                             checkPermission = Number(checkPermission) + 1
                         }
-                        if(infoParent.members.includes(userID)){
-                            checkPermission = Number(checkPermission) + 1
-                        }
-                        if((!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0)){
-                            checkPermission = Number(checkPermission) + 1
-                        }
+                        // if(infoParent.members.includes(userID)){
+                        //     checkPermission = Number(checkPermission) + 1
+                        // }
 
                         if(checkPermission >= 2){
 
