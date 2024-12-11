@@ -66,6 +66,15 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
         type: Number,
         default: 1
     },
+     /**
+     * Trạng thái
+     * 1-Hoạt động
+     * 2-Hủy
+     */
+    status: {
+        type: Number,
+        default: 1
+    },
     //________Nội dung (*)
     name: String,
     namecv: String,
