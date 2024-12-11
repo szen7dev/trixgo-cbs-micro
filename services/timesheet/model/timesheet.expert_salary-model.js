@@ -232,7 +232,11 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             const that = this
             try {
-                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
+                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID).
+                populate({
+                    path: 'parent',
+                    select: 'status'
+                })
                 if(!infoSalary) {
                     return resolve({
                         error: true,
@@ -241,6 +245,9 @@ class Model extends BaseModel {
                         status: 400
                     })
                 }
+
+                if(infoSalary.parent && infoSalary.parent?.status == 2 )
+                    return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
                 let dataUpdate = {
                     userUpdate: userID,
@@ -275,7 +282,21 @@ class Model extends BaseModel {
                 }
 
                 if(status){
-                    dataUpdate.status = status;
+                    let checkPermission = 1 // Không có quyền
+                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e049cffdebf77b072d1b14",
+                        userID
+                    })
+                    if((!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0)){
+                        checkPermission = Number(checkPermission) + 1
+                    }
+                    if(infoSalary.userCreate.toString() === userID.toString()){
+                        checkPermission = Number(checkPermission) + 1
+                    }
+
+                    if(checkPermission >= 2){
+                        dataUpdate.status = +status;
+                    }
                 }
 
                 if(note && note != ""){
@@ -425,7 +446,7 @@ class Model extends BaseModel {
                 }
                 // console.log(dataUpdate)
 
-                // Kiểm tra quyền cập nhật
+                // Kiểm tra quyền cập nhật: chỉ Admin mới được phân quyền cho người khác
                 const adminsID = [...infoSalary.admins?.map(item => item?.toString())]
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
@@ -1512,8 +1533,10 @@ class Model extends BaseModel {
                 // CẬP NHẬT NHÂN SỰ CÒN THIẾU VÀO BẢNG LƯƠNG TỔNG
                 if(option == 1){
                     if(SALARY_RESET_PERMISSION.includes(email)){
-                        
                         let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
+                        if(infoSalary &&  infoSalary.status == 2)
+                            return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
+
                         let listData2 = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
 
                         let A = [] 
@@ -1808,6 +1831,8 @@ class Model extends BaseModel {
                 // THÊM NHÂN SỰ VÀO BẢNG LƯƠNG
                 else if(option == 6){
                     let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
+                    if(infoSalary &&  infoSalary.status == 2)
+                        return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
                     let month = Number(infoSalary.date.getMonth()) + 1
                     let year = infoSalary.date.getFullYear()
@@ -1890,11 +1915,13 @@ class Model extends BaseModel {
                 // ĐỒNG BỘ BẢNG LƯƠNG TỔNG HỢP
                 else if(option == 7){
                     if(!infoAppUser.error && infoAppUser.data.level == 0){
+                        let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
+                        if(infoSalary && infoSalary.status == 2)
+                            return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
+
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                         let dataUser = listData.map(item=>item.human.toString())
-                        // console.log(listData)
-                        // console.log(dataUser)
 
                         // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
                         await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
@@ -1913,6 +1940,10 @@ class Model extends BaseModel {
 
                 // ĐỒNG BỘ BẢNG LƯƠNG THEO CƠ SỞ: ÁP DỤNG FNB_SHIFT/STORE_SHIFT
                 else if(option == 8){
+                    let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
+                    if(infoSalary &&  infoSalary.status == 2)
+                        return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
+
                     // Danh sách userID trong bảng lương
                     let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
                     let dataUser = listData.map(item=>item.human.toString())
