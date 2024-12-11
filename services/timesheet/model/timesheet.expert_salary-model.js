@@ -1577,53 +1577,9 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Bạn không có quyền cập nhật' })
                     }
                 }
-                
-                // ĐỒNG BỘ BẢNG LƯƠNG TỔNG HỢP
-                else if(option == 2){
-                    if(!infoAppUser.error && infoAppUser.data.level == 0){
-                        // Danh sách userID trong bảng lương
-                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
-                        let dataUser = listData.map(item=>item.human.toString())
-                        // console.log(listData)
-                        // console.log(dataUser)
-
-                        // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
-                        await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
-
-                        // Cập nhật KPI vào các chi tiết của Bảng lương
-                        await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
-
-                        // Tổng hợp các chi tiết lương vào Bảng lương: 
-                        await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
-
-                        return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
-                    }else{
-                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
-                    }
-                }
-                
-                // XÓA BẢNG LƯƠNG: TẠM KHÓA CHỨC NĂNG NÀY!!!!
-                else if(option == 3){
-                    if(!infoAppUser.error && infoAppUser.data.level == 0){
-                        if(SALARY_RESET_PERMISSION.includes(email)){
-                            let numberDetail = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: salaryID})
-                            if(numberDetail == 0){
-                                await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
-                                await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
-                                return resolve({ error: false, data: 'Hành động thành công' })
-                            }else{
-                                return resolve({ error: true, message: 'Hành động thất bại' })
-                            }
-                        }else{
-                            return resolve({ error: true, message: 'Hành động thất bại' })
-                        }
-                    }else{
-                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
-                    }
-                }
 
                 // COPY NHÂN BẢN BẢNG LƯƠNG
-                else if(option == 4){
+                else if(option == 2){
                     if(!infoAppUser.error && infoAppUser.data.level == 0){
                         let infoOld = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
@@ -1702,9 +1658,29 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                     }
                 }
+            
+                // XÓA BẢNG LƯƠNG: TẠM KHÓA CHỨC NĂNG NÀY!!!!
+                else if(option == 3){
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
+                        if(SALARY_RESET_PERMISSION.includes(email)){
+                            let numberDetail = await TIMESHEET__EXPERT_SALARY_COLL.count({parent: salaryID})
+                            if(numberDetail == 0){
+                                await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                                await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                                return resolve({ error: false, data: 'Hành động thành công' })
+                            }else{
+                                return resolve({ error: true, message: 'Hành động thất bại' })
+                            }
+                        }else{
+                            return resolve({ error: true, message: 'Hành động thất bại' })
+                        }
+                    }else{
+                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                    }
+                }
 
                 // COPY PHIẾU KHO: SAU ĐƯA VỀ PHÂN HỆ KHO
-                else if(option == 5){
+                else if(option == 4){
                     let infoOldOrder = await STORE_ORDER_COLL.findById(orderID)
                     if(infoOldOrder){
                         let infoNewOrder = await STORE_ORDER_MODEL.insert({
@@ -1759,7 +1735,7 @@ class Model extends BaseModel {
                 }
 
                 // TẠO BẢNG LƯƠNG CÁC CƠ SỞ THEO THÁNG
-                else if(option == 6){
+                else if(option == 5){
                     if(!infoAppUser.error && infoAppUser.data.level == 0){
                         // Danh sách Admin ứng dụng
                         let listAppUser = await AUTH__APP_USER.getList({
@@ -1821,7 +1797,7 @@ class Model extends BaseModel {
                 }
 
                 // THÊM NHÂN SỰ VÀO BẢNG LƯƠNG
-                else if(option == 7){
+                else if(option == 6){
                     let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
 
                     let month = Number(infoSalary.date.getMonth()) + 1
@@ -1902,6 +1878,30 @@ class Model extends BaseModel {
                     return resolve({ error: false, message: 'Cập nhật thành công' })
                 }
 
+                // ĐỒNG BỘ BẢNG LƯƠNG TỔNG HỢP
+                else if(option == 7){
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
+                        // Danh sách userID trong bảng lương
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
+                        let dataUser = listData.map(item=>item.human.toString())
+                        // console.log(listData)
+                        // console.log(dataUser)
+
+                        // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
+                        await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
+
+                        // Cập nhật KPI vào các chi tiết của Bảng lương
+                        await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
+
+                        // Tổng hợp các chi tiết lương vào Bảng lương: 
+                        await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
+
+                        return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
+                    }else{
+                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                    }
+                }
+
                 // ĐỒNG BỘ BẢNG LƯƠNG THEO CƠ SỞ: ÁP DỤNG FNB_SHIFT/STORE_SHIFT
                 else if(option == 8){
                     // Danh sách userID trong bảng lương
@@ -1938,6 +1938,7 @@ class Model extends BaseModel {
      * Code: 22/3/2024
      */
     remove({ arraysRemove, userID }) {
+        const that = this
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(arraysRemove)) {
@@ -1979,6 +1980,13 @@ class Model extends BaseModel {
                                 numberOfHuman
                             }, { new: true })
                         }
+                    }
+
+                    /**
+                     * CẬP NHẬT VÀO BẢNG LƯƠNG CHA
+                     */
+                    if(info.parent && checkObjectIDs(info.parent)){
+                        await that.updateValue({ expertSalaryID: info.parent, userID })
                     }
 
                     return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });

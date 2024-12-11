@@ -131,7 +131,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, salaryID, orderID, fundaID, arrUser, year, month } = ctx.params;
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
 				const { _id: userID, company, email } = ctx.meta.infoUser;
 
