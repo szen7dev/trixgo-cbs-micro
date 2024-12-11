@@ -1955,28 +1955,34 @@ class Model extends BaseModel {
                     let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
                     if(infoSalary &&  infoSalary.status == 2)
                         return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
+                    
+                    // Chỉ áp dụng cho Bảng lương Trực tiếp
+                    if(infoSalary.type == 2 && checkObjectIDs(fundaID)){
 
-                    // Danh sách userID trong bảng lương
-                    let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
-                    let dataUser = listData.map(item=>item.human.toString())
+                        // Danh sách userID trong bảng lương
+                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
+                        let dataUser = listData.map(item=>item.human.toString())
 
-                    /**
-                     * Cập nhật chấm công vào các Chi tiết của Bảng lương:
-                     * - Tách chính thức
-                     * - Tách thử việc
-                     */
-                    await that.updateValueFundaTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
+                        /**
+                         * Cập nhật chấm công vào các Chi tiết của Bảng lương:
+                         * - Tách chính thức
+                         * - Tách thử việc
+                         */
+                        await that.updateValueFundaTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
 
-                    // Cập nhật KPI vào các chi tiết của Bảng lương
-                    await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
+                        // Cập nhật KPI vào các chi tiết của Bảng lương
+                        await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
 
-                    // Cập nhật Thưởng doanh số vào các chi tiết của Bảng lương
-                    await that.updateRevenueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
+                        // Cập nhật Thưởng doanh số vào các chi tiết của Bảng lương
+                        await that.updateRevenueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
 
-                    // Tổng hợp các chi tiết lương vào Bảng lương: 
-                    await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
+                        // Tổng hợp các chi tiết lương vào Bảng lương: 
+                        await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
 
-                    return resolve({ error: false, message: 'Cập nhật thành công' })
+                        return resolve({ error: false, message: 'Cập nhật thành công' })
+                    }else{
+                        return resolve({ error: true, message: 'Loại bảng lương này không Đồng bộ được theo cơ sở' })
+                    }
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
