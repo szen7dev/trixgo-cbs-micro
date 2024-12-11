@@ -341,7 +341,7 @@ class Model extends BaseModel {
                 // console.log(keys)
 
                 // Gom nhóm theo đơn vị cơ sở
-                if(fundasID && fundasID.length ){
+                if(fundasID && fundasID.length && checkObjectIDs(fundasID)){
                     const validation = validateParamsObjectID({
                         fundasID            : { value: fundasID, isRequire: false },
                     });
