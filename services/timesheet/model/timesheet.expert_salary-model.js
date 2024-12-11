@@ -818,6 +818,54 @@ class Model extends BaseModel {
                 // console.log(arr2)
                 // console.log(arr3)
 
+                // Lương của nhân sự tại các bảng lương khác để giảm trừ đi nếu ở đó đã có: parent != expertSalaryID
+                let listDataSalary = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            $and: [
+                                {parent: { $exists: true, $ne: null }},
+                                {parent: { $ne: ObjectID(expertSalaryID)}}
+                            ]
+                        }
+                    },
+                    {
+                        $project: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            date: 1,
+                            human: 1,
+                            salary: 1,
+                            onLeaveSalary: 1,
+                            overtimeSalary: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(year),
+                            month: Number(month),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { human: '$human' },
+                            salary: { $sum: "$salary" },
+                            onLeaveSalary: { $sum: "$onLeaveSalary" },
+                            overtimeSalary: { $sum: "$overtimeSalary" },
+                        }
+                    },
+                ])
+
+                // console.log(listDataSalary)
+                let arrSalary = []
+                listDataSalary.forEach(item=>{
+                    let key = item._id.human;
+                    if (!Array.isArray(arrSalary[key])) {
+                        arrSalary[key] = [];
+                    }
+                    arrSalary[key].push(item)
+                })
+
                 for(const item of dataUser){
                     let hours1 = 0, hours2 = 0, hours3 = 0, nowds = 0, nowdsos = 0
                     let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
@@ -832,18 +880,30 @@ class Model extends BaseModel {
                             hours1 = Number(arr1[item][0].quantity).toFixed(2)
                             // salary = Number(arr1[item][0].amount).toFixed(0)
                             salary = Math.round((Number(arr1[item][0].amount).toFixed(0))/1000) * 1000
+
+                            if(arrSalary[item]){
+                                salary = Number(salary) - Math.round((Number(arrSalary[item][0].salary).toFixed(0))/1000) * 1000
+                            }
                         }
 
                         if(arr2[item]){
                             hours2 = Number(arr2[item][0].quantity).toFixed(2)
                             // onLeaveSalary = Number(arr2[item][0].amount).toFixed(0)
                             onLeaveSalary = Math.round((Number(arr2[item][0].amount).toFixed(0))/1000) * 1000
+
+                            if(arrSalary[item]){
+                                onLeaveSalary = Number(onLeaveSalary) - Math.round((Number(arrSalary[item][0].onLeaveSalary).toFixed(0))/1000) * 1000
+                            }
                         }
 
                         if(arr3[item]){
                             hours3 = Number(arr3[item][0].quantity).toFixed(2)
                             // overtimeSalary = Number(arr3[item][0].amount).toFixed(0)
                             overtimeSalary = Math.round((Number(arr3[item][0].amount).toFixed(0))/1000) * 1000
+
+                            if(arrSalary[item]){
+                                overtimeSalary = Number(overtimeSalary) - Math.round((Number(arrSalary[item][0].overtimeSalary).toFixed(0))/1000) * 1000
+                            }
                         }
 
                         if(arrDay1[item]){
@@ -1842,7 +1902,9 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
                     // Chỉ áp dụng cho Bảng lương Trực tiếp
-                    if(infoSalary.type == 2 && checkObjectIDs(fundaID)){
+                    if(infoSalary.type == 2 && checkObjectIDs(infoSalary.funda)){
+                        // console.log('==========111111111111111111')
+
                         let month = Number(infoSalary.date.getMonth()) + 1
                         let year = infoSalary.date.getFullYear()
 
@@ -1850,7 +1912,7 @@ class Model extends BaseModel {
                             {
                                 $match: {
                                     company: ObjectID(companyID),
-                                    funda: ObjectID(fundaID),
+                                    funda: ObjectID(infoSalary.funda),
                                     parent: { $exists: true, $ne: null },
                                     assignee: { $exists: true, $ne: null },
                                 }
@@ -1957,7 +2019,8 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
                     
                     // Chỉ áp dụng cho Bảng lương Trực tiếp
-                    if(infoSalary.type == 2 && checkObjectIDs(fundaID)){
+                    if(infoSalary.type == 2 && checkObjectIDs(infoSalary.funda)){
+                        // console.log('==========111111111111111111')
 
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
