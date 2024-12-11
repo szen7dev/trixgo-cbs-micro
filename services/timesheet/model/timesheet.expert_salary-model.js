@@ -769,6 +769,10 @@ class Model extends BaseModel {
                 ])
                 // console.log(listDataDay2)
 
+                /**
+                 * BA
+                 * - Kiểm tra dữ liệu lương đã có ở các cơ sở/bảng lương khác để trừ đi
+                 */
                 let arr1 = [], arr2 = [], arr3 = [], arrDay1 = [], arrDay2 = []
                 listData.forEach(item=>{
                     let key = item._id.assignee;
@@ -1627,11 +1631,14 @@ class Model extends BaseModel {
                         let infoAfterInsert = await this.insertData({
                                 company: companyID,
                                 userCreate: userID,
-                                name: 'New of copy from ...',
-                                namecv: 'New of copy from ...',
+                                name: `New of copy from ${infoOld.name}`,
+                                namecv: `New of copy from ${infoOld.namecv}`,
                                 admins: [userID],
                                 members: [userID],
-                                type: infoOld.type
+                                type: infoOld.type,
+                                official: infoOld.official,
+                                project: infoOld.project,
+                                funda: infoOld.funda,
                         })
 
                         if(infoAfterInsert){
@@ -1828,88 +1835,93 @@ class Model extends BaseModel {
                     }
                 }
 
-                // THÊM NHÂN SỰ VÀO BẢNG LƯƠNG
+                // THÊM NHÂN SỰ VÀO BẢNG LƯƠNG CƠ SỞ
                 else if(option == 6){
                     let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
                     if(infoSalary &&  infoSalary.status == 2)
                         return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
-                    let month = Number(infoSalary.date.getMonth()) + 1
-                    let year = infoSalary.date.getFullYear()
+                    // Chỉ áp dụng cho Bảng lương Trực tiếp
+                    if(infoSalary.type == 2 && checkObjectIDs(fundaID)){
+                        let month = Number(infoSalary.date.getMonth()) + 1
+                        let year = infoSalary.date.getFullYear()
 
-                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                        {
-                            $match: {
-                                company: ObjectID(companyID),
-                                funda: ObjectID(fundaID),
-                                parent: { $exists: true, $ne: null },
-                                assignee: { $exists: true, $ne: null },
-                            }
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                date: 1,
-                                assignee: 1,
-                                hours: 1,
-                                amount: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(year),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { assignee: '$assignee' },
-                            }
-                        },
-                    ])
+                        let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                            {
+                                $match: {
+                                    company: ObjectID(companyID),
+                                    funda: ObjectID(fundaID),
+                                    parent: { $exists: true, $ne: null },
+                                    assignee: { $exists: true, $ne: null },
+                                }
+                            },
+                            {
+                                $project: {
+                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                    date: 1,
+                                    assignee: 1,
+                                    hours: 1,
+                                    amount: 1,
+                                }
+                            },
+                            {
+                                $match: {
+                                    year: Number(year),
+                                    month: Number(month),
+                                }
+                            },
+                            {
+                                $group: {
+                                    _id: { assignee: '$assignee' },
+                                }
+                            },
+                        ])
 
-                    let conditionPopulate = {
-                        path: '_id.assignee',
-                        select: '_id fullname department position',
-                        model: 'user',
-                    }
-                    await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData, conditionPopulate)
-
-                    for(const item of listData){
-
-                        // Kiểm tra xem nhân sự đã tồn tại chưa, chưa thì mới tạo
-                        let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
-                            parent: ObjectID(salaryID),
-                            human: item._id.assignee._id
-                        })
-                        .select('name date funda parent')
-                        // console.log(info)
-
-                        if(!info){
-                            let dataInsertDetail = {
-                                company: infoSalary.company,
-                                userCreate: userID,
-                                name: 'Default',
-                                human: item._id.assignee._id,
-                                parent: salaryID, // Bảng lương cha
-                                project: item._id.assignee.department,
-                                position: item._id.assignee.position,
-                                date: infoSalary.date,
-                                type: infoSalary.type,
-                                funda: infoSalary.funda,
-                            }
-        
-                            await this.insertData(dataInsertDetail)
+                        let conditionPopulate = {
+                            path: '_id.assignee',
+                            select: '_id fullname department position',
+                            model: 'user',
                         }
+                        await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData, conditionPopulate)
+
+                        for(const item of listData){
+
+                            // Kiểm tra xem nhân sự đã tồn tại chưa, chưa thì mới tạo
+                            let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
+                                parent: ObjectID(salaryID),
+                                human: item._id.assignee._id
+                            })
+                            .select('name date funda parent')
+                            // console.log(info)
+
+                            if(!info){
+                                let dataInsertDetail = {
+                                    company: infoSalary.company,
+                                    userCreate: userID,
+                                    name: 'Default',
+                                    human: item._id.assignee._id,
+                                    parent: salaryID, // Bảng lương cha
+                                    project: item._id.assignee.department,
+                                    position: item._id.assignee.position,
+                                    date: infoSalary.date,
+                                    type: infoSalary.type,
+                                    funda: infoSalary.funda,
+                                }
+            
+                                await this.insertData(dataInsertDetail)
+                            }
+                        }
+
+                        // Cập nhật số nhân sự vào Bảng lương cha
+                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(salaryID, {
+                            numberOfHuman: Number(listData.length)
+                        }, { new: true })
+
+                        return resolve({ error: false, message: 'Cập nhật thành công' })
+                    }else{
+                        return resolve({ error: true, message: 'Loại bảng lương này không thêm được Nhân sự cơ sở' })
                     }
-
-                    // Cập nhật số nhân sự vào Bảng lương cha
-                    await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(salaryID, {
-                        numberOfHuman: Number(listData.length)
-                    }, { new: true })
-
-                    return resolve({ error: false, message: 'Cập nhật thành công' })
                 }
 
                 // ĐỒNG BỘ BẢNG LƯƠNG TỔNG HỢP
