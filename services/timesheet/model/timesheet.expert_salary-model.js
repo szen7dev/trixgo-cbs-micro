@@ -805,17 +805,20 @@ class Model extends BaseModel {
                     if(info){
                         if(arr1[item]){
                             hours1 = Number(arr1[item][0].quantity).toFixed(2)
-                            salary = Number(arr1[item][0].amount).toFixed(0)
+                            // salary = Number(arr1[item][0].amount).toFixed(0)
+                            salary = Math.round((Number(arr1[item][0].amount).toFixed(0))/1000) * 1000
                         }
 
                         if(arr2[item]){
                             hours2 = Number(arr2[item][0].quantity).toFixed(2)
-                            onLeaveSalary = Number(arr2[item][0].amount).toFixed(0)
+                            // onLeaveSalary = Number(arr2[item][0].amount).toFixed(0)
+                            onLeaveSalary = Math.round((Number(arr2[item][0].amount).toFixed(0))/1000) * 1000
                         }
 
                         if(arr3[item]){
                             hours3 = Number(arr3[item][0].quantity).toFixed(2)
-                            overtimeSalary = Number(arr3[item][0].amount).toFixed(0)
+                            // overtimeSalary = Number(arr3[item][0].amount).toFixed(0)
+                            overtimeSalary = Math.round((Number(arr3[item][0].amount).toFixed(0))/1000) * 1000
                         }
 
                         if(arrDay1[item]){
@@ -889,8 +892,6 @@ class Model extends BaseModel {
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
                 if(!infoSalary)
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
-
-                // console.log(infoSalary)
 
                 let month = Number(infoSalary.date.getMonth()) + 1
                 let year = infoSalary.date.getFullYear()
@@ -1024,13 +1025,17 @@ class Model extends BaseModel {
                     if(info){
                         if(arr1[item]){
                             hours1 = Number(arr1[item][0].quantity).toFixed(2)
-                            salary = Number(arr1[item][0].amount).toFixed(0)
+                            // salary = Number(arr1[item][0].amount).toFixed(0)
+                            salary = Math.round((Number(arr1[item][0].amount).toFixed(0))/1000) * 1000
                         }
 
                         if(arr2[item]){
                             hours4 = Number(arr2[item][0].quantity).toFixed(2)
-                            mealAllowance = Number(arr2[item][0].amount).toFixed(0)
-                            subAllowance13 = Number(arr2[item][0].amount).toFixed(0) // Đặt làm phụ cấp Thử việc
+                            // mealAllowance = Number(arr2[item][0].amount).toFixed(0)
+                            // subAllowance13 = Number(arr2[item][0].amount).toFixed(0)
+
+                            mealAllowance = Math.round((Number(arr2[item][0].amount).toFixed(0))/1000) * 1000
+                            subAllowance13 = Math.round((Number(arr2[item][0].amount).toFixed(0))/1000) * 1000
                         }
                     }
 
@@ -1057,7 +1062,6 @@ class Model extends BaseModel {
                         remaining,
                         subAllowance13
                     }
-                    // console.log(dataUpdate)
 
                     if(info){
                         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(info._id, dataUpdate, { new: true })
@@ -1150,8 +1154,11 @@ class Model extends BaseModel {
 
                     if(info){
                         if(arr[item]){
-                            reward = Number(arr[item][0].bonus) * info.convertFactor
-                            punishment = Number(arr[item][0].amount) * info.convertFactor
+                            // reward = Number(arr[item][0].bonus) * info.convertFactor
+                            // punishment = Number(arr[item][0].amount) * info.convertFactor
+
+                            reward = Math.round((Number(Number(arr[item][0].bonus) * info.convertFactor).toFixed(0))/1000) * 1000
+                            punishment = Math.round((Number(Number(arr[item][0].amount) * info.convertFactor).toFixed(0))/1000) * 1000
                         }
                         
                         salary = info.salary
@@ -1210,6 +1217,8 @@ class Model extends BaseModel {
     updateRevenueKpi({ dataUser, expertSalaryID, userID, companyID, fundaID }){
         return new Promise(async (resolve) => {
             try {
+
+                // Hàm tính KPI doanh số theo sản phẩm cho Nhân viên
                 function calculateRevenue(totalSold, priceLevels) {
                     let revenue = 0;
                     let remaining = totalSold;
@@ -1424,7 +1433,6 @@ class Model extends BaseModel {
                         }
                     },
                 ])
-                // console.log(listData[0])
 
                 let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1, salaryFactor = 0
 
@@ -1451,6 +1459,8 @@ class Model extends BaseModel {
                 }
 
                 remaining = Number(Number(salaryFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
+
+                // remaining = Math.round((Number(Number(salaryFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)))/1000) * 1000
 
                 let dataUpdate =  {
                     userUpdate: userID, 
@@ -1490,7 +1500,6 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     syncData({ companyID, userID, email, option, salaryID, orderID, arrUser, fundaID, year, month }){
-        // console.log({ companyID, userID, email, option, salaryID, orderID, arrUser, fundaID, year, month })
         const that = this
         return new Promise(async (resolve) => {
             try {
