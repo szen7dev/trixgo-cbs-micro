@@ -232,7 +232,11 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             const that = this
             try {
-                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
+                let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID).
+                populate({
+                    path: 'parent',
+                    select: 'status'
+                })
                 if(!infoSalary) {
                     return resolve({
                         error: true,
@@ -241,6 +245,9 @@ class Model extends BaseModel {
                         status: 400
                     })
                 }
+
+                if(infoSalary.parent && infoSalary.parent?.status == 2 )
+                    return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
                 let dataUpdate = {
                     userUpdate: userID,
@@ -439,7 +446,7 @@ class Model extends BaseModel {
                 }
                 // console.log(dataUpdate)
 
-                // Kiểm tra quyền cập nhật
+                // Kiểm tra quyền cập nhật: chỉ Admin mới được phân quyền cho người khác
                 const adminsID = [...infoSalary.admins?.map(item => item?.toString())]
                 if(adminsID.includes(userID.toString())) {
                     if(admins) {
