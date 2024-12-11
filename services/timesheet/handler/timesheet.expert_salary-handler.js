@@ -63,14 +63,6 @@ module.exports = {
             expertSalaryID      : { type: "string" },
             members             : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
-            status              : { type: "string", optional: true },
-            name                : { type: "string", optional: true},
-            parentID            : { type: "string", optional: true },
-            date                : { type: "string", optional: true },
-            type                : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            projectID           : { type: "string", optional: true },
-            humanID             : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
