@@ -2512,7 +2512,7 @@ class Model extends BaseModel {
     * Code: Hiepnh
     * Date: 25/7/2023
     */
-   exportExcel({ option, companyID, parentID, humanID, year, month, userID, fromDate, toDate }) {
+    exportExcel({ option, companyID, parentID, humanID, year, month, userID, fromDate, toDate }) {
     //    console.log({ option, companyID, parentID, humanID, year, month, userID, fromDate, toDate })
        return new Promise(async resolve => {
            try {
@@ -2590,7 +2590,7 @@ class Model extends BaseModel {
                         company: ObjectID(companyID),
                         assignee: ObjectID(humanID),
                         parent: { $exists: true, $ne: null },
-                        $where: `return this.date.getMonth() === ${Number(yearFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
+                        $where: `return this.date.getMonth() === ${Number(monthFilter - 1)} && this.date.getFullYear() === ${Number(yearFilter)}`
                     })
                     .populate({
                         path: 'work assignee',
@@ -3215,7 +3215,7 @@ class Model extends BaseModel {
                return resolve({ error: true, message: error.message, status: 500 });
            }
        })
-   }
+    }
 }
 
 exports.MODEL = new Model;
