@@ -3366,7 +3366,8 @@ class Model extends BaseModel {
                          workbook.sheet("Note").row(i).cell(4).value(item?.funda?.name)
                          workbook.sheet("Note").row(i).cell(5).value(Number(item.amount))
                          workbook.sheet("Note").row(i).cell(6).value(item?.note)
-                         workbook.sheet("Note").row(i).cell(7).value(`${item?._id}`)
+                         workbook.sheet("Note").row(i).cell(8).value(`${item?._id}`)
+                         workbook.sheet("Note").row(i).cell(7).value(`Tiền mặt`)
  
                         i++
                      })
@@ -3379,7 +3380,8 @@ class Model extends BaseModel {
                          workbook.sheet("Note2").row(i).cell(4).value(item?.funda?.name)
                          workbook.sheet("Note2").row(i).cell(5).value(Number(item.amount))
                          workbook.sheet("Note2").row(i).cell(6).value(item?.note)
-                         workbook.sheet("Note2").row(i).cell(7).value(`${item?._id}`)
+                         workbook.sheet("Note2").row(i).cell(8).value(`${item?._id}`)
+                         workbook.sheet("Note").row(i).cell(7).value(`Chuyển khoản`)
  
                         i++
                      })
