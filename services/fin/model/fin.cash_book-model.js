@@ -3240,28 +3240,34 @@ class Model extends BaseModel {
                     funda: {$in: listData.map(item=>ObjectID(item?.funda?._id))}
                 }
 
-                if(infoParent.date && infoParent.toDate){
-                    conditionObj1.date = {
-                        $gte: new Date(infoParent.date),
-                        $lte: new Date(infoParent.toDate),
-                    }
+                // conditionObj1.date = {
+                //     // $gte: new Date(infoParent.date),
+                //     // $lte: new Date(infoParent.toDate),
+                //     $gte: moment(infoParent.date).toDate(),
+                //     $lte: moment(infoParent.toDate).toDate(),
+                // }
 
-                    conditionObj2.date = {
-                        $gte: new Date(infoParent.date),
-                        $lte: new Date(infoParent.toDate),
-                    }
-                }else{
-                    conditionObj1.date = {
-                        $gte: new Date(infoParent.date),
-                        $lte: new Date(infoParent.date),
-                    }
+                // conditionObj2.date = {
+                //     // $gte: new Date(infoParent.date),
+                //     // $lte: new Date(infoParent.toDate),
+                //     $gte: moment(infoParent.date).toDate(),
+                //     $lte: moment(infoParent.toDate).toDate(),
+                // }
+                // console.log(conditionObj1)
+                // console.log(conditionObj2)
 
-                    conditionObj2.date = {
-                        $gte: new Date(infoParent.date),
-                        $lte: new Date(infoParent.date),
-                    }
+                conditionObj1.date = {
+                    $gte: moment(infoParent.date).utcOffset(7).startOf('day').toDate(),
+                    $lte: moment(infoParent.toDate).utcOffset(7).endOf('day').toDate()
                 }
-                console.log(conditionObj1)
+                
+                conditionObj2.date = {
+                    $gte: moment(infoParent.date).utcOffset(7).startOf('day').toDate(),
+                    $lte: moment(infoParent.toDate).utcOffset(7).endOf('day').toDate()
+                }
+                
+                // console.log(conditionObj1);
+                // console.log(conditionObj2);
 
                 let listData1 = await FNB_ORDER_COLL.aggregate([
                     {
@@ -3287,6 +3293,24 @@ class Model extends BaseModel {
                 ])
                 // console.log(listData1)
                 // console.log(listData2)
+
+                let listOrder1 = await FNB_ORDER_COLL.find(conditionObj1)
+                .select('name sign date funda amount')
+                .populate({
+                    path: 'funda',
+                    select: 'name'
+                })
+                .sort({_id:1})
+
+                let listOrder2 = await FNB_ORDER_COLL.find(conditionObj2)
+                .select('name sign date funda amount')
+                .populate({
+                    path: 'funda',
+                    select: 'name'
+                })
+                .sort({_id:1})
+                // console.log(listOrders.length)
+                // return resolve({ error: false, data: listOrders });
 
                 let arr1 = [], arr2 = []
                 listData1.forEach(item=>{
@@ -3331,6 +3355,34 @@ class Model extends BaseModel {
                             workbook.sheet('Data').row(i).cell(11).formula(`=I${i}-F${i}`)
                         }
 
+                        i++
+                     })
+
+                     var i = 4
+                     listOrder1.forEach((item, index) =>{
+                         workbook.sheet("Note").row(i).cell(1).value(Number(index + 1))
+                         workbook.sheet("Note").row(i).cell(2).value(item.date)
+                         workbook.sheet("Note").row(i).cell(3).value(item.name)
+                         workbook.sheet("Note").row(i).cell(4).value(item?.funda?.name)
+                         workbook.sheet("Note").row(i).cell(5).value(Number(item.amount))
+                         workbook.sheet("Note").row(i).cell(6).value(item?.note)
+                         workbook.sheet("Note").row(i).cell(8).value(`${item?._id}`)
+                         workbook.sheet("Note").row(i).cell(7).value(`Tiền mặt`)
+ 
+                        i++
+                     })
+
+                     var i = 4
+                     listOrder2.forEach((item, index) =>{
+                         workbook.sheet("Note2").row(i).cell(1).value(Number(index + 1))
+                         workbook.sheet("Note2").row(i).cell(2).value(item.date)
+                         workbook.sheet("Note2").row(i).cell(3).value(item.name)
+                         workbook.sheet("Note2").row(i).cell(4).value(item?.funda?.name)
+                         workbook.sheet("Note2").row(i).cell(5).value(Number(item.amount))
+                         workbook.sheet("Note2").row(i).cell(6).value(item?.note)
+                         workbook.sheet("Note2").row(i).cell(8).value(`${item?._id}`)
+                         workbook.sheet("Note").row(i).cell(7).value(`Chuyển khoản`)
+ 
                         i++
                      })
            
