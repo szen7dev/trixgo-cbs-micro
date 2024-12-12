@@ -142,7 +142,7 @@ return new Promise(async (resolve) => {
 })
 }
 
-insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
+insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
         try {
             // if([2,3,4,5,6].includes(Number(type))){
@@ -238,6 +238,10 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
               dataInsert.date = date;
             }
 
+            if (toDate) {
+                dataInsert.toDate = toDate;
+            }
+
             if (buyerName && buyerName != '') {
                 dataInsert.buyerName = buyerName;
             }
@@ -320,7 +324,7 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
  * Author: Hiepnh
  * Date: 9/4/2022
  */
-update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status, isAddSignature, ctx }) {
+update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, members, admins, outin, type, status, isAddSignature, ctx }) {
     const that = this
     return new Promise(async (resolve) => {
         try {
@@ -387,6 +391,10 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
 
         if (date) {
             dataUpdate.date = date;
+        }
+
+        if (toDate) {
+            dataUpdate.toDate = toDate;
         }
 
         let convertStr = ''

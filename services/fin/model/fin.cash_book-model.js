@@ -3162,8 +3162,57 @@ class Model extends BaseModel {
                 });
             }
 
-            // Tải Phiếu kho
+            // Tải Phiếu
             else if(option == 5){
+                let infoParent = await STORE_ORDER_COLL.findById(parentID).select('name sign date')
+                let listData = await STORE_ORDER_PRODUCT_COLL.find({order: parentID})
+                .populate({
+                    path: 'goods work assets',
+                    select:'name unit'
+                })
+                // .select('name hours unitprice amount status date note')
+
+                 // Modify the workbook.
+                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/store_export_inventory_card.xlsx')))
+                 .then(async workbook => {
+
+                    workbook.sheet("Data").row(1).cell(1).value(infoParent.name)
+                    workbook.sheet("Data").row(2).cell(1).value(`Số hiệu: ${infoParent.sign} | Ngày ${moment(infoParent?.date).format("DD/MM/YYYY")}`)
+
+                     var i = 4
+                     listData.forEach((item, index) =>{
+                         workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
+                         workbook.sheet("Data").row(i).cell(2).value(item.name)
+                         workbook.sheet("Data").row(i).cell(3).value(item?.goods?.name)
+                         workbook.sheet("Data").row(i).cell(4).value(item?.goods?.unit)
+
+                         workbook.sheet("Data").row(i).cell(5).value(Number(item.quantity))
+                         workbook.sheet("Data").row(i).cell(6).value(Number(item.unitPrice))
+                         workbook.sheet("Data").row(i).cell(7).value(Number(item.amount))
+
+                         workbook.sheet("Data").row(i).cell(8).value(item?.work?.name)
+                         workbook.sheet("Data").row(i).cell(9).value(item?.assets?.name)
+
+                         workbook.sheet("Data").row(i).cell(10).value(item?.note)
+
+                         i++
+                     })
+           
+                     const now = new Date();
+                     const filePath = '../../../files/temporary_uploads/';
+                     const fileName = `store_export_inventory_card${now.getTime()}.xlsx`;
+                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                     await workbook.toFileAsync(pathWriteFile);
+                     const result = await uploadFileS3(pathWriteFile, fileName);
+
+                     fs.unlinkSync(pathWriteFile);
+                     return resolve({ error: false, data: result?.Location, status: 200 });
+                 });
+            }
+
+            // Tải Sổ quỹ
+            else if(option == 6){
                 let infoParent = await STORE_ORDER_COLL.findById(parentID).select('name sign date')
                 let listData = await STORE_ORDER_PRODUCT_COLL.find({order: parentID})
                 .populate({
