@@ -32,6 +32,7 @@ const ITEM__GOODS_COLL            		 = require('../../item/database/item.goods-c
 const STORE_ORDER_PRODUCT_COLL           = require('../../store/database/store.order_product-coll')
 const STORE_ORDER_COLL                   = require("../../store/database/store.order-coll")
 const PCM_FILE__COLL                     = require('../../subject_pcm/database/subject_pcm.pcm_file-coll')
+const FNB_ORDER_COLL                     = require("../../fnb/database/fnb.order-coll");
 
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
@@ -3213,43 +3214,129 @@ class Model extends BaseModel {
 
             // Tải Sổ quỹ
             else if(option == 6){
-                let infoParent = await STORE_ORDER_COLL.findById(parentID).select('name sign date')
+                let infoParent = await STORE_ORDER_COLL.findById(parentID).select('name sign date toDate')
                 let listData = await STORE_ORDER_PRODUCT_COLL.find({order: parentID})
                 .populate({
-                    path: 'goods work assets',
-                    select:'name unit'
+                    path: 'goods work assets funda account customer',
+                    select:'name unit description'
                 })
                 // .select('name hours unitprice amount status date note')
+                // console.log(infoParent)
+                // console.log(listData)
 
-                 // Modify the workbook.
-                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/store_export_inventory_card.xlsx')))
+                let conditionObj1 = {
+                    company: ObjectID(companyID),
+                    status: 5, // Đơn hoàn thành
+                    salesChannel: 1, // Kênh Offline
+                    paymentMethod: 1, // Chuyển khoản
+                    funda: {$in: listData.map(item=>ObjectID(item?.funda?._id))}
+                }
+
+                let conditionObj2 = {
+                    company: ObjectID(companyID),
+                    status: 5, // Đơn hoàn thành
+                    salesChannel: 1, // Kênh Offline
+                    paymentMethod: 2, // Chuyển khoản
+                    funda: {$in: listData.map(item=>ObjectID(item?.funda?._id))}
+                }
+
+                if(infoParent.date && infoParent.toDate){
+                    conditionObj1.date = {
+                        $gte: new Date(infoParent.date),
+                        $lte: new Date(infoParent.toDate),
+                    }
+
+                    conditionObj2.date = {
+                        $gte: new Date(infoParent.date),
+                        $lte: new Date(infoParent.toDate),
+                    }
+                }else{
+                    conditionObj1.date = {
+                        $gte: new Date(infoParent.date),
+                        $lte: new Date(infoParent.date),
+                    }
+
+                    conditionObj2.date = {
+                        $gte: new Date(infoParent.date),
+                        $lte: new Date(infoParent.date),
+                    }
+                }
+                console.log(conditionObj1)
+
+                let listData1 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj1
+                    },
+                    {
+                        $group: {
+                            _id: { funda: "$funda"},
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                let listData2 = await FNB_ORDER_COLL.aggregate([
+                    {
+                        $match: conditionObj2
+                    },
+                    {
+                        $group: {
+                            _id: { funda: "$funda"},
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData1)
+                // console.log(listData2)
+
+                let arr1 = [], arr2 = []
+                listData1.forEach(item=>{
+                    let key = item._id.funda;
+                    if (!Array.isArray(arr1[key])) {
+                        arr1[key] = [];
+                    }
+                    arr1[key].push(item)
+                })
+                listData2.forEach(item=>{
+                    let key = item._id.funda;
+                    if (!Array.isArray(arr2[key])) {
+                        arr2[key] = [];
+                    }
+                    arr2[key].push(item)
+                })
+
+                // Modify the workbook.
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cashbook_export.xlsx')))
                  .then(async workbook => {
 
                     workbook.sheet("Data").row(1).cell(1).value(infoParent.name)
-                    workbook.sheet("Data").row(2).cell(1).value(`Số hiệu: ${infoParent.sign} | Ngày ${moment(infoParent?.date).format("DD/MM/YYYY")}`)
+                    workbook.sheet("Data").row(2).cell(1).value(`Số hiệu: ${infoParent.sign} | Ngày ${moment(infoParent?.date).format("DD/MM/YYYY")} - Đến ngày ${moment(infoParent?.toDate).format("DD/MM/YYYY")}`)
 
                      var i = 4
                      listData.forEach((item, index) =>{
                          workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
                          workbook.sheet("Data").row(i).cell(2).value(item.name)
-                         workbook.sheet("Data").row(i).cell(3).value(item?.goods?.name)
-                         workbook.sheet("Data").row(i).cell(4).value(item?.goods?.unit)
+                         workbook.sheet("Data").row(i).cell(3).value(item?.funda?.name)
+                         workbook.sheet("Data").row(i).cell(4).value(`${item?.account?.name}-${item?.account?.description}`)
+                         workbook.sheet("Data").row(i).cell(5).value(item?.customer?.name)
+                         workbook.sheet("Data").row(i).cell(6).value(Number(item.amount))
+                         workbook.sheet("Data").row(i).cell(7).value(item?.note)
 
-                         workbook.sheet("Data").row(i).cell(5).value(Number(item.quantity))
-                         workbook.sheet("Data").row(i).cell(6).value(Number(item.unitPrice))
-                         workbook.sheet("Data").row(i).cell(7).value(Number(item.amount))
+                        if(arr1[item?.funda?._id]){
+                            workbook.sheet("Data").row(i).cell(8).value(Number(arr1[item?.funda?._id][0].amount))
+                            workbook.sheet('Data').row(i).cell(10).formula(`=H${i}-F${i}`)
+                        }
 
-                         workbook.sheet("Data").row(i).cell(8).value(item?.work?.name)
-                         workbook.sheet("Data").row(i).cell(9).value(item?.assets?.name)
+                        if(arr2[item?.funda?._id]){
+                            workbook.sheet("Data").row(i).cell(9).value(Number(arr2[item?.funda?._id][0].amount))
+                            workbook.sheet('Data').row(i).cell(11).formula(`=I${i}-F${i}`)
+                        }
 
-                         workbook.sheet("Data").row(i).cell(10).value(item?.note)
-
-                         i++
+                        i++
                      })
            
                      const now = new Date();
                      const filePath = '../../../files/temporary_uploads/';
-                     const fileName = `store_export_inventory_card${now.getTime()}.xlsx`;
+                     const fileName = `cashbook_export${now.getTime()}.xlsx`;
                      const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                      await workbook.toFileAsync(pathWriteFile);
@@ -3257,7 +3344,7 @@ class Model extends BaseModel {
 
                      fs.unlinkSync(pathWriteFile);
                      return resolve({ error: false, data: result?.Location, status: 200 });
-                 });
+                })
             }
 
            } catch (error) {

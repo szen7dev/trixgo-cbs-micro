@@ -470,6 +470,7 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
                 "outin" : infoAfterUpdate.outin,
                 "type" : infoAfterUpdate.type,
                 "date" : infoAfterUpdate.date,
+                "toDate" : infoAfterUpdate.toDate,
                 "warehouse" : infoAfterUpdate.warehouse,
                 "toWarehouse" : infoAfterUpdate.toWarehouse,
                 // "customer" : infoAfterUpdate.customer, // Không update ở đây => vì khi copy phiếu/sửa => bị chạy hết theo phiếu

@@ -173,8 +173,10 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Number,
         default: 5
     },
-    //_________Ngày tháng
+    //_________Ngày
     date: { type: Date, default: Date.now },
+    //_________Tới ngày
+    toDate: { type: Date, default: Date.now },
     //_________Tên
     name: String,
     namecv: String,
