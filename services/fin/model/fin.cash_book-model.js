@@ -3295,17 +3295,17 @@ class Model extends BaseModel {
                 // console.log(listData2)
 
                 let listOrder1 = await FNB_ORDER_COLL.find(conditionObj1)
-                .select('name sign date funda amount')
+                .select('name sign date funda amount shift')
                 .populate({
-                    path: 'funda',
+                    path: 'funda shift',
                     select: 'name'
                 })
                 .sort({_id:1})
 
                 let listOrder2 = await FNB_ORDER_COLL.find(conditionObj2)
-                .select('name sign date funda amount')
+                .select('name sign date funda amount shift')
                 .populate({
-                    path: 'funda',
+                    path: 'funda shift',
                     select: 'name'
                 })
                 .sort({_id:1})
@@ -3360,28 +3360,30 @@ class Model extends BaseModel {
 
                      var i = 4
                      listOrder1.forEach((item, index) =>{
-                         workbook.sheet("Note").row(i).cell(1).value(Number(index + 1))
-                         workbook.sheet("Note").row(i).cell(2).value(item.date)
-                         workbook.sheet("Note").row(i).cell(3).value(item.name)
-                         workbook.sheet("Note").row(i).cell(4).value(item?.funda?.name)
-                         workbook.sheet("Note").row(i).cell(5).value(Number(item.amount))
-                         workbook.sheet("Note").row(i).cell(6).value(item?.note)
-                         workbook.sheet("Note").row(i).cell(7).value(`Tiền mặt`)
-                         workbook.sheet("Note").row(i).cell(8).value(`${item?._id}`)
+                        workbook.sheet("TienMat").row(i).cell(1).value(Number(index + 1))
+                        workbook.sheet("TienMat").row(i).cell(2).value(item.date)
+                        workbook.sheet("TienMat").row(i).cell(3).value(item.shift.name)
+                        workbook.sheet("TienMat").row(i).cell(4).value(item.name)
+                        workbook.sheet("TienMat").row(i).cell(5).value(item?.funda?.name)
+                        workbook.sheet("TienMat").row(i).cell(6).value(Number(item.amount))
+                        workbook.sheet("TienMat").row(i).cell(7).value(item?.note)
+                        workbook.sheet("TienMat").row(i).cell(8).value(`Tiền mặt`)
+                        workbook.sheet("TienMat").row(i).cell(9).value(`${item?._id}`)
                          
                         i++
                      })
 
                      var i = 4
                      listOrder2.forEach((item, index) =>{
-                         workbook.sheet("Note2").row(i).cell(1).value(Number(index + 1))
-                         workbook.sheet("Note2").row(i).cell(2).value(item.date)
-                         workbook.sheet("Note2").row(i).cell(3).value(item.name)
-                         workbook.sheet("Note2").row(i).cell(4).value(item?.funda?.name)
-                         workbook.sheet("Note2").row(i).cell(5).value(Number(item.amount))
-                         workbook.sheet("Note2").row(i).cell(6).value(item?.note)
-                         workbook.sheet("Note2").row(i).cell(7).value(`Chuyển khoản`)
-                         workbook.sheet("Note2").row(i).cell(8).value(`${item?._id}`)
+                        workbook.sheet("ChuyenKhoan").row(i).cell(1).value(Number(index + 1))
+                        workbook.sheet("ChuyenKhoan").row(i).cell(2).value(item.date)
+                        workbook.sheet("ChuyenKhoan").row(i).cell(3).value(item.shift.name)
+                        workbook.sheet("ChuyenKhoan").row(i).cell(4).value(item.name)
+                        workbook.sheet("ChuyenKhoan").row(i).cell(5).value(item?.funda?.name)
+                        workbook.sheet("ChuyenKhoan").row(i).cell(6).value(Number(item.amount))
+                        workbook.sheet("ChuyenKhoan").row(i).cell(7).value(item?.note)
+                        workbook.sheet("ChuyenKhoan").row(i).cell(8).value(`Chuyển khoản`)
+                        workbook.sheet("ChuyenKhoan").row(i).cell(9).value(`${item?._id}`)
                         
                         i++
                      })
