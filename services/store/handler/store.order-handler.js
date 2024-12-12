@@ -60,7 +60,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products } = ctx.params;
+                let { companyID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products } = ctx.params;
 
                 console.log(ctx.params)
 
@@ -71,7 +71,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await STORE_ORDER_MODEL.insertFull({
-                    companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products
+                    companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -94,12 +94,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status, isAddSignature } = ctx.params;
-                // console.log(ctx.params)
+                const { orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, members, admins, outin, type, status, isAddSignature } = ctx.params;
+                
+                console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await STORE_ORDER_MODEL.update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, members, admins, outin, type, status, isAddSignature, ctx });
+                const resultAfterCallHandler = await STORE_ORDER_MODEL.update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, members, admins, outin, type, status, isAddSignature, ctx });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
