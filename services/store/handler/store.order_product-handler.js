@@ -266,6 +266,36 @@ module.exports = {
         }
     },
 
+    analysePrimeCostOfAllVouchers: {
+        auth: 'required',
+        params: {
+            companyID: { type: "string", optional: true },
+            option: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let { companyID, fundaID, accountID, fromDate, toDate } = ctx.params;
+
+                console.log(ctx.params)
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getPrimeCost({
+                    companyID, fundaID, accountID, fromDate, toDate, userID, queue: this.metadata.queue
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
     /**
      * Name: exportExcel 
      * Author: HiepNH

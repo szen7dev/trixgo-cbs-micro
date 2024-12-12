@@ -22,6 +22,7 @@ const CF_ROUTINGS_STORE = {
     ORDER_PRODUCT_IMPORT_FROM_EXCEL         : `${BASE_ROUTE}${ORDER_PRODUCT}/import-from-excel`,
     ORDER_PRODUCT_EXPORT_EXCEL              : `${BASE_ROUTE}${ORDER_PRODUCT}/export-excel`,
     ORDER_PRODUCT_EXPORT_EXCEL_BY_FILTER    : `${BASE_ROUTE}${ORDER_PRODUCT}/export-excel-by-filter`,
+    ORDER_PRODUCT_ANALYSE_PRIME_COST        : `${BASE_ROUTE}${ORDER_PRODUCT}/analyse-prime-cost`,
 
     //================================STORE_VOUCHER=======================================//
     VOUCHERS                                : `${BASE_ROUTE}${VOUCHER}`,
