@@ -1318,6 +1318,242 @@ class Model extends BaseModel {
     }
     
     getPrimeCost({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate }) {
+        // console.log('========ptgv================')
+        // console.log({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate })
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA: CÁC NGUYÊN NHÂN DẪN ĐẾN SAI SÓT KHI CHẠY GIÁ VỐN
+                 * 1. Giá vốn được tính cho 1 phiếu xuất, tính tới thời điểm của phiếu đó (ví dụ phiếu xuất ngày 30/6/2020)
+                 *  Giá vốn = (Tổng giá trị nhập - Tổng giá trị xuất)/(Tổng KL nhập - Tổng KL xuất)
+                 * 2. Số liệu về nhập hàng tính tới ngày của phiếu (30/6/2020)
+                 * 3. Số liệu xuất hàng tính tới trước thời điểm xuất kho của phiếu (29/6/2020)
+                 * 4. Với các phiếu nhập hàng trả lại thì cần điền đầy đủ cả giá nhập hàng (không được bỏ trống)
+                 * 5. Khi xuất hàng mà trong kho không có (xuất hàng âm) thì sẽ không chạy được giá vốn
+                 * 6. Nhập hàng trả lại thì giá nhập = giá vốn xuất ra của phiếu tương ứng/cùng mã hàng
+                 */
+                let conditionDebitObj = {
+                    outin: 2, // Nhập kho
+                    warehouse: ObjectID(warehouseID),
+                    goods: ObjectID(goodsID),
+                }
+                let conditionCreditObj = {
+                    outin: 1, // Xuất kho
+                    warehouse: ObjectID(warehouseID),
+                    goods: ObjectID(goodsID),
+                }
+
+                let conditionGroupDebit = {
+                    _id: { goods: "$goods" },
+                    quantity: { $sum: "$quantity" },
+                    amount: { $sum: "$amount" }
+                }
+                let conditionGroupCredit = {
+                    _id: { goods: "$goods" },
+                    quantity: { $sum: "$quantity" },
+                    amount: { $sum: "$amount" }
+                }
+
+                let conditionProject = {
+                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                    forward: 1,
+                    status: 1,
+                    date: 1,
+                    quantity: 1,
+                    amount: 1,
+                    goods: 1,
+                    warehouse: 1,
+                }
+
+                // Lấy năm của ngày đầu kỳ
+                let year = moment(toDate).toDate().getFullYear()
+                // let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z` // Cũ bên kế toán
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000+07:00`
+
+                // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
+                let conditionMatchO = {
+                    "forward": 1,
+                    "status": 5,
+                    "year": Number(year)
+                }
+
+                // Từ đầu năm tới đầu kỳ***
+                let conditionMatchDebitIn = {
+                    "forward": 0,
+                    "status": 5,
+                    "date": {
+                        $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
+                        $lte: moment(toDate).toDate(),
+                    },
+                }
+
+                let conditionMatchCreditIn = {
+                    "forward": 0,
+                    "status": 5,
+                    "date": {
+                        $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
+                        $lt: moment(toDate).toDate(), // Không lấy dữ liệu các phiếu xuất cùng ngày (toDate) vì đang chờ để chạy giá vốn
+                    },
+                }
+
+                // console.log(conditionDebitObj)
+                // console.log(conditionCreditObj)
+                // console.log(conditionProject)
+                console.log(conditionMatchDebitIn)
+                console.log(conditionMatchCreditIn)
+
+
+                /**
+                * DATA KẾT CHUYỂN/ĐẦU NĂM
+                * Không lấy dữ liệu các phiếu xuất cùng ngày (toDate) vì đang chờ để chạy giá vốn
+                * Nếu lấy vào thì sẽ bị hiện tượng:
+                * - Số lượng xuất hàng bị cộng vào
+                * - Giá trị xuất hàng thì = 0 (do chưa gán giá vốn)
+                * ===> dẫn đến dữ liệu không chính xác
+                * Yennt: Trong cùng ngày thì giá xuất vẫn tính cả giá nhập của ngày đó
+                */
+                let listDataO = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchO
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchO
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+                // console.log('=========MỐC ĐẦU NĂM=========')
+                // console.log({_____: listDataO})
+                // console.log({_____No: listDataO[0]._debit})
+                // console.log({_____Co: listDataO[0]._credit})
+
+                let listDataIn = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchDebitIn
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                }
+                            ],
+
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchCreditIn
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+                // console.log('=========ĐẦU NĂM-CUỐI KỲ=========')
+                // console.log( {
+                //     $match: conditionDebitObj
+                // },
+                // {
+                //     $project: conditionProject
+                // },
+                // {
+                //     $match: conditionMatchDebitIn
+                // },
+                // {
+                //     $group: conditionGroupDebit
+                // })
+                // console.log({_____: listDataIn})
+                // console.log({_____No: listDataIn[0]._debit})
+                // console.log({_____Co: listDataIn[0]._credit})
+                
+                let importNum = 0, importVal = 0, exportNum = 0, exportVal = 0;
+
+                if(listDataO[0]._debit.length > 0){
+                    importNum = Number(importNum + listDataO[0]._debit[0].quantity)
+                    importVal = Number(importVal + listDataO[0]._debit[0].amount)
+                }
+                if(listDataO[0]._credit.length > 0){
+                    exportNum = Number(exportNum + listDataO[0]._credit[0].quantity)
+                    exportVal = Number(exportVal + listDataO[0]._credit[0].amount)
+                }
+
+                if(listDataIn[0]._debit.length > 0){
+                    importNum = Number(importNum + listDataIn[0]._debit[0].quantity)
+                    importVal = Number(importVal + listDataIn[0]._debit[0].amount)
+                }
+
+
+                if(listDataIn[0]._credit.length > 0){
+                    exportNum = Number(exportNum + listDataIn[0]._credit[0].quantity)
+                    exportVal = Number(exportVal + listDataIn[0]._credit[0].amount)
+                }
+
+                let primeCost = 0, errGoods = false;
+
+                /**
+                 * Kiểm tra điều kiện để xuất được hàng:
+                 * - Số lượng hàng tồn > 0
+                 * - Số lượng xuất hàng <= số lượng hàng tồn
+                 */
+
+                // Chỉ tiến hành chạy giá vốn cho trường hợp hợp lệ
+                if(Number(importNum-exportNum) > 0){
+                    // Không làm tròn ở đây để giá trị nguyên bản => khi nhân ra thành tiền mới đúng, sau đó mới làm tròn
+                    primeCost = Number((importVal-exportVal)/(importNum-exportNum))
+                }
+
+                // Lấy hàng hóa bị xuất hàng âm để thông báo
+                if(Number((Number(importNum) - Number(exportNum) - Number(exportQuantity)).toFixed(3)) < 0){
+                    errGoods = true
+                }
+
+                return resolve({ error: false, data: {value: importVal-exportVal, number: importNum-exportNum, primeCost, errGoods } })
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }  
+
+    getPrimeCost2({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate }) {
         console.log('========ptgv================')
         console.log({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate })
         return new Promise(async resolve => {

@@ -277,16 +277,20 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { companyID, fundaID, accountID, fromDate, toDate } = ctx.params;
+                let { companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
+                // const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getPrimeCost({
+                //     companyID, fundaID, accountID, fromDate, toDate, userID, queue: this.metadata.queue
+                // })
+
                 const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getPrimeCost({
-                    companyID, fundaID, accountID, fromDate, toDate, userID, queue: this.metadata.queue
+                    companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
