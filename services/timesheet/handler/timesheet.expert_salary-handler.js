@@ -74,7 +74,47 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.update({
-                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, companyID: company._id, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22 });
+                    companyID: company._id, 
+                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, 
+                    salary: Number(salary).toFixed(0), 
+                    onLeaveSalary: Number(onLeaveSalary).toFixed(0), 
+                    overtimeSalary: Number(overtimeSalary).toFixed(0), 
+                    reward: Number(reward).toFixed(0), 
+                    punishment: Number(punishment).toFixed(0), 
+                    advance: Number(advance).toFixed(0), 
+                    convertFactor: Number(convertFactor).toFixed(0), 
+                    paid: Number(paid).toFixed(0), 
+                    revenueBonus: Number(revenueBonus).toFixed(0), 
+                    mealAllowance: Number(mealAllowance).toFixed(0), 
+                    insurance: Number(insurance).toFixed(0), 
+                    pitax: Number(pitax).toFixed(0), 
+                    union: Number(union).toFixed(0), 
+                    share: Number(share).toFixed(0), 
+                    other: Number(other).toFixed(0), 
+                    kpiFactor, 
+                    subAllowance1: Number(subAllowance1).toFixed(0), 
+                    subAllowance2: Number(subAllowance2).toFixed(0), 
+                    subAllowance3: Number(subAllowance3).toFixed(0), 
+                    subAllowance4: Number(subAllowance4).toFixed(0), 
+                    subAllowance5: Number(subAllowance5).toFixed(0), 
+                    subAllowance6: Number(subAllowance6).toFixed(0), 
+                    subAllowance7: Number(subAllowance7).toFixed(0), 
+                    subAllowance8: Number(subAllowance8).toFixed(0), 
+                    subAllowance9: Number(subAllowance9).toFixed(0), 
+                    subAllowance10: Number(subAllowance10).toFixed(0), 
+                    subAllowance11: Number(subAllowance11).toFixed(0), 
+                    subAllowance12: Number(subAllowance12).toFixed(0), 
+                    subAllowance13: Number(subAllowance13).toFixed(0), 
+                    subAllowance14: Number(subAllowance14).toFixed(0), 
+                    subAllowance15: Number(subAllowance15).toFixed(0), 
+                    subAllowance16: Number(subAllowance16).toFixed(0), 
+                    subAllowance17: Number(subAllowance17).toFixed(0), 
+                    subAllowance18: Number(subAllowance18).toFixed(0), 
+                    subAllowance19: Number(subAllowance19).toFixed(0), 
+                    subAllowance20: Number(subAllowance20).toFixed(0), 
+                    subAllowance21: Number(subAllowance21).toFixed(0), 
+                    subAllowance22: Number(subAllowance22).toFixed(0) 
+                });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

@@ -228,7 +228,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, type, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22 }){
+    update({ expertSalaryID, type, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22}){
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -324,70 +324,70 @@ class Model extends BaseModel {
                 }
 
                 if(!isNaN(subAllowance1)){
-                    dataUpdate.subAllowance1 = Number(subAllowance1);
+                    dataUpdate.subAllowance1 = Number(subAllowance1).toFixed(0);
                 }
                 if(!isNaN(subAllowance2)){
-                    dataUpdate.subAllowance2 = Number(subAllowance2);
+                    dataUpdate.subAllowance2 = Number(subAllowance2).toFixed(0);
                 }
                 if(!isNaN(subAllowance3)){
-                    dataUpdate.subAllowance3 = Number(subAllowance3);
+                    dataUpdate.subAllowance3 = Number(subAllowance3).toFixed(0);
                 }
                 if(!isNaN(subAllowance4)){
-                    dataUpdate.subAllowance4 = Number(subAllowance4);
+                    dataUpdate.subAllowance4 = Number(subAllowance4).toFixed(0);
                 }
                 if(!isNaN(subAllowance5)){
-                    dataUpdate.subAllowance5 = Number(subAllowance5);
+                    dataUpdate.subAllowance5 = Number(subAllowance5).toFixed(0);
                 }
                 if(!isNaN(subAllowance6)){
-                    dataUpdate.subAllowance6 = Number(subAllowance6);
+                    dataUpdate.subAllowance6 = Number(subAllowance6).toFixed(0);
                 }
                 if(!isNaN(subAllowance7)){
-                    dataUpdate.subAllowance7 = Number(subAllowance7);
+                    dataUpdate.subAllowance7 = Number(subAllowance7).toFixed(0);
                 }
                 if(!isNaN(subAllowance8)){
-                    dataUpdate.subAllowance8 = Number(subAllowance8);
+                    dataUpdate.subAllowance8 = Number(subAllowance8).toFixed(0);
                 }
                 if(!isNaN(subAllowance9)){
-                    dataUpdate.subAllowance9 = Number(subAllowance9);
+                    dataUpdate.subAllowance9 = Number(subAllowance9).toFixed(0);
                 }
                 if(!isNaN(subAllowance10)){
-                    dataUpdate.subAllowance10 = Number(subAllowance10);
+                    dataUpdate.subAllowance10 = Number(subAllowance10).toFixed(0);
                 }
                 if(!isNaN(subAllowance11)){
-                    dataUpdate.subAllowance11 = Number(subAllowance11);
+                    dataUpdate.subAllowance11 = Number(subAllowance11).toFixed(0);
                 }
                 if(!isNaN(subAllowance12)){
-                    dataUpdate.subAllowance12 = Number(subAllowance12);
+                    dataUpdate.subAllowance12 = Number(subAllowance12).toFixed(0);
                 }
                 if(!isNaN(subAllowance13)){
-                    dataUpdate.subAllowance13 = Number(subAllowance13);
+                    dataUpdate.subAllowance13 = Number(subAllowance13).toFixed(0);
                 }
                 if(!isNaN(subAllowance14)){
-                    dataUpdate.subAllowance14 = Number(subAllowance14);
+                    dataUpdate.subAllowance14 = Number(subAllowance14).toFixed(0);
                 }
                 if(!isNaN(subAllowance15)){
-                    dataUpdate.subAllowance15 = Number(subAllowance15);
+                    dataUpdate.subAllowance15 = Number(subAllowance15).toFixed(0);
                 }
                 if(!isNaN(subAllowance16)){
-                    dataUpdate.subAllowance16 = Number(subAllowance16);
+                    dataUpdate.subAllowance16 = Number(subAllowance16).toFixed(0);
                 }
                 if(!isNaN(subAllowance17)){
-                    dataUpdate.subAllowance17 = Number(subAllowance17);
+                    dataUpdate.subAllowance17 = Number(subAllowance17).toFixed(0);
                 }
                 if(!isNaN(subAllowance18)){
-                    dataUpdate.subAllowance18 = Number(subAllowance18);
+                    dataUpdate.subAllowance18 = Number(subAllowance18).toFixed(0);
                 }
                 if(!isNaN(subAllowance19)){
-                    dataUpdate.subAllowance19 = Number(subAllowance19);
+                    dataUpdate.subAllowance19 = Number(subAllowance19).toFixed(0);
                 }
                 if(!isNaN(subAllowance20)){
-                    dataUpdate.subAllowance20 = Number(subAllowance20);
+                    dataUpdate.subAllowance20 = Number(subAllowance20).toFixed(0);
                 }
                 if(!isNaN(subAllowance21)){
-                    dataUpdate.subAllowance21 = Number(subAllowance21);
+                    dataUpdate.subAllowance21 = Number(subAllowance21).toFixed(0);
                 }
                 if(!isNaN(subAllowance22)){
-                    dataUpdate.subAllowance22 = Number(subAllowance22);
+                    dataUpdate.subAllowance22 = Number(subAllowance22).toFixed(0);
                 }
 
                 // let mealAllowance = 0, other = 0
@@ -397,47 +397,47 @@ class Model extends BaseModel {
                 let other = Number(subAllowance16) + Number(subAllowance17) + Number(subAllowance18) + Number(subAllowance19) + Number(subAllowance20) + Number(subAllowance21) + Number(subAllowance22)
 
                 if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
-                    dataUpdate.salary = salary;
+                    dataUpdate.salary = Number(salary).toFixed(0)
                 }
                 if(!isNaN(onLeaveSalary) && Number(infoSalary.onLeaveSalary) != Number(onLeaveSalary)){
-                    dataUpdate.onLeaveSalary = onLeaveSalary;
+                    dataUpdate.onLeaveSalary = Number(onLeaveSalary).toFixed(0)
                 }
                 if(!isNaN(overtimeSalary) && Number(infoSalary.overtimeSalary) != Number(overtimeSalary)){
-                    dataUpdate.overtimeSalary = overtimeSalary;
+                    dataUpdate.overtimeSalary = Number(overtimeSalary).toFixed(0)
                 }
 
                 if(!isNaN(reward) && Number(infoSalary.reward) != Number(reward)){
-                    dataUpdate.reward = reward;
+                    dataUpdate.reward = Number(reward).toFixed(0)
                 }
                 if(!isNaN(revenueBonus) && Number(infoSalary.revenueBonus) != Number(revenueBonus)){
-                    dataUpdate.revenueBonus = revenueBonus;
+                    dataUpdate.revenueBonus = Number(revenueBonus).toFixed(0)
                 }
                 if(!isNaN(punishment) && Number(infoSalary.punishment) != Number(punishment)){
-                    dataUpdate.punishment = punishment;
+                    dataUpdate.punishment = Number(punishment).toFixed(0)
                 }
                 if(!isNaN(mealAllowance) && Number(infoSalary.mealAllowance) != Number(mealAllowance)){
-                    dataUpdate.mealAllowance = mealAllowance;
+                    dataUpdate.mealAllowance = Number(mealAllowance).toFixed(0)
                 }
                 if(!isNaN(insurance) && Number(infoSalary.insurance) != Number(insurance)){
-                    dataUpdate.insurance = insurance;
+                    dataUpdate.insurance = Number(insurance).toFixed(0)
                 }
                 if(!isNaN(pitax) && Number(infoSalary.pitax) != Number(pitax)){
-                    dataUpdate.pitax = pitax;
+                    dataUpdate.pitax = Number(pitax).toFixed(0)
                 }
                 if(!isNaN(union) && Number(infoSalary.union) != Number(union)){
-                    dataUpdate.union = union;
+                    dataUpdate.union = Number(union).toFixed(0)
                 }
                 if(!isNaN(share) && Number(infoSalary.share) != Number(share)){
-                    dataUpdate.share = share;
+                    dataUpdate.share = Number(share).toFixed(0)
                 }
                 if(!isNaN(other) && Number(infoSalary.other) != Number(other)){
-                    dataUpdate.other = other;
+                    dataUpdate.other = Number(other).toFixed(0)
                 }
                 if(!isNaN(advance) && Number(infoSalary.advance) != Number(advance)){
-                    dataUpdate.advance = advance;
+                    dataUpdate.advance = Number(advance).toFixed(0)
                 }
                 if(!isNaN(paid) && Number(infoSalary.paid) != Number(paid)){
-                    dataUpdate.paid = paid;
+                    dataUpdate.paid = Number(paid).toFixed(0)
                 }
 
                 // Tính toán giá trị còn lại
