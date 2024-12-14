@@ -1767,8 +1767,8 @@ class Model extends BaseModel {
                     })
 
                     var i = 3
+                    let index = 1;
                     for (const key in groupedResult) {
-                        let index = 1;
 
                         workbook.sheet('Home').row(i).cell(1).value(Number(index))
                         workbook.sheet('Home').row(i).cell(2).value(`${key}`)
