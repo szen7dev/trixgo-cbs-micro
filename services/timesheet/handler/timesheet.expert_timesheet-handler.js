@@ -234,7 +234,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let { year, month } = ctx.params;
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.exportExcel({
                     companyID: company._id, year, month, userID

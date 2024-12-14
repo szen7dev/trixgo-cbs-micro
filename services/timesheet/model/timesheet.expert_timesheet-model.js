@@ -1571,6 +1571,24 @@ class Model extends BaseModel {
                 conditionMatchObj.month = Number(month)
             }
 
+            let conditionPopulate1 = {
+                path: '_id.position',
+                select: '_id name',
+                model: 'position'
+            }
+
+            let conditionPopulate2= {
+                path: '_id.work',
+                select: '_id name sign unit',
+                model: 'budget_work'
+            }
+
+            let conditionPopulate3 = {
+                path: '_id.assignee',
+                select: '_id fullname',
+                model: 'user'
+            }
+
             let rawData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                 {
                     $match: {
@@ -1605,23 +1623,74 @@ class Model extends BaseModel {
             ])
             // console.log(rawData);      
 
-            let conditionPopulate1 = {
-                path: '_id.position',
-                select: '_id name',
-                model: 'position'
+            let rawData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                {
+                    $match: {
+                        parent: { $exists: true, $ne: null },
+                        work: { $exists: true, $ne: null },
+                        company: ObjectID(companyID),
+                    }
+                },
+                {
+                    $project : {
+                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                        project: 1,
+                        position: 1,
+                        assignee: 1,
+                        work: 1,
+                        hours: 1,
+                        amount: 1,
+                        date: 1,
+                    }
+                },
+                {
+                    $match: conditionMatchObj
+                },
+                {
+                    $group: {
+                        _id: { position: "$position", assignee: "$assignee"},
+                        quantity: { $sum: "$hours" },
+                        amount: { $sum: "$amount" },
+                    }
+                },
+            ])
+        
+
+            if(rawData2.length){
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData2, conditionPopulate1)
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData2, conditionPopulate3)
             }
 
-            let conditionPopulate2= {
-                path: '_id.work',
-                select: '_id name sign unit',
-                model: 'budget_work'
-            }
+            // console.log(rawData2);
 
-            let conditionPopulate3 = {
-                path: '_id.assignee',
-                select: '_id fullname',
-                model: 'user'
+            function groupByPositionAndAssignee(rawData) {
+                const groupedData = {};
+            
+                rawData.forEach(item => {
+                    // const position = item._id.position._id;
+                    const position = item._id.position.name;
+                    const assignee = item._id.assignee._id;
+            
+                    if (!groupedData[position]) {
+                        groupedData[position] = [];
+                    }
+            
+                    groupedData[position].push({
+                        assignee,
+                        assigneeName: item._id.assignee.fullname,
+                        quantity: item.quantity,
+                        amount: item.amount
+                    });
+                });
+            
+                return groupedData;
             }
+            
+            const groupedResult = groupByPositionAndAssignee(rawData2);
+            // console.log(groupedResult);
+
+            await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(groupedResult, conditionPopulate1)
 
             if(rawData.length){
                 await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(rawData, conditionPopulate1)
@@ -1663,12 +1732,15 @@ class Model extends BaseModel {
                 return result;
             }, []);
 
+            // console.log(formattedData)
+
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_budget.xlsx')))
                 .then(async workbook => {
                     
                     formattedData.forEach((item, index) =>{
                         var i = 3
                         item?.works.forEach((item1, index1) =>{
+                            // Đổi tên sheet
                             workbook.sheet(index + 1).name(`${item.position.name}`);
 
                             workbook.sheet(index + 1).row(i).cell(2).value(`A${index1 + 1}`)
@@ -1693,6 +1765,32 @@ class Model extends BaseModel {
                             })
                         })
                     })
+
+                    var i = 3
+                    for (const key in groupedResult) {
+                        let index = 1;
+
+                        workbook.sheet('Home').row(i).cell(1).value(Number(index))
+                        workbook.sheet('Home').row(i).cell(2).value(`${key}`)
+                        workbook.sheet('Home').range(`A${i}:C${i}`).style({"bold": true})
+
+                        let total = 0
+                        groupedResult[key].forEach(item => {
+                            total = Number(total) + Number(item.amount)
+                        })
+                        workbook.sheet('Home').row(i).cell(3).value(Number(total))
+
+                        i++
+
+                        groupedResult[key].forEach(item => {
+                            workbook.sheet('Home').row(i).cell(2).value(item.assigneeName)
+                            workbook.sheet('Home').row(i).cell(3).value(Number(item.amount))
+                            
+                            i++
+                        })
+
+                        index++
+                    }
         
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
