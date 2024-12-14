@@ -392,9 +392,9 @@ class Model extends BaseModel {
 
                 // let mealAllowance = 0, other = 0
                 // Tính toán phụ cấp và phải trả khác
-                let mealAllowance = Number(subAllowance1) + Number(subAllowance2) + Number(subAllowance3) + Number(subAllowance4) + Number(subAllowance5) + Number(subAllowance6) + Number(subAllowance7) + Number(subAllowance8) + Number(subAllowance9) + Number(subAllowance10) + Number(subAllowance11) + Number(subAllowance12) + Number(subAllowance13) + Number(subAllowance14) + Number(subAllowance15)
+                let mealAllowance = Number(Number(subAllowance1) + Number(subAllowance2) + Number(subAllowance3) + Number(subAllowance4) + Number(subAllowance5) + Number(subAllowance6) + Number(subAllowance7) + Number(subAllowance8) + Number(subAllowance9) + Number(subAllowance10) + Number(subAllowance11) + Number(subAllowance12) + Number(subAllowance13) + Number(subAllowance14) + Number(subAllowance15)).toFixed(0)
 
-                let other = Number(subAllowance16) + Number(subAllowance17) + Number(subAllowance18) + Number(subAllowance19) + Number(subAllowance20) + Number(subAllowance21) + Number(subAllowance22)
+                let other = Number(Number(subAllowance16) + Number(subAllowance17) + Number(subAllowance18) + Number(subAllowance19) + Number(subAllowance20) + Number(subAllowance21) + Number(subAllowance22)).toFixed(0)
 
                 if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
                     dataUpdate.salary = Number(salary).toFixed(0)
