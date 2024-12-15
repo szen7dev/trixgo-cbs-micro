@@ -1316,10 +1316,13 @@ class Model extends BaseModel {
             }
         })
     }
-    
-    getPrimeCost({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate }) {
-        console.log('========ptgv================')
-        console.log({ companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate })
+
+    /**
+     * Name: Cập nhật giá vốn cho hàng hóa cho 01 phiếu xuất
+     * Code: Hiepnh
+     * Date: 15/12/2024
+     */
+    getPrimeCost({ goodsID, warehouseID, exportQuantity, toDate }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -1332,23 +1335,16 @@ class Model extends BaseModel {
                  * 5. Khi xuất hàng mà trong kho không có (xuất hàng âm) thì sẽ không chạy được giá vốn
                  * 6. Nhập hàng trả lại thì giá nhập = giá vốn xuất ra của phiếu tương ứng/cùng mã hàng
                  */
-                
                 let conditionDebitObj = {
-                    debit:  {
-                        $in: arrObjectID
-                    },
+                    outin: 2, // Nhập kho
                     warehouse: ObjectID(warehouseID),
                     goods: ObjectID(goodsID),
                 }
                 let conditionCreditObj = {
-                    credit:  {
-                        $in: arrObjectID
-                    },
+                    outin: 1, // Xuất kho
                     warehouse: ObjectID(warehouseID),
                     goods: ObjectID(goodsID),
                 }
-                // console.log(conditionDebitObj)
-                // console.log(conditionCreditObj)
 
                 let conditionGroupDebit = {
                     _id: { goods: "$goods" },
@@ -1362,36 +1358,32 @@ class Model extends BaseModel {
                 }
 
                 let conditionProject = {
-                    year : {$year : "$date"},
-                    forward: '$forward',
-                    cancel: '$cancel',
+                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                    forward: 1,
+                    status: 1,
                     date: 1,
                     quantity: 1,
                     amount: 1,
                     goods: 1,
                     warehouse: 1,
-                    debit: 1,
-                    credit: 1
                 }
 
                 // Lấy năm của ngày đầu kỳ
                 let year = moment(toDate).toDate().getFullYear()
-                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
-
-                // console.log({year})
-                // console.log({firstDayOfYear})
+                // let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z` // Cũ bên kế toán
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000+07:00`
 
                 // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
                 let conditionMatchO = {
                     "forward": 1,
-                    "cancel": 0,
+                    "status": 5,
                     "year": Number(year)
                 }
 
                 // Từ đầu năm tới đầu kỳ***
                 let conditionMatchDebitIn = {
                     "forward": 0,
-                    "cancel": 0,
+                    "status": 5,
                     "date": {
                         $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
                         $lte: moment(toDate).toDate(),
@@ -1400,23 +1392,29 @@ class Model extends BaseModel {
 
                 let conditionMatchCreditIn = {
                     "forward": 0,
-                    "cancel": 0,
+                    "status": 5,
                     "date": {
                         $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
                         $lt: moment(toDate).toDate(), // Không lấy dữ liệu các phiếu xuất cùng ngày (toDate) vì đang chờ để chạy giá vốn
                     },
                 }
 
+                // console.log(conditionDebitObj)
+                // console.log(conditionCreditObj)
+                // console.log(conditionProject)
+                // console.log(conditionMatchDebitIn)
+                // console.log(conditionMatchCreditIn)
+
                 /**
                 * DATA KẾT CHUYỂN/ĐẦU NĂM
-				* Không lấy dữ liệu các phiếu xuất cùng ngày (toDate) vì đang chờ để chạy giá vốn
-				* Nếu lấy vào thì sẽ bị hiện tượng:
-				* - Số lượng xuất hàng bị cộng vào
-				* - Giá trị xuất hàng thì = 0 (do chưa gán giá vốn)
-				* ===> dẫn đến dữ liệu không chính xác
-				* Yennt: Trong cùng ngày thì giá xuất vẫn tính cả giá nhập của ngày đó
-				*/
-                let listDataO = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                * Không lấy dữ liệu các phiếu xuất cùng ngày (toDate) vì đang chờ để chạy giá vốn
+                * Nếu lấy vào thì sẽ bị hiện tượng:
+                * - Số lượng xuất hàng bị cộng vào
+                * - Giá trị xuất hàng thì = 0 (do chưa gán giá vốn)
+                * ===> dẫn đến dữ liệu không chính xác
+                * Yennt: Trong cùng ngày thì giá xuất vẫn tính cả giá nhập của ngày đó
+                */
+                let listDataO = await STORE_ORDER_PRODUCT_COLL.aggregate([
                     {
                         $facet: {
                             _debit:[
@@ -1456,7 +1454,7 @@ class Model extends BaseModel {
                 // console.log({_____No: listDataO[0]._debit})
                 // console.log({_____Co: listDataO[0]._credit})
 
-                let listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                let listDataIn = await STORE_ORDER_PRODUCT_COLL.aggregate([
                     {
                         $facet: {
                             _debit:[
@@ -1493,6 +1491,18 @@ class Model extends BaseModel {
                     }
                 ])
                 // console.log('=========ĐẦU NĂM-CUỐI KỲ=========')
+                // console.log( {
+                //     $match: conditionDebitObj
+                // },
+                // {
+                //     $project: conditionProject
+                // },
+                // {
+                //     $match: conditionMatchDebitIn
+                // },
+                // {
+                //     $group: conditionGroupDebit
+                // })
                 // console.log({_____: listDataIn})
                 // console.log({_____No: listDataIn[0]._debit})
                 // console.log({_____Co: listDataIn[0]._credit})
@@ -1542,8 +1552,76 @@ class Model extends BaseModel {
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
-        });
+        })
     }  
+
+    /**
+     * Name: Cập nhật giá vốn cho hàng hóa cho 01 phiếu xuất
+     * Code: Hiepnh
+     * Date: 15/12/2024
+     */
+    updatePrimeCost({ voucherID, voucherDate }){
+        const that = this;
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * Khai báo arr hứng các hàng hóa có việc xuất bị sai
+                 */
+                let arrGoodsFailed = [];
+
+                /**
+                 * Lấy danh sách hàng hóa thuộc phiếu xuất
+                 * Hàng hoá phải được gắn kèm thuộc kho bãi cụ thể
+                 */
+                let listJournal = await STORE_ORDER_PRODUCT_COLL.find({
+                    order: voucherID,
+                    goods: { $exists: true, $ne: null },
+                    warehouse: { $exists: true, $ne: null }
+                }).select('goods warehouse quantity date')
+
+                // console.log(listJournal.length)
+                // console.log(listJournal)
+
+                for(const item of listJournal){
+                    let info = null;
+                    let unitPrice = null;
+                    let amount = null;
+
+                    /**
+                     * Lần lượt cập nhật giá vốn cho từng hàng hóa trong phiếu
+                     * Giá vốn được tính tới thời điểm là ngày của phiếu đang xét
+                     */
+                    // Kiểm tra chỉ chạy giá vốn khi tồn tại cả item.goods và item.warehouse
+                    info = await that.getPrimeCost({ goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucherDate });
+                    // console.log(info)
+
+                    // Cập nhật giá vốn cho hàng hóa vào trong phiếu xuất
+                    unitPrice = info.data.primeCost
+
+                    amount = Number(+item.quantity * +unitPrice)  // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
+
+                    await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(item._id, {
+                        unitPrice, // Sau này bỏ trường này đi
+                        amount
+                    }, { new: true })
+
+                    // Ghi nhận dữ liệu lỗi
+                    if(info.data.errGoods){
+                        arrGoodsFailed.push(item.goods)
+                    }
+                }
+
+                /**
+                 * B3: Lấy thông tin các hàng hóa xuất lỗi để hiển thị cho người dùng
+                 */
+                let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }})
+
+                return resolve({ error: false, listGoodsFailed })
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
 
     /**
      * Dev: HiepNH
