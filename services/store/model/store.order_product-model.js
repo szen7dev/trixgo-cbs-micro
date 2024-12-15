@@ -1693,6 +1693,7 @@ class Model extends BaseModel {
                 // let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }});
 
                 // return resolve({ error: false, listGoodsFailed, accountID });
+                return resolve({ error: false, message: 'Cập nhật thành công' });
 			} catch (error) {
                 console.error({ error })
 				return resolve({ error: true, message: error.message });
