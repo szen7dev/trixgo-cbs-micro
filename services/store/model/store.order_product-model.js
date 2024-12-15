@@ -1645,7 +1645,6 @@ class Model extends BaseModel {
                         $lte: moment(toDate).toDate() 
                     }
                 }
-
                 // console.log(conditionOb)
 
                 let listVouchers = await STORE_ORDER_COLL
@@ -1682,18 +1681,46 @@ class Model extends BaseModel {
                 /**
                  * Khai báo arr hứng các hàng hóa có việc xuất bị sai
                  */
-                // let arrGoodsFailed = [];
-                
+                let arrGoodsFailed = [];
                 for(const voucher of listVouchers){
-                   await that.updatePrimeCost({ voucherID: voucher._id, voucherDate: voucher.date })
-                }
-                // /**
-                //  * B3: Lấy thông tin các hàng hóa xuất lỗi để hiển thị cho người dùng
-                //  */
-                // let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }});
+                    let voucherID = voucher._id
 
-                // return resolve({ error: false, listGoodsFailed, accountID });
-                return resolve({ error: false, message: 'Cập nhật thành công' });
+                    let listJournal = await STORE_ORDER_PRODUCT_COLL.find({
+                        order: voucherID,
+                        goods: { $exists: true, $ne: null },
+                        warehouse: { $exists: true, $ne: null }
+                    }).select('goods warehouse quantity date')
+
+                    let totalAmount = 0
+                    for(const item of listJournal){
+                        let info = null;
+                        let unitPrice = null;
+                        let amount = null;
+
+                        info = await that.getPrimeCost({ goodsID: item.goods, warehouseID: item.warehouse, exportQuantity: item.quantity, toDate: voucher.date })
+                        unitPrice = info.data.primeCost
+                        amount = Number(+item.quantity * +unitPrice)
+                        totalAmount = Number(totalAmount) + Number(amount)
+
+                        await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(item._id, {
+                            unitPrice, // Sau này bỏ trường này đi
+                            amount
+                        }, { new: true })
+
+                        // Ghi nhận dữ liệu lỗi
+                        if(info.data.errGoods){
+                            arrGoodsFailed.push(item.goods)
+                        }
+                    }
+
+                    await STORE_ORDER_COLL.findByIdAndUpdate(voucherID, {
+                        amount: totalAmount
+                    }, { new: true })
+                }
+
+                let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }})
+
+                return resolve({ error: false, message: 'Cập nhật thành công', listGoodsFailed })
 			} catch (error) {
                 console.error({ error })
 				return resolve({ error: true, message: error.message });
