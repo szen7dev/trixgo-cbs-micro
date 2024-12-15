@@ -109,6 +109,32 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default : 1
     },
+    //_________Ngày chứng từ
+    dateInvoice: { type: Date, default: Date.now }, 
+    //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
+    forward: { type: Number, default: 0 },
+    //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)
+    forwardIs: { type: Number, default: 0 },
+    //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
+    returning: { type: Number, default: 0 },
+    /**
+     * Trạng thái đơn
+     * 1-Khởi tạo
+     * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
+     * 3-Đang vận chuyển/giao hàng
+     * 4-Giao không thành công
+     * 5-Đã giao/Hoàn thành
+     * 6-Đã hủy (cũ là 4)
+     * 7-Trả hàng/Hoàn tiền
+     */
+    status: {
+        type: Number,
+        default: 5
+    },
+    //_________Ngày
+    date: { type: Date, default: Date.now },
+    //_________Tới ngày
+    toDate: { type: Date, default: Date.now },
     /**
      * Khách biết tên hay vãng lai
      * 1-Biết tên
@@ -248,24 +274,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default: 1
     },
-    /**
-     * Trạng thái đơn
-     * 1-Khởi tạo
-     * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
-     * 3-Đang vận chuyển/giao hàng
-     * 4-Giao không thành công
-     * 5-Đã giao/Hoàn thành
-     * 6-Đã hủy (cũ là 4)
-     * 7-Trả hàng/Hoàn tiền
-     */
-    status: {
-        type: Number,
-        default: 5
-    },
-    //_________Ngày
-    date: { type: Date, default: Date.now },
-    //_________Tới ngày
-    toDate: { type: Date, default: Date.now },
     //_________Nội dung
     name: String,
     namecv: String,
