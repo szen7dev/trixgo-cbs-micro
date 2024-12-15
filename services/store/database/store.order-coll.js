@@ -67,19 +67,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    // /**
-    //  * Phân quyền truy cập order (BỎ)
-    //  */
-    // //_________Admin (được quyền xem, sửa)
-    // admins : [{
-    //     type   : Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
-    // //_________Thành viên (được quyền xem)
-    // members : [{
-    //     type   : Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
     /**
      * Link tới phiếu
      * Sử dụng để tính giá xuất theo Nhập (linkID) xuất đích danh
@@ -319,14 +306,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default: 0
     },  
-    // /**
-    //  * Phân loại lý do hủy đơn***
-    //  * Phân loại phản hồi của khách
-    //  */
-    // complaints: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "doctype"
-    // }],
     //_________Ghi chú nội dung feedback
     feedbackNotes: String,
     //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)
