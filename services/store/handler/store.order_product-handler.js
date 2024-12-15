@@ -277,7 +277,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let { companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, fromDate, toDate, voucherID, voucherDate } = ctx.params;
+                let { option, companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, fromDate, toDate, voucherID, voucherDate } = ctx.params;
 
                 console.log(ctx.params)
 
@@ -285,19 +285,27 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                // const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getPrimeCost({
-                //     companyID, fundaID, accountID, fromDate, toDate, userID, queue: this.metadata.queue
-                // })
-
-                // const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.updatePrimeCost({
-                //     companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, toDate, voucherID, voucherDate
-                // })
-
-                const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.analysePrimeCostOfAllVouchers({
-                    companyID, fromDate, toDate, userID
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                if(!option){
+                    const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.analysePrimeCostOfAllVouchers({
+                        companyID, fromDate, toDate, userID
+                    })
+    
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }
+                else if(option == 1){
+                    const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getPrimeCost({
+                        goodsID, warehouseID, exportQuantity, toDate
+                    })
+    
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }
+                else if(option == 1){
+                    const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.updatePrimeCost({
+                        voucherID, voucherDate
+                    })
+    
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }
             } catch (error) {
                 return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
