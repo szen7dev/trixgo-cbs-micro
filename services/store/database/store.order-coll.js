@@ -67,19 +67,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    // /**
-    //  * Phân quyền truy cập order (BỎ)
-    //  */
-    // //_________Admin (được quyền xem, sửa)
-    // admins : [{
-    //     type   : Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
-    // //_________Thành viên (được quyền xem)
-    // members : [{
-    //     type   : Schema.Types.ObjectId,
-    //     ref: 'user'
-    // }],
     /**
      * Link tới phiếu
      * Sử dụng để tính giá xuất theo Nhập (linkID) xuất đích danh
@@ -109,6 +96,32 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default : 1
     },
+    //_________Ngày chứng từ
+    dateInvoice: { type: Date, default: Date.now }, 
+    //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
+    forward: { type: Number, default: 0 },
+    //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)
+    forwardIs: { type: Number, default: 0 },
+    //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
+    returning: { type: Number, default: 0 },
+    /**
+     * Trạng thái đơn
+     * 1-Khởi tạo
+     * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
+     * 3-Đang vận chuyển/giao hàng
+     * 4-Giao không thành công
+     * 5-Đã giao/Hoàn thành
+     * 6-Đã hủy (cũ là 4)
+     * 7-Trả hàng/Hoàn tiền
+     */
+    status: {
+        type: Number,
+        default: 5
+    },
+    //_________Ngày
+    date: { type: Date, default: Date.now },
+    //_________Tới ngày
+    toDate: { type: Date, default: Date.now },
     /**
      * Khách biết tên hay vãng lai
      * 1-Biết tên
@@ -248,24 +261,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default: 1
     },
-    /**
-     * Trạng thái đơn
-     * 1-Khởi tạo
-     * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
-     * 3-Đang vận chuyển/giao hàng
-     * 4-Giao không thành công
-     * 5-Đã giao/Hoàn thành
-     * 6-Đã hủy (cũ là 4)
-     * 7-Trả hàng/Hoàn tiền
-     */
-    status: {
-        type: Number,
-        default: 5
-    },
-    //_________Ngày
-    date: { type: Date, default: Date.now },
-    //_________Tới ngày
-    toDate: { type: Date, default: Date.now },
     //_________Nội dung
     name: String,
     namecv: String,
@@ -311,14 +306,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default: 0
     },  
-    // /**
-    //  * Phân loại lý do hủy đơn***
-    //  * Phân loại phản hồi của khách
-    //  */
-    // complaints: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: "doctype"
-    // }],
     //_________Ghi chú nội dung feedback
     feedbackNotes: String,
     //_________Số lỗi mắc phải (cập nhật sau khi tạo đơn)

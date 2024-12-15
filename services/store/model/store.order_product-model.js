@@ -1578,10 +1578,10 @@ class Model extends BaseModel {
                     goods: { $exists: true, $ne: null },
                     warehouse: { $exists: true, $ne: null }
                 }).select('goods warehouse quantity date')
-
                 // console.log(listJournal.length)
                 // console.log(listJournal)
 
+                let totalAmount = 0
                 for(const item of listJournal){
                     let info = null;
                     let unitPrice = null;
@@ -1600,6 +1600,8 @@ class Model extends BaseModel {
 
                     amount = Number(+item.quantity * +unitPrice)  // Bỏ làm tròn đi vì sẽ bị sai số cộng dồn
 
+                    totalAmount = Number(totalAmount) + Number(amount)
+
                     await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(item._id, {
                         unitPrice, // Sau này bỏ trường này đi
                         amount
@@ -1610,6 +1612,10 @@ class Model extends BaseModel {
                         arrGoodsFailed.push(item.goods)
                     }
                 }
+
+                await STORE_ORDER_COLL.findByIdAndUpdate(voucherID, {
+                    amount: totalAmount
+                }, { new: true })
 
                 /**
                  * B3: Lấy thông tin các hàng hóa xuất lỗi để hiển thị cho người dùng
@@ -1622,6 +1628,78 @@ class Model extends BaseModel {
             }
         })
     }
+
+    analysePrimeCostOfAllVouchers({ companyID, fromDate, toDate, userID, queue }){
+		const that = this;
+		return new Promise(async resolve => {
+			try {
+                let conditionOb = { 
+                    company: companyID,
+                    type: {$in: [1,2,3,4,5,6]}, // Vật tư....
+                    // returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
+                    forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
+                    status: 5, // Không chạy cho các Phiếu hủy
+                    outin: 1, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
+                    date: { 
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate() 
+                    }
+                }
+
+                // console.log(conditionOb)
+
+                let listVouchers = await STORE_ORDER_COLL
+                    .find(conditionOb)
+                    .sort({ date: 1 })
+                    .select('_id date name')
+                    .lean();
+
+                // console.log(listVouchers)
+                console.log(listVouchers.length)
+
+                if(!listVouchers.length) {
+                    return resolve({ error: false, data: [] })
+                }
+
+                /**
+                 * Xử lý Worker
+                 */
+                // for(const voucher of listVouchers) {
+                //     await queue.add("price_analyze", {
+                //         voucher,
+                //         fundaID,
+                //         companyID,
+                //         userID,
+                //         arrObjectID
+                //     }, {
+                //         backoff: 3,
+                //         attempts: 3
+                //     })
+                // }
+
+                // return resolve({ error: false, data: listVouchers, status: 200 });
+
+                /**
+                 * Khai báo arr hứng các hàng hóa có việc xuất bị sai
+                 */
+                // let arrGoodsFailed = [];
+                
+                for(const voucher of listVouchers){
+                   await that.updatePrimeCost({ voucherID: voucher._id, voucherDate: voucher.date })
+                }
+                // /**
+                //  * B3: Lấy thông tin các hàng hóa xuất lỗi để hiển thị cho người dùng
+                //  */
+                // let listGoodsFailed = await ITEM__GOODS_COLL.find({ _id: { $in: arrGoodsFailed }});
+
+                // return resolve({ error: false, listGoodsFailed, accountID });
+                return resolve({ error: false, message: 'Cập nhật thành công' });
+			} catch (error) {
+                console.error({ error })
+				return resolve({ error: true, message: error.message });
+			}
+		})
+	}
 
     /**
      * Dev: HiepNH
