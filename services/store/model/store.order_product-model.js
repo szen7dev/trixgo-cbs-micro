@@ -1635,8 +1635,8 @@ class Model extends BaseModel {
 			try {
                 let conditionOb = { 
                     company: companyID,
-                    // returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
-                    // forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
+                    type: {$in: [1,2,3,4,5,6]}, // Vật tư....
+                    forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
                     status: 5, // Không chạy cho các Phiếu hủy
                     outin: 1, // 5 là Phiếu xuất (cần check lại chỗ này vì đôi khi người dùng chọn nhầm Tên phiếu)
                     date: { 
