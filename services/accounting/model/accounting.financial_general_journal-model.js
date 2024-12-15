@@ -2530,7 +2530,6 @@ class Model extends BaseModel {
                     let nestedChilds = infoAccount.nestedChilds.map(item=>ObjectID(item._id))
                     arrObjectID = [...arrObjectID,...nestedChilds]
                 }
-                // console.log(arrObjectID)
 
 				/**
                  * Khai báo arr hứng các hàng hóa có việc xuất bị sai
@@ -2580,7 +2579,7 @@ class Model extends BaseModel {
 					}
 
 					await FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(item._id, {
-						unitprice, // Sau này bỏ trường này đi
+						unitprice, // Sau này bỏ trường này đi???
 						amount
 					}, { new: true });
 
@@ -2767,12 +2766,8 @@ class Model extends BaseModel {
     getListByFilter({
         companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
         limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
-            // console.log({ companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts, limit, lastestID, select, populates, sortKey, isExportExcel })
         return new Promise(async (resolve) => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 if (limit > 50) {
                     limit = 50
                 } else {
