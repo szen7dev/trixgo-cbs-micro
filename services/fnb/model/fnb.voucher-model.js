@@ -573,6 +573,7 @@ class Model extends BaseModel {
                             workbook.sheet("ImportVoucher").row(i).cell(7).value(Number(item.salesoffAmount));
                             workbook.sheet("ImportVoucher").row(i).cell(8).value(Number(item.salesoffRate));
                             workbook.sheet("ImportVoucher").row(i).cell(9).value(item.note);
+                            workbook.sheet("ImportVoucher").row(i).cell(11).value(`${item._id}`);
 
                             i++
                         });
