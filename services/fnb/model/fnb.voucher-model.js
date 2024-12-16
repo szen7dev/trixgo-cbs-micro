@@ -407,11 +407,12 @@ class Model extends BaseModel {
                 } else{
                     limit = +Number(limit);
                 }
+                // console.log(limit)
 
                 let conditionObj = { }
                 let sortBy;
-                let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
-                // let keys	 = ['createAt__-1', '_id__-1'];
+                // let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(customerID && checkObjectIDs(customerID)){
 
@@ -473,6 +474,7 @@ class Model extends BaseModel {
 
                 // console.log(populates)
                 // console.log(conditionObj)
+                // console.log(lastestID)
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
