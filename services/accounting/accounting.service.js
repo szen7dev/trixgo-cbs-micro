@@ -4,7 +4,6 @@ const { Queue } 										= require("bullmq");
 const IORedis 											= require("ioredis");
 const { REDIS_SEPERATOR } 								= require("../../tools/cache/cf_redis");
 const { isProd } 										= require("../../tools/utils/utils");
-
 const DbService                	    					= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    				= require("../../tools/mixins/cache.cleaner.mixin");
 
