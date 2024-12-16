@@ -1,7 +1,12 @@
 "use strict";
 
+const { Queue } 							= require("bullmq");
+const IORedis 								= require("ioredis");
+const { REDIS_SEPERATOR } 					= require("../../tools/cache/cf_redis");
+const { isProd } 							= require("../../tools/utils/utils");
 const DbService                	    		= require("../../tools/mixins/db.mixin");
 const CacheCleaner                	    	= require("../../tools/mixins/cache.cleaner.mixin");
+
 const { CF_DOMAIN_SERVICES } 		    	= require('../gateway/helper/domain.constant');
 const { CF_ACTIONS_STORE } 	    			= require('./helper/store.actions-constant');
 
@@ -96,7 +101,33 @@ module.exports = {
 	* Service started lifecycle event handler
 	*/
 	async started() {
+		const initQueueEvents = (queue) => {
+			queue.on("error", err => {
+				console.error({ err });
+			})
+		}
 
+		const connection = new IORedis({
+			host: REDIS_SEPERATOR.HOST,
+			port: REDIS_SEPERATOR.PORT,
+			...(isProd() && {
+				username: REDIS_SEPERATOR.USR,
+				password: REDIS_SEPERATOR.PWD,
+			}),
+			maxRetriesPerRequest: null,
+			enableOfflineQueue: false,
+		})
+
+		const queue = new Queue("price_analyze", {
+			connection,
+		})
+
+		this.metadata = {
+			...this.metadata,
+			queue
+		}
+
+		initQueueEvents(queue)
 	},
 
 	/**

@@ -2671,6 +2671,7 @@ class Model extends BaseModel {
                      */
                     for(const voucher of listVouchers) {
                         await queue.add("price_analyze", {
+                            option: 1,
                             voucher,
                             fundaID,
                             companyID,

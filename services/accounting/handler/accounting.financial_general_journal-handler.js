@@ -299,6 +299,8 @@ module.exports = {
 
                 let { companyID, fundaID, accountID, fromDate, toDate } = ctx.params;
 
+                console.log(ctx.params)
+
                 if(!companyID) {
                     companyID = company._id;
                 }

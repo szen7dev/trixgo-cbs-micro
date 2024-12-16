@@ -287,7 +287,7 @@ module.exports = {
 
                 if(!option){
                     const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.analysePrimeCostOfAllVouchers({
-                        companyID, fromDate, toDate, userID
+                        companyID, fromDate, toDate, userID, queue: this.metadata.queue
                     })
     
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
