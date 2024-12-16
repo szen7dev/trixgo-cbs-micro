@@ -796,22 +796,17 @@ class Model extends BaseModel {
 
                     // Cấp phát Voucher
                     if(option == 2){
-                        let receivers = []
-                        let voucherID = dataImportJSON[0].__EMPTY_3
-
                         for (const item of dataImportJSON) {
                             // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                             if(index > 0){
-                                // console.log(item)
-                                receivers.push(item?.__EMPTY_3)
+                                let receivers = [item?.__EMPTY]
+                                let voucherID = item?.__EMPTY_3
+
+                                await this.update({ userID, voucherID, receivers, option: 1 })
                             }
         
                             index ++;
                         }
-                        // console.log({voucherID})
-                        // console.log(receivers)
-        
-                        await this.update({ userID, voucherID, receivers, option: 1 })
         
                         return resolve({ error: false, message: "Import successfull" })
                     }
