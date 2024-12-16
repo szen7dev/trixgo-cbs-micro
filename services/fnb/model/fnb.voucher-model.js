@@ -407,11 +407,12 @@ class Model extends BaseModel {
                 } else{
                     limit = +Number(limit);
                 }
+                // console.log(limit)
 
                 let conditionObj = { }
                 let sortBy;
-                let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
-                // let keys	 = ['createAt__-1', '_id__-1'];
+                // let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(customerID && checkObjectIDs(customerID)){
 
@@ -473,6 +474,7 @@ class Model extends BaseModel {
 
                 // console.log(populates)
                 // console.log(conditionObj)
+                // console.log(lastestID)
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
@@ -542,6 +544,8 @@ class Model extends BaseModel {
                     .limit(200)
                     // console.log(listData)
 
+                    let listVoucher = await FNB_VOUCHER_COLL.find({company: companyID})
+
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_voucher_template_import.xlsx')))
                     .then(async workbook => {
@@ -554,6 +558,22 @@ class Model extends BaseModel {
                             workbook.sheet("ExportContact").row(i).cell(4).value(item.note);
                             workbook.sheet("ExportContact").row(i).cell(5).value(`${item._id}`);
                             workbook.sheet("ExportContact").row(i).cell(6).value(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`).hyperlink(`https://app.winggo.vn/mobile/activity/${item._id}/w6g9o22`)
+
+                            i++
+                        });
+
+                        var i = 3;
+                        listVoucher?.forEach((item, index) => {
+                            workbook.sheet("ImportVoucher").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("ImportVoucher").row(i).cell(2).value(Number(item.type));
+                            workbook.sheet("ImportVoucher").row(i).cell(3).value(item.name);
+                            workbook.sheet("ImportVoucher").row(i).cell(4).value(item.sign);
+                            workbook.sheet("ImportVoucher").row(i).cell(5).value(item.expired);
+                            workbook.sheet("ImportVoucher").row(i).cell(6).value(Number(item.minOrderAmount));
+                            workbook.sheet("ImportVoucher").row(i).cell(7).value(Number(item.salesoffAmount));
+                            workbook.sheet("ImportVoucher").row(i).cell(8).value(Number(item.salesoffRate));
+                            workbook.sheet("ImportVoucher").row(i).cell(9).value(item.note);
+                            workbook.sheet("ImportVoucher").row(i).cell(11).value(`${item._id}`);
 
                             i++
                         });
