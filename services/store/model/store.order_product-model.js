@@ -1635,7 +1635,7 @@ class Model extends BaseModel {
 			try {
                 let conditionOb = { 
                     company: companyID,
-                    type: {$in: [1,2,3,4,5,6]}, // Vật tư....
+                    type: {$in: [1,2,3,4,5,6]}, // Làm rõ lại, chỉ chạy giá vốn cho việc Xuất hàng nội bộ. Còn bán ra bên ngoài???
                     // returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
                     forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
                     status: 5, // Không chạy cho các Phiếu hủy
