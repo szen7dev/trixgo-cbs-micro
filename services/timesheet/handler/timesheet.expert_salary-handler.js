@@ -82,7 +82,7 @@ module.exports = {
                     reward: Number(reward).toFixed(0), 
                     punishment: Number(punishment).toFixed(0), 
                     advance: Number(advance).toFixed(0), 
-                    convertFactor: Number(convertFactor).toFixed(0), 
+                    convertFactor: convertFactor, 
                     paid: Number(paid).toFixed(0), 
                     revenueBonus: Number(revenueBonus).toFixed(0), 
                     mealAllowance: Number(mealAllowance).toFixed(0), 
