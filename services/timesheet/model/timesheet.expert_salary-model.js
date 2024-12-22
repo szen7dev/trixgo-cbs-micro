@@ -1596,82 +1596,78 @@ class Model extends BaseModel {
 
                 // CẬP NHẬT NHÂN SỰ CÒN THIẾU VÀO BẢNG LƯƠNG TỔNG
                 if(option == 1){
-                    if(SALARY_RESET_PERMISSION.includes(email)){
-                        let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
-                        if(infoSalary &&  infoSalary.status == 2)
-                            return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
+                    let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(salaryID)
+                    if(infoSalary &&  infoSalary.status == 2)
+                        return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
-                        let listData2 = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
+                    let listData2 = await TIMESHEET__EXPERT_SALARY_COLL.find({parent: salaryID}).select('human')
 
-                        let A = [] 
-                        if(arrUser && arrUser.length){
-                            A = arrUser.map(item=>item.toString())
-                        }
-                        let B = listData2.map(item=>item.human.toString())
+                    let A = [] 
+                    if(arrUser && arrUser.length){
+                        A = arrUser.map(item=>item.toString())
+                    }
+                    let B = listData2.map(item=>item.human.toString())
 
-                        // Lấy các phần tử trong A nhưng không có trong B
-                        const result = A.filter(item => !B.includes(item));
+                    // Lấy các phần tử trong A nhưng không có trong B
+                    const result = A.filter(item => !B.includes(item));
 
-                        /**
-                         * Tạo chi tiết lương cho các User đang hoạt động
-                         */
-                        let listHuman = await AUTH__USER_COLL.find({ _id: {$in: result}, status: 1 })
-                        .select('fullname department position contacts')
-                        .populate({
-                            path: 'contacts',
-                            select: 'company sallaryBasic insuranceFee union share'
-                        })
-                        for(const item of listHuman){
-                            let insuranceFee = 0, union = 0, share = 0
-                            if(item.contacts && item.contacts.length){
-                                for(const contact of item.contacts){
-                                    if(contact.company.toString() === companyID.toString()){
-                                        insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
-                                        union = Number(union) + Number(contact.union)
-                                        share = Number(share) + Number(contact.share)
-                                    }
+                    /**
+                     * Tạo chi tiết lương cho các User đang hoạt động
+                     */
+                    let listHuman = await AUTH__USER_COLL.find({ _id: {$in: result}, status: 1 })
+                    .select('fullname department position contacts')
+                    .populate({
+                        path: 'contacts',
+                        select: 'company sallaryBasic insuranceFee union share'
+                    })
+                    for(const item of listHuman){
+                        let insuranceFee = 0, union = 0, share = 0
+                        if(item.contacts && item.contacts.length){
+                            for(const contact of item.contacts){
+                                if(contact.company.toString() === companyID.toString()){
+                                    insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
+                                    union = Number(union) + Number(contact.union)
+                                    share = Number(share) + Number(contact.share)
                                 }
                             }
-
-                            let dataInsertDetail = {
-                                userCreate: userID,
-                                name: 'Default',
-                                admins: [userID],
-                                members: [userID],
-                                human: item._id,
-                                parent: infoSalary._id, // Bảng lương cha
-                                company: infoSalary.company, // Bảng lương cha
-                                convertFactor: infoSalary.convertFactor,
-                                project: item.department,
-                                position: item.position,
-                                date: infoSalary.date, // Bảng lương cha
-                                type: infoSalary.type, // Bảng lương cha
-                            }
-
-                            if(Number(insuranceFee) > 0){
-                                dataInsertDetail.insurance = Number(insuranceFee)
-                            }
-
-                            if(Number(union) > 0){
-                                dataInsertDetail.union = Number(union)
-                            }
-
-                            if(Number(share) > 0){
-                                dataInsertDetail.share = Number(share)
-                            }
-
-                            await this.insertData(dataInsertDetail)
                         }
 
-                        // Cập nhật số nhân sự vào Bảng lương cha
-                        await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoSalary._id, {
-                            numberOfHuman: Number(infoSalary.numberOfHuman) + Number(listHuman.length)
-                        }, { new: true })
+                        let dataInsertDetail = {
+                            userCreate: userID,
+                            name: 'Default',
+                            admins: [userID],
+                            members: [userID],
+                            human: item._id,
+                            parent: infoSalary._id, // Bảng lương cha
+                            company: infoSalary.company, // Bảng lương cha
+                            convertFactor: infoSalary.convertFactor,
+                            project: item.department,
+                            position: item.position,
+                            date: infoSalary.date, // Bảng lương cha
+                            type: infoSalary.type, // Bảng lương cha
+                        }
 
-                        return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
-                    }else{
-                        return resolve({ error: true, message: 'Bạn không có quyền cập nhật' })
+                        if(Number(insuranceFee) > 0){
+                            dataInsertDetail.insurance = Number(insuranceFee)
+                        }
+
+                        if(Number(union) > 0){
+                            dataInsertDetail.union = Number(union)
+                        }
+
+                        if(Number(share) > 0){
+                            dataInsertDetail.share = Number(share)
+                        }
+
+                        await this.insertData(dataInsertDetail)
                     }
+
+                    // Cập nhật số nhân sự vào Bảng lương cha
+                    await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndUpdate(infoSalary._id, {
+                        numberOfHuman: Number(infoSalary.numberOfHuman) + Number(listHuman.length)
+                    }, { new: true })
+
+                    return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
                 }
 
                 // COPY NHÂN BẢN BẢNG LƯƠNG
