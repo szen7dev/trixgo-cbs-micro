@@ -3005,7 +3005,7 @@ class Model extends BaseModel {
             }else if(type == 3){
                 template = '../../../files/templates/excels/accounting_voucher_detail_2.xlsx'
 
-                if(infoAppUser && infoAppUser.data.level == 0){
+                if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0){
                     template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
                 }
             }
@@ -3118,7 +3118,7 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity));
 
                             // Show giá với Admin ứng dụng
-                            if(infoAppUser && infoAppUser.data.level == 0){
+                            if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0){
                                 workbook.sheet("Data").row(i).cell(5).value(Number(item?.unitprice));
                                 workbook.sheet("Data").row(i).cell(6).value(Number(item?.amount));
                                 workbook.sheet("Data").row(i).cell(7).value(item?.note);
@@ -3129,7 +3129,7 @@ class Model extends BaseModel {
                             i++
                         })
 
-                        if(infoAppUser && infoAppUser.data.level == 0){
+                        if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0){
                             const range = workbook.sheet('Data').range(`A15:G${data.length + 14}`);
 
                             range.style({
