@@ -2342,7 +2342,7 @@ class Model extends BaseModel {
                 if (!option) {
                     const populates = JSON.stringify({
                         path: 'department position field property area area1 area2 linkUser workingStatus contractType documents',
-                        select: 'name sign fullname type educationalBackground2 field2 certificateType certificateName fromDate toDate workplace reference',
+                        select: 'name sign fullname type educationalBackground2 field2 certificateType certificateName fromDate toDate workplace reference numberOnLeave note',
                         populate: {
                             path: 'parent educationalBackground2 field2 certificateType certificateName',
                             select: 'name',
@@ -2566,6 +2566,8 @@ class Model extends BaseModel {
     
                                 if(subitem.type == 6){
                                     str6 = str6 + `Ngày ${moment(subitem.fromDate).format('DD/MM/YYYY')}: ${subitem?.name} - ${subitem?.note}` + '\n'
+                                }else{
+                                    str6 = 'Không'
                                 }
                             }
                         }
@@ -2583,7 +2585,9 @@ class Model extends BaseModel {
                         workbook.sheet("NhanSu2").row(i).cell(12).value(str1)
                         workbook.sheet("NhanSu2").row(i).cell(13).value(str6)
                         workbook.sheet("NhanSu2").row(i).cell(14).value(str6)
-                        workbook.sheet("NhanSu2").row(i).cell(15).value(Number(duration))
+                        workbook.sheet("NhanSu2").row(i).cell(15).value(Number(item?.linkUser?.numberOnLeave))
+                        // workbook.sheet("NhanSu2").row(i).cell(16).value(Number(0))
+                        workbook.sheet("NhanSu2").row(i).cell(17).value(Number(duration))
                         
                         i++
                     });
