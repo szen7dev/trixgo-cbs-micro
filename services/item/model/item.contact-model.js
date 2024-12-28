@@ -2085,7 +2085,7 @@ class Model extends BaseModel {
      * Date: 8/12/2022
      */
     importFromExcel({ option, companyID, dataImport, userID }) {
-        // console.log({ option, companyID, dataImport, userID })
+        console.log({ option, companyID, dataImport, userID })
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
@@ -2093,6 +2093,7 @@ class Model extends BaseModel {
                 let errorNumber = 0;
 
                 // console.log({_______________:dataImportJSON.length})
+                // console.log(dataImportJSON)
 
                 // IMPORT DANH BẠ
                 if (option == 1) {
@@ -2228,6 +2229,32 @@ class Model extends BaseModel {
                             }
 
                         }
+                        index++;
+                    }
+                }
+
+                else if(option == 3){
+                    for (const data of dataImportJSON) {
+                        // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                        if (index > 0 && index < 51) {
+                            console.log(data)
+
+                            let prepareData = {
+                                authorID: userID,
+                                fundaID: data?.__EMPTY_2,
+                                name: data?.__EMPTY,
+                                phone: data?.__EMPTY_1,
+                                note: 'Import nhanh từ excel',
+                                
+                            }
+                            // console.log(prepareData);
+
+                            let infoAfterInsert = await this.insert(prepareData);
+                            if (infoAfterInsert.error) {
+                                errorNumber++;
+                            }
+                        }
+
                         index++;
                     }
                 }
