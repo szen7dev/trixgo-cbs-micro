@@ -799,10 +799,15 @@ class Model extends BaseModel {
                         for (const item of dataImportJSON) {
                             // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                             if(index > 0){
-                                let receivers = [item?.__EMPTY]
-                                let voucherID = item?.__EMPTY_3
-
-                                await this.update({ userID, voucherID, receivers, option: 1 })
+                                let contact = await ITEM__CONTACT_COLL.findOne({company: companyID, phone: item?.__EMPTY}).select('name phone')
+                                // console.log(contact)
+                                if(contact){
+                                    // let receivers = [item?.__EMPTY]
+                                    let receivers = [contact._id]
+                                    let voucherID = item?.__EMPTY_1
+    
+                                    await this.update({ userID, voucherID, receivers, option: 1 })
+                                }
                             }
         
                             index ++;
