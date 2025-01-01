@@ -5,6 +5,7 @@ const { checkObjectIDs, IsJsonString, validateParamsObjectID }
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
 const ObjectID                          = require('mongoose').Types.ObjectId;
+const moment = require("moment");
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
@@ -529,7 +530,7 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        // console.log({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit, lastestID, select, populates, userID })
+        console.log({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -605,8 +606,10 @@ class Model extends BaseModel {
 
                 if(fromDate && toDate){
                     conditionObj.createAt = {
-                        $gte: new Date(fromDate),
-                        $lte: new Date(toDate),
+                        // $gte: new Date(fromDate),
+                        // $lte: new Date(toDate),
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
                     }
                 }
                 // console.log(conditionObj)
