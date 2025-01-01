@@ -880,31 +880,28 @@ class Model extends BaseModel {
                     if(info){
                         if(arr1[item]){
                             hours1 = Number(arr1[item][0].quantity).toFixed(2)
-                            // salary = Number(arr1[item][0].amount).toFixed(0)
-                            salary = Math.round((Number(arr1[item][0].amount).toFixed(0))/1000) * 1000
+                            salary = Number(arr1[item][0].amount).toFixed(0)
 
                             if(arrSalary[item]){
-                                salary = Number(salary) - Math.round((Number(arrSalary[item][0].salary).toFixed(0))/1000) * 1000
+                                salary = Number(salary) - Number(arrSalary[item][0].salary).toFixed(0)
                             }
                         }
 
                         if(arr2[item]){
                             hours2 = Number(arr2[item][0].quantity).toFixed(2)
-                            // onLeaveSalary = Number(arr2[item][0].amount).toFixed(0)
-                            onLeaveSalary = Math.round((Number(arr2[item][0].amount).toFixed(0))/1000) * 1000
+                            onLeaveSalary = Number(arr2[item][0].amount).toFixed(0)
 
                             if(arrSalary[item]){
-                                onLeaveSalary = Number(onLeaveSalary) - Math.round((Number(arrSalary[item][0].onLeaveSalary).toFixed(0))/1000) * 1000
+                                onLeaveSalary = Number(onLeaveSalary) - Number(arrSalary[item][0].onLeaveSalary).toFixed(0)
                             }
                         }
 
                         if(arr3[item]){
                             hours3 = Number(arr3[item][0].quantity).toFixed(2)
-                            // overtimeSalary = Number(arr3[item][0].amount).toFixed(0)
-                            overtimeSalary = Math.round((Number(arr3[item][0].amount).toFixed(0))/1000) * 1000
+                            overtimeSalary = Number(arr3[item][0].amount).toFixed(0)
 
                             if(arrSalary[item]){
-                                overtimeSalary = Number(overtimeSalary) - Math.round((Number(arrSalary[item][0].overtimeSalary).toFixed(0))/1000) * 1000
+                                overtimeSalary = Number(overtimeSalary) - Number(arrSalary[item][0].overtimeSalary).toFixed(0)
                             }
                         }
 
@@ -1112,17 +1109,13 @@ class Model extends BaseModel {
                     if(info){
                         if(arr1[item]){
                             hours1 = Number(arr1[item][0].quantity).toFixed(2)
-                            // salary = Number(arr1[item][0].amount).toFixed(0)
-                            salary = Math.round((Number(arr1[item][0].amount).toFixed(0))/1000) * 1000
+                            salary = Number(arr1[item][0].amount).toFixed(0)
                         }
 
                         if(arr2[item]){
                             hours4 = Number(arr2[item][0].quantity).toFixed(2)
-                            // mealAllowance = Number(arr2[item][0].amount).toFixed(0)
-                            // subAllowance13 = Number(arr2[item][0].amount).toFixed(0)
-
-                            mealAllowance = Math.round((Number(arr2[item][0].amount).toFixed(0))/1000) * 1000
-                            subAllowance13 = Math.round((Number(arr2[item][0].amount).toFixed(0))/1000) * 1000
+                            mealAllowance = Number(arr2[item][0].amount).toFixed(0)
+                            subAllowance13 = Number(arr2[item][0].amount).toFixed(0) // Đưa tạm sang phụ cấp này cho Lương thử việc
                         }
                     }
 
@@ -1241,11 +1234,8 @@ class Model extends BaseModel {
 
                     if(info){
                         if(arr[item]){
-                            // reward = Number(arr[item][0].bonus) * info.convertFactor
-                            // punishment = Number(arr[item][0].amount) * info.convertFactor
-
-                            reward = Math.round((Number(Number(arr[item][0].bonus) * info.convertFactor).toFixed(0))/1000) * 1000
-                            punishment = Math.round((Number(Number(arr[item][0].amount) * info.convertFactor).toFixed(0))/1000) * 1000
+                            reward = Number(Number(arr[item][0].bonus) * info.convertFactor).toFixed(0)
+                            punishment = Number(Number(arr[item][0].amount) * info.convertFactor).toFixed(0)
                         }
                         
                         salary = info.salary
@@ -1546,8 +1536,6 @@ class Model extends BaseModel {
                 }
 
                 remaining = Number(Number(salaryFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
-
-                // remaining = Math.round((Number(Number(salaryFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)))/1000) * 1000
 
                 let dataUpdate =  {
                     userUpdate: userID, 
