@@ -103,7 +103,8 @@ class Model extends BaseModel {
                     dataInsert.date = date;
                 }
 
-                if(type){
+                // if(type){
+                if(!isNaN(type) && [1,2].includes(Number(type))){
                     dataInsert.type = type;
                 }
 
@@ -254,7 +255,8 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                if(type){
+                // if(type){
+                if(!isNaN(type) && [1,2].includes(Number(type))){
                     dataUpdate.type = type;
                 }
 

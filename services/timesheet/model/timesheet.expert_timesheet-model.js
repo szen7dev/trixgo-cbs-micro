@@ -170,7 +170,7 @@ class Model extends BaseModel {
                     dataInsert.date = date;
                 }
 
-                if(!isNaN(type)){
+                if(!isNaN(type) && [1,2].includes(Number(type))){
                     dataInsert.type = type;
                 }
 
@@ -182,7 +182,7 @@ class Model extends BaseModel {
                     dataInsert.shiftType = shiftType;
                 }
 
-                if(!isNaN(official)){
+                if(!isNaN(official) && [1,2].includes(Number(official))){
                     dataInsert.official = official;
                 }
 
@@ -407,11 +407,11 @@ class Model extends BaseModel {
                     dataUpdate.timeApprover =  Date.now();
                 }
 
-                if(!isNaN(type)){
+                if(!isNaN(type) && [1,2].includes(Number(type))){
                     dataUpdate.type = type;
                 }
 
-                if(!isNaN(official)){
+                if(!isNaN(official) && [1,2].includes(Number(official))){
                     dataUpdate.official = official;
                 }
 

@@ -2573,12 +2573,6 @@ class Model extends BaseModel {
                             }
                         },
                         {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(monthFilter),
-                            }
-                        },
-                        {
                             $group: {
                                 _id: { assignee: '$assignee', day: '$day', subtype: '$subtype' }, //fix lại bị sai ở đây nếu 1 ngày có 2 Subtype
                                 quantity: { $sum: "$hours" },
