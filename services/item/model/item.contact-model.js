@@ -45,6 +45,7 @@ const ITEM__AREA_COLL = require('../database/item.area-coll')
 const FNB_VOUCHER_COLL = require('../../fnb/database/fnb.voucher-coll')
 const FNB_ORDER_COLL = require('../../fnb/database/fnb.order-coll')
 const HUMAN__CONTACT_DOCUMENT_COLL = require('../../human/database/human.contact_document-coll')
+const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 
 const AUTH__USER = require('../../auth/model/auth.user-model').MODEL
 const AUTH__APP_USER = require('../.../../../auth/model/auth.app_users').MODEL
@@ -2362,7 +2363,8 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcelByFilter({ option, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail, ctx }) {
+    exportExcelByFilter({ option, userID, companyID, filterParams, year, fromDate, toDate, page, unit, validatePhone, validateMail, ctx }) {
+        // console.log({ option, userID, companyID, filterParams, year, fromDate, toDate, page, unit, validatePhone, validateMail })
         return new Promise(async resolve => {
             try {
                 // Tải danh sách theo điều kiện lọc
@@ -2495,6 +2497,58 @@ class Model extends BaseModel {
 
                     // return resolve({ error: false, data: listData, status: 200 });
                 }
+
+                // Tổng hợp nghỉ phép
+                else if (Number(option) === 3) {
+                    let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                        company: ObjectID(companyID),
+                        parent: {$exists: true, $ne: null },
+                        subtype: 2, // Nghỉ phép
+                        $where: `return this.date.getFullYear() === ${Number(year)}`
+                    })
+                    .select('date assignee hours note')
+                    .populate({
+                        path: 'assignee',
+                        select: '_id fullname department',
+                        populate:{
+                            path: 'department',
+                            select: '_id name',
+                        }
+                    })
+                 
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export_time_off.xlsx')))
+                        .then(async workbook => {
+                            workbook.sheet("BaoCao").row(1).cell(3).value(Number(year))
+
+                            var i = 3;
+                            listData?.forEach((item, index) => {
+
+                                workbook.sheet("NghiPhep").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("NghiPhep").row(i).cell(2).value(item?.assignee?.fullname)
+                                workbook.sheet("NghiPhep").row(i).cell(3).value(item?.assignee?.department?.name)
+                                workbook.sheet("NghiPhep").row(i).cell(4).value(item?.date)
+                                // workbook.sheet("NghiPhep").row(i).cell(4).value(Number(item?.hours))
+                                workbook.sheet("NghiPhep").row(i).cell(5).value(item?.note)
+                                workbook.sheet("NghiPhep").row(i).cell(6).formula(`="T"&MONTH(D${i})&"_"&YEAR(D${i})`)
+
+                                i++
+                            });
+
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `contact_export_time_off${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        });
+
+                    // return resolve({ error: false, data: listData, status: 200 });
+                }
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -2612,7 +2666,7 @@ class Model extends BaseModel {
                         workbook.sheet("NhanSu2").row(i).cell(12).value(str1)
                         workbook.sheet("NhanSu2").row(i).cell(13).value(str6)
                         workbook.sheet("NhanSu2").row(i).cell(14).value(str6)
-                        workbook.sheet("NhanSu2").row(i).cell(15).value(Number(item?.linkUser?.numberOnLeave))
+                        workbook.sheet("NhanSu2").row(i).cell(15).value(item?.linkUser ? Number(item?.linkUser?.numberOnLeave) : 0)
                         // workbook.sheet("NhanSu2").row(i).cell(16).value(Number(0))
                         workbook.sheet("NhanSu2").row(i).cell(17).value(Number(duration))
                         
