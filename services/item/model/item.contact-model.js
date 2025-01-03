@@ -2363,7 +2363,7 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcelByFilter({ option, userID, companyID, filterParams, year, fromDate, toDate, page, unit, validatePhone, validateMail, ctx }) {
+    exportExcelByFilter({ option, year, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail, ctx }) {
         // console.log({ option, userID, companyID, filterParams, year, fromDate, toDate, page, unit, validatePhone, validateMail })
         return new Promise(async resolve => {
             try {
@@ -2398,7 +2398,7 @@ class Model extends BaseModel {
                         return resolve({ data, error })
                     }
 
-                    const result = await this.downloadExcelFile(data.listRecords)
+                    const result = await this.downloadExcelFile({data: data.listRecords, year: year})
                     return resolve(result);
                 }
 
@@ -2556,14 +2556,15 @@ class Model extends BaseModel {
         })
     }
 
-    downloadExcelFile(data) {
+    downloadExcelFile({data, year}) {
         // console.log('Bạn vừa tải data về hệ thống')
         return new Promise(resolve => {
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export.xlsx')))
                 .then(async workbook => {
 
-                    let currentYear = new Date().getFullYear()
-                    workbook.sheet("BaoCao").row(1).cell(3).value(Number(currentYear));
+                    // let currentYear = new Date().getFullYear()
+                    // let currentYear = year
+                    workbook.sheet("BaoCao").row(1).cell(3).value(Number(year));
 
                     // Hàm quy đổi số ngày sang Năm, tháng, ngày
                     function convertDaysToYearsMonthsDays(totalDays) {
