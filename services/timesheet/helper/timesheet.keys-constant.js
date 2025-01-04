@@ -4,6 +4,9 @@ exports.SALARY_RESET_PERMISSION = [
     'hiepnh.tlo@gmail.com', 
     'assistant.momy.trx@gmail.com', 
     'hiepnh.momychi@gmail.com', 
+    'toannd.winggo@gmail.com', 
+    'toannd.momychi@gmail.com', 
+    'assistant.tlo.trx@gmail.com'
 ]
 
 exports.SALARY_DOWNLOAD_ALL_PERMISSION = [
@@ -16,4 +19,7 @@ exports.SALARY_DOWNLOAD_ALL_PERMISSION = [
     'thuhien.thanhlong@gmail.com', // TLO
     'ninhtrang2611@gmail.com', // TLO
     'thuyduongthanhlong@gmail.com', // TLO
+    'toannd.winggo@gmail.com', 
+    'toannd.momychi@gmail.com', 
+    'assistant.tlo.trx@gmail.com'
 ]
