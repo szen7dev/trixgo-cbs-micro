@@ -5263,13 +5263,17 @@ class Model extends BaseModel {
    * LỖI GÂY CHẬM DO FROMDATE - TODATE KÉO DÀI CẢ NĂM
    * https://docs.google.com/document/d/1hRYD5pLK7G3n37-Cs-N732cifa1Z3-W1dV8sTSRInfY/edit
    */
-  exportExcel({ option, companyID, year, month, email, userID, queryFnb }) {
+  exportExcel({ option, companyID, year, month, fromDate, toDate, email, userID, queryFnb }) {
     // console.log({ option, companyID, year, month, email, userID, queryFnb })
     return new Promise(async (resolve) => {
       try {
         let yearFilter;
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth() + 1;
+
+        if (fromDate && toDate) {
+          currentYear = new Date(toDate).getFullYear();
+        }
 
         if (year && !isNaN(year)) {
           yearFilter = Number(year);
@@ -5540,7 +5544,7 @@ class Model extends BaseModel {
               $project: projectObj,
             },
             {
-              $match: conditionObjYear,
+              $match: {year: Number(yearFilter)},
             },
             {
               $group: conditionGroupErr,
@@ -5585,7 +5589,7 @@ class Model extends BaseModel {
                 }
             },
             {
-                $match: conditionObjYear
+                $match: {year: Number(yearFilter)}
             },
             {
                 $group: {
@@ -5629,7 +5633,7 @@ class Model extends BaseModel {
                   }
               },
               {
-                  $match: conditionObjYear
+                  $match: {year: Number(yearFilter)}
               },
               {
                   $group: {
@@ -5656,6 +5660,8 @@ class Model extends BaseModel {
 
           // Modify the workbook.
           XlsxPopulate.fromFileAsync(path.resolve(__dirname,"../../../files/templates/excels/export_kpi.xlsx")).then(async (workbook) => {
+            workbook.sheet("DashBoard").row(1).cell(1).value(`BÁO CÁO TỔNG HỢP ${yearFilter}`);
+
             var i = 4;
             listDataErrCombine3?.forEach((item, index) => {
                 workbook.sheet("DashBoard").row(i).cell(1).value(Number(index+1));
