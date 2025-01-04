@@ -5264,7 +5264,7 @@ class Model extends BaseModel {
    * https://docs.google.com/document/d/1hRYD5pLK7G3n37-Cs-N732cifa1Z3-W1dV8sTSRInfY/edit
    */
   exportExcel({ option, companyID, year, month, email, userID, queryFnb }) {
-    console.log({ option, companyID, year, month, email, userID, queryFnb })
+    // console.log({ option, companyID, year, month, email, userID, queryFnb })
     return new Promise(async (resolve) => {
       try {
         let yearFilter;
@@ -5293,7 +5293,7 @@ class Model extends BaseModel {
         let conditionObjYear = {
           year: Number(yearFilter),
           month: { $in: [currentMonth - 2, currentMonth - 1, currentMonth] },
-        };
+        }
 
         let conditionGroupErr = {
           _id: { executor: "$executor", month: "$month" },
@@ -5329,6 +5329,11 @@ class Model extends BaseModel {
             if (obj.fromDate && obj.toDate) {
               currentMonth = new Date(obj.toDate).getMonth() + 1;
               currentYear = new Date(obj.toDate).getFullYear();
+            }
+
+            let conditionObjYear = {
+              year: Number(currentYear),
+              month: { $in: [currentMonth - 2, currentMonth - 1, currentMonth] },
             }
 
             if(obj.fundasID && obj.fundasID.length){
@@ -5434,6 +5439,19 @@ class Model extends BaseModel {
                 "../../../files/templates/excels/fnb_export_kpi.xlsx",
               ),
             ).then(async (workbook) => {
+              workbook
+                  .sheet("DoanhSo")
+                  .row(1)
+                  .cell(1)
+                  .value(`BÁO CÁO KPI DOANH SỐ ${currentYear}`);
+
+              workbook
+              .sheet("Err")
+              .row(1)
+              .cell(1)
+              .value(`BÁO CÁO KPI LỖI MẮC PHẢI ${currentYear}`);
+                  
+
               var i = 3;
               listDataR?.forEach((item, index) => {
                 workbook
