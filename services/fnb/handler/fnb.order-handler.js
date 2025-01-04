@@ -387,9 +387,9 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company, email } = ctx.meta.infoUser;
-                let { option, companyID, filterParams, queryFnb } = ctx.params;
+                let { option, year, month, fromDate, toDate, companyID, filterParams, queryFnb } = ctx.params;
                
-                console.log('11111111111111111')
+                // console.log('11111111111111111')
                 console.log(ctx.params)
 
                 if (!companyID) {
@@ -397,7 +397,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FNB_ORDER_MODEL.exportExcel({
-                    userID, email, option, companyID, filterParams, queryFnb
+                    userID, email, option, year, month, fromDate, toDate, companyID, filterParams, queryFnb
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
