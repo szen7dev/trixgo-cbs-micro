@@ -217,7 +217,7 @@
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                 let { budgetID } = ctx.params;
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await BUDGET__WORK_MODEL.downloadTemplateExcel({
                     companyID: company._id, budgetID, userID 
