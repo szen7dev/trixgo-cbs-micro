@@ -477,12 +477,65 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    downloadTemplateExcel({ option, itemID, userID }) {
+    downloadTemplateExcel({ companyID, budgetID, userID }) {
         return new Promise(async resolve => {
             try {
-                // Modify the workbook.
+                let infoBudget = await BUDGET_COLL.findById(budgetID).select('name')
+                let listItem = await BUDGET__ITEM_COLL.find({company: companyID, budget: budgetID}).select('name sign quantity unitPrice amount')
+                let listGroup = await BUDGET__GROUP_COLL.find({company: companyID, budget: budgetID}).select('item name sign quantity unitPrice amount')
+                let listWork = await BUDGET__WORK_COLL.find({company: companyID, budget: budgetID}).select('group name sign quantity unitPrice amount')
+                // console.log(infoBudget)
+                // console.log(listItem)
+
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import_report.xlsx')))
                 .then(async workbook => {
+                    workbook.sheet("BaoCaoNganSach").row(1).cell(1).value(infoBudget.name)
+                    
+                    var i = 3
+                    listItem.forEach((item, index) =>{
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(`I${index+1}`)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(item?.name)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(item?.sign)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(item?.unit)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(item?.quantity))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(item?.unitPrice))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(item?.amount))
+
+                        workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "fff2cc"})
+
+                        i++
+
+                        listGroup.forEach((group, gindex) =>{
+                            if(item._id.toString() === group.item.toString()){
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(`G${gindex+1}`)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(group?.name)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(group?.sign)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(group?.unit)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(group?.quantity))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(group?.unitPrice))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(group?.amount))
+        
+                                workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "f3f3f3"})
+
+                                i++
+
+                                listWork.forEach((work, windex) =>{
+                                    if(group._id.toString() === work.group.toString()){
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(windex+1)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(work?.name)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(work?.sign)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(work?.unit)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(work?.quantity))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(work?.unitPrice))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(work?.amount))
+
+                                        i++
+                                    }
+    
+                                })
+                            }
+                        })
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
@@ -494,7 +547,7 @@ class Model extends BaseModel {
 
                     fs.unlinkSync(pathWriteFile);
                     return resolve({ error: false, data: result?.Location, status: 200 });
-                });
+                })
 
             } catch (error) {
                 console.log({ error })
