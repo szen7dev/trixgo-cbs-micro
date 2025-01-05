@@ -2,6 +2,7 @@
 const BaseModel                         = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }                        
                                         = require('../../../tools/utils/utils');
+const ObjectID = require('mongoose').Types.ObjectId;
 const stringUtils					    = require('../../../tools/utils/string_utils');
 const { KEY_ERROR }                     = require('../../../tools/keys/index')
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
@@ -19,6 +20,7 @@ const BUDGET_COLL                       = require('../database/budget-coll');
 const BUDGET__ITEM_COLL                 = require('../database/budget.item-coll');
 const BUDGET__GROUP_COLL                = require('../database/budget.group-coll');
 const BUDGET__WORK_COLL                 = require('../database/budget.work-coll');
+const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 
 const BUDGET_MODEL                      = require('./budget-model').MODEL;
 const BUDGET__ITEM_MODEL                = require('./budget.item-model').MODEL;
@@ -558,6 +560,30 @@ class Model extends BaseModel {
                             }
                         })
                     })
+
+                    // Tổng hợp theo Sản lượng
+                    let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: {
+                                work: { $exists: true, $ne: null },
+                                budget: ObjectID(budgetID),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { work: "$work" },
+                                // quantity: { $sum: "$hours" },
+                                // amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    let  conditionPopulate1 = {
+                        path: '_id.work',
+                        select: '_id name sign unit quantity unitPrice',
+                        model: 'budget_work'
+                    }
+                    await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
+                    console.log(listData1)
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
