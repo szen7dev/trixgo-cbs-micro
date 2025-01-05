@@ -341,9 +341,13 @@ class Model extends BaseModel {
                     if(checkObjectIDs(workID)){
                         dataUpdate.work = workID;
     
-                        let infoWork = await BUDGET__WORK_COLL.findById(workID).select('unitPrice')
+                        let infoWork = await BUDGET__WORK_COLL.findById(workID).select('unitPrice budget item group')
                         if(infoWork){
                             unitprice2 = Number(infoWork.unitPrice)
+
+                            dataUpdate.budget = infoWork.budget;
+                            dataUpdate.item = infoWork.item;
+                            dataUpdate.group = infoWork.group;
                         }
                     }
 
