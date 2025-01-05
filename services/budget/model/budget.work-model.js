@@ -481,12 +481,12 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import.xlsm')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import_report.xlsx')))
                 .then(async workbook => {
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `budget_import_${now.getTime()}.xlsm`;
+                    const fileName = `budget_report_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
@@ -516,6 +516,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'budgetID_invalid', status: 400 })
 
                 const dataImportJSON = JSON.parse(dataImport);
+                // console.log(dataImportJSON)
                 let index = 0;
                 let errorNumber = 0;
                 let groupID;
@@ -528,9 +529,9 @@ class Model extends BaseModel {
                 let arrItems = []
                 for (const data of dataImportJSON) {
                     if(index > 0){
-                        if(data?.__EMPTY_16 && data?.__EMPTY_16 != ""){
-                            if(!arrItems.includes(data?.__EMPTY_16)){
-                                arrItems.push(data?.__EMPTY_16)
+                        if(data?.__EMPTY_10 && data?.__EMPTY_10 != ""){
+                            if(!arrItems.includes(data?.__EMPTY_10)){
+                                arrItems.push(data?.__EMPTY_10)
                             }
                         }
                     }
@@ -554,7 +555,6 @@ class Model extends BaseModel {
 
                 if(errorValidate != 0)
                     return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" })
-                
 
                 /**
                  * IMPORT DỮ LIỆU
@@ -567,7 +567,7 @@ class Model extends BaseModel {
                             let dataGroupInsert = {
                                 userID,
                                 name: data?.__EMPTY_1,
-                                itemID: data?.__EMPTY_16,
+                                itemID: data?.__EMPTY_10,
                             }
 
                             let infoGroup = await BUDGET__GROUP_MODEL.insert(dataGroupInsert)
@@ -578,8 +578,6 @@ class Model extends BaseModel {
 
                         if(data?.__EMPTY_2 && data?.__EMPTY_2 != "" && groupID){
                             let dataInsert = {userID}
-                            // console.log(data)
-                            // console.log({groupID})
                             dataInsert.groupID = groupID;
                             dataInsert.name = data.__EMPTY_2;
                             dataInsert.sign = data.__EMPTY_3;
@@ -588,9 +586,10 @@ class Model extends BaseModel {
                             dataInsert.quantity = data.__EMPTY_6;
                             dataInsert.unitPrice = data.__EMPTY_7;
                             dataInsert.amount = data.__EMPTY_8;
-                            dataInsert.note = data.__EMPTY_15;
+                            dataInsert.note = data.__EMPTY_9;
 
-                            let infoWork = await this.insert(dataInsert)
+                            await this.insert(dataInsert)
+                            // let infoWork = await this.insert(dataInsert)
                             // console.log(infoWork)
                         }
                     }
