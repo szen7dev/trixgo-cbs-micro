@@ -477,16 +477,91 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    downloadTemplateExcel({ option, itemID, userID }) {
+    downloadTemplateExcel({ companyID, budgetID, userID }) {
         return new Promise(async resolve => {
             try {
-                // Modify the workbook.
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import.xlsm')))
+                let infoBudget = await BUDGET_COLL.findById(budgetID).select('name')
+                let listItem = await BUDGET__ITEM_COLL.find({company: companyID, budget: budgetID}).select('name sign quantity unitPrice amount impleQuantity impleAmount')
+                let listGroup = await BUDGET__GROUP_COLL.find({company: companyID, budget: budgetID}).select('item name sign quantity unitPrice amount impleQuantity impleAmount')
+                let listWork = await BUDGET__WORK_COLL.find({company: companyID, budget: budgetID}).select('group name sign quantity unitPrice amount impleQuantity impleAmount')
+                // console.log(infoBudget)
+                // console.log(listItem)
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import_report.xlsx')))
                 .then(async workbook => {
+                    workbook.sheet("BaoCaoNganSach").row(1).cell(1).value(infoBudget.name)
+                    
+                    var i = 3
+                    listItem.forEach((item, index) =>{
+                        // console.log({___________: item?.quantity - item?.impleQuantity})
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(`I${index+1}`)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(item?.name)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(item?.sign)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(item?.unit)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(item?.quantity))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(item?.unitPrice))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(item?.amount))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(item?.impleQuantity))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(item?.impleQuantity != 0 ? Number(item?.impleAmount/item?.impleQuantity) : 0)
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(item?.impleAmount))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(item?.quantity - item?.impleQuantity))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((item?.quantity - item?.impleQuantity) != 0 ? (item?.amount - item?.impleAmount) / (item?.quantity - item?.impleQuantity) : 0))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(item?.amount - item?.impleAmount))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(item?.note)
+
+                        workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "fff2cc"})
+
+                        i++
+
+                        listGroup.forEach((group, gindex) =>{
+                            if(item._id.toString() === group.item.toString()){
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(`G${gindex+1}`)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(group?.name)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(group?.sign)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(group?.unit)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(group?.quantity))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(group?.unitPrice))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(group?.amount))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(group?.impleQuantity))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(group?.impleQuantity != 0 ? Number(group?.impleAmount/group?.impleQuantity) : 0)
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(group?.impleAmount))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(group?.quantity - group?.impleQuantity))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((group?.quantity - group?.impleQuantity) != 0 ? (group?.amount - group?.impleAmount) / (group?.quantity - group?.impleQuantity) : 0))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(group?.amount - group?.impleAmount))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(group?.note)
+                                
+                                workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "f3f3f3"})
+
+                                i++
+
+                                listWork.forEach((work, windex) =>{
+                                    if(group._id.toString() === work.group.toString()){
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(windex+1)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(work?.name)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(work?.sign)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(work?.unit)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(work?.quantity))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(work?.unitPrice))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(work?.amount))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(work?.impleQuantity))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(work?.impleQuantity != 0 ? Number(work?.impleAmount/work?.impleQuantity) : 0)
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(work?.impleAmount))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(work?.quantity - work?.impleQuantity))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((work?.quantity - work?.impleQuantity) != 0 ? (work?.amount - work?.impleAmount) / (work?.quantity - work?.impleQuantity) : 0))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(work?.amount - work?.impleAmount))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(work?.note)
+
+                                        i++
+                                    }
+    
+                                })
+                            }
+                        })
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `budget_import_${now.getTime()}.xlsm`;
+                    const fileName = `budget_report_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
@@ -494,7 +569,7 @@ class Model extends BaseModel {
 
                     fs.unlinkSync(pathWriteFile);
                     return resolve({ error: false, data: result?.Location, status: 200 });
-                });
+                })
 
             } catch (error) {
                 console.log({ error })
@@ -516,6 +591,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'budgetID_invalid', status: 400 })
 
                 const dataImportJSON = JSON.parse(dataImport);
+                // console.log(dataImportJSON)
                 let index = 0;
                 let errorNumber = 0;
                 let groupID;
@@ -528,9 +604,9 @@ class Model extends BaseModel {
                 let arrItems = []
                 for (const data of dataImportJSON) {
                     if(index > 0){
-                        if(data?.__EMPTY_16 && data?.__EMPTY_16 != ""){
-                            if(!arrItems.includes(data?.__EMPTY_16)){
-                                arrItems.push(data?.__EMPTY_16)
+                        if(data?.__EMPTY_10 && data?.__EMPTY_10 != ""){
+                            if(!arrItems.includes(data?.__EMPTY_10)){
+                                arrItems.push(data?.__EMPTY_10)
                             }
                         }
                     }
@@ -554,7 +630,6 @@ class Model extends BaseModel {
 
                 if(errorValidate != 0)
                     return resolve({ error: true, message: "Nhóm dữ liệu không hợp lệ" })
-                
 
                 /**
                  * IMPORT DỮ LIỆU
@@ -567,7 +642,7 @@ class Model extends BaseModel {
                             let dataGroupInsert = {
                                 userID,
                                 name: data?.__EMPTY_1,
-                                itemID: data?.__EMPTY_16,
+                                itemID: data?.__EMPTY_10,
                             }
 
                             let infoGroup = await BUDGET__GROUP_MODEL.insert(dataGroupInsert)
@@ -578,8 +653,6 @@ class Model extends BaseModel {
 
                         if(data?.__EMPTY_2 && data?.__EMPTY_2 != "" && groupID){
                             let dataInsert = {userID}
-                            // console.log(data)
-                            // console.log({groupID})
                             dataInsert.groupID = groupID;
                             dataInsert.name = data.__EMPTY_2;
                             dataInsert.sign = data.__EMPTY_3;
@@ -588,9 +661,10 @@ class Model extends BaseModel {
                             dataInsert.quantity = data.__EMPTY_6;
                             dataInsert.unitPrice = data.__EMPTY_7;
                             dataInsert.amount = data.__EMPTY_8;
-                            dataInsert.note = data.__EMPTY_15;
+                            dataInsert.note = data.__EMPTY_9;
 
-                            let infoWork = await this.insert(dataInsert)
+                            await this.insert(dataInsert)
+                            // let infoWork = await this.insert(dataInsert)
                             // console.log(infoWork)
                         }
                     }
