@@ -481,9 +481,9 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let infoBudget = await BUDGET_COLL.findById(budgetID).select('name')
-                let listItem = await BUDGET__ITEM_COLL.find({company: companyID, budget: budgetID}).select('name sign quantity unitPrice amount')
-                let listGroup = await BUDGET__GROUP_COLL.find({company: companyID, budget: budgetID}).select('item name sign quantity unitPrice amount')
-                let listWork = await BUDGET__WORK_COLL.find({company: companyID, budget: budgetID}).select('group name sign quantity unitPrice amount')
+                let listItem = await BUDGET__ITEM_COLL.find({company: companyID, budget: budgetID}).select('name sign quantity unitPrice amount impleQuantity impleAmount')
+                let listGroup = await BUDGET__GROUP_COLL.find({company: companyID, budget: budgetID}).select('item name sign quantity unitPrice amount impleQuantity impleAmount')
+                let listWork = await BUDGET__WORK_COLL.find({company: companyID, budget: budgetID}).select('group name sign quantity unitPrice amount impleQuantity impleAmount')
                 // console.log(infoBudget)
                 // console.log(listItem)
 
@@ -493,6 +493,7 @@ class Model extends BaseModel {
                     
                     var i = 3
                     listItem.forEach((item, index) =>{
+                        // console.log({___________: item?.quantity - item?.impleQuantity})
                         workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(`I${index+1}`)
                         workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(item?.name)
                         workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(item?.sign)
@@ -501,8 +502,11 @@ class Model extends BaseModel {
                         workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(item?.unitPrice))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(item?.amount))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(item?.impleQuantity))
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(Number(item?.impleUnitPrice))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(item?.impleQuantity != 0 ? Number(item?.impleAmount/item?.impleQuantity) : 0)
                         workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(item?.impleAmount))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(item?.quantity - item?.impleQuantity))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((item?.quantity - item?.impleQuantity) != 0 ? (item?.amount - item?.impleAmount) / (item?.quantity - item?.impleQuantity) : 0))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(item?.amount - item?.impleAmount))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(item?.note)
 
                         workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "fff2cc"})
@@ -519,8 +523,11 @@ class Model extends BaseModel {
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(group?.unitPrice))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(group?.amount))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(group?.impleQuantity))
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(Number(group?.impleUnitPrice))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(group?.impleQuantity != 0 ? Number(group?.impleAmount/group?.impleQuantity) : 0)
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(group?.impleAmount))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(group?.quantity - group?.impleQuantity))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((group?.quantity - group?.impleQuantity) != 0 ? (group?.amount - group?.impleAmount) / (group?.quantity - group?.impleQuantity) : 0))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(group?.amount - group?.impleAmount))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(group?.note)
                                 
                                 workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "f3f3f3"})
@@ -537,8 +544,11 @@ class Model extends BaseModel {
                                         workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(work?.unitPrice))
                                         workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(work?.amount))
                                         workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(work?.impleQuantity))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(Number(work?.impleUnitPrice))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(work?.impleQuantity != 0 ? Number(work?.impleAmount/work?.impleQuantity) : 0)
                                         workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(work?.impleAmount))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(work?.quantity - work?.impleQuantity))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((work?.quantity - work?.impleQuantity) != 0 ? (work?.amount - work?.impleAmount) / (work?.quantity - work?.impleQuantity) : 0))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(work?.amount - work?.impleAmount))
                                         workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(work?.note)
 
                                         i++
