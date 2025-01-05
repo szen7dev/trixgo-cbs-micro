@@ -500,6 +500,10 @@ class Model extends BaseModel {
                         workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(item?.quantity))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(item?.unitPrice))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(item?.amount))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(item?.impleQuantity))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(Number(item?.impleUnitPrice))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(item?.impleAmount))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(item?.note)
 
                         workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "fff2cc"})
 
@@ -514,7 +518,11 @@ class Model extends BaseModel {
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(group?.quantity))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(group?.unitPrice))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(group?.amount))
-        
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(group?.impleQuantity))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(Number(group?.impleUnitPrice))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(group?.impleAmount))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(group?.note)
+                                
                                 workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "f3f3f3"})
 
                                 i++
@@ -528,6 +536,10 @@ class Model extends BaseModel {
                                         workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(work?.quantity))
                                         workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(work?.unitPrice))
                                         workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(work?.amount))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(work?.impleQuantity))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(Number(work?.impleUnitPrice))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(work?.impleAmount))
+                                        workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(work?.note)
 
                                         i++
                                     }
