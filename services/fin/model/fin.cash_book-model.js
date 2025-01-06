@@ -2815,22 +2815,22 @@ class Model extends BaseModel {
 
                     listData2?.forEach((item, index) => {
                         for(var m = 1; m<=12; m++){
-                                if(Number(item._id.month) === Number(m)){
-                                    for(let i=4; i<=Number(listData1.length + 3); i++){
+                            if(Number(item._id.month) === Number(m)){
+                                for(let i=4; i<=Number(listData1.length + 3); i++){
 
-                                        let workID = workbook.sheet(`Report1`).row(i).cell(3).value()
-                                        if(item._id.work.toString() === workID.toString()){
-                                            workbook.sheet(`Report1`).row(i).cell(Number(m+7)).value(Number(item.quantity))
-                                        }
+                                    let workID = workbook.sheet(`Report1`).row(i).cell(3).value()
+                                    if(item._id.work.toString() === workID.toString()){
+                                        workbook.sheet(`Report1`).row(i).cell(Number(m+7)).value(Number(item.quantity))
+                                    }
 
-                                        let workID2 = workbook.sheet(`Report2`).row(i).cell(3).value()
-                                        if(item._id.work.toString() === workID2.toString()){
-                                            workbook.sheet(`Report2`).row(i).cell(Number(m+7)).value(Number(item.amount))
-                                        }
+                                    let workID2 = workbook.sheet(`Report2`).row(i).cell(3).value()
+                                    if(item._id.work.toString() === workID2.toString()){
+                                        workbook.sheet(`Report2`).row(i).cell(Number(m+7)).value(Number(item.amount))
                                     }
                                 }
                             }
-                        })
+                        }
+                    })
         
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';

@@ -479,9 +479,19 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    downloadTemplateExcel({ companyID, budgetID, userID }) {
+    downloadTemplateExcel({ companyID, budgetID, year, userID }) {
         return new Promise(async resolve => {
             try {
+                let yearFilter, monthFilter
+                let currentYear = new Date().getFullYear()
+                let currentMonth = new Date().getMonth() + 1
+    
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
                 let infoBudget = await BUDGET_COLL.findById(budgetID).select('name')
                 let listItem = await BUDGET__ITEM_COLL.find({company: companyID, budget: budgetID}).select('name sign quantity unitPrice amount impleQuantity impleAmount')
                 let listGroup = await BUDGET__GROUP_COLL.find({company: companyID, budget: budgetID}).select('item name sign quantity unitPrice amount impleQuantity impleAmount')
@@ -489,9 +499,71 @@ class Model extends BaseModel {
                 // console.log(infoBudget)
                 // console.log(listItem)
 
+                
+                // Tổng hợp theo Sản lượng
+                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            work: { $exists: true, $ne: null },
+                            budget: ObjectID(budgetID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { work: "$work" },
+                            // quantity: { $sum: "$hours" },
+                            // amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                let  conditionPopulate1 = {
+                    path: '_id.work',
+                    select: '_id name sign unit quantity unitPrice',
+                    model: 'budget_work'
+                }
+                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
+                // console.log(listData1)
+
+                let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            work: { $exists: true, $ne: null },
+                            budget: ObjectID(budgetID),
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            work: 1,
+                            hours: 1,
+                            amount: 1,
+                            date: 1,
+                        }
+                    },
+                    {
+                        $match: {
+                            year: Number(yearFilter)
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { work: "$work", month: "$month"},
+                            quantity: { $sum: "$hours" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                // console.log(listData2)
+
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import_report.xlsx')))
                 .then(async workbook => {
                     workbook.sheet("BaoCaoNganSach").row(1).cell(1).value(infoBudget.name)
+                    workbook.sheet("BaoCao1").row(1).cell(1).value(infoBudget.name)
+                    // workbook.sheet("BaoCao2").row(1).cell(1).value(infoBudget.name)
+
+                    workbook.sheet(`BaoCao1`).row(2).cell(1).value(`Báo cáo tổng hợp năm ${yearFilter}`)
+                    // workbook.sheet(`BaoCao2`).row(2).cell(1).value(`Báo cáo tổng hợp năm ${yearFilter}`)
                     
                     var i = 3
                     listItem.forEach((item, index) =>{
@@ -561,29 +633,46 @@ class Model extends BaseModel {
                         })
                     })
 
-                    // Tổng hợp theo Sản lượng
-                    let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                        {
-                            $match: {
-                                work: { $exists: true, $ne: null },
-                                budget: ObjectID(budgetID),
+                    var i = 4
+                    listData1.forEach((item, index) =>{
+                        workbook.sheet("BaoCao1").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("BaoCao1").row(i).cell(2).value(item._id.work?.name)
+                        workbook.sheet("BaoCao1").row(i).cell(3).value(`${item._id.work?._id}`)
+                        workbook.sheet("BaoCao1").row(i).cell(4).value(item._id.work?.unit)
+                        workbook.sheet("BaoCao1").row(i).cell(5).value(Number(item._id.work?.quantity))
+                        workbook.sheet("BaoCao1").row(i).cell(6).value(Number(item._id.work?.unitPrice))
+                        workbook.sheet("BaoCao1").row(i).cell(7).value(Number(item._id.work?.quantity * item._id.work?.unitPrice))
+
+                        // workbook.sheet("BaoCao2").row(i).cell(1).value(Number(index+1))
+                        // workbook.sheet("BaoCao2").row(i).cell(2).value(`${item._id.work?.sign}-${item._id.work?.name}`)
+                        // workbook.sheet("BaoCao2").row(i).cell(3).value(`${item._id.work?._id}`)
+                        // workbook.sheet("BaoCao2").row(i).cell(4).value(item._id.work?.unit)
+                        // workbook.sheet("BaoCao2").row(i).cell(5).value(Number(item._id.work?.quantity))
+                        // workbook.sheet("BaoCao2").row(i).cell(6).value(Number(item._id.work?.unitPrice))
+                        // workbook.sheet("BaoCao2").row(i).cell(7).value(Number(item._id.work?.quantity * item._id.work?.unitPrice))
+
+                        i++
+                    })
+
+                    listData2?.forEach((item, index) => {
+                        for(var m = 1; m<=12; m++){
+                            if(Number(item._id.month) === Number(m)){
+                                for(let i=4; i<=Number(listData1.length + 3); i++){
+
+                                    let workID = workbook.sheet(`BaoCao1`).row(i).cell(3).value()
+                                    if(item._id.work.toString() === workID.toString()){
+                                        // workbook.sheet(`BaoCao1`).row(i).cell(Number(m+7)).value(Number(item.quantity))
+                                        workbook.sheet(`BaoCao1`).row(i).cell(Number(m+7)).value(Number(item.amount))
+                                    }
+
+                                    // let workID2 = workbook.sheet(`BaoCao2`).row(i).cell(3).value()
+                                    // if(item._id.work.toString() === workID2.toString()){
+                                    //     workbook.sheet(`BaoCao2`).row(i).cell(Number(m+7)).value(Number(item.amount))
+                                    // }
+                                }
                             }
-                        },
-                        {
-                            $group: {
-                                _id: { work: "$work" },
-                                // quantity: { $sum: "$hours" },
-                                // amount: { $sum: "$amount" },
-                            }
-                        },
-                    ])
-                    let  conditionPopulate1 = {
-                        path: '_id.work',
-                        select: '_id name sign unit quantity unitPrice',
-                        model: 'budget_work'
-                    }
-                    await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
-                    console.log(listData1)
+                        }
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
