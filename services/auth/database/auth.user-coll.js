@@ -99,7 +99,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     numberOfRating: { type: Number, default: 0 },
     //_________Số lượng đơn hàng phục vụ
     numberOfOrders: { type: Number, default: 0 },
-    //_________Số nghỉ phép trong năm
+    //_________Số ngày đã nghỉ phép trong năm
     numberOnLeave: { type: Number, default: 0 },
     //_______Ảnh đại diện
     image: {
