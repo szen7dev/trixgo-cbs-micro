@@ -1197,6 +1197,7 @@ class Model extends BaseModel {
                         }})
                         await ITEM__CONTACT_COLL.updateMany({company: companyID, linkUser: {$exists: true, $ne: null}},{$set: {
                             numberOnLeave: 12, // Số ngày được nghỉ phép trong năm
+                            numberOnLeavePlus: 0,
                         }})
                         return resolve({ error: false, data: 'Reset thành công' })
                     }
