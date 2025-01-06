@@ -1189,6 +1189,17 @@ class Model extends BaseModel {
                         }})
                         return resolve({ error: false, data: 'Reset thành công' })
                     }
+
+                    // Reset nghỉ phép
+                    else if(option == 5){
+                        await USER_COLL.updateMany({company: companyID},{$set: {
+                            numberOnLeave: 0, // Số ngày đã nghỉ phép trong năm
+                        }})
+                        await ITEM__CONTACT_COLL.updateMany({company: companyID, linkUser: {$exists: true, $ne: null}},{$set: {
+                            numberOnLeave: 12, // Số ngày được nghỉ phép trong năm
+                        }})
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
                 }else{
                     return resolve({ error: false, data: 'Pass không đúng, Reset thất bại' })
                 }
