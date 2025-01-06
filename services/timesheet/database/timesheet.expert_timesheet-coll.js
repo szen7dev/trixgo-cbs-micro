@@ -147,6 +147,24 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     },
 
     //________Link với biểu khối lượng công việc
+    budget: {
+        type: Schema.Types.ObjectId,
+        ref : "budget"
+    },
+
+    //________Link với biểu khối lượng công việc
+    item: {
+        type: Schema.Types.ObjectId,
+        ref : "budget_item"
+    },
+
+    //________Link với biểu khối lượng công việc
+    group: {
+        type: Schema.Types.ObjectId,
+        ref : "budget_group"
+    },
+
+    //________Link với biểu khối lượng công việc
     work: {
         type: Schema.Types.ObjectId,
         ref : "budget_work"
