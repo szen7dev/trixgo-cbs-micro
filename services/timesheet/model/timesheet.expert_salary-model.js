@@ -3817,7 +3817,7 @@ class Model extends BaseModel {
 
                         var i = 4
                         rawData.forEach((item, index) =>{
-                            workbook.sheet('TongHop').row(2).cell(i).value(`${item._id.funda.name}`)
+                            workbook.sheet('TongHop').row(2).cell(i).value(`${item?._id?.funda?.name}`)
                             workbook.sheet('TongHop').row(3).cell(i).value(Number(item?.human))
 
                             workbook.sheet('TongHop').row(5).cell(i).value(Number(item?.salary))
