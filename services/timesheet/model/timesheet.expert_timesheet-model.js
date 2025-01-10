@@ -474,17 +474,6 @@ class Model extends BaseModel {
 
                 // Cập nhật ngân sách đã thực hiện
                 if(checkObjectIDs(workID)){
-                    
-                    // if(infoAfterUpdate.work.toString() != workID.toString()){
-                    //     // Cập nhật với Công việc cũ
-                    //     let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
-                    //     console.log(infoBudget2)
-
-                    //     // Cập nhật với Công việc mới
-                    //     let infoBudget = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID, userID})
-                    //     console.log(infoBudget)
-                    // }
-
                     // Cập nhật với Công việc cũ
                     let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
                     console.log(infoBudget2)
