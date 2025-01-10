@@ -705,8 +705,8 @@ class Model extends BaseModel {
                         workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(item?.impleQuantity))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(item?.impleQuantity != 0 ? Number(item?.impleAmount/item?.impleQuantity) : 0)
                         workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(item?.impleAmount))
-                        // workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(item?.quantity - item?.impleQuantity))
-                        // workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((item?.quantity - item?.impleQuantity) != 0 ? (item?.amount - item?.impleAmount) / (item?.quantity - item?.impleQuantity) : 0))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(item?.quantity - item?.impleQuantity))
+                        workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((item?.quantity - item?.impleQuantity) != 0 ? (item?.amount - item?.impleAmount) / (item?.quantity - item?.impleQuantity) : 0))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(item?.amount - item?.impleAmount))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(item?.note)
 
@@ -726,8 +726,8 @@ class Model extends BaseModel {
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(group?.impleQuantity))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(group?.impleQuantity != 0 ? Number(group?.impleAmount/group?.impleQuantity) : 0)
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(group?.impleAmount))
-                                // workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(group?.quantity - group?.impleQuantity))
-                                // workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((group?.quantity - group?.impleQuantity) != 0 ? (group?.amount - group?.impleAmount) / (group?.quantity - group?.impleQuantity) : 0))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(group?.quantity - group?.impleQuantity))
+                                workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((group?.quantity - group?.impleQuantity) != 0 ? (group?.amount - group?.impleAmount) / (group?.quantity - group?.impleQuantity) : 0))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(group?.amount - group?.impleAmount))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(group?.note)
                                 
