@@ -1635,6 +1635,7 @@ class Model extends BaseModel {
                             position: item.position,
                             date: infoSalary.date, // Bảng lương cha
                             type: infoSalary.type, // Bảng lương cha
+                            funda: infoSalary.funda, // Bảng lương cha
                         }
 
                         if(Number(insuranceFee) > 0){
