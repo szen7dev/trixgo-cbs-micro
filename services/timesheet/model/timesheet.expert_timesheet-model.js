@@ -33,7 +33,8 @@ const ITEM__POSITION_COLL            	= require('../../item/database/item.positi
 const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll');
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
 
-const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
+const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
+const BUDGET__WORK_MODEL                = require('../../budget/model/budget.work-model').MODEL;
 
 let dataTF = {
     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
@@ -470,6 +471,17 @@ class Model extends BaseModel {
                         message: "Cannot update",
                         keyError: "cannot_update",
                     })
+
+                // Cập nhật ngân sách đã thực hiện
+                if(checkObjectIDs(workID)){
+                    // Cập nhật với Công việc cũ
+                    let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
+                    console.log(infoBudget2)
+
+                    // Cập nhật với Công việc mới
+                    let infoBudget = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID, userID})
+                    console.log(infoBudget)
+                }
                 
                 // Cập nhật cho các mẩu tin con
                 if(!infoAfterUpdate.parent && [1,2].includes(Number(type)) && [1,2].includes(Number(official))){
