@@ -2526,6 +2526,8 @@ class Model extends BaseModel {
                 // Mảng đệ quy tài khoản
                 let arrObjectID = [ObjectID(accountID)]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                // console.log({ infoAccount });
+                
                 if(infoAccount){
                     let nestedChilds = infoAccount.nestedChilds.map(item=>ObjectID(item._id))
                     arrObjectID = [...arrObjectID,...nestedChilds]
@@ -2548,6 +2550,7 @@ class Model extends BaseModel {
 					goods: { $exists: true, $ne: null },
 					warehouse: { $exists: true, $ne: null }
 				})
+                // console.log({ voucherID, arrObjectID, listJournal });
 
 				for(const item of listJournal){
 					let info = null;
@@ -2607,13 +2610,11 @@ class Model extends BaseModel {
      * Date: 3/1/2024
      */
 	analysePrimeCostOfAllVouchers({ companyID, fundaID, accountID, fromDate, toDate, userID, queue }){
-		const that = this;
 		return new Promise(async resolve => {
 			try {
                 // Mảng đệ quy tài khoản
                 let arrObjectID = [ObjectID(accountID)]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
-                // console.log(infoAccount)
 
                 if(['152','156'].includes(infoAccount.name.toString())){
                     if(infoAccount){
@@ -2661,7 +2662,7 @@ class Model extends BaseModel {
                         .sort({ date: 1 })
                         .select('_id date name')
                         .lean();
-    
+
                     if(!listVouchers.length) {
                         return resolve({ error: false, data: [] })
                     }

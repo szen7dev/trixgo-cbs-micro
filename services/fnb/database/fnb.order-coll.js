@@ -316,6 +316,10 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
         type: Schema.Types.ObjectId,
         ref: "fnb_product"
     }],
+
+    rawProducts: {
+        type: Schema.Types.Mixed,
+    },
     /**
      * GIÁT TRỊ
      */
