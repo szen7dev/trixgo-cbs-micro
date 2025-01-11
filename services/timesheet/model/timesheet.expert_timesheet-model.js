@@ -344,7 +344,7 @@ class Model extends BaseModel {
     
                         let infoWork = await BUDGET__WORK_COLL.findById(workID).select('unitPrice budget item group')
                         if(infoWork){
-                            unitprice2 = Number(infoWork.unitPrice)
+                            // unitprice2 = Number(infoWork.unitPrice) // Bỏ đi để không bị ảnh hưởng
 
                             dataUpdate.budget = infoWork.budget;
                             dataUpdate.item = infoWork.item;
