@@ -6,6 +6,7 @@ const moment = require("moment");
 
 const { KEY_ERROR } = require("../../../tools/keys");
 const {
+  getRequestAPI,
   checkObjectIDs,
   IsJsonString,
   validateParamsObjectID,
@@ -15,13 +16,12 @@ const {
   isValidDate,
   getTimeBetween,
 } = require("../../../tools/utils/time_utils");
-const {
-  RANGE_BASE_PAGINATION_V2,
-} = require("../../../tools/cursor_base/playground/index");
+const { RANGE_BASE_PAGINATION_V2 } = require("../../../tools/cursor_base/playground/index");
 const { CF_DOMAIN_SERVICES } = require("../../gateway/helper/domain.constant");
+const { CF_ACTIONS_ANALYSIS }  = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO } = require("../../zalo_oa/helper/zalo.actions");
 
-/**
+/**s
  * import inter-coll, exter-coll
  */
 const ITEM__FUNDA_COLL = require("../../item/database/item.funda-coll");
@@ -106,7 +106,6 @@ class Model extends BaseModel {
     shippingFee,
     paid,
     products,
-    productsInCart,
     userID,
     ctx,
   }) {
@@ -163,7 +162,6 @@ class Model extends BaseModel {
           sign: `C${Number(numberOfOrder + 1)}`,
           amount: 0,
           userCreate: userID,
-          rawProducts: productsInCart,
         };
 
         /**
@@ -324,8 +322,7 @@ class Model extends BaseModel {
         /**
          * TÍNH TOÁN GIÁ TRỊ ĐƠN HÀNG
          */
-        let loyaltyPoints = 0,
-          amount = 0;
+        let loyaltyPoints = 0, amount = 0;
 
         if (!isNaN(total)) {
           dataInsert.total = Number(total);
@@ -501,7 +498,7 @@ class Model extends BaseModel {
         } else {
           dataInsert.vatAmount = Number(
             (amount * Number(FNB_FACTOR.vatRate / 100)) /
-              Number(1 + Number(FNB_FACTOR.vatRate / 100)),
+            Number(1 + Number(FNB_FACTOR.vatRate / 100)),
           ).toFixed(0);
         }
 
@@ -587,9 +584,7 @@ class Model extends BaseModel {
         dataInsert.numberOfSizeM = Number(totalSizeM);
         dataInsert.numberOfSizeL = Number(totalSizeL);
 
-        // console.log({ dataInsert });
         let infoAfterInsert = await this.insertData(dataInsert);
-        // console.log({ infoAfterInsert });
         if (!infoAfterInsert)
           return resolve({
             error: true,
@@ -665,14 +660,7 @@ class Model extends BaseModel {
             return FNB_ORDER_PRODUCT_MODEL.insert(dataInsertProduct);
           });
 
-          const newProducts = await Promise.all(productsAsync);
-          const productIds = newProducts.map(product => product?.data?._id).filter(Boolean);
-          
-          if (productIds.length) {
-            await FNB_ORDER_COLL.findByIdAndUpdate(orderID, {
-              $set: { products: productIds }
-            })
-          }
+          await Promise.all(productsAsync);
         }
 
         /**
@@ -799,8 +787,8 @@ class Model extends BaseModel {
             dataUpdateFw.$inc.cashAmount = +amount;
           } else {
             dataUpdateFw.$inc = {
-              cashAmount: +amount,
-            };
+              cashAmount: +amount
+            }
           }
         }
 
@@ -809,8 +797,8 @@ class Model extends BaseModel {
             dataUpdateFw.$inc.transferAmount = +amount;
           } else {
             dataUpdateFw.$inc = {
-              transferAmount: +amount,
-            };
+              transferAmount: +amount
+            }
           }
         }
         // console.log(dataUpdateFw)
@@ -983,6 +971,7 @@ class Model extends BaseModel {
               //     ),
               //   ]);
               // }
+
             }
 
             /**
@@ -1024,11 +1013,11 @@ class Model extends BaseModel {
          */
         // Hàm kiểm tra Phone
         function isValidVietnamPhoneNumber(str) {
-          const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
-          return phoneRegex.test(str);
+            const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+            return phoneRegex.test(str);
         }
         const strValid = infoCustomer.phone.toLowerCase().trim();
-        let hour = Number(moment(new Date()).hours());
+        let hour = Number(moment(new Date()).hours())
         // if (Number(total) >= 50000 && hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
         if (hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
           /**
@@ -1045,9 +1034,7 @@ class Model extends BaseModel {
             active: 1,
           });
           // console.log(infoConfig)
-          const {
-            metadata: { template },
-          } = infoConfig;
+          const { metadata: { template } } = infoConfig;
 
           if (infoConfig && template) {
             // console.log('===============Check OK===============>>>>>>>>>>>>>>>')
@@ -1069,13 +1056,13 @@ class Model extends BaseModel {
               },
               templateId: template.new_order,
               appId: infoConfig.channel,
-            };
+            }
             await ctx.call(
               `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
               dataOA1,
-            );
+            )
 
-            if (Number(total) >= 200000) {
+            if(Number(total) >= 200000){
               let dataOA2 = {
                 phone: "84985199295",
                 templateData: {
@@ -1087,12 +1074,12 @@ class Model extends BaseModel {
                   note: "Quan tâm OA tặng mã 200k",
                 },
                 templateId: template.new_order,
-                appId: infoConfig.channel,
-              };
+                appId: infoConfig.channel
+              }
               await ctx.call(
                 `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                 dataOA2,
-              );
+              )
             }
           }
         }
@@ -1260,7 +1247,6 @@ class Model extends BaseModel {
           sign: `C${Number(numberOfOrder + 1)}`,
           amount: 0,
           userCreate: userID,
-          products,
         };
 
         if (infoChannel.parent) {
@@ -1602,7 +1588,7 @@ class Model extends BaseModel {
         } else {
           dataInsert.vatAmount = Number(
             (amount * Number(FNB_FACTOR.vatRate / 100)) /
-              Number(1 + Number(FNB_FACTOR.vatRate / 100)),
+            Number(1 + Number(FNB_FACTOR.vatRate / 100)),
           ).toFixed(0);
         }
 
@@ -1990,19 +1976,18 @@ class Model extends BaseModel {
                 { new: true },
               );
 
+
               let infoConfig = await ITEM__CONFIG_COLL.findOne({
                 company: infoFunda.company,
                 type: 1,
                 active: 1,
               });
-              const {
-                metadata: { template },
-              } = infoConfig;
+              const { metadata: { template } } = infoConfig;
 
               if (infoConfig && template) {
                 /**
-                 * Bắn tin Zalo OA cho Người giới thiệu
-                 */
+                * Bắn tin Zalo OA cho Người giới thiệu
+                */
                 const str = infoReferral.phone;
                 const removeFirst1 = `84${str.slice(1)}`;
                 let dataOA = {
@@ -2015,7 +2000,7 @@ class Model extends BaseModel {
                     note: `Bạn mới ${infoCustomer.phone}`,
                   },
                   templateId: template.referral,
-                  appId: infoConfig.channel,
+                  appId: infoConfig.channel
                 };
                 await ctx.call(
                   `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
@@ -2023,8 +2008,8 @@ class Model extends BaseModel {
                 );
 
                 /**
-                 * Bắn Zalo OA cho Người mới
-                 */
+                * Bắn Zalo OA cho Người mới
+                */
                 const str2 = infoCustomer.phone;
                 const removeFirst2 = `84${str2.slice(1)}`;
 
@@ -2038,12 +2023,12 @@ class Model extends BaseModel {
                     note: "Chi tiết xem link Winggo",
                   },
                   templateId: template.new_order,
-                  appId: infoConfig.channel,
+                  appId: infoConfig.channel
                 };
 
                 /**
-                 * Bắn Zalo OA cho Công ty
-                 */
+                * Bắn Zalo OA cho Công ty
+                */
                 let dataOA3 = {
                   phone: "84985199295",
                   templateData: {
@@ -2054,7 +2039,7 @@ class Model extends BaseModel {
                     note: "Khách hàng mới",
                   },
                   templateId: template.new_order,
-                  appId: infoConfig.channel,
+                  appId: infoConfig.channel
                 };
 
                 await Promise.all([
@@ -2114,21 +2099,17 @@ class Model extends BaseModel {
            * Mẫu ZNS này không được phép gửi vào ban đêm (từ 22h-6h)
            * Tài khoản Zalo không tồn tại hoặc đã bị vô hiệu hoá
            */
-          console.log(
-            "===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>",
-          );
-          let hour = Number(moment(new Date()).hours());
-          console.log({ hour });
+          console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
+          let hour = Number(moment(new Date()).hours())
+          console.log({hour})
 
           let infoConfig = await ITEM__CONFIG_COLL.findOne({
             company: infoFunda.company,
             type: 1,
             active: 1,
           });
-          console.log({ infoConfig });
-          const {
-            metadata: { template },
-          } = infoConfig;
+          console.log({infoConfig})
+          const { metadata: { template } } = infoConfig;
 
           if (infoConfig && template) {
             // Xử lý dữ liệu số điện thoại
@@ -2147,12 +2128,12 @@ class Model extends BaseModel {
               templateId: template.new_order,
               appId: infoConfig.channel,
             };
-            console.log({ dataOA1 });
+            console.log({dataOA1})
             let infoOA = await ctx.call(
               `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
               dataOA1,
             );
-            console.log(infoOA);
+            console.log(infoOA)
 
             let dataOA2 = {
               phone: "84985199295",
@@ -2248,32 +2229,8 @@ class Model extends BaseModel {
   }
 
   insertOrderKySuHiep({
-    voucherID,
-    parentID,
-    customerID,
-    channelID,
-    affiliateID,
-    date,
-    name,
-    appOrderSign,
-    note,
-    service,
-    salesChannel,
-    paymentMethod,
-    sources,
-    total,
-    discount,
-    salesoff,
-    credit,
-    vatAmount,
-    products,
-    shippingFee,
-    paid,
-    userID,
-    ctx,
-    fundaID,
-    shiftID,
-    businessID,
+    voucherID, parentID, customerID, channelID, affiliateID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, vatAmount, products, shippingFee, paid, userID, ctx,
+    fundaID, shiftID, businessID,
   }) {
     return new Promise(async (resolve) => {
       try {
@@ -2674,7 +2631,7 @@ class Model extends BaseModel {
         } else {
           dataInsert.vatAmount = Number(
             (amount * Number(FNB_FACTOR.vatRate / 100)) /
-              Number(1 + Number(FNB_FACTOR.vatRate / 100)),
+            Number(1 + Number(FNB_FACTOR.vatRate / 100)),
           ).toFixed(0);
         }
 
@@ -2969,8 +2926,8 @@ class Model extends BaseModel {
             dataUpdateFw.$inc.transferAmount = +amount;
           } else {
             dataUpdateFw.$inc = {
-              transferAmount: +amount,
-            };
+              transferAmount: +amount
+            }
           }
         }
         // console.log(dataUpdateFw)
@@ -3075,14 +3032,12 @@ class Model extends BaseModel {
                 type: 1,
                 active: 1,
               });
-              const {
-                metadata: { template },
-              } = infoConfig;
+              const { metadata: { template } } = infoConfig;
 
               if (infoConfig && template) {
                 /**
-                 * Bắn tin Zalo OA cho Người giới thiệu
-                 */
+                * Bắn tin Zalo OA cho Người giới thiệu
+                */
                 const str = infoReferral.phone;
                 const removeFirst1 = `84${str.slice(1)}`;
                 let dataOA = {
@@ -3095,7 +3050,7 @@ class Model extends BaseModel {
                     note: `Bạn mới ${infoCustomer.phone}`,
                   },
                   templateId: template.referral,
-                  appId: infoConfig.channel,
+                  appId: infoConfig.channel
                 };
                 await ctx.call(
                   `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
@@ -3103,8 +3058,8 @@ class Model extends BaseModel {
                 );
 
                 /**
-                 * Bắn Zalo OA cho Người mới
-                 */
+                * Bắn Zalo OA cho Người mới
+                */
                 const str2 = infoCustomer.phone;
                 const removeFirst2 = `84${str2.slice(1)}`;
 
@@ -3118,12 +3073,12 @@ class Model extends BaseModel {
                     note: "Chi tiết xem link Winggo",
                   },
                   templateId: template.new_order,
-                  appId: infoConfig.channel,
+                  appId: infoConfig.channel
                 };
 
                 /**
-                 * Bắn Zalo OA cho Công ty
-                 */
+                * Bắn Zalo OA cho Công ty
+                */
                 let dataOA3 = {
                   phone: "84985199295",
                   templateData: {
@@ -3134,7 +3089,7 @@ class Model extends BaseModel {
                     note: "Khách hàng mới",
                   },
                   templateId: template.new_order,
-                  appId: infoConfig.channel,
+                  appId: infoConfig.channel
                 };
 
                 await Promise.all([
@@ -3203,9 +3158,7 @@ class Model extends BaseModel {
             type: 1,
             active: 1,
           });
-          const {
-            metadata: { template },
-          } = infoConfig;
+          const { metadata: { template } } = infoConfig;
 
           if (infoConfig && template) {
             // Xử lý dữ liệu số điện thoại
@@ -3312,10 +3265,11 @@ class Model extends BaseModel {
         // }
 
         return resolve({ error: false, data: infoAfterInsert });
+
       } catch (error) {
         return resolve({ error: true, message: error.message });
       }
-    });
+    })
   }
 
   /**
@@ -3338,7 +3292,7 @@ class Model extends BaseModel {
     starRating,
     complaintID,
     complaint,
-    ctx,
+    ctx
   }) {
     // console.log({ orderID, userID, customerID, cancelNote, shippingFeeTotal, shippingFee, paid, filesID, status, paymentMethod, salesChannel, starRating, complaintID, complaint })
     const that = this;
@@ -3366,11 +3320,7 @@ class Model extends BaseModel {
          */
         let infoOrder = await FNB_ORDER_COLL.findById(orderID);
         if (!infoOrder)
-          return resolve({
-            error: true,
-            message: "orderID invalid",
-            keyError: KEY_ERROR.PARAMS_INVALID,
-          });
+          return resolve({ error: true, message: "orderID invalid", keyError: KEY_ERROR.PARAMS_INVALID });
         // console.log(infoOrder)
 
         let oldCustomerID = infoOrder.customer;
@@ -3523,7 +3473,7 @@ class Model extends BaseModel {
             return phoneRegex.test(str);
           }
           const strValid = infoCustomer.phone.toLowerCase().trim();
-          let hour = Number(moment(new Date()).hours());
+          let hour = Number(moment(new Date()).hours())
 
           if (hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
             let infoConfig = await ITEM__CONFIG_COLL.findOne({
@@ -3532,16 +3482,14 @@ class Model extends BaseModel {
               active: 1,
             });
 
-            if (infoConfig) {
-              const {
-                metadata: { template },
-              } = infoConfig;
+            if(infoConfig){
+              const { metadata: { template } } = infoConfig;
 
-              if (infoConfig && template) {
+              if (infoConfig && template) {  
                 // Xử lý dữ liệu số điện thoại
                 const str = infoCustomer.phone;
                 const removeFirst1 = `84${str.slice(1)}`;
-
+    
                 let dataOA1 = {
                   phone: `${removeFirst1}`,
                   templateData: {
@@ -3553,13 +3501,13 @@ class Model extends BaseModel {
                   },
                   templateId: template.new_order,
                   appId: infoConfig.channel,
-                };
-
+                }
+  
                 // console.log({dataOA1})
                 await ctx.call(
                   `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                   dataOA1,
-                );
+                )
               }
             }
           }
@@ -5131,7 +5079,7 @@ class Model extends BaseModel {
               {
                 $project: {
                   year: { $year: "$createAt" },
-                  month: { $month: "$createAt" },
+                  month: { $month: "$createAt"},
                   day: { $dayOfMonth: "$createAt" },
                   company: 1,
                   funda: 1,
@@ -5160,7 +5108,9 @@ class Model extends BaseModel {
                 $sort: sortBy,
               },
             ]);
-          } else {
+          }
+
+          else {
             listData = await FNB_ORDER_COLL.aggregate([
               {
                 $match: conditionObj,
@@ -5313,17 +5263,7 @@ class Model extends BaseModel {
    * LỖI GÂY CHẬM DO FROMDATE - TODATE KÉO DÀI CẢ NĂM
    * https://docs.google.com/document/d/1hRYD5pLK7G3n37-Cs-N732cifa1Z3-W1dV8sTSRInfY/edit
    */
-  exportExcel({
-    option,
-    companyID,
-    year,
-    month,
-    fromDate,
-    toDate,
-    email,
-    userID,
-    queryFnb,
-  }) {
+  exportExcel({ option, companyID, year, month, fromDate, toDate, email, userID, queryFnb }) {
     // console.log({ option, companyID, year, month, email, userID, queryFnb })
     return new Promise(async (resolve) => {
       try {
@@ -5342,8 +5282,8 @@ class Model extends BaseModel {
         }
 
         let projectObj = {
-          year: { $year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
-          month: { $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } },
+          year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+          month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
           date: 1,
           company: 1,
           funda: 1,
@@ -5352,12 +5292,12 @@ class Model extends BaseModel {
           total: 1,
           amount: 1,
           avgQuantityPerStaff: 1,
-        };
+        }
 
         let conditionObjYear = {
           year: Number(yearFilter),
           month: { $in: [currentMonth - 2, currentMonth - 1, currentMonth] },
-        };
+        }
 
         let conditionGroupErr = {
           _id: { executor: "$executor", month: "$month" },
@@ -5375,225 +5315,225 @@ class Model extends BaseModel {
           model: "user",
         };
 
-        if (!option) {
-          let conditionGroup = {};
-          let conditionPopulate = {},
-            sortBy = { "_id.month": -1, avgQuantityPerStaff: -1 };
-
-          let conditionObj = {
-            company: ObjectID(companyID),
-            status: 5,
-            avgQuantityPerStaff: { $exists: true, $ne: null },
-          };
-
-          let conditionErObj = {
-            company: ObjectID(companyID),
-          };
-
-          let obj = JSON.parse(queryFnb);
-          if (obj.fromDate && obj.toDate) {
-            currentMonth = new Date(obj.toDate).getMonth() + 1;
-            currentYear = new Date(obj.toDate).getFullYear();
-          }
-
-          let conditionObjYear = {
-            year: Number(currentYear),
-            month: { $in: [currentMonth - 2, currentMonth - 1, currentMonth] },
-          };
-
-          if (obj.fundasID && obj.fundasID.length) {
-            let arrFun = obj.fundasID.map((item) => ObjectID(item));
-
-            if (arrFun.length) {
-              conditionObj.funda = { $in: arrFun };
-              conditionErObj.funda = { $in: arrFun };
+        if(!option){            
+            let conditionGroup = {};
+            let conditionPopulate = {}, sortBy = { "_id.month": -1, avgQuantityPerStaff: -1 };
+  
+            let conditionObj = {
+              company: ObjectID(companyID),
+              status: 5,
+              avgQuantityPerStaff: { $exists: true, $ne: null },
             }
-          } else {
-            let listFundaIsMember = await ITEM__FUNDA_COLL.find({
-              members: { $in: [userID] },
-            });
-            let fundasIDIsMember = listFundaIsMember.map((item) =>
-              ObjectID(item._id),
-            );
-            if (fundasIDIsMember.length) {
-              conditionObj.funda = { $in: fundasIDIsMember };
-              conditionErObj.funda = { $in: fundasIDIsMember };
-            } else {
-              conditionObj.funda = { $in: [] };
-              conditionErObj.funda = { $in: [] };
+
+            let conditionErObj = {
+              company: ObjectID(companyID),
             }
-          }
 
-          let lookupObj = {
-            from: "users",
-            localField: "assignee",
-            foreignField: "_id",
-            as: "staff",
-          };
-          conditionPopulate = {
-            path: "_id.staff",
-            select: "_id fullname department",
-            populate: {
-              path: "department",
-              select: "_id name",
-              model: "department",
-            },
-            model: "user",
-          };
+            let obj = JSON.parse(queryFnb)
+            if (obj.fromDate && obj.toDate) {
+              currentMonth = new Date(obj.toDate).getMonth() + 1;
+              currentYear = new Date(obj.toDate).getFullYear();
+            }
 
-          conditionGroup = {
-            _id: { staff: "$staff._id", month: "$month", year: "$year" },
-            avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
-          };
+            let conditionObjYear = {
+              year: Number(currentYear),
+              month: { $in: [currentMonth - 2, currentMonth - 1, currentMonth] },
+            }
 
-          /**
-           * LỖI MẮC PHẢI
-           */
-          let listDataErr = await FNB_MISTAKE_COLL.aggregate([
-            {
-              $match: conditionErObj,
-            },
-            {
-              $project: projectObj,
-            },
-            {
-              $match: conditionObjYear,
-            },
-            {
-              $group: conditionGroupErr,
-            },
-            {
-              $sort: { "_id.month": -1 },
-            },
-          ]);
+            if(obj.fundasID && obj.fundasID.length){
+              let arrFun = obj.fundasID.map((item) => ObjectID(item));
 
-          await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr);
+              if (arrFun.length) {
+                conditionObj.funda = { $in: arrFun };
+                conditionErObj.funda = { $in: arrFun };
+              }
+            }else{
+              let listFundaIsMember = await ITEM__FUNDA_COLL.find({
+                members: { $in: [userID] },
+              });
+              let fundasIDIsMember = listFundaIsMember.map((item) =>
+                ObjectID(item._id),
+              );
+              if (fundasIDIsMember.length) {
+                conditionObj.funda = { $in: fundasIDIsMember };
+                conditionErObj.funda = { $in: fundasIDIsMember };
+              } else {
+                conditionObj.funda = { $in: [] };
+                conditionErObj.funda = { $in: [] };
+              }
+            }
+            
+            let lookupObj = {
+              from: "users",
+              localField: "assignee",
+              foreignField: "_id",
+              as: "staff",
+            };
+            conditionPopulate = {
+              path: "_id.staff",
+              select: "_id fullname department",
+              populate: {
+                path: "department",
+                select: "_id name",
+                model: "department",
+              },
+              model: "user",
+            };
+          
+            conditionGroup = {
+              _id: { staff: "$staff._id", month: "$month", year: "$year" },
+              avgQuantityPerStaff: { $sum: "$avgQuantityPerStaff" },
+            };
+  
+            /**
+             * LỖI MẮC PHẢI
+             */
+            let listDataErr = await FNB_MISTAKE_COLL.aggregate([
+              {
+                $match: conditionErObj,
+              },
+              {
+                $project: projectObj,
+              },
+              {
+                $match: conditionObjYear,
+              },
+              {
+                $group: conditionGroupErr,
+              },
+              {
+                $sort: { "_id.month": -1 },
+              },
+            ])
 
-          /**
-           * DOANH SỐ
-           */
-          let listDataR = await FNB_ORDER_COLL.aggregate([
-            {
-              $match: conditionObj,
-            },
-            {
-              $project: projectObj,
-            },
-            {
-              $match: conditionObjYear,
-            },
-            {
-              $lookup: lookupObj,
-            },
-            {
-              $unwind: "$staff",
-            },
-            {
-              $group: conditionGroup,
-            },
-            {
-              $sort: sortBy,
-            },
-          ]);
-          await FNB_SHIFT_COLL.populate(listDataR, conditionPopulate);
+            await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr);
+  
+            /**
+             * DOANH SỐ
+             */
+            let listDataR = await FNB_ORDER_COLL.aggregate([
+              {
+                $match: conditionObj,
+              },
+              {
+                $project: projectObj,
+              },
+              {
+                $match: conditionObjYear,
+              },
+              {
+                $lookup: lookupObj,
+              },
+              {
+                $unwind: "$staff",
+              },
+              {
+                $group: conditionGroup,
+              },
+              {
+                $sort: sortBy,
+              },
+            ]);
+            await FNB_SHIFT_COLL.populate(listDataR, conditionPopulate);
+  
+            // Modify the workbook.
+            XlsxPopulate.fromFileAsync(
+              path.resolve(
+                __dirname,
+                "../../../files/templates/excels/fnb_export_kpi.xlsx",
+              ),
+            ).then(async (workbook) => {
+              workbook
+                  .sheet("DoanhSo")
+                  .row(1)
+                  .cell(1)
+                  .value(`BÁO CÁO KPI DOANH SỐ ${currentYear}`);
 
-          // Modify the workbook.
-          XlsxPopulate.fromFileAsync(
-            path.resolve(
-              __dirname,
-              "../../../files/templates/excels/fnb_export_kpi.xlsx",
-            ),
-          ).then(async (workbook) => {
-            workbook
-              .sheet("DoanhSo")
-              .row(1)
-              .cell(1)
-              .value(`BÁO CÁO KPI DOANH SỐ ${currentYear}`);
-
-            workbook
+              workbook
               .sheet("Err")
               .row(1)
               .cell(1)
               .value(`BÁO CÁO KPI LỖI MẮC PHẢI ${currentYear}`);
+                  
 
-            var i = 3;
-            listDataR?.forEach((item, index) => {
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(1)
-                .value(Number(index + 1));
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(2)
-                .value(item?._id?.staff.fullname);
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(3)
-                .value(`${item?._id.staff?.department?.name}`);
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(4)
-                .value(Number(item?._id?.month));
-              workbook
-                .sheet("DoanhSo")
-                .row(i)
-                .cell(5)
-                .value(
-                  item?.avgQuantityPerStaff != null
-                    ? Number(item?.avgQuantityPerStaff)
-                    : 0,
-                );
-
-              i++;
-            });
-
-            /**
-             * PHẠT LỖI VI PHẠM
-             */
-            var i = 3;
-            listDataErr?.forEach((item, index) => {
-              workbook
-                .sheet("Err")
-                .row(i)
-                .cell(1)
-                .value(Number(index + 1));
-              workbook
-                .sheet("Err")
-                .row(i)
-                .cell(2)
-                .value(item?._id?.executor.fullname);
-              workbook
-                .sheet("Err")
-                .row(i)
-                .cell(3)
-                .value(`${item?._id.executor?.department?.name}`);
-              workbook.sheet("Err").row(i).cell(4).value(item?._id.month);
-              workbook.sheet("Err").row(i).cell(5).value(item?.number);
-              workbook.sheet("Err").row(i).cell(6).value(item?.amount);
-
-              i++;
-            });
-
-            const now = new Date();
-            const filePath = "../../../files/temporary_uploads/";
-            const fileName = `BaoCaoKPI_${now.getTime()}.xlsx`;
-            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-            await workbook.toFileAsync(pathWriteFile);
-            const result = await uploadFileS3(pathWriteFile, fileName);
-
-            fs.unlinkSync(pathWriteFile);
-            return resolve({
-              error: false,
-              data: result?.Location,
-              status: 200,
-            });
-          });
-        } else {
+              var i = 3;
+              listDataR?.forEach((item, index) => {
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(1)
+                  .value(Number(index + 1));
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(2)
+                  .value(item?._id?.staff.fullname);
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(3)
+                  .value(`${item?._id.staff?.department?.name}`);
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(4)
+                  .value(Number(item?._id?.month));
+                workbook
+                  .sheet("DoanhSo")
+                  .row(i)
+                  .cell(5)
+                  .value(
+                    item?.avgQuantityPerStaff != null
+                      ? Number(item?.avgQuantityPerStaff)
+                      : 0,
+                  );
+  
+                i++;
+              });
+  
+              /**
+               * PHẠT LỖI VI PHẠM
+               */
+              var i = 3;
+              listDataErr?.forEach((item, index) => {
+                workbook
+                  .sheet("Err")
+                  .row(i)
+                  .cell(1)
+                  .value(Number(index + 1));
+                workbook
+                  .sheet("Err")
+                  .row(i)
+                  .cell(2)
+                  .value(item?._id?.executor.fullname);
+                workbook
+                  .sheet("Err")
+                  .row(i)
+                  .cell(3)
+                  .value(`${item?._id.executor?.department?.name}`);
+                workbook.sheet("Err").row(i).cell(4).value(item?._id.month);
+                workbook.sheet("Err").row(i).cell(5).value(item?.number);
+                workbook.sheet("Err").row(i).cell(6).value(item?.amount);
+  
+                i++;
+              });
+  
+              const now = new Date();
+              const filePath = "../../../files/temporary_uploads/";
+              const fileName = `BaoCaoKPI_${now.getTime()}.xlsx`;
+              const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+  
+              await workbook.toFileAsync(pathWriteFile);
+              const result = await uploadFileS3(pathWriteFile, fileName);
+  
+              fs.unlinkSync(pathWriteFile);
+              return resolve({
+                error: false,
+                data: result?.Location,
+                status: 200,
+              });
+            })
+        }else{
           let listDataErr = await FNB_MISTAKE_COLL.aggregate([
             {
               $match: {
@@ -5604,7 +5544,7 @@ class Model extends BaseModel {
               $project: projectObj,
             },
             {
-              $match: { year: Number(yearFilter) },
+              $match: {year: Number(yearFilter)},
             },
             {
               $group: conditionGroupErr,
@@ -5615,241 +5555,156 @@ class Model extends BaseModel {
           ]);
           await FNB_MISTAKE_COLL.populate(listDataErr, conditionPopulateErr);
 
-          let listData = await FNB_MISTAKE_COLL.find({
+          let listData  = await FNB_MISTAKE_COLL.find({ 
             company: ObjectID(companyID),
             $where: `return this.date.getFullYear() === ${Number(yearFilter)}`,
           })
-            .populate({
+          .populate({
               path: "funda mistake executor userCreate",
               select: "name sign fullname note manager",
-              populate: {
-                path: "manager",
-                select: "fullname",
-              },
-            })
-            .sort({ date: -1 });
+              populate:{
+                  path: "manager",
+                  select: "fullname"
+              }
+          })
+          .sort({date: -1})
 
           let listDataErrCombine3 = await FNB_MISTAKE_COLL.aggregate([
             {
-              $match: {
-                company: ObjectID(companyID),
-              },
+                $match: {
+                    company: ObjectID(companyID),
+                }
             },
             {
-              $project: {
-                year: {
-                  $year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" },
-                },
-                month: {
-                  $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" },
-                },
-                date: 1,
-                company: 1,
-                funda: 1,
-                mistake: 1,
-                executor: 1,
-                amount: 1,
-                userCreate: 1,
-              },
+                $project :  {
+                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                    date: 1,
+                    company : 1,
+                    funda : 1,
+                    mistake : 1,
+                    executor: 1,
+                    amount: 1,
+                    userCreate: 1,
+                }
             },
             {
-              $match: { year: Number(yearFilter) },
+                $match: {year: Number(yearFilter)}
             },
             {
-              $group: {
-                _id: { executor: "$userCreate" },
-                number: { $sum: 1 },
-                amount: { $sum: "$amount" },
-              },
+                $group: {
+                    _id: { executor: "$userCreate" },
+                    number: { $sum: 1 },
+                    amount: { $sum: "$amount"},
+                }
             },
             {
-              $sort: { number: -1, "_id.executor": -1 },
-            },
-          ]);
+                $sort: { "number": -1, "_id.executor": -1}
+            }
+        ])
           await FNB_MISTAKE_COLL.populate(listDataErrCombine3, {
-            path: "_id.executor",
-            select: "_id fullname department",
-            populate: {
-              path: "department",
-              select: "_id name",
-              model: "department",
-            },
-            model: "user",
-          });
+              path: '_id.executor',
+              select: '_id fullname department',
+              populate: {
+                  path: 'department',
+                  select: '_id name',
+                  model: 'department',
+              },
+              model: 'user'
+          })
 
           let listDataErrCombine4 = await FNB_MISTAKE_COLL.aggregate([
-            {
-              $match: {
-                company: ObjectID(companyID),
+              {
+                  $match: {
+                      company: ObjectID(companyID),
+                  }
               },
-            },
-            {
-              $project: {
-                year: {
-                  $year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" },
-                },
-                month: {
-                  $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" },
-                },
-                date: 1,
-                company: 1,
-                funda: 1,
-                mistake: 1,
-                executor: 1,
-                amount: 1,
-                userCreate: 1,
+              {
+                  $project :  {
+                      year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                      month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                      date: 1,
+                      company : 1,
+                      funda : 1,
+                      mistake : 1,
+                      executor: 1,
+                      amount: 1,
+                      userCreate: 1,
+                  }
               },
-            },
-            {
-              $match: { year: Number(yearFilter) },
-            },
-            {
-              $group: {
-                _id: { executor: "$userCreate", month: "$month" },
-                number: { $sum: 1 },
-                amount: { $sum: "$amount" },
+              {
+                  $match: {year: Number(yearFilter)}
               },
-            },
-            {
-              $sort: { number: -1, "_id.executor": -1 },
-            },
-          ]);
-
+              {
+                  $group: {
+                      _id: { executor: "$userCreate", month: "$month" },
+                      number: { $sum: 1 },
+                      amount: { $sum: "$amount"},
+                  }
+              },
+              {
+                  $sort: { "number": -1, "_id.executor": -1}
+              }
+          ])
+          
           await FNB_MISTAKE_COLL.populate(listDataErrCombine4, {
-            path: "_id.executor",
-            select: "_id fullname department",
+            path: '_id.executor',
+            select: '_id fullname department',
             populate: {
-              path: "department",
-              select: "_id name",
-              model: "department",
+                path: 'department',
+                select: '_id name',
+                model: 'department',
             },
-            model: "user",
-          });
+            model: 'user'
+        })
 
           // Modify the workbook.
-          XlsxPopulate.fromFileAsync(
-            path.resolve(
-              __dirname,
-              "../../../files/templates/excels/export_kpi.xlsx",
-            ),
-          ).then(async (workbook) => {
-            workbook
-              .sheet("DashBoard")
-              .row(1)
-              .cell(1)
-              .value(`BÁO CÁO TỔNG HỢP ${yearFilter}`);
+          XlsxPopulate.fromFileAsync(path.resolve(__dirname,"../../../files/templates/excels/export_kpi.xlsx")).then(async (workbook) => {
+            workbook.sheet("DashBoard").row(1).cell(1).value(`BÁO CÁO TỔNG HỢP ${yearFilter}`);
 
             var i = 4;
             listDataErrCombine3?.forEach((item, index) => {
-              workbook
-                .sheet("DashBoard")
-                .row(i)
-                .cell(1)
-                .value(Number(index + 1));
-              workbook
-                .sheet("DashBoard")
-                .row(i)
-                .cell(2)
-                .value(item?._id?.executor?.fullname);
-              i++;
+                workbook.sheet("DashBoard").row(i).cell(1).value(Number(index+1));
+                workbook.sheet("DashBoard").row(i).cell(2).value(item?._id?.executor?.fullname);
+                i++
             });
 
             var i = 4;
             listDataErrCombine3?.forEach((item, index) => {
-              for (var m = 1; m <= 12; m++) {
-                listDataErrCombine4?.forEach((mistake) => {
-                  if (
-                    mistake._id.executor._id.toString() ===
-                      item._id.executor._id.toString() &&
-                    Number(mistake._id.month) === Number(m)
-                  ) {
-                    workbook
-                      .sheet("DashBoard")
-                      .row(i)
-                      .cell(m * 2 + 2)
-                      .value(mistake?.number);
-                    workbook
-                      .sheet("DashBoard")
-                      .row(i)
-                      .cell(m * 2 + 3)
-                      .value(mistake?.amount);
-                  }
-                });
-              }
-              i++;
+                for(var m=1; m<=12; m++){
+                    listDataErrCombine4?.forEach((mistake) => {
+                        if(mistake._id.executor._id.toString() === item._id.executor._id.toString() && Number(mistake._id.month) === Number(m)){
+                            workbook.sheet("DashBoard").row(i).cell(m*2+2).value(mistake?.number)
+                            workbook.sheet("DashBoard").row(i).cell(m*2+3).value(mistake?.amount)
+                        }
+                    })
+                }
+                i++
             });
 
             var i = 3;
             listData?.forEach((item, index) => {
-              workbook
-                .sheet("ChiTietLoi")
-                .row(i)
-                .cell(1)
-                .value(Number(index + 1));
-              workbook.sheet("ChiTietLoi").row(i).cell(2).value(item?.date);
-              workbook
-                .sheet("ChiTietLoi")
-                .row(i)
-                .cell(3)
-                .value(item?.executor?.fullname);
-              workbook
-                .sheet("ChiTietLoi")
-                .row(i)
-                .cell(4)
-                .value(item?.funda?.name);
-              workbook
-                .sheet("ChiTietLoi")
-                .row(i)
-                .cell(5)
-                .value(item?.funda?.manager?.fullname);
-              workbook
-                .sheet("ChiTietLoi")
-                .row(i)
-                .cell(6)
-                .value(item?.mistake?.name);
-              workbook
-                .sheet("ChiTietLoi")
-                .row(i)
-                .cell(7)
-                .value(item?.userCreate?.fullname);
-              workbook.sheet("ChiTietLoi").row(i).cell(8).value(item.type);
-              workbook.sheet("ChiTietLoi").row(i).cell(9).value(item.status);
-              workbook
-                .sheet("ChiTietLoi")
-                .row(i)
-                .cell(10)
-                .value(Number(item?.amount));
-              workbook
-                .sheet("ChiTietLoi")
-                .row(i)
-                .cell(11)
-                .value(Number(item?.number));
-              workbook.sheet("ChiTietLoi").row(i).cell(12).value(item.note);
-              i++;
+                workbook.sheet("ChiTietLoi").row(i).cell(1).value(Number(index+1));
+                workbook.sheet("ChiTietLoi").row(i).cell(2).value(item?.date);
+                workbook.sheet("ChiTietLoi").row(i).cell(3).value(item?.executor?.fullname);
+                workbook.sheet("ChiTietLoi").row(i).cell(4).value(item?.funda?.name);
+                workbook.sheet("ChiTietLoi").row(i).cell(5).value((item?.funda?.manager?.fullname));
+                workbook.sheet("ChiTietLoi").row(i).cell(6).value(item?.mistake?.name);
+                workbook.sheet("ChiTietLoi").row(i).cell(7).value(item?.userCreate?.fullname);
+                workbook.sheet("ChiTietLoi").row(i).cell(8).value(item.type);
+                workbook.sheet("ChiTietLoi").row(i).cell(9).value(item.status);
+                workbook.sheet("ChiTietLoi").row(i).cell(10).value(Number(item?.amount));
+                workbook.sheet("ChiTietLoi").row(i).cell(11).value(Number(item?.number));
+                workbook.sheet("ChiTietLoi").row(i).cell(12).value(item.note);
+                i++
             });
 
             var i = 3;
             listDataErr?.forEach((item, index) => {
-              workbook
-                .sheet("TongHopLoi")
-                .row(i)
-                .cell(1)
-                .value(Number(index + 1));
-              workbook
-                .sheet("TongHopLoi")
-                .row(i)
-                .cell(2)
-                .value(item?._id?.executor.fullname);
-              workbook
-                .sheet("TongHopLoi")
-                .row(i)
-                .cell(3)
-                .value(`${item?._id.executor?.department?.name}`);
-              workbook
-                .sheet("TongHopLoi")
-                .row(i)
-                .cell(4)
-                .value(item?._id.month);
+              workbook.sheet("TongHopLoi").row(i).cell(1).value(Number(index + 1));
+              workbook.sheet("TongHopLoi").row(i).cell(2).value(item?._id?.executor.fullname);
+              workbook.sheet("TongHopLoi").row(i).cell(3).value(`${item?._id.executor?.department?.name}`);
+              workbook.sheet("TongHopLoi").row(i).cell(4).value(item?._id.month);
               workbook.sheet("TongHopLoi").row(i).cell(5).value(item?.number);
               workbook.sheet("TongHopLoi").row(i).cell(6).value(item?.amount);
 
@@ -5876,7 +5731,7 @@ class Model extends BaseModel {
         console.log({ error });
         return resolve({ error: true, message: error.message, status: 500 });
       }
-    });
+    })
   }
 
   /**
@@ -6279,18 +6134,9 @@ class Model extends BaseModel {
               }
 
               let projectObj = {
-                year: {
-                  $year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" },
-                },
-                month: {
-                  $month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" },
-                },
-                day: {
-                  $dayOfMonth: {
-                    date: "$createAt",
-                    timezone: "Asia/Ho_Chi_Minh",
-                  },
-                },
+                year : {$year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                month : {$month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                day : {$dayOfMonth: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
                 // year: { $year: "$createAt" },
                 // month: { $month: "$createAt" },
                 // day: { $dayOfMonth: "$createAt" },
@@ -7207,4 +7053,3 @@ class Model extends BaseModel {
 }
 
 exports.MODEL = new Model();
-
