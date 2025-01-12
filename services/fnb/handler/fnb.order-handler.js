@@ -46,7 +46,7 @@ module.exports = {
             try {
                 // console.log({ FNB_ORDER_INSERT_PARAMS: ctx.params });
                 await this.validateEntity(ctx.params);
-                let { type, voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, productsInCart, shippingFee, paid, userID } = ctx.params;
+                let { type, voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -58,7 +58,7 @@ module.exports = {
                 if (!type) {
                     // console.log('111111111111111111111')
                     let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                        voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, productsInCart, shippingFee, paid, userID, ctx
+                        voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
                     })
 
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
