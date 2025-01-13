@@ -2927,6 +2927,8 @@ class Model extends BaseModel {
 
                         // workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
 
+                        workbook.sheet("Data").row(i).cell(18).value(item?.note)
+
                         i++
                     })
         
