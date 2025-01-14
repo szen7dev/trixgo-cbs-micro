@@ -568,10 +568,10 @@ module.exports = {
                 let {
                     userID, resetPass, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
-                    companyID, departmentID, positionID, level, status, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode
+                    companyID, departmentID, positionID, level, status, startingTime, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode
                 } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
 				let { _id: currentUserID, company } = ctx.meta.infoUser;
 
@@ -582,7 +582,7 @@ module.exports = {
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
                     userID, resetPass, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
-                    companyID, departmentID, positionID, level, status, company, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode, ctx
+                    companyID, departmentID, positionID, level, status, company, startingTime, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
