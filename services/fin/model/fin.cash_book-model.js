@@ -2980,6 +2980,10 @@ class Model extends BaseModel {
                         i++
                     })
 
+                    for(var m = 1; m<=12; m++){
+                        workbook.sheet("BaoCaoTheoNhanSu").row(2).cell(m+3).value(`T${m}_${year}`)
+                    }
+
                     var i = 3;
                     listUser?.forEach((item, index) => {                        
                         workbook.sheet("BaoCaoTheoNhanSu").row(i).cell(1).value(Number(index + 1))
@@ -2988,10 +2992,6 @@ class Model extends BaseModel {
 
                         i++
                     })
-
-                    for(var m = 1; m<=12; m++){
-                        workbook.sheet("BaoCaoTheoNhanSu").row(2).cell(m+3).value(`T${m}_${year}`)
-                    }
         
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
