@@ -70,6 +70,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : Date,
         default: null
     },
+    //_______Giờ quy định bắt đầu làm việc
     startingTime: Date,
     //_______Giới tính (1-Nam/2-Nữ/3-Khác)
     gender: {
