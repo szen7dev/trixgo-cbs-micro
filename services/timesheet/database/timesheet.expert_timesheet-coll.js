@@ -103,7 +103,8 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Schema.Types.ObjectId,
         ref : "user"
     },
-
+    //_______Giờ quy định bắt đầu làm việc
+    startingTime: Date,
     //_______Ngày hoàn thành
     date: { type: Date, default: Date.now },
 
