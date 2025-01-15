@@ -2974,7 +2974,7 @@ class Model extends BaseModel {
                         workbook.sheet("Data2").row(i).cell(5).value(item?.note)
                         workbook.sheet("Data2").row(i).cell(6).value(item?.createAt)
                         workbook.sheet("Data2").row(i).cell(7).value(item?.startingTime)
-                        workbook.sheet("Data2").row(i).cell(8).value(Number((a - b1) / (1000*60)))
+                        workbook.sheet("Data2").row(i).cell(8).value(Number((a - b1) / (1000*60)) - 5) // Số phút muộn quy định
                         workbook.sheet("Data2").row(i).cell(9).formula(`="T"&MONTH(F${i})&"_"&YEAR(F${i})`)
 
                         i++
