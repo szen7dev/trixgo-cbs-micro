@@ -2508,11 +2508,16 @@ class Model extends BaseModel {
 
                 // Tổng hợp nghỉ phép
                 else if (Number(option) === 3) {
+                    let yearFilter = new Date().getFullYear()
+                    if(year){
+                        yearFilter = year
+                    }
+
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
                         company: ObjectID(companyID),
                         parent: {$exists: true, $ne: null },
                         subtype: 2, // Nghỉ phép
-                        $where: `return this.date.getFullYear() === ${Number(year)}`
+                        $where: `return this.date.getFullYear() === ${Number(yearFilter)}`
                     })
                     .select('date assignee hours note')
                     .populate({
@@ -2523,11 +2528,19 @@ class Model extends BaseModel {
                             select: '_id name',
                         }
                     })
+
+                    let listUser = await USER_COLL.find({_id: {$in: listData.map(item=>item.assignee)}})
+                    .select('fullname department')
+                    .sort({"department": 1})
+                    .populate({
+                        path: 'department',
+                        select: '_id name',
+                    })
                  
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_export_time_off.xlsx')))
                         .then(async workbook => {
-                            workbook.sheet("BaoCao").row(1).cell(3).value(Number(year))
+                            workbook.sheet("BieuDo").row(1).cell(3).value(Number(yearFilter))
 
                             var i = 3;
                             listData?.forEach((item, index) => {
@@ -2536,12 +2549,25 @@ class Model extends BaseModel {
                                 workbook.sheet("NghiPhep").row(i).cell(2).value(item?.assignee?.fullname)
                                 workbook.sheet("NghiPhep").row(i).cell(3).value(item?.assignee?.department?.name)
                                 workbook.sheet("NghiPhep").row(i).cell(4).value(item?.date)
-                                // workbook.sheet("NghiPhep").row(i).cell(4).value(Number(item?.hours))
-                                workbook.sheet("NghiPhep").row(i).cell(5).value(item?.note)
-                                workbook.sheet("NghiPhep").row(i).cell(6).formula(`="T"&MONTH(D${i})&"_"&YEAR(D${i})`)
+                                workbook.sheet("NghiPhep").row(i).cell(5).value(Number(item?.hours))
+                                workbook.sheet("NghiPhep").row(i).cell(6).value(item?.note)
+                                workbook.sheet("NghiPhep").row(i).cell(7).formula(`="T"&MONTH(D${i})&"_"&YEAR(D${i})`)
 
                                 i++
                             });
+
+                            for(var m = 1; m<=12; m++){
+                                workbook.sheet("BaoCaoTheoNhanSu").row(2).cell(m+3).value(`T${m}_${year}`)
+                            }
+        
+                            var i = 3;
+                            listUser?.forEach((item, index) => {                        
+                                workbook.sheet("BaoCaoTheoNhanSu").row(i).cell(1).value(Number(index + 1))
+                                workbook.sheet("BaoCaoTheoNhanSu").row(i).cell(2).value(item?.fullname)
+                                workbook.sheet("BaoCaoTheoNhanSu").row(i).cell(3).value(item?.department?.name)
+        
+                                i++
+                            })
 
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
