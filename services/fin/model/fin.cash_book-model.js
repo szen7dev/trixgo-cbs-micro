@@ -2847,6 +2847,8 @@ class Model extends BaseModel {
 
             // Tải điểm danh
             else if(option == 3){
+                let year = new Date(toDate).getFullYear()
+
                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
                     company: companyID,
                     parent: {$exists: true, $ne: null },
@@ -2856,7 +2858,7 @@ class Model extends BaseModel {
                     }
 
                 })
-                .select('parent name hours unitprice amount status date note assignee createAt')
+                .select('parent name hours unitprice amount status date note assignee createAt startingTime')
                 .populate({
                     path: 'assignee',
                     select:'fullname department',
@@ -2866,6 +2868,34 @@ class Model extends BaseModel {
                     }
                 })
                 // console.log(listData)
+
+                let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            parent: { $exists: true, $ne: null },
+                            assignee: { $exists: true, $ne: null },
+                            date: {
+                                $gte: moment( new Date(fromDate)).toDate(),
+                                $lte: moment( new Date(toDate)).toDate(),
+                            }
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { assignee: '$assignee' },
+                        }
+                    },
+                ])
+                // console.log(listData1)
+
+                let listUser = await USER_COLL.find({_id: {$in: listData1.map(item=>item._id.assignee)}})
+                .select('fullname department')
+                .sort({"department": 1})
+                .populate({
+                    path: 'department',
+                    select: '_id name',
+                })
                 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_attendance_report.xlsx')))
@@ -2931,6 +2961,37 @@ class Model extends BaseModel {
 
                         i++
                     })
+
+                    var i = 3;
+                    listData?.forEach((item, index) => {                        
+                        let a = (new Date(item?.createAt)).getTime()
+                        let b1 = (new Date(item?.startingTime)).getTime()
+
+                        workbook.sheet("Data2").row(i).cell(1).value(Number(index + 1))
+                        workbook.sheet("Data2").row(i).cell(2).value(item?.assignee?.fullname)
+                        workbook.sheet("Data2").row(i).cell(3).value(item?.assignee?.department?.name)
+                        workbook.sheet("Data2").row(i).cell(4).value(item?.name)
+                        workbook.sheet("Data2").row(i).cell(5).value(item?.note)
+                        workbook.sheet("Data2").row(i).cell(6).value(item?.createAt)
+                        workbook.sheet("Data2").row(i).cell(7).value(item?.startingTime)
+                        workbook.sheet("Data2").row(i).cell(8).value(Number((a - b1) / (1000*60)))
+                        workbook.sheet("Data2").row(i).cell(9).formula(`="T"&MONTH(F${i})&"_"&YEAR(F${i})`)
+
+                        i++
+                    })
+
+                    var i = 3;
+                    listUser?.forEach((item, index) => {                        
+                        workbook.sheet("BaoCaoTheoNhanSu").row(i).cell(1).value(Number(index + 1))
+                        workbook.sheet("BaoCaoTheoNhanSu").row(i).cell(2).value(item?.fullname)
+                        workbook.sheet("BaoCaoTheoNhanSu").row(i).cell(3).value(item?.department?.name)
+
+                        i++
+                    })
+
+                    for(var m = 1; m<=12; m++){
+                        workbook.sheet("BaoCaoTheoNhanSu").row(2).cell(m+3).value(`T${m}_${year}`)
+                    }
         
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
