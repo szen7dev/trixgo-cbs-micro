@@ -6104,9 +6104,8 @@ class Model extends BaseModel {
               };
 
               let yearFilter;
-              let currentYear = new Date().getFullYear();
-              // let currentMonth = new Date().getMonth() + 1
-              let currentMonth = new Date(toDate).getMonth() + 1;
+              let currentYear = new Date(toDate).getFullYear()
+              let currentMonth = new Date(toDate).getMonth() + 1
 
               if (year && !isNaN(year)) {
                 yearFilter = Number(year);
