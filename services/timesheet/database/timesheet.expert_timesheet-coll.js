@@ -173,7 +173,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
 
     //________Ghi chú
     note: String,
-    
+    //_________File/ảnh đính kèm
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
