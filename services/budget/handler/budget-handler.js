@@ -146,6 +146,8 @@
                 await this.validateEntity(ctx.params);
                 let { budgetID, isMember, companyID, projectID, contractID, type, keyword, limit, lastestID, populates, select } = ctx.params;
 
+                console.log(ctx.params)
+
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){

@@ -124,6 +124,11 @@ module.exports  = DATABASE_MIDDLEWARE("budget", {
         type: Number,
         default : 0
     },    
+    //_________File/ảnh đính kèm
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
