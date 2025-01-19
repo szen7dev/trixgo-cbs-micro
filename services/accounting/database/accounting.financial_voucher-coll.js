@@ -153,6 +153,11 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
         type: Schema.Types.ObjectId,
         ref: 'financial_general_journal'
     }],
+    //_________File/ảnh đính kèm
+    files: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

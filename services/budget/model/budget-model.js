@@ -229,21 +229,28 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'param_invalid' });
 
                 // populates
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                // if(populates && typeof populates === 'string'){
+                //     if(!IsJsonString(populates))
+                //         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-					populates = JSON.parse(populates);
-				}else{
-					populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
+                //     populates = JSON.parse(populates);
+                // }else{
+                //     populates = {
+                //         path: "",
+                //         select: ""
+                //     }
+                // }
 
                 let info = await BUDGET_COLL.findById(budgetID)
                                 .select(select)
-                                .populate(populates)
+                                .populate({
+                                    path: 'files',
+                                    select: "_id fullname name sign image createAt path size nameOrg author",
+                                    populate: {
+                                      path: 'author',
+                                      select: "_id fullname",
+                                    }
+                                })
 
 				if (!info) return resolve({ error: true, message: 'cannot_get' });
 
