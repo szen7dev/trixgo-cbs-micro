@@ -1102,7 +1102,7 @@ class Model extends BaseModel {
      * Func: Tải dữ liệu
      * Date: 15/2/2024
      */
-    exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year }) {
+    exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year, status, type, salesChannel, managerID }) {
         // console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
         return new Promise(async resolve => {
             try {
@@ -1150,8 +1150,8 @@ class Model extends BaseModel {
                         },
                         {
                             $project :  {
-                                year : {$year : "$createAt"},
-                                month : {$month : "$createAt"},
+                                year : {$year: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
+                                month : {$month: { date: "$createAt", timezone: "Asia/Ho_Chi_Minh" }},
                                 createAt: 1,
                                 userCreate: 1,
                                 company : 1,
