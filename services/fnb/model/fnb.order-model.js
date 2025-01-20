@@ -5560,12 +5560,8 @@ class Model extends BaseModel {
             $where: `return this.date.getFullYear() === ${Number(yearFilter)}`,
           })
           .populate({
-              path: "funda mistake executor userCreate",
-              select: "name sign fullname note manager",
-              populate:{
-                  path: "manager",
-                  select: "fullname"
-              }
+              path: "funda mistake executor userCreate manager",
+              select: "name sign fullname note",
           })
           .sort({date: -1})
 
@@ -5688,7 +5684,7 @@ class Model extends BaseModel {
                 workbook.sheet("ChiTietLoi").row(i).cell(2).value(item?.date);
                 workbook.sheet("ChiTietLoi").row(i).cell(3).value(item?.executor?.fullname);
                 workbook.sheet("ChiTietLoi").row(i).cell(4).value(item?.funda?.name);
-                workbook.sheet("ChiTietLoi").row(i).cell(5).value((item?.funda?.manager?.fullname));
+                workbook.sheet("ChiTietLoi").row(i).cell(5).value((item?.manager?.fullname));
                 workbook.sheet("ChiTietLoi").row(i).cell(6).value(item?.mistake?.name);
                 workbook.sheet("ChiTietLoi").row(i).cell(7).value(item?.userCreate?.fullname);
                 workbook.sheet("ChiTietLoi").row(i).cell(8).value(item.type);
