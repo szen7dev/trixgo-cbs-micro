@@ -15,17 +15,16 @@ const { CF_ACTIONS_ITEM } 		        = require('../helper/item.actions-constant')
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
+const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page')
 
 /**
  * COLLECTIONS
  */
-const ITEM__DEPARTMENT_COLL            			= require('../database/item.department-coll');
-const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll');
-const ITEM__AREA_COLL            				= require('../database/item.area-coll');
+const ITEM__DEPARTMENT_COLL            			= require('../database/item.department-coll')
+const ITEM__FUNDA_COLL            				= require('../database/item.funda-coll')
+const ITEM__AREA_COLL            				= require('../database/item.area-coll')
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
-const FNB_MISTAKE_COLL                          = require('../../fnb/database/fnb.mistake-coll');
 
 const AUTH__APP_USER = require('../../auth/model/auth.app_users').MODEL
 
