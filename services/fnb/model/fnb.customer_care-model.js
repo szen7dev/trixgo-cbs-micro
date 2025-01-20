@@ -1110,9 +1110,19 @@ class Model extends BaseModel {
                 let currentYear = new Date().getFullYear()
                 let currentMonth = new Date().getMonth() + 1
 
+                let conditionObj = { 
+                    company: companyID, 
+                    journey: {$exists: false},
+                }
+
                 if(fromDate && toDate){
-                    currentMonth = new Date(toDate).getMonth() + 1
-                    currentYear = new Date(toDate).getFullYear()
+                    currentMonth = new Date(fromDate).getMonth() + 1
+                    currentYear = new Date(fromDate).getFullYear()
+
+                    conditionObj.createAt  = { 
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate()
+                    }
                 }
 
                 if(year && !isNaN(year)){
@@ -1129,7 +1139,7 @@ class Model extends BaseModel {
                 if(option && option == 1){
                     template = '../../../files/templates/excels/crm_export_support.xlsx'
 
-                    let listData = await FNB_CUSTOMER_CARE_COLL.find({company: companyID, journey: {$exists: false}})
+                    let listData = await FNB_CUSTOMER_CARE_COLL.find(conditionObj)
                     .populate({
                         path: 'customer mistake manager funda order userCreate',
                         select:'name sign phone fullname assignee',
@@ -1138,7 +1148,7 @@ class Model extends BaseModel {
                             select:'fullname',
                         }
                     })
-                    .limit(10000)
+                    // .limit(10000)
 
                     let listData2 = await FNB_CUSTOMER_CARE_COLL.aggregate([
                         {
