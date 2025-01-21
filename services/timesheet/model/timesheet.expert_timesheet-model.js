@@ -294,7 +294,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official }){
+    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official, filesID }){
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -313,6 +313,12 @@ class Model extends BaseModel {
                 let dataUpdate = {
                     userUpdate: userID,
                     modifyAt: Date.now(),
+                }
+
+                let dataAddToset = {};
+
+                if (checkObjectIDs(filesID)) {
+                    dataAddToset = { files: filesID };
                 }
 
                 // Bảng chấm công
@@ -461,6 +467,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(status)){
                     dataUpdate.status = status;
+                }
+
+                if(dataAddToset){
+                    dataUpdate.$addToSet = dataAddToset;
                 }
 
                 let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]

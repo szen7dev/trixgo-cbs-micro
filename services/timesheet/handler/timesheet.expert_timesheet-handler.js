@@ -60,7 +60,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
-                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType, official } = ctx.params;
+                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType, official, filesID } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -68,7 +68,7 @@ module.exports = {
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
                     expertTimesheetID, userID, projectID, name, location, type, assigneeID, hours, unitprice, amount, status, approver,
-                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType, official
+                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType, official, filesID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
