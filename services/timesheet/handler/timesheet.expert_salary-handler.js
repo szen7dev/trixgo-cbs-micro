@@ -67,7 +67,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22 } = ctx.params;
+                let { expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22, filesID } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -113,7 +113,8 @@ module.exports = {
                     subAllowance19: Number(subAllowance19).toFixed(0), 
                     subAllowance20: Number(subAllowance20).toFixed(0), 
                     subAllowance21: Number(subAllowance21).toFixed(0), 
-                    subAllowance22: Number(subAllowance22).toFixed(0) 
+                    subAllowance22: Number(subAllowance22).toFixed(0),
+                    filesID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
