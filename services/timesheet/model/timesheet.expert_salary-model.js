@@ -1088,7 +1088,9 @@ class Model extends BaseModel {
                 for(const item of dataUser){
                     let hours1 = 0, hours4 = 0
                     let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
-                    let subAllowance13 = 0 // Đặt làm phụ cấp Thử việc
+
+                    let subAllowance1 = 0, subAllowance2 = 0, subAllowance3 = 0, subAllowance4 = 0, subAllowance5 = 0, subAllowance6 = 0, subAllowance7 = 0, subAllowance8 = 0, subAllowance9 = 0, subAllowance10 = 0, subAllowance11 = 0, subAllowance12 = 0, subAllowance13 = 0, subAllowance14 = 0, subAllowance15 = 0; 
+                    // Đặt subAllowance13  làm phụ cấp Thử việc
 
                     let info = await TIMESHEET__EXPERT_SALARY_COLL.findOne({
                         parent: expertSalaryID,
@@ -1114,7 +1116,22 @@ class Model extends BaseModel {
                     kpiFactor = info.kpiFactor
                     hours1 = info.hours1
                     hours4 = info.hours4
+
+                    subAllowance1 = info.subAllowance1
+                    subAllowance2 = info.subAllowance2
+                    subAllowance3 = info.subAllowance3
+                    subAllowance4 = info.subAllowance4
+                    subAllowance5 = info.subAllowance5
+                    subAllowance6 = info.subAllowance6
+                    subAllowance7 = info.subAllowance7
+                    subAllowance8 = info.subAllowance8
+                    subAllowance9 = info.subAllowance9
+                    subAllowance10 = info.subAllowance10
+                    subAllowance11 = info.subAllowance11
+                    subAllowance12 = info.subAllowance12
                     subAllowance13 = info.subAllowance13
+                    subAllowance14 = info.subAllowance14
+                    subAllowance15 = info.subAllowance15
                 
                     if(info){
                         if(arr1[item]){
@@ -1124,10 +1141,12 @@ class Model extends BaseModel {
 
                         if(arr2[item]){
                             hours4 = Number(arr2[item][0].quantity).toFixed(2)
-                            mealAllowance = Number(arr2[item][0].amount).toFixed(0)
+                            // mealAllowance = Number(arr2[item][0].amount).toFixed(0)
                             subAllowance13 = Number(arr2[item][0].amount).toFixed(0) // Đưa tạm sang phụ cấp này cho Lương thử việc
                         }
                     }
+
+                    mealAllowance = Number(subAllowance1) + Number(subAllowance2) + Number(subAllowance3) + Number(subAllowance4) + Number(subAllowance5) + Number(subAllowance6) + Number(subAllowance7) + Number(subAllowance8) + Number(subAllowance9) + Number(subAllowance10) + Number(subAllowance11) + Number(subAllowance12) + Number(subAllowance13) + Number(subAllowance14) + Number(subAllowance15)
 
                     remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
@@ -1150,7 +1169,21 @@ class Model extends BaseModel {
                         advance,
                         paid,
                         remaining,
-                        subAllowance13
+                        subAllowance1,
+                        subAllowance2,
+                        subAllowance3,
+                        subAllowance4,
+                        subAllowance5,
+                        subAllowance6,
+                        subAllowance7,
+                        subAllowance8,
+                        subAllowance9,
+                        subAllowance10,
+                        subAllowance11,
+                        subAllowance12,
+                        subAllowance13,
+                        subAllowance14,
+                        subAllowance15,
                     }
 
                     if(info){
