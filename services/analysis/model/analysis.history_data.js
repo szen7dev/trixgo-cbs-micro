@@ -52,6 +52,7 @@ const FIN__CASH_BOOK_COLL                       = require('../../fin/database/fi
 // const STORE_ORDER_PRODUCT_COLL                  = require('../../store/database/store.order_product-coll');
 // const STORE_ORDER_COLL                          = require("../../store/database/store.order-coll");
 const MEDIA_COLL					        	= require('../../media/database/media-coll');
+const { type } = require('os');
 
 const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/model/subject_pcm.pcm_plan_group').MODEL
 const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
@@ -1153,7 +1154,7 @@ class Model extends BaseModel {
         });
     }
 
-    resetData({ option, companyID, page, unit, getNumber, newPassword, pass, salaryID }){
+    resetData({ option, companyID, page, unit, getNumber, newPassword, pass, salaryID, staffID, voucherIDs }){
         return new Promise(async resolve => { 
             try {
                 if(pass && pass == 'Hiepnh1985@#'){
@@ -1199,6 +1200,46 @@ class Model extends BaseModel {
                             numberOnLeave: 12, // Số ngày được nghỉ phép trong năm
                             numberOnLeavePlus: 0,
                         }})
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
+
+                    // Reset Voucher nhân viên khi nghỉ việc
+                    else if(option == 6){
+                        // Danh sách voucher của Nhân viên
+                        let listData = await FNB_VOUCHER_COLL.find({company: companyID, type: 5 })
+                        let listVouchers = []
+
+                        if(checkObjectIDs(voucherIDs)){
+                            listVouchers = voucherIDs
+                        }else{
+                            listVouchers = listData.map(item => item._id)
+                        }
+                        // console.log(listVouchers)
+
+                        for(const item of listVouchers){
+                            // Xóa nhân sự ra khỏi voucher
+                            let info1 = await FNB_VOUCHER_COLL.findByIdAndUpdate(item,
+                                {
+                                    $pull: {
+                                        receivers: staffID,
+                                    },
+                                },
+                                { new: true })
+
+                            // console.log(info1)
+
+                            // Xóa voucher ra khỏi nhân sự
+                            let info2 = await ITEM__CONTACT_COLL.findByIdAndUpdate(staffID,
+                                {
+                                    $pull: {
+                                        getVouchers: item,
+                                    },
+                                },
+                                { new: true })
+
+                            // console.log(info2)
+                        }
+
                         return resolve({ error: false, data: 'Reset thành công' })
                     }
                 }else{
