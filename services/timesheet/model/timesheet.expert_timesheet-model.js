@@ -383,13 +383,13 @@ class Model extends BaseModel {
                     if(hours){
                         hours2 = Number(hours)
                     }
-    
+
                     if(checkObjectIDs(workID)){
                         dataUpdate.work = workID;
     
                         let infoWork = await BUDGET__WORK_COLL.findById(workID).select('unitPrice budget item group')
                         if(infoWork){
-                            // unitprice2 = Number(infoWork.unitPrice) // Bỏ đi để không bị ảnh hưởng
+                            unitprice2 = Number(infoWork.unitPrice) // Bỏ đi để không bị ảnh hưởng: vì đơn giá đôi khi theo thực tế
 
                             dataUpdate.budget = infoWork.budget;
                             dataUpdate.item = infoWork.item;
@@ -522,18 +522,27 @@ class Model extends BaseModel {
                     })
 
                 // Cập nhật ngân sách đã thực hiện
-                if(checkObjectIDs(workID)){
-                    // Cập nhật với Công việc cũ
-                    let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
-                    console.log(infoBudget2)
-
-                    // Cập nhật với Công việc mới
-                    let infoBudget = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID, userID})
-                    console.log(infoBudget)
+                if(checkObjectIDs(infoAfterUpdate.work)){
+                    if(checkObjectIDs(workID)){
+                        // console.log('11111111111111111111111111111111111')
+                        // Cập nhật với Công việc cũ
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
+                        // console.log(infoBudget2)
+    
+                        // Cập nhật với Công việc mới
+                        let infoBudget = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID, userID})
+                        // console.log(infoBudget)
+                    }else{
+                        // console.log('222222222222222222')
+                        // Cập nhật với Công việc cũ: áp dụng cho thay đổi Khối lượng, đơn giá
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
+                        // console.log(infoBudget2)
+                    }
                 }
-                
+
                 // Cập nhật cho các mẩu tin con
                 if(!infoAfterUpdate.parent && [1,2].includes(Number(type)) && [1,2].includes(Number(official))){
+                    // console.log('33333333333333')
                     if(infoProject && checkObjectIDs(infoProject.funda)){
                         await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany({parent: expertTimesheetID},{
                             $set: {
@@ -554,6 +563,7 @@ class Model extends BaseModel {
 
                 // Cập nhật cho mẩu tin cha
                 if(infoAfterUpdate.parent){
+                    // console.log('44444444444444444')
                     await that.updateValue({ parentID: infoAfterUpdate.parent, userID })
                 }
 
