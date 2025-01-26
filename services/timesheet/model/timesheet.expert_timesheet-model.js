@@ -298,8 +298,8 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             const that = this
             try {
-                let infoTimeSheetID = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
-                if(!infoTimeSheetID) 
+                let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
+                if(!infoTimeSheet) 
                     return resolve({ error: true, message: 'Timesheet không tồn tại', keyError: "timesheet_not_exists", status: 400 })
                 
 
@@ -375,7 +375,7 @@ class Model extends BaseModel {
                     dataUpdate.date = date;
                 }
                 
-                if(infoTimeSheetID.parent){
+                if(infoTimeSheet.parent){
                     if(unitprice){
                         unitprice2 = Number(unitprice)
                     }
@@ -409,17 +409,17 @@ class Model extends BaseModel {
                     dataUpdate.unitprice = unitprice2
                     dataUpdate.amount = amount
 
-                    if(Number(subtype) != Number(infoTimeSheetID.subtype)){
+                    if(Number(subtype) != Number(infoTimeSheet.subtype)){
                         
                         dataUpdate.subtype = subtype;
     
-                        // Ngày nghỉ phép, lễ/tết, du lịch/nghỉ mát: Lương cơ bản
+                        // Ngày nghỉ phép, lễ/tết, du lịch/nghỉ mát: Được hưởng Lương cơ bản (lương đóng bảo hiểm)
                         if([2,3,5].includes(Number(subtype))){
                             let newAssigneeID
                             if(assigneeID){
                                 newAssigneeID = assigneeID
                             }else{
-                                newAssigneeID = infoTimeSheetID.assignee
+                                newAssigneeID = infoTimeSheet.assignee
                             }
                             // console.log(newAssigneeID)
     
@@ -433,7 +433,7 @@ class Model extends BaseModel {
                             let unitprice2New = 0
                             if(infoUser.contacts && infoUser.contacts.length){
                                 for(const contact of infoUser.contacts){
-                                    if(contact.company.toString() === infoTimeSheetID.company.toString() && contact.sallaryBasic){
+                                    if(contact.company.toString() === infoTimeSheet.company.toString() && contact.sallaryBasic){
                                         // Tính toán cho 1 năm 365 ngày - 52 ngày nghỉ (tuần nghỉ 1 ngày)*8h. Tổng lương cơ bản * 12 tháng
                                         unitprice2New = Number(unitprice2New) + Number(contact.sallaryBasic * 12 / contact.annualWorkingHours)
                                     }
@@ -473,7 +473,7 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = dataAddToset;
                 }
 
-                let adminsID = [...infoTimeSheetID.admins?.map(item => item?.toString())]
+                let adminsID = [...infoTimeSheet.admins?.map(item => item?.toString())]
 
                 if(adminsID.includes(userID.toString()) || infoAppUser.data.level == 0) {
                     if(admins) {
@@ -558,9 +558,9 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật số ngày nghỉ phép trong năm tới hiện tại: USER_COLL---
-                if(infoAfterUpdate.parent && (subtype == 2 || infoTimeSheetID.subtype == 2)){
+                if(infoAfterUpdate.parent && (subtype == 2 || infoTimeSheet.subtype == 2)){
                     let numberOnLeave = 0
-                    let yearFilter = new Date(date).getFullYear()
+                    let yearFilter = new Date().getFullYear() // Chỉ Xử lý nghỉ phép của năm hiện tại
 
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
