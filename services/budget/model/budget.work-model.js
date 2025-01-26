@@ -651,6 +651,7 @@ class Model extends BaseModel {
                 await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
                 // console.log(listData1)
 
+                // Ngân sách thực hiện theo trục thời gian
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
@@ -699,14 +700,8 @@ class Model extends BaseModel {
                         workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(item?.name)
                         workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(item?.sign)
                         workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(item?.unit)
-                        // workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(item?.quantity))
-                        // workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(item?.unitPrice))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(item?.amount))
-                        // workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(item?.impleQuantity))
-                        // workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(item?.impleQuantity != 0 ? Number(item?.impleAmount/item?.impleQuantity) : 0)
                         workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(item?.impleAmount))
-                        // workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(item?.quantity - item?.impleQuantity))
-                        // workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((item?.quantity - item?.impleQuantity) != 0 ? (item?.amount - item?.impleAmount) / (item?.quantity - item?.impleQuantity) : 0))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(item?.amount - item?.impleAmount))
                         workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(item?.note)
 
@@ -720,14 +715,8 @@ class Model extends BaseModel {
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(group?.name)
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(group?.sign)
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(group?.unit)
-                                // workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(group?.quantity))
-                                // workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(group?.unitPrice))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(group?.amount))
-                                // workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(group?.impleQuantity))
-                                // workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(group?.impleQuantity != 0 ? Number(group?.impleAmount/group?.impleQuantity) : 0)
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(group?.impleAmount))
-                                // workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(group?.quantity - group?.impleQuantity))
-                                // workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((group?.quantity - group?.impleQuantity) != 0 ? (group?.amount - group?.impleAmount) / (group?.quantity - group?.impleQuantity) : 0))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(group?.amount - group?.impleAmount))
                                 workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(group?.note)
                                 
