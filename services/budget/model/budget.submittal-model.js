@@ -32,7 +32,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Code: 
      */
-    insert({ userID, plus, taskID, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice }) { 
+    insert({ userID, plus, taskID, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice, fromDate, toDate }) { 
         // console.log({ userID, plus, taskID, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
@@ -87,6 +87,11 @@ class Model extends BaseModel {
 
                 if(note){
                     dataInsert.note = note;
+                }
+
+                if(fromDate && toDate){
+                    dataInsert.fromDate = fromDate;
+                    dataInsert.toDate = toDate;
                 }
                 
                 let infoAfterInsert = await this.insertData(dataInsert)
