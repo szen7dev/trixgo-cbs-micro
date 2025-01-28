@@ -89,7 +89,7 @@ class Model extends BaseModel {
                 await that.updateValue( { taskID, userID })
 
                 // Cập nhật vào bảng chấm công
-                if(fromDate && toDate && checkObjectIDs(staffID)){
+                if(Number(infoTask.approvalType) === 6 && fromDate && toDate && checkObjectIDs(staffID)){
                     let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
                         {
                             assignee: staffID,
