@@ -1,27 +1,14 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
-const { checkObjectIDs, checkNumberIsValidWithRange, checkNumberValid, IsJsonString }                        
-                                        = require('../../../tools/utils/utils');
-const stringUtils					    = require('../../../tools/utils/string_utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
-
-const { getCurrentPage }			    = require('../../../tools/utils/calculate_current_page');
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_BUDGET } 		    = require('../../budget/helper/budget.actions-constant');
-
-/**
- * import inter-coll, exter-coll
- */
+const moment                            = require('moment');
 const BUDGET__SUBMITTAL_COLL            = require('../database/budget.submittal-coll')
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 
-const PCM_PLAN_TASK_COLL                = require('../.../../../subject_pcm/database/subject_pcm.pcm_plan_task-coll');
-const { ObjectId } = require('mongodb');
+const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 
-/**
- * import inter-model, exter-model
- */
+const PCM_PLAN_TASK_COLL                = require('../.../../../subject_pcm/database/subject_pcm.pcm_plan_task-coll');
 class Model extends BaseModel {               
     constructor() {
         super(BUDGET__SUBMITTAL_COLL);
@@ -32,7 +19,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Code: 
      */
-    insert({ userID, plus, taskID, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice }) { 
+    insert({ userID, plus, taskID, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice, fromDate, toDate }) { 
         // console.log({ userID, plus, taskID, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
@@ -88,12 +75,37 @@ class Model extends BaseModel {
                 if(note){
                     dataInsert.note = note;
                 }
+
+                if(fromDate && toDate){
+                    dataInsert.fromDate = fromDate;
+                    dataInsert.toDate = toDate;
+                }
                 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "Không thể thêm", keyError: "can't_insert_budget_submittal " })
 
-                await that.updateValue( {taskID, userID })
+                // Cập nhật giá trị duyệt cho TaskID
+                await that.updateValue( { taskID, userID })
+
+                // Cập nhật vào bảng chấm công
+                if(Number(infoTask.approvalType) === 6 && fromDate && toDate && checkObjectIDs(staffID)){
+                    let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
+                        {
+                            assignee: staffID,
+                            date: {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
+                            },
+                        },
+                        {
+                            $set: {
+                                "note": `${name} | ${note} | Từ ${moment(fromDate).format('DD/MM/YYYY')} - Đến ${moment(toDate).format('DD/MM/YYYY')}`
+                            }
+                        }
+                    )
+                    // console.log(info)
+                }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
