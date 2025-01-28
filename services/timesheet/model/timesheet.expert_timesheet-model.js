@@ -28,13 +28,13 @@ const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper
 const USER_COLL                         = require('../../auth/database/auth.user-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
 const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
-const ITEM__FUNDA_COLL            	    = require('../../item/database/item.funda-coll'); 
-const ITEM__POSITION_COLL            	= require('../../item/database/item.position-coll'); 
-const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll');
+const ITEM__FUNDA_COLL            	    = require('../../item/database/item.funda-coll')
+const ITEM__POSITION_COLL            	= require('../../item/database/item.position-coll')
+const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll')
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
 
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
-const BUDGET__WORK_MODEL                = require('../../budget/model/budget.work-model').MODEL;
+const BUDGET__WORK_MODEL                = require('../../budget/model/budget.work-model').MODEL
 
 let dataTF = {
     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
