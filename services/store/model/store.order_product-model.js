@@ -32,6 +32,8 @@ const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 
+const BUDGET__WORK_MODEL                = require('../../budget/model/budget.work-model').MODEL
+
 class Model extends BaseModel {
 
     constructor() {
@@ -234,12 +236,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: update group
-     * Author: Depv
-     * Code:
+     * Name  : Cập nhật
+     * Code  : HiepNH
+     * Date  : 28/1/2025
      */
     update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice }) {
-        // console.log({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -284,23 +285,6 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(assetsID)) {
                     dataUpdate.assets = assetsID;
-                }
-                if (checkObjectIDs(workID)) {
-                    dataUpdate.budgetWork = workID;
-
-                    // Lấy thông tin phần tử cha để đưa sang
-                    let infoWork = await BUDGET_WORK_COLL.findById(workID)
-                    if(infoWork){
-                        if(infoWork.budget){
-                            dataUpdate.budget = infoWork.budget;
-                        }
-                        if(infoWork.item){
-                            dataUpdate.budgetItem = infoWork.item;
-                        }
-                        if(infoWork.group){
-                            dataUpdate.budgetGroup = infoWork.group;
-                        }
-                    }
                 }
 
                 if (checkObjectIDs(subtypeID)) {
@@ -350,11 +334,50 @@ class Model extends BaseModel {
                     dataUpdate.unitPrice = unitPrice2
                     dataUpdate.amount = amount
                 }
+
+                // Gán ngân sách
+                if (checkObjectIDs(workID)) {
+                    dataUpdate.budgetWork = workID;
+
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoWork = await BUDGET_WORK_COLL.findById(workID)
+                    if(infoWork){
+                        if(infoWork.budget){
+                            dataUpdate.budget = infoWork.budget;
+                        }
+                        if(infoWork.item){
+                            dataUpdate.budgetItem = infoWork.item;
+                        }
+                        if(infoWork.group){
+                            dataUpdate.budgetGroup = infoWork.group;
+                        }
+                    }
+                }
+
                 // console.log({ dataUpdate })
 
                 let infoAfterUpdate = await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(orderProductID, dataUpdate, { new: true })
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                // // Cập nhật ngân sách đã thực hiện
+                // if(checkObjectIDs(infoAfterUpdate.work)){
+                //     if(checkObjectIDs(workID)){
+                //         // console.log('11111111111111111111111111111111111')
+                //         // Cập nhật với Công việc cũ
+                //         let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
+                //         // console.log(infoBudget2)
+    
+                //         // Cập nhật với Công việc mới
+                //         let infoBudget = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID, userID})
+                //         // console.log(infoBudget)
+                //     }else{
+                //         // console.log('222222222222222222')
+                //         // Cập nhật với Công việc cũ: áp dụng cho thay đổi Khối lượng, đơn giá
+                //         let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
+                //         // console.log(infoBudget2)
+                //     }
+                // }
 
                 // Cập nhật lại thông tin Order
                 await that.updateValue({orderID: infoAfterUpdate.order, userID})

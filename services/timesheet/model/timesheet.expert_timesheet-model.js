@@ -384,6 +384,7 @@ class Model extends BaseModel {
                         hours2 = Number(hours)
                     }
 
+                    // Gán ngân sách
                     if(checkObjectIDs(workID)){
                         dataUpdate.work = workID;
     
