@@ -121,6 +121,10 @@ module.exports  = DATABASE_MIDDLEWARE("budget_submittal", {
         type: Number,
         default : 0
     }, 
+    //_________Từ ngày
+    fromDate: Date,
+    //_________Đến ngày
+    toDate: Date,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
