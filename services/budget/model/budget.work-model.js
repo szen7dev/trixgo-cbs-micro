@@ -480,7 +480,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date  : 11/1/2025
      */
-    updateValueFromTimeSheet({ option, workID, userID }){ 
+    updateValueFromTimeSheetStore({ option, workID, userID }){ 
         return new Promise(async (resolve) => {
             try {
                 let infoWork = await BUDGET__WORK_COLL.findById(workID)
@@ -504,6 +504,9 @@ class Model extends BaseModel {
                         userUpdate: userID,
                         modifyAt: new Date()
                     }
+
+                    let impleQuantity = 0, impleQuantity1 = 0, impleQuantity2 = 0, impleQuantity3 = 0
+                    let impleAmount = 0, impleAmount1 = 0, impleAmount2 = 0, impleAmount3 = 0
                     
                     // Công việc
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -572,68 +575,9 @@ class Model extends BaseModel {
                         },
                     ])
                     // console.log(listData3)
-    
-                    if(listData && listData.length){
-                        dataUpdate.impleQuantity = Number(listData[0].impleQuantity)
-                        dataUpdate.impleUnitPrice = Number(listData[0].impleQuantity != 0 ? listData[0].impleAmount/listData[0].impleQuantity : 0)
-                        dataUpdate.impleAmount = Number(listData[0].impleAmount)
 
-                        dataUpdate1.impleQuantity = Number(listData1[0].impleQuantity)
-                        dataUpdate1.impleUnitPrice = Number(listData1[0].impleQuantity != 0 ? listData1[0].impleAmount/listData1[0].impleQuantity : 0)
-                        dataUpdate1.impleAmount = Number(listData1[0].impleAmount)
-
-                        dataUpdate2.impleQuantity = Number(listData2[0].impleQuantity)
-                        dataUpdate2.impleUnitPrice = Number(listData2[0].impleQuantity != 0 ? listData2[0].impleAmount/listData2[0].impleQuantity : 0)
-                        dataUpdate2.impleAmount = Number(listData2[0].impleAmount)
-
-                        dataUpdate3.finalBudget = Number(listData3[0].impleAmount)
-
-                        await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true })
-                        await BUDGET__GROUP_COLL.findByIdAndUpdate(infoWork.group, dataUpdate1, { new: true })
-                        await BUDGET__ITEM_COLL.findByIdAndUpdate(infoWork.item, dataUpdate2, { new: true })
-                        await BUDGET_COLL.findByIdAndUpdate(infoWork.budget, dataUpdate3, { new: true })
-        
-                        return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
-                    }
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 })
-            }
-        })
-    }
-
-    /**
-     * Name  : Cập nhật giá trị thực hiện từ Thẻ kho
-     * Author: Hiepnh
-     * Date  : 01/2/2025
-     */
-    updateValueFromStore({ option, workID, userID }){ 
-        return new Promise(async (resolve) => {
-            try {
-                let infoWork = await BUDGET__WORK_COLL.findById(workID)
-                if(infoWork){
-                    let dataUpdate = { 
-                        userUpdate: userID,
-                        modifyAt: new Date()
-                    }
-
-                    let dataUpdate1 = { 
-                        userUpdate: userID,
-                        modifyAt: new Date()
-                    }
-
-                    let dataUpdate2 = { 
-                        userUpdate: userID,
-                        modifyAt: new Date()
-                    }
-
-                    let dataUpdate3 = { 
-                        userUpdate: userID,
-                        modifyAt: new Date()
-                    }
-                    
-                    // Công việc
-                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                     // Công việc
+                     let listData01 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
                                 budgetWork: ObjectID(workID),
@@ -642,7 +586,7 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { },
-                                impleQuantity: { $sum: "$hours" },
+                                impleQuantity: { $sum: "$quantity" },
                                 impleAmount: { $sum: "$amount" },
                             }
                         },
@@ -650,7 +594,7 @@ class Model extends BaseModel {
                     // console.log(listData)
 
                     // Nhóm công việc
-                    let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    let listData11 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
                                 budgetGroup: ObjectID(infoWork.group),
@@ -659,7 +603,7 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { },
-                                impleQuantity: { $sum: "$hours" },
+                                impleQuantity: { $sum: "$quantity" },
                                 impleAmount: { $sum: "$amount" },
                             }
                         },
@@ -667,7 +611,7 @@ class Model extends BaseModel {
                     // console.log(listData1)
 
                     // Hạng mục
-                    let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    let listData21 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
                                 budgetItem: ObjectID(infoWork.item),
@@ -676,7 +620,7 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { },
-                                impleQuantity: { $sum: "$hours" },
+                                impleQuantity: { $sum: "$quantity" },
                                 impleAmount: { $sum: "$amount" },
                             }
                         },
@@ -684,7 +628,7 @@ class Model extends BaseModel {
                     // console.log(listData2)
 
                     // Ngân sách
-                    let listData3 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    let listData31 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
                                 budget: ObjectID(infoWork.budget),
@@ -693,7 +637,7 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: { },
-                                impleQuantity: { $sum: "$hours" },
+                                impleQuantity: { $sum: "$quantity" },
                                 impleAmount: { $sum: "$amount" },
                             }
                         },
@@ -701,33 +645,181 @@ class Model extends BaseModel {
                     // console.log(listData3)
     
                     if(listData && listData.length){
-                        dataUpdate.impleQuantity = Number(listData[0].impleQuantity)
-                        dataUpdate.impleUnitPrice = Number(listData[0].impleQuantity != 0 ? listData[0].impleAmount/listData[0].impleQuantity : 0)
-                        dataUpdate.impleAmount = Number(listData[0].impleAmount)
+                        impleQuantity = Number(impleQuantity) + Number(listData[0].impleQuantity)
+                        impleQuantity1 = Number(impleQuantity1) + Number(listData1[0].impleQuantity)
+                        impleQuantity2 = Number(impleQuantity2) + Number(listData2[0].impleQuantity)
 
-                        dataUpdate1.impleQuantity = Number(listData1[0].impleQuantity)
-                        dataUpdate1.impleUnitPrice = Number(listData1[0].impleQuantity != 0 ? listData1[0].impleAmount/listData1[0].impleQuantity : 0)
-                        dataUpdate1.impleAmount = Number(listData1[0].impleAmount)
-
-                        dataUpdate2.impleQuantity = Number(listData2[0].impleQuantity)
-                        dataUpdate2.impleUnitPrice = Number(listData2[0].impleQuantity != 0 ? listData2[0].impleAmount/listData2[0].impleQuantity : 0)
-                        dataUpdate2.impleAmount = Number(listData2[0].impleAmount)
-
-                        dataUpdate3.finalBudget = Number(listData3[0].impleAmount)
-
-                        await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true })
-                        await BUDGET__GROUP_COLL.findByIdAndUpdate(infoWork.group, dataUpdate1, { new: true })
-                        await BUDGET__ITEM_COLL.findByIdAndUpdate(infoWork.item, dataUpdate2, { new: true })
-                        await BUDGET_COLL.findByIdAndUpdate(infoWork.budget, dataUpdate3, { new: true })
-        
-                        return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
+                        impleAmount = Number(impleAmount) + Number(listData[0].impleAmount)
+                        impleAmount1 = Number(impleAmount1) + Number(listData1[0].impleAmount)
+                        impleAmount2 = Number(impleAmount2) + Number(listData2[0].impleAmount)
+                        impleAmount3 = Number(impleAmount3) + Number(listData3[0].impleAmount)
                     }
+
+                    if(listData01 && listData01.length){
+                        impleQuantity = Number(impleQuantity) + Number(listData01[0].impleQuantity)
+                        impleQuantity1 = Number(impleQuantity1) + Number(listData11[0].impleQuantity)
+                        impleQuantity2 = Number(impleQuantity2) + Number(listData21[0].impleQuantity)
+
+                        impleAmount = Number(impleAmount) + Number(listData01[0].impleAmount)
+                        impleAmount1 = Number(impleAmount1) + Number(listData11[0].impleAmount)
+                        impleAmount2 = Number(impleAmount2) + Number(listData21[0].impleAmount)
+                        impleAmount3 = Number(impleAmount3) + Number(listData31[0].impleAmount)
+                    }
+
+
+                    dataUpdate.impleQuantity = Number(impleQuantity)
+                    dataUpdate.impleUnitPrice = Number(impleQuantity != 0 ? impleAmount/impleQuantity : 0)
+                    dataUpdate.impleAmount = Number(impleAmount)
+
+                    dataUpdate1.impleQuantity = Number(impleQuantity1)
+                    dataUpdate1.impleUnitPrice = Number(impleQuantity1 != 0 ? impleAmount1/impleQuantity1 : 0)
+                    dataUpdate1.impleAmount = Number(impleAmount1)
+
+                    dataUpdate2.impleQuantity = Number(impleQuantity2)
+                    dataUpdate2.impleUnitPrice = Number(impleQuantity2 != 0 ? impleAmount2/impleQuantity2 : 0)
+                    dataUpdate2.impleAmount = Number(impleAmount2)
+
+                    dataUpdate3.finalBudget = Number(impleAmount3)
+
+                    await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true })
+                    await BUDGET__GROUP_COLL.findByIdAndUpdate(infoWork.group, dataUpdate1, { new: true })
+                    await BUDGET__ITEM_COLL.findByIdAndUpdate(infoWork.item, dataUpdate2, { new: true })
+                    await BUDGET_COLL.findByIdAndUpdate(infoWork.budget, dataUpdate3, { new: true })
+    
+                    return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
+
+    // /**
+    //  * Name  : Cập nhật giá trị thực hiện từ Thẻ kho
+    //  * Author: Hiepnh
+    //  * Date  : 01/2/2025
+    //  */
+    // updateValueFromStore({ option, workID, userID }){ 
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             let infoWork = await BUDGET__WORK_COLL.findById(workID)
+    //             if(infoWork){
+    //                 let dataUpdate = { 
+    //                     userUpdate: userID,
+    //                     modifyAt: new Date()
+    //                 }
+
+    //                 let dataUpdate1 = { 
+    //                     userUpdate: userID,
+    //                     modifyAt: new Date()
+    //                 }
+
+    //                 let dataUpdate2 = { 
+    //                     userUpdate: userID,
+    //                     modifyAt: new Date()
+    //                 }
+
+    //                 let dataUpdate3 = { 
+    //                     userUpdate: userID,
+    //                     modifyAt: new Date()
+    //                 }
+                    
+    //                 // Công việc
+    //                 let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+    //                     {
+    //                         $match: {
+    //                             budgetWork: ObjectID(workID),
+    //                         }
+    //                     },
+    //                     {
+    //                         $group: {
+    //                             _id: { },
+    //                             impleQuantity: { $sum: "$quantity" },
+    //                             impleAmount: { $sum: "$amount" },
+    //                         }
+    //                     },
+    //                 ])
+    //                 // console.log(listData)
+
+    //                 // Nhóm công việc
+    //                 let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+    //                     {
+    //                         $match: {
+    //                             budgetGroup: ObjectID(infoWork.group),
+    //                         }
+    //                     },
+    //                     {
+    //                         $group: {
+    //                             _id: { },
+    //                             impleQuantity: { $sum: "$quantity" },
+    //                             impleAmount: { $sum: "$amount" },
+    //                         }
+    //                     },
+    //                 ])
+    //                 // console.log(listData1)
+
+    //                 // Hạng mục
+    //                 let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+    //                     {
+    //                         $match: {
+    //                             budgetItem: ObjectID(infoWork.item),
+    //                         }
+    //                     },
+    //                     {
+    //                         $group: {
+    //                             _id: { },
+    //                             impleQuantity: { $sum: "$quantity" },
+    //                             impleAmount: { $sum: "$amount" },
+    //                         }
+    //                     },
+    //                 ])
+    //                 // console.log(listData2)
+
+    //                 // Ngân sách
+    //                 let listData3 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+    //                     {
+    //                         $match: {
+    //                             budget: ObjectID(infoWork.budget),
+    //                         }
+    //                     },
+    //                     {
+    //                         $group: {
+    //                             _id: { },
+    //                             impleQuantity: { $sum: "$quantity" },
+    //                             impleAmount: { $sum: "$amount" },
+    //                         }
+    //                     },
+    //                 ])
+    //                 // console.log(listData3)
+    
+    //                 if(listData && listData.length){
+    //                     dataUpdate.impleQuantity = Number(listData[0].impleQuantity)
+    //                     dataUpdate.impleUnitPrice = Number(listData[0].impleQuantity != 0 ? listData[0].impleAmount/listData[0].impleQuantity : 0)
+    //                     dataUpdate.impleAmount = Number(listData[0].impleAmount)
+
+    //                     dataUpdate1.impleQuantity = Number(listData1[0].impleQuantity)
+    //                     dataUpdate1.impleUnitPrice = Number(listData1[0].impleQuantity != 0 ? listData1[0].impleAmount/listData1[0].impleQuantity : 0)
+    //                     dataUpdate1.impleAmount = Number(listData1[0].impleAmount)
+
+    //                     dataUpdate2.impleQuantity = Number(listData2[0].impleQuantity)
+    //                     dataUpdate2.impleUnitPrice = Number(listData2[0].impleQuantity != 0 ? listData2[0].impleAmount/listData2[0].impleQuantity : 0)
+    //                     dataUpdate2.impleAmount = Number(listData2[0].impleAmount)
+
+    //                     dataUpdate3.finalBudget = Number(listData3[0].impleAmount)
+
+    //                     await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true })
+    //                     await BUDGET__GROUP_COLL.findByIdAndUpdate(infoWork.group, dataUpdate1, { new: true })
+    //                     await BUDGET__ITEM_COLL.findByIdAndUpdate(infoWork.item, dataUpdate2, { new: true })
+    //                     await BUDGET_COLL.findByIdAndUpdate(infoWork.budget, dataUpdate3, { new: true })
+        
+    //                     return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 })
+    //         }
+    //     })
+    // }
 
     /**
      * Name: Download Template Excel
