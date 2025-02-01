@@ -360,24 +360,24 @@ class Model extends BaseModel {
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
 
-                // // Cập nhật ngân sách đã thực hiện
-                // if(checkObjectIDs(infoAfterUpdate.work)){
-                //     if(checkObjectIDs(workID)){
-                //         // console.log('11111111111111111111111111111111111')
-                //         // Cập nhật với Công việc cũ
-                //         let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
-                //         // console.log(infoBudget2)
+                // Cập nhật ngân sách đã thực hiện
+                if(checkObjectIDs(infoAfterUpdate.budgetWork)){
+                    if(checkObjectIDs(workID)){
+                        // console.log('11111111111111111111111111111111111')
+                        // Cập nhật với Công việc cũ
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
+                        // console.log(infoBudget2)
     
-                //         // Cập nhật với Công việc mới
-                //         let infoBudget = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID, userID})
-                //         // console.log(infoBudget)
-                //     }else{
-                //         // console.log('222222222222222222')
-                //         // Cập nhật với Công việc cũ: áp dụng cho thay đổi Khối lượng, đơn giá
-                //         let infoBudget2 = await BUDGET__WORK_MODEL.updateValueNew({option: 1, workID: infoAfterUpdate.work, userID})
-                //         // console.log(infoBudget2)
-                //     }
-                // }
+                        // Cập nhật với Công việc mới
+                        let infoBudget = await BUDGET__WORK_MODEL.updateValueFromStore({option: 1, workID, userID})
+                        // console.log(infoBudget)
+                    }else{
+                        // console.log('222222222222222222')
+                        // Cập nhật với Công việc cũ: áp dụng cho thay đổi Khối lượng, đơn giá
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
+                        // console.log(infoBudget2)
+                    }
+                }
 
                 // Cập nhật lại thông tin Order
                 await that.updateValue({orderID: infoAfterUpdate.order, userID})
