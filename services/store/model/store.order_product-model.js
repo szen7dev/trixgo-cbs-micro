@@ -328,30 +328,26 @@ class Model extends BaseModel {
                     dataUpdate.weight = weight
                 }
 
-                if(unitPrice2 >= 0){
-                    let amount  = Number(quantity * unitPrice2).toFixed(0)
-
-                    dataUpdate.unitPrice = unitPrice2
-                    dataUpdate.amount = amount
-                }
-
                 // Gán ngân sách
                 if (checkObjectIDs(workID)) {
                     dataUpdate.budgetWork = workID;
 
                     // Lấy thông tin phần tử cha để đưa sang
-                    let infoWork = await BUDGET_WORK_COLL.findById(workID)
+                    let infoWork = await BUDGET_WORK_COLL.findById(workID).select('unitPrice budget item group')
                     if(infoWork){
-                        if(infoWork.budget){
-                            dataUpdate.budget = infoWork.budget;
-                        }
-                        if(infoWork.item){
-                            dataUpdate.budgetItem = infoWork.item;
-                        }
-                        if(infoWork.group){
-                            dataUpdate.budgetGroup = infoWork.group;
-                        }
+                        unitPrice2 = Number(infoWork.unitPrice) // Bỏ đi để không bị ảnh hưởng: vì đơn giá đôi khi theo thực tế
+
+                        dataUpdate.budget = infoWork.budget;
+                        dataUpdate.budgetItem = infoWork.item;
+                        dataUpdate.budgetGroup = infoWork.group;``
                     }
+                }
+
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity * unitPrice2).toFixed(0)
+
+                    dataUpdate.unitPrice = unitPrice2
+                    dataUpdate.amount = amount
                 }
 
                 // console.log({ dataUpdate })
@@ -365,16 +361,16 @@ class Model extends BaseModel {
                     if(checkObjectIDs(workID)){
                         // console.log('11111111111111111111111111111111111')
                         // Cập nhật với Công việc cũ
-                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
                         // console.log(infoBudget2)
     
                         // Cập nhật với Công việc mới
-                        let infoBudget = await BUDGET__WORK_MODEL.updateValueFromStore({option: 1, workID, userID})
+                        let infoBudget = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID, userID})
                         // console.log(infoBudget)
                     }else{
                         // console.log('222222222222222222')
                         // Cập nhật với Công việc cũ: áp dụng cho thay đổi Khối lượng, đơn giá
-                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
                         // console.log(infoBudget2)
                     }
                 }
