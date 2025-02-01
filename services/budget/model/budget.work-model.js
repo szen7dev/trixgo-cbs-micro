@@ -21,6 +21,7 @@ const BUDGET__ITEM_COLL                 = require('../database/budget.item-coll'
 const BUDGET__GROUP_COLL                = require('../database/budget.group-coll');
 const BUDGET__WORK_COLL                 = require('../database/budget.work-coll');
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const STORE_ORDER_PRODUCT_COLL          = require('../../store/database/store.order_product-coll')
 
 const BUDGET_MODEL                      = require('./budget-model').MODEL;
 const BUDGET__ITEM_MODEL                = require('./budget.item-model').MODEL;
@@ -475,11 +476,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Cập nhật giá trị (ngân sách, thực hiện, dự báo) 
+     * Name  : Cập nhật giá trị thực hiện từ Chấm công
      * Author: Hiepnh
      * Date  : 11/1/2025
      */
-    updateValueNew({ option, workID, userID }){ 
+    updateValueFromTimeSheet({ option, workID, userID }){ 
         return new Promise(async (resolve) => {
             try {
                 let infoWork = await BUDGET__WORK_COLL.findById(workID)
@@ -508,7 +509,7 @@ class Model extends BaseModel {
                     let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: {
-                                work: ObjectID(workID),
+                                budgetWork: ObjectID(workID),
                             }
                         },
                         {
@@ -525,7 +526,7 @@ class Model extends BaseModel {
                     let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: {
-                                group: ObjectID(infoWork.group),
+                                budgetGroup: ObjectID(infoWork.group),
                             }
                         },
                         {
@@ -542,7 +543,7 @@ class Model extends BaseModel {
                     let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                         {
                             $match: {
-                                item: ObjectID(infoWork.item),
+                                budgetItem: ObjectID(infoWork.item),
                             }
                         },
                         {
@@ -557,6 +558,133 @@ class Model extends BaseModel {
 
                     // Ngân sách
                     let listData3 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                        {
+                            $match: {
+                                budget: ObjectID(infoWork.budget),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                impleQuantity: { $sum: "$hours" },
+                                impleAmount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    // console.log(listData3)
+    
+                    if(listData && listData.length){
+                        dataUpdate.impleQuantity = Number(listData[0].impleQuantity)
+                        dataUpdate.impleUnitPrice = Number(listData[0].impleQuantity != 0 ? listData[0].impleAmount/listData[0].impleQuantity : 0)
+                        dataUpdate.impleAmount = Number(listData[0].impleAmount)
+
+                        dataUpdate1.impleQuantity = Number(listData1[0].impleQuantity)
+                        dataUpdate1.impleUnitPrice = Number(listData1[0].impleQuantity != 0 ? listData1[0].impleAmount/listData1[0].impleQuantity : 0)
+                        dataUpdate1.impleAmount = Number(listData1[0].impleAmount)
+
+                        dataUpdate2.impleQuantity = Number(listData2[0].impleQuantity)
+                        dataUpdate2.impleUnitPrice = Number(listData2[0].impleQuantity != 0 ? listData2[0].impleAmount/listData2[0].impleQuantity : 0)
+                        dataUpdate2.impleAmount = Number(listData2[0].impleAmount)
+
+                        dataUpdate3.finalBudget = Number(listData3[0].impleAmount)
+
+                        await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true })
+                        await BUDGET__GROUP_COLL.findByIdAndUpdate(infoWork.group, dataUpdate1, { new: true })
+                        await BUDGET__ITEM_COLL.findByIdAndUpdate(infoWork.item, dataUpdate2, { new: true })
+                        await BUDGET_COLL.findByIdAndUpdate(infoWork.budget, dataUpdate3, { new: true })
+        
+                        return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
+                    }
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá trị thực hiện từ Thẻ kho
+     * Author: Hiepnh
+     * Date  : 01/2/2025
+     */
+    updateValueFromStore({ option, workID, userID }){ 
+        return new Promise(async (resolve) => {
+            try {
+                let infoWork = await BUDGET__WORK_COLL.findById(workID)
+                if(infoWork){
+                    let dataUpdate = { 
+                        userUpdate: userID,
+                        modifyAt: new Date()
+                    }
+
+                    let dataUpdate1 = { 
+                        userUpdate: userID,
+                        modifyAt: new Date()
+                    }
+
+                    let dataUpdate2 = { 
+                        userUpdate: userID,
+                        modifyAt: new Date()
+                    }
+
+                    let dataUpdate3 = { 
+                        userUpdate: userID,
+                        modifyAt: new Date()
+                    }
+                    
+                    // Công việc
+                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: {
+                                budgetWork: ObjectID(workID),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                impleQuantity: { $sum: "$hours" },
+                                impleAmount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    // console.log(listData)
+
+                    // Nhóm công việc
+                    let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: {
+                                budgetGroup: ObjectID(infoWork.group),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                impleQuantity: { $sum: "$hours" },
+                                impleAmount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    // console.log(listData1)
+
+                    // Hạng mục
+                    let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $match: {
+                                budgetItem: ObjectID(infoWork.item),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                impleQuantity: { $sum: "$hours" },
+                                impleAmount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                    // console.log(listData2)
+
+                    // Ngân sách
+                    let listData3 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
                                 budget: ObjectID(infoWork.budget),
