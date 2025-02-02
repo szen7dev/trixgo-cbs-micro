@@ -950,7 +950,7 @@ class Model extends BaseModel {
                 conditionProject = {
                     forward: '$forward',
                     cancel: '$cancel',
-                    year : {$year : "$date"},
+                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                     amount: 1,
                 }
 
@@ -961,7 +961,7 @@ class Model extends BaseModel {
                     "year": Number(year)
                 }
 
-                // Từ đầu năm tới ngày đầu kỳ
+                // Từ đầu năm tới ngày đầu kỳ (fromDate)
                 conditionMatchOF = {
                     "forward": 0,
                     "cancel": 0,
@@ -971,7 +971,7 @@ class Model extends BaseModel {
                     },
                 }
 
-                // Từ đầu kỳ tới cuối kỳ
+                // Từ đầu kỳ tới cuối kỳ (fromDate-toDate)
                 conditionMatchFT = {
                     "forward": 0,
                     "cancel": 0,
@@ -981,7 +981,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Từ đầu năm tới đầu kỳ***
+                // Từ đầu năm tới đầu kỳ (áp dụng lấy dữ liệu 1 mạch)
                 conditionMatchIn = {
                     "forward": 0,
                     "cancel": 0,
@@ -1007,7 +1007,7 @@ class Model extends BaseModel {
                 // 1 tài khoản - Không mã khách
                 if(!option){
                     conditionProject = {
-                        year : {$year : "$date"},
+                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                         forward: '$forward',
                         cancel: '$cancel',
                         date: 1,
@@ -1033,7 +1033,7 @@ class Model extends BaseModel {
                     // Nhiều tài khoản - Không mã khách
                     if(option == 1){
                         conditionProject = {
-                            year : {$year : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1065,7 +1065,7 @@ class Model extends BaseModel {
                      */
                     else if(option == 2){
                         conditionProject = {
-                            year : {$year : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1108,7 +1108,7 @@ class Model extends BaseModel {
                         }
         
                         conditionProject = {
-                            year : {$year : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1142,7 +1142,7 @@ class Model extends BaseModel {
                         }
 
                         conditionProject = {
-                            year : {$year : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1180,7 +1180,7 @@ class Model extends BaseModel {
                     
                         conditionProject = {
                             company: 1,
-                            year : {$year : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1219,7 +1219,7 @@ class Model extends BaseModel {
                         }
         
                         conditionProject = {
-                            year : {$year : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1244,8 +1244,8 @@ class Model extends BaseModel {
                     // Tổng hợp Tài khoản-Tháng
                     else if(option == 7){
                         conditionProject = {
-                            year : { $year : "$date" },
-                            month : { $month : "$date" },
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1272,8 +1272,8 @@ class Model extends BaseModel {
                     // Tổng hợp Khoản mục phí
                     else if(option == 8){
                         conditionProject = {
-                            year : { $year : "$date" },
-                            month : { $month : "$date" },
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1301,7 +1301,7 @@ class Model extends BaseModel {
                     // Tổng hợp theo Sản phẩm
                     else if(option == 9){
                         conditionProject = {
-                            year : {$year : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -1335,7 +1335,7 @@ class Model extends BaseModel {
                     // Tổng hợp theo Mã khách
                     else if(option == 10){
                         conditionProject = {
-                            year : {$year : "$date"},
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             forward: '$forward',
                             cancel: '$cancel',
                             date: 1,
@@ -2331,7 +2331,7 @@ class Model extends BaseModel {
                 }
 
                 let conditionProject = {
-                    year : {$year : "$date"},
+                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                     forward: '$forward',
                     cancel: '$cancel',
                     date: 1,
