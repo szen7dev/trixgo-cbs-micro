@@ -216,11 +216,11 @@
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { budgetID } = ctx.params;
+                let { budgetID, fromDate, toDate } = ctx.params;
                 console.log(ctx.params)
 
                 const resultAfterCallHandler = await BUDGET__WORK_MODEL.downloadTemplateExcel({
-                    companyID: company._id, budgetID, userID 
+                    companyID: company._id, budgetID, userID, fromDate, toDate
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
