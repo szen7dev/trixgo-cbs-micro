@@ -324,161 +324,191 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
  * Author: Hiepnh
  * Date: 9/4/2022
  */
-update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, members, admins, outin, type, status, isAddSignature, ctx }) {
-    const that = this
+update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, members, admins, outin, type, status, isAddSignature, forward, ctx }) {
     return new Promise(async (resolve) => {
         try {
-        const infoOrder = await STORE_ORDER_COLL.findById(orderID)
-        if(!infoOrder) {
-            return resolve({
-                error: true,
-                message: 'Order không tồn tại',
-                keyError: "order_not_exists",
-                status: 400
-            });
-        }
+            const infoOrder = await STORE_ORDER_COLL.findById(orderID)
+            if(!infoOrder) {
+                return resolve({
+                    error: true,
+                    message: 'Order không tồn tại',
+                    keyError: "order_not_exists",
+                    status: 400
+                });
+            }
 
-        let dataUpdate = { 
-            userUpdate: userID, 
-            modifyAt: new Date() 
-        }
+            let dataUpdate = { 
+                userUpdate: userID, 
+                modifyAt: new Date() 
+            }
 
-        let dataAddToset = {};
+            let dataAddToset = {};
 
-        if (checkObjectIDs(filesID)) {
-            dataAddToset = { files: filesID };
-        }
+            if (checkObjectIDs(filesID)) {
+                dataAddToset = { files: filesID };
+            }
 
-        if (checkObjectIDs(fundaID)) {
-            dataUpdate.funda = fundaID;
-        }
-        if (checkObjectIDs(projectID)) {
-            dataUpdate.project = projectID;
-        }
-        if (checkObjectIDs(packageID)) {
-            dataUpdate.package = packageID;
-        }
-        if (checkObjectIDs(toPackageID)) {
-            dataUpdate.toPackage = toPackageID;
-        }
-        if (checkObjectIDs(warehouseID)) {
-            dataUpdate.warehouse = warehouseID;
-        }
-        if (checkObjectIDs(toWarehouseID)) {
-            dataUpdate.toWarehouse = toWarehouseID;
-        }
-        if (checkObjectIDs(accountID)) {
-            dataUpdate.account = accountID;
-        }
-        if (checkObjectIDs(customerID)) {
-            dataUpdate.customer = customerID;
-        }
-        if (checkObjectIDs(contractID)) {
-            dataUpdate.contract = contractID;
-        }
-        if (checkObjectIDs(goodsID)) {
-            dataUpdate.goods = goodsID;
-        }
-        if (checkObjectIDs(assetsID)) {
-            dataUpdate.assets = assetsID;
-        }
-        if (checkObjectIDs(workID)) {
-            dataUpdate.work = workID;
-        }
-        if (checkObjectIDs(linkID)) {
-            dataUpdate.link = linkID;
-        }
+            if (checkObjectIDs(fundaID)) {
+                dataUpdate.funda = fundaID;
+            }
+            if (checkObjectIDs(projectID)) {
+                dataUpdate.project = projectID;
+            }
+            if (checkObjectIDs(packageID)) {
+                dataUpdate.package = packageID;
+            }
+            if (checkObjectIDs(toPackageID)) {
+                dataUpdate.toPackage = toPackageID;
+            }
+            if (checkObjectIDs(warehouseID)) {
+                dataUpdate.warehouse = warehouseID;
+            }
+            if (checkObjectIDs(toWarehouseID)) {
+                dataUpdate.toWarehouse = toWarehouseID;
+            }
+            if (checkObjectIDs(accountID)) {
+                dataUpdate.account = accountID;
+            }
+            if (checkObjectIDs(customerID)) {
+                dataUpdate.customer = customerID;
+            }
+            if (checkObjectIDs(contractID)) {
+                dataUpdate.contract = contractID;
+            }
+            if (checkObjectIDs(goodsID)) {
+                dataUpdate.goods = goodsID;
+            }
+            if (checkObjectIDs(assetsID)) {
+                dataUpdate.assets = assetsID;
+            }
+            if (checkObjectIDs(workID)) {
+                dataUpdate.work = workID;
+            }
+            if (checkObjectIDs(linkID)) {
+                dataUpdate.link = linkID;
+            }
 
-        if (date) {
-            dataUpdate.date = date;
-        }
+            if (date) {
+                dataUpdate.date = date;
+            }
 
-        if (toDate) {
-            dataUpdate.toDate = toDate;
-        }
+            if (toDate) {
+                dataUpdate.toDate = toDate;
+            }
 
-        let convertStr = ''
-        if (name && name != '') {
-            dataUpdate.name = name;
-            convertStr = convertStr + " " + stringUtils.removeAccents(name)
-        }
-        if (sign && sign != '') {
-            dataUpdate.sign = sign;
-            convertStr = convertStr + " " + stringUtils.removeAccents(sign)
-        }
-        if (note && note != '') {
-            dataUpdate.note = note;
-            convertStr = convertStr + " " + stringUtils.removeAccents(note)
-        }
-        if(convertStr != ""){
-            dataUpdate.namecv = convertStr
-        }
+            let convertStr = ''
+            if (name && name != '') {
+                dataUpdate.name = name;
+                convertStr = convertStr + " " + stringUtils.removeAccents(name)
+            }
+            if (sign && sign != '') {
+                dataUpdate.sign = sign;
+                convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+            }
+            if (note && note != '') {
+                dataUpdate.note = note;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            if(convertStr != ""){
+                dataUpdate.namecv = convertStr
+            }
 
-        if (!isNaN(outin) && Number(outin) >= 1) {
-            dataUpdate.outin = Number(outin)
-        }
+            if (!isNaN(outin) && Number(outin) >= 1) {
+                dataUpdate.outin = Number(outin)
+            }
 
-        if (!isNaN(type) && Number(type) >= 1) {
-            dataUpdate.type = Number(type)
-        }
+            if (!isNaN(type) && Number(type) >= 1) {
+                dataUpdate.type = Number(type)
+            }
 
-        if (status && !isNaN(status) && Number(status) > 0) {
-            dataUpdate.status = status;
-        }
+            if (status && !isNaN(status) && Number(status) > 0) {
+                dataUpdate.status = status;
+            }
+
+            if ([0,1].includes(Number(forward))) {
+                dataUpdate.forward = Number(forward);
+            }
 
             /**
-         * KÝ XÁC NHẬN
-         */
+             * KÝ XÁC NHẬN
+             */
             if(isAddSignature) {
-            const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
-                companyID: infoOrder?.company?.toString(),
-                projectID: infoOrder?.project?._id?.toString(),
-                coll: {
-                    kind: 'store_order',
-                    item: orderID
-                }
-            });
-            if(infoSignature.error) return resolve(infoSignature);
+                const infoSignature = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.SIGNATURE_INSERT}`, {
+                    companyID: infoOrder?.company?.toString(),
+                    projectID: infoOrder?.project?._id?.toString(),
+                    coll: {
+                        kind: 'store_order',
+                        item: orderID
+                    }
+                });
+                if(infoSignature.error) return resolve(infoSignature);
 
-            const { _id } = infoSignature.data;
-            dataAddToset = { ...dataAddToset, signatures: _id }
+                const { _id } = infoSignature.data;
+                dataAddToset = { ...dataAddToset, signatures: _id }
 
-            dataUpdate.approver = userID
-            dataUpdate.timeApproved = Date.now()
-        }
+                dataUpdate.approver = userID
+                dataUpdate.timeApproved = Date.now()
+            }
 
-        if(dataAddToset){
-            dataUpdate.$addToSet = dataAddToset;
-        }
-        // console.log(dataUpdate)
+            if(dataAddToset){
+                dataUpdate.$addToSet = dataAddToset;
+            }
+            // console.log(dataUpdate)
 
-        let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
-        if (!infoAfterUpdate)
-            return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-        // console.log(infoAfterUpdate)
+            let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
+            if (!infoAfterUpdate)
+                return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+            // console.log(infoAfterUpdate)
 
-        // Cập nhật lại các phần tử con
-        await STORE_ORDER_PRODUCT_COLL.updateMany(
-            { 
-                order: ObjectID(orderID),
-            },
-            { $set: { 
-                "status" : infoAfterUpdate.status,
-                "project" : infoAfterUpdate.project,
-                "package" : infoAfterUpdate.package,
-                "toPackage" : infoAfterUpdate.toPackage,
-                "outin" : infoAfterUpdate.outin,
-                "type" : infoAfterUpdate.type,
-                "date" : infoAfterUpdate.date,
-                "toDate" : infoAfterUpdate.toDate,
-                "warehouse" : infoAfterUpdate.warehouse,
-                "toWarehouse" : infoAfterUpdate.toWarehouse,
-                // "customer" : infoAfterUpdate.customer, // Không update ở đây => vì khi copy phiếu/sửa => bị chạy hết theo phiếu
-                // "contract" : infoAfterUpdate.contract, // Không update ở đây => vì khi copy phiếu/sửa => bị chạy hết theo phiếu
-            } }
-        )
+            /**
+             * Cập nhật lại các phần tử con
+             * - Xét riêng cho Sổ Quỹ => vì khi copy phiếu/sửa => bị chạy hết theo phiếu
+             * - Xét riêng cho Thẻ kho
+             */
+            if(infoAfterUpdate.type == 7 || infoAfterUpdate.type == 8){
+                // Sổ quỹ: Không update cơ sở và mã khách mà chỉ cho update trong chi tiết phiếu
+                await STORE_ORDER_PRODUCT_COLL.updateMany(
+                    { 
+                        order: ObjectID(orderID),
+                    },
+                    { $set: { 
+                        "status" : infoAfterUpdate.status,
+                        "forward" : infoAfterUpdate.forward,
+                        "project" : infoAfterUpdate.project,
+                        "package" : infoAfterUpdate.package,
+                        "toPackage" : infoAfterUpdate.toPackage,
+                        "outin" : infoAfterUpdate.outin,
+                        "type" : infoAfterUpdate.type,
+                        "date" : infoAfterUpdate.date,
+                        "toDate" : infoAfterUpdate.toDate,
+                        "warehouse" : infoAfterUpdate.warehouse,
+                        "toWarehouse" : infoAfterUpdate.toWarehouse,
+                    } }
+                )
+            }else{
+                await STORE_ORDER_PRODUCT_COLL.updateMany(
+                    { 
+                        order: ObjectID(orderID),
+                    },
+                    { $set: { 
+                        "status" : infoAfterUpdate.status,
+                        "forward" : infoAfterUpdate.forward,
+                        "project" : infoAfterUpdate.project,
+                        "package" : infoAfterUpdate.package,
+                        "toPackage" : infoAfterUpdate.toPackage,
+                        "outin" : infoAfterUpdate.outin,
+                        "type" : infoAfterUpdate.type,
+                        "date" : infoAfterUpdate.date,
+                        "toDate" : infoAfterUpdate.toDate,
+                        "warehouse" : infoAfterUpdate.warehouse,
+                        "toWarehouse" : infoAfterUpdate.toWarehouse,
+                        "customer" : infoAfterUpdate.customer,
+                        "contract" : infoAfterUpdate.contract,
+                    } }
+                )
+            }
 
-        return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            return resolve({ error: false, data: infoAfterUpdate, status: 200 });
         } catch (error) {
             return resolve({ error: true, message: error.message, status: 500 });
         }
