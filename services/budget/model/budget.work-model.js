@@ -580,6 +580,7 @@ class Model extends BaseModel {
                      let listData01 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
+                                outin: 1, // Xuất kho
                                 budgetWork: ObjectID(workID),
                             }
                         },
@@ -597,6 +598,7 @@ class Model extends BaseModel {
                     let listData11 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
+                                outin: 1, // Xuất kho
                                 budgetGroup: ObjectID(infoWork.group),
                             }
                         },
@@ -614,6 +616,7 @@ class Model extends BaseModel {
                     let listData21 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
+                                outin: 1, // Xuất kho
                                 budgetItem: ObjectID(infoWork.item),
                             }
                         },
@@ -631,6 +634,7 @@ class Model extends BaseModel {
                     let listData31 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                         {
                             $match: {
+                                outin: 1, // Xuất kho
                                 budget: ObjectID(infoWork.budget),
                             }
                         },
