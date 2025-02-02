@@ -197,12 +197,12 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ type, company, app, isMember, userID,
-        keyword, limit = 10, lastestID, select, populates = {} }) { 
+        keyword, limit = 30, lastestID, select, populates = {} }) { 
             // console.log({type, company, app, isMember, userID, keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
+                if(limit > 30){
+                    limit = 30
                 }else{
                     limit = +limit
                 }
