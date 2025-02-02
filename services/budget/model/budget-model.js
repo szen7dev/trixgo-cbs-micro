@@ -124,7 +124,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({
-        budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID
+        budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID, filesID
     }){
         return new Promise(async (resolve) => {
             try {
@@ -132,16 +132,16 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(budgetID))
                     return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID });
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let dataUpdate = { userUpdate: userID, modifyAt: new Date() }
 
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                let dataAddToset = {};
+                if (checkObjectIDs(filesID)) {
+                    dataAddToset = { files: filesID };
+                }
+                if(dataAddToset){
+                    dataUpdate.$addToSet = dataAddToset;
+                }
+
                 if(checkObjectIDs(projectID)){
                     dataUpdate.project = projectID
                 }
@@ -150,11 +150,6 @@ class Model extends BaseModel {
                     dataUpdate.contract = contractID
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
                 if(type && [1,2,3].includes(Number(type))){
                     dataUpdate.type = type;
                 }

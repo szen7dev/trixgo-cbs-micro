@@ -364,6 +364,7 @@ class Model extends BaseModel {
         fcuExRate, 
         selectedJournals, 
         deletedJournals,
+        filesID,
         ctx
      }) {
         // console.log({authorID, 
@@ -430,6 +431,14 @@ class Model extends BaseModel {
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate
+                }
+
+                let dataAddToset = {};
+                if (checkObjectIDs(filesID)) {
+                    dataAddToset = { files: filesID };
+                }
+                if(dataAddToset){
+                    dataUpdateVoucher.$addToSet = dataAddToset;
                 }
 
                 let convertStr = ''
