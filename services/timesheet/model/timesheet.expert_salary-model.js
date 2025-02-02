@@ -1837,10 +1837,10 @@ class Model extends BaseModel {
                                 await STORE_ORDER_PRODUCT_MODEL.insert({
                                     userID, 
                                     fundaID: item.funda, 
+                                    customerID: item.customer, 
                                     orderID: infoNewOrder.data._id, //
                                     accountID: item.account, 
                                     contraID: item.contra, 
-                                    customerID: item.customer, 
                                     contractID: item.contract, 
                                     goodsID: item.goods, 
                                     assetsID: item.assets, 

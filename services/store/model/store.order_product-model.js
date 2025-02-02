@@ -46,7 +46,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice }) {
-        // console.log({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice })
         const that = this
         return new Promise(async resolve => {
             try {

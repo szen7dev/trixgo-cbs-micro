@@ -367,20 +367,6 @@ class Model extends BaseModel {
         filesID,
         ctx
      }) {
-        // console.log({authorID, 
-        //     voucherID,
-        //     fundaID,
-        //     customerID,
-        //     contractID, 
-        //     storageID, 
-        //     subtypeID, 
-        //     warehouseID, 
-        //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
-        //     receiver, note,
-        //     forward, forwardIs, returning, advancePayment, cancel, 
-        //     fcuExRate, 
-        //     selectedJournals, 
-        //     deletedJournals})
         const that = this
         return new Promise(async (resolve) => {
             try {
