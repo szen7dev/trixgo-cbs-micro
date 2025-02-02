@@ -698,144 +698,16 @@ class Model extends BaseModel {
         })
     }
 
-    // /**
-    //  * Name  : Cập nhật giá trị thực hiện từ Thẻ kho
-    //  * Author: Hiepnh
-    //  * Date  : 01/2/2025
-    //  */
-    // updateValueFromStore({ option, workID, userID }){ 
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             let infoWork = await BUDGET__WORK_COLL.findById(workID)
-    //             if(infoWork){
-    //                 let dataUpdate = { 
-    //                     userUpdate: userID,
-    //                     modifyAt: new Date()
-    //                 }
-
-    //                 let dataUpdate1 = { 
-    //                     userUpdate: userID,
-    //                     modifyAt: new Date()
-    //                 }
-
-    //                 let dataUpdate2 = { 
-    //                     userUpdate: userID,
-    //                     modifyAt: new Date()
-    //                 }
-
-    //                 let dataUpdate3 = { 
-    //                     userUpdate: userID,
-    //                     modifyAt: new Date()
-    //                 }
-                    
-    //                 // Công việc
-    //                 let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
-    //                     {
-    //                         $match: {
-    //                             budgetWork: ObjectID(workID),
-    //                         }
-    //                     },
-    //                     {
-    //                         $group: {
-    //                             _id: { },
-    //                             impleQuantity: { $sum: "$quantity" },
-    //                             impleAmount: { $sum: "$amount" },
-    //                         }
-    //                     },
-    //                 ])
-    //                 // console.log(listData)
-
-    //                 // Nhóm công việc
-    //                 let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-    //                     {
-    //                         $match: {
-    //                             budgetGroup: ObjectID(infoWork.group),
-    //                         }
-    //                     },
-    //                     {
-    //                         $group: {
-    //                             _id: { },
-    //                             impleQuantity: { $sum: "$quantity" },
-    //                             impleAmount: { $sum: "$amount" },
-    //                         }
-    //                     },
-    //                 ])
-    //                 // console.log(listData1)
-
-    //                 // Hạng mục
-    //                 let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-    //                     {
-    //                         $match: {
-    //                             budgetItem: ObjectID(infoWork.item),
-    //                         }
-    //                     },
-    //                     {
-    //                         $group: {
-    //                             _id: { },
-    //                             impleQuantity: { $sum: "$quantity" },
-    //                             impleAmount: { $sum: "$amount" },
-    //                         }
-    //                     },
-    //                 ])
-    //                 // console.log(listData2)
-
-    //                 // Ngân sách
-    //                 let listData3 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-    //                     {
-    //                         $match: {
-    //                             budget: ObjectID(infoWork.budget),
-    //                         }
-    //                     },
-    //                     {
-    //                         $group: {
-    //                             _id: { },
-    //                             impleQuantity: { $sum: "$quantity" },
-    //                             impleAmount: { $sum: "$amount" },
-    //                         }
-    //                     },
-    //                 ])
-    //                 // console.log(listData3)
-    
-    //                 if(listData && listData.length){
-    //                     dataUpdate.impleQuantity = Number(listData[0].impleQuantity)
-    //                     dataUpdate.impleUnitPrice = Number(listData[0].impleQuantity != 0 ? listData[0].impleAmount/listData[0].impleQuantity : 0)
-    //                     dataUpdate.impleAmount = Number(listData[0].impleAmount)
-
-    //                     dataUpdate1.impleQuantity = Number(listData1[0].impleQuantity)
-    //                     dataUpdate1.impleUnitPrice = Number(listData1[0].impleQuantity != 0 ? listData1[0].impleAmount/listData1[0].impleQuantity : 0)
-    //                     dataUpdate1.impleAmount = Number(listData1[0].impleAmount)
-
-    //                     dataUpdate2.impleQuantity = Number(listData2[0].impleQuantity)
-    //                     dataUpdate2.impleUnitPrice = Number(listData2[0].impleQuantity != 0 ? listData2[0].impleAmount/listData2[0].impleQuantity : 0)
-    //                     dataUpdate2.impleAmount = Number(listData2[0].impleAmount)
-
-    //                     dataUpdate3.finalBudget = Number(listData3[0].impleAmount)
-
-    //                     await BUDGET__WORK_COLL.findByIdAndUpdate(workID, dataUpdate, { new: true })
-    //                     await BUDGET__GROUP_COLL.findByIdAndUpdate(infoWork.group, dataUpdate1, { new: true })
-    //                     await BUDGET__ITEM_COLL.findByIdAndUpdate(infoWork.item, dataUpdate2, { new: true })
-    //                     await BUDGET_COLL.findByIdAndUpdate(infoWork.budget, dataUpdate3, { new: true })
-        
-    //                     return resolve({ error: false, message: 'Cập nhật thành công', status: 200 })
-    //                 }
-    //             }
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 })
-    //         }
-    //     })
-    // }
-
     /**
      * Name: Download Template Excel
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    downloadTemplateExcel({ companyID, budgetID, year, userID }) {
+    downloadTemplateExcel({ companyID, budgetID, year, userID, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
-                let yearFilter, monthFilter
+                let yearFilter
                 let currentYear = new Date().getFullYear()
-                let currentMonth = new Date().getMonth() + 1
     
                 if(year && !isNaN(year)){
                     yearFilter = Number(year)
@@ -843,43 +715,45 @@ class Model extends BaseModel {
                     yearFilter = Number(currentYear)
                 }
 
+                if(fromDate && toDate){
+                    yearFilter = new Date(toDate).getFullYear()
+                }
+
                 let infoBudget = await BUDGET_COLL.findById(budgetID).select('name')
                 let listItem = await BUDGET__ITEM_COLL.find({company: companyID, budget: budgetID}).select('name sign quantity unitPrice amount impleQuantity impleAmount')
                 let listGroup = await BUDGET__GROUP_COLL.find({company: companyID, budget: budgetID}).select('item name sign quantity unitPrice amount impleQuantity impleAmount')
                 let listWork = await BUDGET__WORK_COLL.find({company: companyID, budget: budgetID}).select('group name sign quantity unitPrice amount impleQuantity impleAmount')
-                // console.log(infoBudget)
-                // console.log(listItem)
 
                 
                 // Tổng hợp theo Sản lượng
                 let listData1 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
-                            work: { $exists: true, $ne: null },
+                            budgetWork: { $exists: true, $ne: null },
                             budget: ObjectID(budgetID),
                         }
                     },
                     {
                         $group: {
-                            _id: { work: "$work" },
+                            _id: { work: "$budgetWork" },
                             // quantity: { $sum: "$hours" },
                             // amount: { $sum: "$amount" },
                         }
                     },
                 ])
-                let  conditionPopulate1 = {
-                    path: '_id.work',
-                    select: '_id name sign unit quantity unitPrice',
-                    model: 'budget_work'
-                }
-                await TIMESHEET__EXPERT_TIMESHEET_COLL.populate(listData1, conditionPopulate1)
-                // console.log(listData1)
+
+                let listWork1 = await BUDGET__WORK_COLL.find({_id: {$in: listData1.map(item=>item._id.work)}})
+                .select('item group name sign quantity unitPrice amount impleQuantity impleAmount')
+                .populate({
+                    path: 'item group',
+                    select: '_id name sign',
+                })
 
                 // Ngân sách thực hiện theo trục thời gian
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
                     {
                         $match: {
-                            work: { $exists: true, $ne: null },
+                            budgetWork: { $exists: true, $ne: null },
                             budget: ObjectID(budgetID),
                         }
                     },
@@ -887,7 +761,7 @@ class Model extends BaseModel {
                         $project : {
                             year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                             month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            work: 1,
+                            budgetWork: 1,
                             hours: 1,
                             amount: 1,
                             date: 1,
@@ -900,7 +774,7 @@ class Model extends BaseModel {
                     },
                     {
                         $group: {
-                            _id: { work: "$work", month: "$month"},
+                            _id: { work: "$budgetWork", month: "$month"},
                             quantity: { $sum: "$hours" },
                             amount: { $sum: "$amount" },
                         }
@@ -908,62 +782,75 @@ class Model extends BaseModel {
                 ])
                 // console.log(listData2)
 
+                let listData3 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                    company: companyID, 
+                    budget: budgetID,
+                    budgetWork: { $exists: true, $ne: null }
+                })
+                .select('budgetGroup budgetWork date name sign hours unitprice amount')
+                .populate({
+                    path: 'budgetGroup budgetWork',
+                    select: '_id name sign unit',
+                })
+                .sort({
+                    "date": 1
+                })
+
+                // console.log(listData3)
+
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import_report.xlsx')))
                 .then(async workbook => {
-                    workbook.sheet("BaoCaoNganSach").row(1).cell(1).value(infoBudget.name)
-                    workbook.sheet("BaoCao1").row(1).cell(1).value(infoBudget.name)
-                    // workbook.sheet("BaoCao2").row(1).cell(1).value(infoBudget.name)
-
-                    workbook.sheet(`BaoCao1`).row(2).cell(1).value(`Báo cáo tổng hợp năm ${yearFilter}`)
-                    // workbook.sheet(`BaoCao2`).row(2).cell(1).value(`Báo cáo tổng hợp năm ${yearFilter}`)
+                    workbook.sheet("1.BaoCaoNganSach").row(1).cell(1).value(infoBudget.name)
+                    workbook.sheet("2.BaoCaoTheoNam").row(1).cell(1).value(infoBudget.name)
+                    workbook.sheet(`2.BaoCaoTheoNam`).row(2).cell(1).value(`Báo cáo tổng hợp năm ${yearFilter}`)
                     
                     var i = 3
                     listItem.forEach((item, index) =>{
                         // console.log({___________: item?.quantity - item?.impleQuantity})
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(`I${index+1}`)
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(item?.name)
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(item?.sign)
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(item?.unit)
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(item?.amount))
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(item?.impleAmount))
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(item?.amount - item?.impleAmount))
-                        workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(item?.note)
+                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(1).value(`I${index+1}`)
+                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(2).value(item?.name)
+                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(3).value(item?.sign)
+                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(4).value(item?.unit)
+                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(7).value(Number(item?.amount))
+                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(10).value(Number(item?.impleAmount))
+                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(13).value(Number(Number(item?.amount) - Number(item?.impleAmount)))
+                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(14).value(item?.note)
 
-                        workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "fff2cc"})
+                        workbook.sheet('1.BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "fff2cc"})
 
                         i++
 
                         listGroup.forEach((group, gindex) =>{
                             if(item._id.toString() === group.item.toString()){
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(`G${gindex+1}`)
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(group?.name)
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(group?.sign)
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(group?.unit)
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(group?.amount))
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(group?.impleAmount))
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(group?.amount - group?.impleAmount))
-                                workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(group?.note)
+                                workbook.sheet('1.BaoCaoNganSach').row(i).cell(1).value(`G${gindex+1}`)
+                                workbook.sheet('1.BaoCaoNganSach').row(i).cell(2).value(group?.name)
+                                workbook.sheet('1.BaoCaoNganSach').row(i).cell(3).value(group?.sign)
+                                workbook.sheet('1.BaoCaoNganSach').row(i).cell(4).value(group?.unit)
+                                workbook.sheet('1.BaoCaoNganSach').row(i).cell(7).value(Number(group?.amount))
+                                workbook.sheet('1.BaoCaoNganSach').row(i).cell(10).value(Number(group?.impleAmount))
+                                workbook.sheet('1.BaoCaoNganSach').row(i).cell(13).value(Number(group?.amount - group?.impleAmount))
+                                workbook.sheet('1.BaoCaoNganSach').row(i).cell(14).value(group?.note)
                                 
-                                workbook.sheet('BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "f3f3f3"})
+                                workbook.sheet('1.BaoCaoNganSach').range(`A${i}:N${i}`).style({"bold": true, "fill": "f3f3f3"})
 
                                 i++
 
                                 listWork.forEach((work, windex) =>{
                                     if(group._id.toString() === work.group.toString()){
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(1).value(windex+1)
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(2).value(work?.name)
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(3).value(work?.sign)
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(4).value(work?.unit)
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(5).value(Number(work?.quantity))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(6).value(Number(work?.unitPrice))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(7).value(Number(work?.amount))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(8).value(Number(work?.impleQuantity))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(9).value(work?.impleQuantity != 0 ? Number(work?.impleAmount/work?.impleQuantity) : 0)
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(10).value(Number(work?.impleAmount))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(11).value(Number(work?.quantity - work?.impleQuantity))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(12).value(Number((work?.quantity - work?.impleQuantity) != 0 ? (work?.amount - work?.impleAmount) / (work?.quantity - work?.impleQuantity) : 0))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(13).value(Number(work?.amount - work?.impleAmount))
-                                        workbook.sheet('BaoCaoNganSach').row(i).cell(14).value(work?.note)
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(1).value(windex+1)
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(2).value(work?.name)
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(3).value(work?.sign)
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(4).value(work?.unit)
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(5).value(Number(work?.quantity))
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(6).value(Number(work?.unitPrice))
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(7).value(Number(work?.amount))
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(8).value(Number(work?.impleQuantity))
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(9).value(work?.impleQuantity != 0 ? Number(work?.impleAmount/work?.impleQuantity) : 0)
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(10).value(Number(work?.impleAmount))
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(11).value(Number(work?.quantity - work?.impleQuantity))
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(12).value(Number((work?.quantity - work?.impleQuantity) != 0 ? (work?.amount - work?.impleAmount) / (work?.quantity - work?.impleQuantity) : 0))
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(13).value(Number(work?.amount - work?.impleAmount))
+                                        workbook.sheet('1.BaoCaoNganSach').row(i).cell(14).value(work?.note)
 
                                         i++
                                     }
@@ -974,22 +861,17 @@ class Model extends BaseModel {
                     })
 
                     var i = 4
-                    listData1.forEach((item, index) =>{
-                        workbook.sheet("BaoCao1").row(i).cell(1).value(Number(index+1))
-                        workbook.sheet("BaoCao1").row(i).cell(2).value(item._id.work?.name)
-                        workbook.sheet("BaoCao1").row(i).cell(3).value(`${item._id.work?._id}`)
-                        workbook.sheet("BaoCao1").row(i).cell(4).value(item._id.work?.unit)
-                        workbook.sheet("BaoCao1").row(i).cell(5).value(Number(item._id.work?.quantity))
-                        workbook.sheet("BaoCao1").row(i).cell(6).value(Number(item._id.work?.unitPrice))
-                        workbook.sheet("BaoCao1").row(i).cell(7).value(Number(item._id.work?.quantity * item._id.work?.unitPrice))
-
-                        // workbook.sheet("BaoCao2").row(i).cell(1).value(Number(index+1))
-                        // workbook.sheet("BaoCao2").row(i).cell(2).value(`${item._id.work?.sign}-${item._id.work?.name}`)
-                        // workbook.sheet("BaoCao2").row(i).cell(3).value(`${item._id.work?._id}`)
-                        // workbook.sheet("BaoCao2").row(i).cell(4).value(item._id.work?.unit)
-                        // workbook.sheet("BaoCao2").row(i).cell(5).value(Number(item._id.work?.quantity))
-                        // workbook.sheet("BaoCao2").row(i).cell(6).value(Number(item._id.work?.unitPrice))
-                        // workbook.sheet("BaoCao2").row(i).cell(7).value(Number(item._id.work?.quantity * item._id.work?.unitPrice))
+                    listWork1.forEach((item, index) =>{
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(1).value(Number(index+1))
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(2).value(item.name)
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(3).value(item?.group.name)
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(4).value(`${item._id}`)
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(5).value(item.unit)
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(6).value(Number(item.quantity))
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(7).value(Number(item.unitPrice))
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(8).value(Number(item.amount))
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(9).value(Number(item.impleAmount))
+                        workbook.sheet("2.BaoCaoTheoNam").row(i).cell(22).formula(`=SUM(J${i}:U${i})`)
 
                         i++
                     })
@@ -999,20 +881,31 @@ class Model extends BaseModel {
                             if(Number(item._id.month) === Number(m)){
                                 for(let i=4; i<=Number(listData1.length + 3); i++){
 
-                                    let workID = workbook.sheet(`BaoCao1`).row(i).cell(3).value()
-                                    if(item._id.work.toString() === workID.toString()){
-                                        // workbook.sheet(`BaoCao1`).row(i).cell(Number(m+7)).value(Number(item.quantity))
-                                        workbook.sheet(`BaoCao1`).row(i).cell(Number(m+7)).value(Number(item.amount))
-                                    }
+                                    let workID = workbook.sheet(`2.BaoCaoTheoNam`).row(i).cell(4).value()
 
-                                    // let workID2 = workbook.sheet(`BaoCao2`).row(i).cell(3).value()
-                                    // if(item._id.work.toString() === workID2.toString()){
-                                    //     workbook.sheet(`BaoCao2`).row(i).cell(Number(m+7)).value(Number(item.amount))
-                                    // }
+                                    if(item._id.work.toString() === workID.toString()){
+                                        // workbook.sheet(`BaoCao1`).row(i).cell(Number(m+9)).value(Number(item.quantity))
+                                        workbook.sheet(`2.BaoCaoTheoNam`).row(i).cell(Number(m+9)).value(Number(item.amount))
+                                    }
                                 }
                             }
                         }
                     })
+
+                    var i = 4
+                    listData3.forEach((item, index) =>{
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(1).value(item.date)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(2).value(item.name)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(3).value(item?.budgetGroup.name)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(4).value(item?.budgetWork?.unit)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(5).value(Number(item.hours))
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(6).value(Number(item.unitprice))
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(7).value(Number(item.amount))
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(8).value(item.note)
+
+                        i++
+                    })
+
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
