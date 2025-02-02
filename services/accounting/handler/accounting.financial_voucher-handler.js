@@ -116,6 +116,7 @@ module.exports = {
                     fcuExRate, 
                     selectedJournals, 
                     deletedJournals,
+                    filesID
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -138,6 +139,7 @@ module.exports = {
                     fcuExRate, 
                     selectedJournals, 
                     deletedJournals,
+                    filesID,
                     ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
