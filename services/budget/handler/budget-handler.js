@@ -77,12 +77,12 @@
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue } = ctx.params;
+                let { budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, filesID } = ctx.params;
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await BUDGET_MODEL.update({
-                    budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID, ctx
+                    budgetID, type, projectID, contractID, name, sign, description, date, note, revenue, vatRevenue, forecastRevenue, forecastVatRevenue, finalRevenue, finalVatRevenue, userID, ctx, filesID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
