@@ -33,8 +33,12 @@ const ITEM__POSITION_COLL            	= require('../../item/database/item.positi
 const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll')
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
 
+const STORE_ORDER_COLL                  = require('../../store/database/store.order-coll');
+const STORE_ORDER_PRODUCT_COLL          = require('../../store/database/store.order_product-coll');
+
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 const BUDGET__WORK_MODEL                = require('../../budget/model/budget.work-model').MODEL
+const STORE_ORDER_MODEL                 = require('../../store/model/store.order-model.js').MODEL;
 
 let dataTF = {
     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
@@ -959,6 +963,42 @@ class Model extends BaseModel {
                         }else{
                             return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                         }  
+                    } else{
+                        return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
+                    }              
+                }
+
+                 /**
+                 * ĐỒNG BỘ SANG NGÂN SÁCH
+                 */
+                else if(option == 3){
+                    if(!infoAppUser.error && infoAppUser.data.level == 0){
+                       console.log('==-111111111111111111')
+
+                       let info = await STORE_ORDER_COLL.findOne({company: companyID, type: 9})
+                       if(!info){
+                            // let infoVoucher = await STORE_ORDER_MODEL.insert({
+                            //     companyID,
+                            //     userID, 
+                            //     outin: 2, 
+                            //     type: 9, 
+                            //     fundaID, 
+                            //     projectID, 
+                            //     packageID, 
+                            //     toPackageID, 
+                            //     warehouseID, 
+                            //     toWarehouseID, 
+                            //     customerID, 
+                            //     contractID, 
+                            //     date, 
+                            //     name, 
+                            //     sign, 
+                            //     note, 
+                            //     linkID
+                            // })
+                       }
+
+                       return resolve({ error: false, message: 'Đồng bộ thành công' })   
                     } else{
                         return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                     }              
