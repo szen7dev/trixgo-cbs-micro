@@ -42,11 +42,8 @@ class Model extends BaseModel {
 	insert({ companyID, parentID, userID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
         return new Promise(async resolve => {
             try {
-                if(!name || !checkObjectIDs(area))
-                    return resolve({ error: true, message: "Tên|Khu vực không hợp lệ", keyError: "Request params name invalid" })
-
-                // Link danh bạ
-                let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, isDefault: 2})
+                if(!name)
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" })
 
                 let dataInsert = {
                     userCreate: userID,
@@ -57,23 +54,27 @@ class Model extends BaseModel {
                 }
 
                 //_________Khu vực (phường/xã)
-                let infoArea = await ITEM__AREA_COLL.findById(area).populate({
-                    path: 'parent',
-                    select: "_id name",
-                    populate: {
+                if(checkObjectIDs(area)){
+                    let infoArea = await ITEM__AREA_COLL.findById(area).populate({
                         path: 'parent',
                         select: "_id name",
-                    }
-                })
-                // console.log(infoArea)
-                if(Number(infoArea.level) != 3)
-                    return resolve({ error: true, message: "Khu vực chọn cần phải là Phường/Xã", keyError: "Request params name invalid" });
+                        populate: {
+                            path: 'parent',
+                            select: "_id name",
+                        }
+                    })
 
-                dataInsert.area3 = area
-                dataInsert.area2 = infoArea.parent._id
-                dataInsert.area1 = infoArea.parent.parent._id
+                    if(infoArea && Number(infoArea.level) === 3){
+                        dataInsert.area3 = area
+                        dataInsert.area2 = infoArea.parent._id
+                        dataInsert.area1 = infoArea.parent.parent._id
+                    }else{
+                        return resolve({ error: true, message: "Khu vực chọn cần phải là Phường/Xã", keyError: "Request params name invalid" });
+                    }
+                }
 
                 // Link danh bạ
+                let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, isDefault: 2})
                 if(infoContact){
                     dataInsert.contact = infoContact._id;
                 }
