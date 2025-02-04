@@ -165,7 +165,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -196,7 +196,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate } = ctx.params;
-
+                console.log(ctx.params)
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
