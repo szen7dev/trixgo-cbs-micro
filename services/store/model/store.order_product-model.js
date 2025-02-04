@@ -640,7 +640,9 @@ class Model extends BaseModel {
 
                 conditionProject = {
                     year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                    forward: 1,
+                    goods: 1, 
+                    account: 1, 
+                    forward: 1, 
                     status: 1,
                     date: 1,
                     amount: 1,
@@ -697,12 +699,14 @@ class Model extends BaseModel {
 
                 let conditionObj1 = {
                     company: ObjectID(companyID),
+                    forward: 0,
                     status: 5, // Hoàn thành
                     outin: 1, // Xuất ra (Thu tiền)
                 }
 
                 let conditionObj2 = {
                     company: ObjectID(companyID),
+                    forward: 0,
                     status: 5, // Hoàn thành
                     outin: 2, // Nhập vào (Chi tiền)
                 }
@@ -886,6 +890,88 @@ class Model extends BaseModel {
                 console.log({_____No: listDataO[0]._debit[0]})
                 console.log({_____No: listDataO[0]._debit})
                 console.log({_____Co: listDataO[0]._credit})
+
+                listDataOF = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchOF
+                                },
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchOF
+                                },
+
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+
+                console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
+                console.log({_____No: listDataOF[0]._debit})
+                console.log({_____Co: listDataOF[0]._credit})
+
+                listDataFT = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchFT
+                                },
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchFT
+                                },
+
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+                console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
+                console.log({_____No: listDataFT[0]._debit})
+                console.log({_____Co: listDataFT[0]._credit})
+
 
                 let arr = [...listData1,...listData2]
                 let arrCombine = [], arr1 = [], arr2 = []
