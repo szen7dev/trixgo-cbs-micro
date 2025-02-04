@@ -1242,6 +1242,53 @@ class Model extends BaseModel {
 
                         return resolve({ error: false, data: 'Reset thành công' })
                     }
+
+                    // Reset phép nhân viên
+                    else if(option == 7){
+                        let listUser = await USER_COLL.find({numberOnLeave:{$gt: 0}})
+                        for(const item of listUser){
+                            let numberOnLeave = 0
+                            let yearFilter = new Date().getFullYear() // Chỉ Xử lý nghỉ phép của năm hiện tại
+    
+                            let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                                {
+                                    $match: {
+                                        assignee: ObjectID(item._id),
+                                        subtype: 2,
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        hours: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(yearFilter),
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { },
+                                        hours: { $sum: "$hours" },
+                                    }
+                                },
+                            ])
+                            // console.log(listData)
+    
+                            if(listData.length){
+                                numberOnLeave = Number(listData[0].hours)/8
+                            }
+                            
+                            // Cập nhật nghỉ phép vào User
+                            await USER_COLL.findByIdAndUpdate(item._id, {
+                                numberOnLeave: numberOnLeave
+                            }, { new: true })
+                        }
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
+                     
                 }else{
                     return resolve({ error: false, data: 'Pass không đúng, Reset thất bại' })
                 }

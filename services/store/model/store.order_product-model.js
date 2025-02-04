@@ -616,8 +616,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 2/9/2024
      */
-    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate }) {
-        // console.log({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate })
+    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate='2025-01-01', toDate='2025-12-31' }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -625,14 +624,89 @@ class Model extends BaseModel {
                  * 1. Ban đầu query tổng tất cả dữ liệu
                  * 2. Sau bổ sung các phiếu đầu kỳ/kết chuyển số dư
                  */
+                let conditionObj = {}, conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
+                let conditionGroup = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                let conditionMatch = {}, conditionMatchO = {}, conditionMatchOF = {}, conditionMatchFT = {}, conditionMatchIn = {}
+                let listDataO, listDataOF, listDataFT, listDataIn
+
+                /**
+                 * Lấy năm của ngày đầu kỳ
+                 */
+                let year = moment(new Date()).toDate().getFullYear()
+                if(fromDate && toDate){
+                    year = moment(fromDate).toDate().getFullYear()
+                }
+                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
+
+                conditionProject = {
+                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                    goods: 1, 
+                    account: 1, 
+                    forward: 1, 
+                    status: 1,
+                    date: 1,
+                    amount: 1,
+                }
+
+                conditionDebitObj = {
+                    company: ObjectID(companyID),
+                    status: 5, // Hoàn thành
+                    outin: 2, // Nhập vào (Chi tiền)
+                }
+
+                conditionCreditObj = {
+                    company: ObjectID(companyID),
+                    status: 5, // Hoàn thành
+                    outin: 1, // Xuất ra (Thu tiền)
+                }
+
+                // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
+                conditionMatchO = {
+                    "forward": 1,
+                    "status": 5,
+                    "year": Number(year)
+                }
+
+                // Từ đầu năm tới ngày đầu kỳ (fromDate)
+                conditionMatchOF = {
+                    "forward": 0,
+                    "status": 5,
+                    "date": {
+                        $gte: moment(firstDayOfYear).toDate(),
+                        $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
+                    },
+                }
+
+                // Từ đầu kỳ tới cuối kỳ (fromDate-toDate)
+                conditionMatchFT = {
+                    "forward": 0,
+                    "status": 5,
+                    "date": {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
+                // Từ đầu năm tới đầu kỳ (áp dụng lấy dữ liệu 1 mạch)
+                conditionMatchIn = {
+                    "forward": 0,
+                    "status": 5,
+                    "date": {
+                        $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
+                        $lte: moment(toDate).toDate(),
+                    },
+                }
+
                 let conditionObj1 = {
                     company: ObjectID(companyID),
+                    forward: 0,
                     status: 5, // Hoàn thành
                     outin: 1, // Xuất ra (Thu tiền)
                 }
 
                 let conditionObj2 = {
                     company: ObjectID(companyID),
+                    forward: 0,
                     status: 5, // Hoàn thành
                     outin: 2, // Nhập vào (Chi tiền)
                 }
@@ -728,8 +802,6 @@ class Model extends BaseModel {
                     conditionObj2.type = Number(type)
                 }
 
-                let conditionGroup = {}, conditionPopulate = {}
-
                 // Thẻ kho
                 if(option == 1){
                     conditionGroup = {
@@ -775,6 +847,131 @@ class Model extends BaseModel {
 
                 // console.log(listData1)
                 // console.log(listData2)
+
+                /**
+                 * DATA KẾT CHUYỂN/ĐẦU NĂM
+                 */
+                listDataO = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchO
+                                },
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchO
+                                },
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+                console.log('=========MỐC ĐẦU NĂM=========')
+                console.log({_____No: listDataO[0]._debit[0]})
+                console.log({_____No: listDataO[0]._debit})
+                console.log({_____Co: listDataO[0]._credit})
+
+                listDataOF = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchOF
+                                },
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchOF
+                                },
+
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+
+                console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
+                console.log({_____No: listDataOF[0]._debit})
+                console.log({_____Co: listDataOF[0]._credit})
+
+                listDataFT = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchFT
+                                },
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatchFT
+                                },
+
+                                {
+                                    $group: conditionGroup
+                                }
+                            ],
+
+                        }
+                    }
+                ])
+                console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
+                console.log({_____No: listDataFT[0]._debit})
+                console.log({_____Co: listDataFT[0]._credit})
+
 
                 let arr = [...listData1,...listData2]
                 let arrCombine = [], arr1 = [], arr2 = []
