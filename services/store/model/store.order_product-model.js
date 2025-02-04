@@ -641,10 +641,12 @@ class Model extends BaseModel {
                 conditionProject = {
                     year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                     goods: 1, 
+                    warehouse: 1,
                     account: 1, 
                     forward: 1, 
                     status: 1,
                     date: 1,
+                    quantity: 1,
                     amount: 1,
                 }
 
@@ -886,10 +888,9 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                console.log('=========MỐC ĐẦU NĂM=========')
-                console.log({_____No: listDataO[0]._debit[0]})
-                console.log({_____No: listDataO[0]._debit})
-                console.log({_____Co: listDataO[0]._credit})
+                // console.log('=========MỐC ĐẦU NĂM=========')
+                // console.log({_____No: listDataO[0]._debit})
+                // console.log({_____Co: listDataO[0]._credit})
 
                 listDataOF = await STORE_ORDER_PRODUCT_COLL.aggregate([
                     {
@@ -927,10 +928,9 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-
-                console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
-                console.log({_____No: listDataOF[0]._debit})
-                console.log({_____Co: listDataOF[0]._credit})
+                // console.log('=========ĐẦU NĂM - ĐẦU KỲ=========')
+                // console.log({_____No: listDataOF[0]._debit})
+                // console.log({_____Co: listDataOF[0]._credit})
 
                 listDataFT = await STORE_ORDER_PRODUCT_COLL.aggregate([
                     {
@@ -968,9 +968,9 @@ class Model extends BaseModel {
                         }
                     }
                 ])
-                console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
-                console.log({_____No: listDataFT[0]._debit})
-                console.log({_____Co: listDataFT[0]._credit})
+                // console.log('=========ĐẦU KỲ - CUỐI KỲ=========')
+                // console.log({_____No: listDataFT[0]._debit})
+                // console.log({_____Co: listDataFT[0]._credit})
 
 
                 let arr = [...listData1,...listData2]
@@ -978,21 +978,21 @@ class Model extends BaseModel {
 
                 // Thẻ kho
                 if(option == 1){
-                    listData1.forEach(item=>{
-                        let key = item._id.goods;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
-                        }
-                        arr1[key].push(item)
-                    })
+                    // listData1.forEach(item=>{
+                    //     let key = item._id.goods;
+                    //     if (!Array.isArray(arr1[key])) {
+                    //         arr1[key] = [];
+                    //     }
+                    //     arr1[key].push(item)
+                    // })
     
-                    listData2.forEach(item=>{
-                        let key = item._id.goods;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
+                    // listData2.forEach(item=>{
+                    //     let key = item._id.goods;
+                    //     if (!Array.isArray(arr2[key])) {
+                    //         arr2[key] = [];
+                    //     }
+                    //     arr2[key].push(item)
+                    // })
                 }
 
                 // Sổ quỹ
@@ -1032,43 +1032,175 @@ class Model extends BaseModel {
                         arr2[key].push(item)
                     })
                 }
-
                 // console.log(arr1)
                 // console.log(arr2)
 
-                // Thẻ kho
                 if(option == 1){
-                    let listItem = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
-                    .select('name sign unit')
+                    let arrGoods = [], arrCombine = []
 
-                    listItem.forEach(item =>{
-                        let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
-    
-                        if(arr1[item._id]){
-                            quantityExpense = arr1[item._id][0].quantity
-                            expense = arr1[item._id][0].amount
+                    for(const item of listDataO[0]._debit){
+                        arrGoods.push(item._id.goods)
+                    }
+                    for(const item of listDataO[0]._credit){
+                        arrGoods.push(item._id.goods)
+                    }
+                    for(const item of listDataOF[0]._debit){
+                        arrGoods.push(item._id.goods)
+                    }
+                    for(const item of listDataOF[0]._credit){
+                        arrGoods.push(item._id.goods)
+                    }
+                    for(const item of listDataFT[0]._debit){
+                        arrGoods.push(item._id.goods)
+                    }
+                    for(const item of listDataFT[0]._credit){
+                        arrGoods.push(item._id.goods)
+                    }
+                    // console.log(arrGoods)
+
+                    let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arrGoods}}).select('name unit note')
+                    // console.log(listGoods)
+
+                    let arrDebitO = [], arrCreditO = [], arrDebitOF = [], arrCreditOF = [], arrDebitFT = [], arrCreditFT = []
+
+                    listDataO[0]._debit.forEach(element=>{
+                        let key = element._id.goods;
+                        if (!Array.isArray(arrDebitO[key])) {
+                            arrDebitO[key] = [];
                         }
-                        
-                        if(arr2[item._id]){
-                            quantityIncome = arr2[item._id][0].quantity
-                            income = arr2[item._id][0].amount
+                        arrDebitO[key].push(element)
+                    })
+
+                    listDataO[0]._credit.forEach(element=>{
+                        let key = element._id.goods;
+                        if (!Array.isArray(arrCreditO[key])) {
+                            arrCreditO[key] = [];
                         }
-    
+                        arrCreditO[key].push(element)
+                    })
+
+                    listDataOF[0]._debit.forEach(element=>{
+                        let key = element._id.goods;
+                        if (!Array.isArray(arrDebitOF[key])) {
+                            arrDebitOF[key] = [];
+                        }
+                        arrDebitOF[key].push(element)
+                    })
+
+                    listDataOF[0]._credit.forEach(element=>{
+                        let key = element._id.goods;
+                        if (!Array.isArray(arrCreditOF[key])) {
+                            arrCreditOF[key] = [];
+                        }
+                        arrCreditOF[key].push(element)
+                    })
+
+                    listDataFT[0]._debit.forEach(element=>{
+                        let key = element._id.goods;
+                        if (!Array.isArray(arrDebitFT[key])) {
+                            arrDebitFT[key] = [];
+                        }
+                        arrDebitFT[key].push(element)
+                    })
+
+                    listDataFT[0]._credit.forEach(element=>{
+                        let key = element._id.goods;
+                        if (!Array.isArray(arrCreditFT[key])) {
+                            arrCreditFT[key] = [];
+                        }
+                        arrCreditFT[key].push(element)
+                    })
+
+                    for(const item of listGoods){
+                        let kcNoDauKy = 0, klKcNoDauKy = 0
+                        let kcCoDauKy = 0, klKcCoDauKy = 0
+                        let noDauKy = 0, klNoDauKy = 0
+                        let coDauKy = 0, klCoDauKy = 0
+                        let noTrongKy = 0, klNoTrongKy = 0
+                        let coTrongKy = 0, klCoTrongKy = 0
+
+                        if(arrDebitO[item._id]){
+                            kcNoDauKy = arrDebitO[item._id][0].amount
+                            klKcNoDauKy = arrDebitO[item._id][0].quantity
+                        }
+                        if(arrCreditO[item._id]){
+                            kcCoDauKy = arrCreditO[item._id][0].amount
+                            klKcCoDauKy = arrCreditO[item._id][0].quantity
+                        }
+                        if(arrDebitOF[item._id]){
+                            noDauKy = arrDebitOF[item._id][0].amount
+                            klNoDauKy = arrDebitOF[item._id][0].quantity
+                        }
+                        if(arrCreditOF[item._id]){
+                            coDauKy = arrCreditOF[item._id][0].amount
+                            klCoDauKy = arrCreditOF[item._id][0].quantity
+                        }
+                        if(arrDebitFT[item._id]){
+                            noTrongKy = arrDebitFT[item._id][0].amount
+                            klNoTrongKy = arrDebitFT[item._id][0].quantity
+                        }
+                        if(arrCreditFT[item._id]){
+                            coTrongKy = arrCreditFT[item._id][0].amount
+                            klCoTrongKy = arrCreditFT[item._id][0].quantity
+                        }
+
                         arrCombine.push({
                             _id: item._id,
                             name: item.name,
                             unit: item.unit,
-                            quantityIncome: Number(quantityIncome),
-                            income: Number(income),
-                            quantityExpense: Number(quantityExpense),
-                            expense: Number(expense),
-                        })
-                    })
+                            kcNoDauKy: Number(kcNoDauKy),
+                            kcCoDauKy: Number(kcCoDauKy),
+                            noDauKy: Number(noDauKy),
+                            coDauKy: Number(coDauKy),
+                            noTrongKy: Number(noTrongKy),
+                            coTrongKy: Number(coTrongKy),
 
+                            klKcNoDauKy: Number(klKcNoDauKy),
+                            klKcCoDauKy: Number(klKcCoDauKy),
+                            klNoDauKy: Number(klNoDauKy),
+                            klCoDauKy: Number(klCoDauKy),
+                            klNoTrongKy: Number(klNoTrongKy),
+                            klCoTrongKy: Number(klCoTrongKy),
+                        })
+                    }
                     // console.log(arrCombine)
 
                     return resolve({ error: false, data: arrCombine })
                 }
+
+                // Thẻ kho
+                // if(option == 1){
+                //     let listItem = await ITEM__GOODS_COLL.find({_id: {$in: arr.map(item => item._id.goods)}})
+                //     .select('name sign unit')
+
+                //     listItem.forEach(item =>{
+                //         let quantityIncome = 0, income = 0, quantityExpense = 0, expense = 0
+    
+                //         if(arr1[item._id]){
+                //             quantityExpense = arr1[item._id][0].quantity
+                //             expense = arr1[item._id][0].amount
+                //         }
+                        
+                //         if(arr2[item._id]){
+                //             quantityIncome = arr2[item._id][0].quantity
+                //             income = arr2[item._id][0].amount
+                //         }
+    
+                //         arrCombine.push({
+                //             _id: item._id,
+                //             name: item.name,
+                //             unit: item.unit,
+                //             quantityIncome: Number(quantityIncome),
+                //             income: Number(income),
+                //             quantityExpense: Number(quantityExpense),
+                //             expense: Number(expense),
+                //         })
+                //     })
+
+                //     // console.log(arrCombine)
+
+                //     return resolve({ error: false, data: arrCombine })
+                // }
 
                 // Sổ quỹ
                 else if(option == 2){
