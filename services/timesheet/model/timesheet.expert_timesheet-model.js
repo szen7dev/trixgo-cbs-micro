@@ -1267,7 +1267,7 @@ class Model extends BaseModel {
      * Date: 21/9/2022
      */
     getListByProperty({ userID, option, type, year, month, companyID, assigneeID, projectID }){
-        console.log({ userID, option, type, year, month, companyID, assigneeID, projectID })
+        // console.log({ userID, option, type, year, month, companyID, assigneeID, projectID })
         return new Promise(async resolve => {
             try {
                 // Record Traffic
