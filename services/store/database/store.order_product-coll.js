@@ -140,8 +140,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
     },
     /**
      * Phân loại vào ra
-     * 1-Bán ra/Xuất kho/Thu tiền vào
-     * 2-Mua vào/Nhập kho/Chi tiền ra
+     * 1-Xuất/Chi
+     * 2-Nhập/Thu
      */
     outin: { type: Number, default: 1 },
     /**
