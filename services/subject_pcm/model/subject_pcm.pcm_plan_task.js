@@ -48,6 +48,8 @@ const PCM_COMMENT_COLL                  = require('../database/subject_pcm.pcm_c
 const PCM_FILE_COLL                     = require('../database/subject_pcm.pcm_file-coll')
 const PCM_PLAN_REPORT_COLL              = require('../database/subject_pcm.pcm_plan_report-coll')
 const DOCUMENT_DOC_COLL                 = require('../../document/database/document.doc-coll')
+const BUDGET__SUBMITTAL_COLL            = require('../../budget/database/budget.submittal-coll')
+const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL
 
@@ -1091,6 +1093,27 @@ class Model extends BaseModel {
                             dataUpdate.timeApproved = Date.now()
                             dataUpdate.percentage = 100
                             dataUpdate.status = 3
+
+                            // Trình nghỉ phép
+                            if(Number(infoTask.approvalType) === 6){
+                                let listData = await BUDGET__SUBMITTAL_COLL.find({task: taskID})
+                                for(const item of listData){
+                                    await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
+                                        {
+                                            assignee: item.staff,
+                                            date: {
+                                                $gte: new Date(item.fromDate),
+                                                $lte: new Date(item.toDate),
+                                            },
+                                        },
+                                        {
+                                            $set: {
+                                                "note": `Nghỉ phép | ${item.name} | ${item.note} | Từ ${moment(item.fromDate).format('DD/MM/YYYY')} - Đến ${moment(item.toDate).format('DD/MM/YYYY')}`
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }else{
                         // Việc thông khác/khác còn lại thì người tạo việc ký sẽ Hoàn thành
