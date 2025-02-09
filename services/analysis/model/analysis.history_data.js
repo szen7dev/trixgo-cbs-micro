@@ -181,7 +181,9 @@ class Model extends BaseModel {
                                                 }
                                             }
                                         }
-                                    }else{
+                                    }
+                                    
+                                    else{
                                         // console.log('4444444444444444444')
                                         let infoSubNew = await ITEM__ACCOUNT_MODEL.insert({
                                             companyID,
@@ -214,7 +216,9 @@ class Model extends BaseModel {
                                     }
                                 }
                             }
-                        }else{
+                        }
+                        
+                        else{
                             // Tạo mẩu tin
                             let infoAccountNew = await ITEM__ACCOUNT_MODEL.insert({
                                 companyID, 
