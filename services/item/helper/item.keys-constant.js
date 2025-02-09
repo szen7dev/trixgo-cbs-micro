@@ -96,3 +96,44 @@ exports.DOCUMENT_STATUS = [
     { value: 1, text: 'Còn hiệu lực' },
     { value: 2, text: 'Hết hiệu lực' },
 ]
+
+exports.ITEM_ACCOUNTS = [
+    { 
+        name: 111, description: 'Tiền mặt',
+        sub: [
+            {
+                name: 1111, description: 'Tiền Việt Nam',
+                sub2: [
+                    { name: 1111.1, description: 'Quỹ tiền mặt 1' },
+                    { name: 1111.2, description: 'Quỹ tiền mặt 2' }
+                ]
+            },
+            { name: 1112, description: 'Ngoại tệ' },
+            { name: 1113, description: 'Vàng tiền tệ' }
+        ]
+    },
+    { 
+        name: 112, description: 'Tiền gửi Ngân hàng',
+        sub: [
+            {
+                name: 1121, description: 'Tiền Việt Nam',
+                sub2: [
+                    { name: 1121.1, description: 'Ngân hàng 1' },
+                    { name: 1121.2, description: 'Ngân hàng 2' }
+                ]
+            },
+            { name: 1122, description: 'Ngoại tệ' },
+            { name: 1123, description: 'Vàng tiền tệ' }
+        ]
+    },
+    { 
+        name: 113, description: 'Tiền đang chuyển',
+        sub: [
+            { name: 1131, description: 'Tiền Việt Nam' },
+            { name: 1132, description: 'Ngoại tệ' }
+        ]
+    },
+    { 
+        name: 331, description: 'Phải trả cho người bán',
+    },
+]

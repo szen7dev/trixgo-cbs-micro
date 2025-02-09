@@ -186,7 +186,7 @@ module.exports = {
     /**
      * Name: Lấy số dư tài khoản
      * Author: Hiepnh
-     * Date: 9/4/2022
+     * Date: 9/2/2025
      */
     getAccountBalance: {
         auth: "required",
@@ -204,13 +204,15 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, fundaID, contractID, accountID, fromDate, toDate, name, option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs } = ctx.params;
+                let { option, optionAccount, arrAccNames, arrAccIDs, companyID, fundaID, projectID, contractID, warehouseID, goodsID, fromDate, toDate } = ctx.params;
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 if(!companyID){
                     companyID = company._id
                 }
+
+                console.log(ctx.params)
 
                 /**
                  * Convert dữ liệu ngày tháng để theo chuẩn chung
@@ -219,7 +221,7 @@ module.exports = {
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getAccountBalance({
-                    userID, ctx, companyID, fundaID, contractID, accountID, fromDate, toDate, name,  option, optionGroup, arrAccNames, arrAccIDs, arrCompanyIDs, arrFundaIDs
+                    option, optionAccount, arrAccNames, arrAccIDs, companyID, fundaID, projectID, contractID, warehouseID, goodsID, fromDate, toDate
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -256,7 +258,7 @@ module.exports = {
                 
                 const { _id: userID, company, contacts } = ctx.meta.infoUser;
 
-                // console.log({option, optionAccount, optionTerm, optionCal, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID})
+                // console.log(ctx.params)
 
                 if(!companyID){
                     companyID = company._id
@@ -269,7 +271,7 @@ module.exports = {
                 toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.getListByProperty({
-                    userID, contacts, option, optionAccount, optionTerm, optionCal, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID, ctx
+                    userID, contacts, option, optionAccount, optionTerm, optionCal, companyID, fundaID, contractID, contactID, fromDate, toDate, name, arrAccNames, arrAccIDs, arrCompanyIDs, goodsID, warehouseID
                 })
 
                 // console.log(resultAfterCallHandler)
