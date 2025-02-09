@@ -318,9 +318,6 @@ class Model extends BaseModel {
                     await this.convertVoucher({companyID, docID: infoAfterInsert._id, userID: authorID, ctx})
                 }
 
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
-
                 return resolve({ error: false, data: infoAfterInsert, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
@@ -824,68 +821,70 @@ class Model extends BaseModel {
                     let info336 = await ITEM__ACCOUNT_COLL.findOne({company: companyID, name: '336'})                    
                     // console.log(info336)
 
-                    let listJournals = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({
-                        voucher: docID
-                    })
-                    // console.log(listJournals)
-
-                    let infoFunda = await ITEM_FUNDA_COLL.findById(infoVoucher.funda)
-
-                    let selectedJournals = []
-                    for(const item of listJournals){
-                        if(listAccount.includes(item.credit.toString())){
-                            let dataInsert = {
-                                source: item.source, 
-                                orderNew: item.orderNew, 
-                                pricePolicy: item.pricePolicy,
-                                updown: item.updown,
-                                quantity: item.quantity,
-                                amount: item.amount,
-                                unitprice: item.unitprice,
-                                note: item.note,
-                                debit: item.credit,
-                                credit: info336._id,
-                                customerDebit: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : item.customerDebit,
-                                customerDebit: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : item.customerDebit,
-                                goods: item.goods,
-                                warehouse: infoVoucher.linkFunda?.warehouse ? infoVoucher.linkFunda?.warehouse : item.warehouse,
-                                contract: item.contract,
-                                subtype: item.subtype,
+                    if(info336){
+                        let listJournals = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({
+                            voucher: docID
+                        })
+                        // console.log(listJournals)
+    
+                        let infoFunda = await ITEM_FUNDA_COLL.findById(infoVoucher.funda)
+    
+                        let selectedJournals = []
+                        for(const item of listJournals){
+                            if(listAccount.includes(item.credit.toString())){
+                                let dataInsert = {
+                                    source: item.source, 
+                                    orderNew: item.orderNew, 
+                                    pricePolicy: item.pricePolicy,
+                                    updown: item.updown,
+                                    quantity: item.quantity,
+                                    amount: item.amount,
+                                    unitprice: item.unitprice,
+                                    note: item.note,
+                                    debit: item.credit,
+                                    credit: info336._id,
+                                    customerDebit: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : item.customerDebit,
+                                    customerDebit: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : item.customerDebit,
+                                    goods: item.goods,
+                                    warehouse: infoVoucher.linkFunda?.warehouse ? infoVoucher.linkFunda?.warehouse : item.warehouse,
+                                    contract: item.contract,
+                                    subtype: item.subtype,
+                                }
+                                selectedJournals.push(dataInsert)
                             }
-                            selectedJournals.push(dataInsert)
                         }
+    
+                        let infoNewVoucher = await that.insert({
+                            linkVoucherID: docID,
+                            authorID: userID, 
+                            fundaID: infoVoucher.linkFunda._id, 
+                            customerID: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : infoVoucher.customer,
+                            contractID: infoVoucher.contract, 
+                            storageID: infoVoucher.storage, 
+                            subtypeID: infoVoucher.subtype,
+                            warehouseID: infoVoucher.linkFunda?.warehouse ? infoVoucher.linkFunda?.warehouse : infoVoucher.warehouse,
+                            linkFundaID: infoVoucher.funda,
+                            type: 4, 
+                            date: infoVoucher.date, 
+                            name: `Auto-Nhập kho từ ${infoFunda.name}`, 
+                            source: infoVoucher.source, 
+                            orderNew: infoVoucher.orderNew, 
+                            pricePolicy: infoVoucher.pricePolicy,
+                            receiver: infoVoucher.receiver, 
+                            note: infoVoucher.note,
+                            forward: infoVoucher.forward, 
+                            forwardIs: infoVoucher.forwardIs, 
+                            returning: infoVoucher.returning, 
+                            advancePayment: infoVoucher.advancePayment, 
+                            cancel: infoVoucher.cancel, 
+                            fcuExRate: infoVoucher.fcuExRate, 
+                            selectedJournals: selectedJournals,
+                            ctx
+                        })
+                        // console.log(infoNewVoucher)
+    
+                        return resolve({ erorr: false, data: infoNewVoucher, status: 200 })
                     }
-
-                    let infoNewVoucher = await that.insert({
-                        linkVoucherID: docID,
-                        authorID: userID, 
-                        fundaID: infoVoucher.linkFunda._id, 
-                        customerID: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : infoVoucher.customer,
-                        contractID: infoVoucher.contract, 
-                        storageID: infoVoucher.storage, 
-                        subtypeID: infoVoucher.subtype,
-                        warehouseID: infoVoucher.linkFunda?.warehouse ? infoVoucher.linkFunda?.warehouse : infoVoucher.warehouse,
-                        linkFundaID: infoVoucher.funda,
-                        type: 4, 
-                        date: infoVoucher.date, 
-                        name: `Auto-Nhập kho từ ${infoFunda.name}`, 
-                        source: infoVoucher.source, 
-                        orderNew: infoVoucher.orderNew, 
-                        pricePolicy: infoVoucher.pricePolicy,
-                        receiver: infoVoucher.receiver, 
-                        note: infoVoucher.note,
-                        forward: infoVoucher.forward, 
-                        forwardIs: infoVoucher.forwardIs, 
-                        returning: infoVoucher.returning, 
-                        advancePayment: infoVoucher.advancePayment, 
-                        cancel: infoVoucher.cancel, 
-                        fcuExRate: infoVoucher.fcuExRate, 
-                        selectedJournals: selectedJournals,
-                        ctx
-                    })
-                    // console.log(infoNewVoucher)
-
-                    return resolve({ erorr: false, data: infoNewVoucher, status: 200 })
                 }else{
                     return resolve({ erorr: false, data: infoVoucher, status: 200 })
                 } 
