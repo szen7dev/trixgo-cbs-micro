@@ -20,13 +20,17 @@ class Model extends BaseModel {
      * Code: 
      */
     insert({ userID, plus, taskID, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice, fromDate, toDate }) { 
-        // console.log({ userID, plus, taskID, workID, staffID, contactID, goodsID, assetsID, name, sign, note, quantity, unitPrice })
         const that = this
         return new Promise(async (resolve) => {
             try {
                 let infoTask = await PCM_PLAN_TASK_COLL.findById(taskID)
                 if(!infoTask)
-                    return resolve({ error: true, message: "taskID không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
+                    return resolve({ error: true, message: "taskID không hợp lệ" })
+
+                if(Number(infoTask.approvalType) === 6){
+                    if(!checkObjectIDs(staffID))
+                        return resolve({ error: true, message: "Bạn phải chọn Nhân sự khi trình nghỉ phép" })
+                }
 
                 let dataInsert = { 
                     userCreate: userID, 
@@ -88,24 +92,24 @@ class Model extends BaseModel {
                 // Cập nhật giá trị duyệt cho TaskID
                 await that.updateValue( { taskID, userID })
 
-                // Cập nhật vào bảng chấm công
-                if(Number(infoTask.approvalType) === 6 && fromDate && toDate && checkObjectIDs(staffID)){
-                    let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
-                        {
-                            assignee: staffID,
-                            date: {
-                                $gte: new Date(fromDate),
-                                $lte: new Date(toDate),
-                            },
-                        },
-                        {
-                            $set: {
-                                "note": `${name} | ${note} | Từ ${moment(fromDate).format('DD/MM/YYYY')} - Đến ${moment(toDate).format('DD/MM/YYYY')}`
-                            }
-                        }
-                    )
-                    // console.log(info)
-                }
+                // // Cập nhật vào bảng chấm công: đã đưa sang bên update PCM
+                // if(Number(infoTask.approvalType) === 6 && fromDate && toDate && checkObjectIDs(staffID)){
+                //     let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
+                //         {
+                //             assignee: staffID,
+                //             date: {
+                //                 $gte: new Date(fromDate),
+                //                 $lte: new Date(toDate),
+                //             },
+                //         },
+                //         {
+                //             $set: {
+                //                 "note": `${name} | ${note} | Từ ${moment(fromDate).format('DD/MM/YYYY')} - Đến ${moment(toDate).format('DD/MM/YYYY')}`
+                //             }
+                //         }
+                //     )
+                //     // console.log(info)
+                // }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
