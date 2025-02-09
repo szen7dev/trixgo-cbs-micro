@@ -22,6 +22,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant')
 const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant')
 const { CF_ACTIONS_ZALO }               = require("../../zalo_oa/helper/zalo.actions")
+const { ITEM_ACCOUNTS }                 = require('../../item/helper/item.keys-constant')
 
 /**
  * COLLECTIONS
@@ -32,6 +33,7 @@ const COMPANY_COLL                              = require('../../auth/database/a
 const ANALYSIS__HISTORY_DATA_COLL               = require('../database/analysis.history_data-coll')
 const ANALYSIS__HISTORY_TRAFFIC_COLL            = require('../database/analysis.history_traffic-coll')
 const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
+const ITEM__ACCOUNT_COLL            		    = require('../../item/database/item.account-coll')
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll')
 const ITEM__FUNDA_COLL            		        = require('../../item/database/item.funda-coll')
@@ -58,6 +60,7 @@ const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/mod
 const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
 const STORE_ORDER_PRODUCT_MODEL                 = require('../../store/model/store.order_product-model.js').MODEL;
 const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model.js').MODEL;
+const ITEM__ACCOUNT_MODEL                       = require('../../item/model/item.account-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -140,6 +143,118 @@ class Model extends BaseModel {
                                         members: item.members, 
                                     },
                                     { new: true })
+                            }
+                        }
+                     }
+                }
+                
+                // Tạo cây tài khoản Kế toán
+                else if(option == 3){
+                    for(const item of ITEM_ACCOUNTS){
+                        // console.log(item)
+
+                        // CẤP 1: Kiểm tra tên tồn tại trong công ty hay chưa
+                        let infoAccount = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: `${item.name}`.trim() })
+                        if(infoAccount){
+                            // console.log('1111111111111111111111')
+
+                            // CẤP 2: Tạo các mẩu tin con
+                            if(item.sub){
+                                for(const sub of item.sub){
+                                    let infoSub = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: `${sub.name}`.trim() })
+                                    if(infoSub){
+                                        // console.log('2222222222222222222222222')
+                                        // CẤP 3: 
+                                        if(sub.sub2){
+                                            for(const sub2 of sub?.sub2){
+                                                let infoSub2 = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: `${sub2.name}`.trim() })
+                                                if(!infoSub2){
+                                                    // console.log('33333333333333333')
+                                                    let infoSub2New = await ITEM__ACCOUNT_MODEL.insert({
+                                                        companyID,
+                                                        parentID: infoSub._id, 
+                                                        name: `${sub2.name}`.trim(), 
+                                                        description: `${sub2.description}`.trim(), 
+                                                        userID
+                                                    })
+                                                    // console.log(infoSub2New)
+                                                }
+                                            }
+                                        }
+                                    }else{
+                                        // console.log('4444444444444444444')
+                                        let infoSubNew = await ITEM__ACCOUNT_MODEL.insert({
+                                            companyID,
+                                            parentID: infoAccount._id, 
+                                            name: `${sub.name}`.trim(), 
+                                            description: `${sub.description}`.trim(), 
+                                            userID
+                                        })
+                                        // console.log(infoSubNew)
+    
+                                        if(infoSubNew){
+                                            // CẤP 3: 
+                                            if(sub.sub2){
+                                                for(const sub2 of sub?.sub2){
+                                                    let infoSub2 = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: `${sub2.name}`.trim() })
+                                                    if(!infoSub2){
+                                                        // console.log('55555555555555555555')
+                                                        let infoSub2New = await ITEM__ACCOUNT_MODEL.insert({
+                                                            companyID,
+                                                            parentID: infoSubNew.data._id, 
+                                                            name: `${sub2.name}`.trim(), 
+                                                            description: `${sub2.description}`.trim(), 
+                                                            userID
+                                                        })
+                                                        // console.log(infoSub2New)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }else{
+                            // Tạo mẩu tin
+                            let infoAccountNew = await ITEM__ACCOUNT_MODEL.insert({
+                                companyID, 
+                                name: `${item.name}`.trim(), 
+                                description: `${item.description}`.trim(), 
+                                userID
+                            })
+                            // console.log(infoAccountNew)
+
+                            if(infoAccountNew){
+                                // console.log('66666666666666666')
+                                if(item.sub){
+                                    for(const sub of item.sub){
+                                        let infoSubNew = await ITEM__ACCOUNT_MODEL.insert({
+                                            companyID,
+                                            parentID: infoAccountNew.data._id, 
+                                            name: `${sub.name}`.trim(), 
+                                            description: `${sub.description}`.trim(), 
+                                            userID
+                                        })
+                                        // console.log(infoSubNew)
+        
+                                        if(infoSubNew){
+                                            // console.log('77777777777777777777')
+                                            // CẤP 3: 
+                                            if(sub.sub2){
+                                                for(const sub2 of sub?.sub2){
+                                                    let infoSub2New = await ITEM__ACCOUNT_MODEL.insert({
+                                                        companyID,
+                                                        parentID: infoSubNew.data._id, 
+                                                        name: `${sub2.name}`.trim(), 
+                                                        description: `${sub2.description}`.trim(), 
+                                                        userID
+                                                    })
+                                                    // console.log(infoSub2New)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                      }
