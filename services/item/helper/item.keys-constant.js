@@ -104,8 +104,8 @@ exports.ITEM_ACCOUNTS = [
             {
                 name: 1111, description: 'Tiền Việt Nam',
                 sub2: [
-                    { name: 1111.1, description: 'Quỹ tiền mặt 1' },
-                    { name: 1111.2, description: 'Quỹ tiền mặt 2' }
+                    { name: 11111, description: 'Quỹ tiền mặt 1' },
+                    { name: 11112, description: 'Quỹ tiền mặt 2' }
                 ]
             },
             { name: 1112, description: 'Ngoại tệ' },
@@ -118,8 +118,8 @@ exports.ITEM_ACCOUNTS = [
             {
                 name: 1121, description: 'Tiền Việt Nam',
                 sub2: [
-                    { name: 1121.1, description: 'Ngân hàng 1' },
-                    { name: 1121.2, description: 'Ngân hàng 2' }
+                    { name: 11211, description: 'Ngân hàng 1' },
+                    { name: 11212, description: 'Ngân hàng 2' }
                 ]
             },
             { name: 1122, description: 'Ngoại tệ' },
@@ -155,6 +155,13 @@ exports.ITEM_ACCOUNTS = [
     },
     { 
         name: 133, description: 'Thuế GTGT được khấu trừ',
+        sub: [
+            { name: 1331, description: 'Thuế GTGT được khấu trừ của hàng hóa, dịch vụ' },
+            { name: 1332, description: 'Thuế GTGT được khấu trừ của TSCĐ' },
+        ]
+    },
+    { 
+        name: 136, description: 'Phải thu nội bộ',
         sub: [
             { name: 1361, description: 'Vốn kinhh doanh ở các đơn vị trực thộc' },
             { name: 1362, description: 'Phảu thu nội bộ về chênh lệch tỉ giá' },
@@ -265,7 +272,7 @@ exports.ITEM_ACCOUNTS = [
         ]
     },
     { 
-        name: 229, description: 'Dự phòng ổn thất tài sản',
+        name: 229, description: 'Dự phòng tổn thất tài sản',
          sub: [
             { name: 2291, description: 'Dự phòng giảm giá chứng khoán kinh doanh' },
             { name: 2292, description: 'Dự phòng tổn thất đầu tư vào đơn vị khác' },
@@ -299,8 +306,8 @@ exports.ITEM_ACCOUNTS = [
             {
                 name: 3331, description: 'Thuế giá trị gia tăng phải nộp',
                 sub2: [
-                    { name: 3331.1, description: 'Thuế GTGT đầu ra' },
-                    { name: 3331.2, description: 'Thuế GTGT hàng nhập khẩu' }
+                    { name: 33311, description: 'Thuế GTGT đầu ra' },
+                    { name: 33312, description: 'Thuế GTGT hàng nhập khẩu' }
                 ]
             },
             { name: 3332, description: 'Thuế tiêu thụ đặc biệt' },
@@ -312,8 +319,8 @@ exports.ITEM_ACCOUNTS = [
             {
                 name: 3338, description: 'Thuế bảo vệ mội trường và các loại thuế khác',
                 sub2: [
-                    { name: 3338.1, description: 'Thuế bảo vệ môi trường' },
-                    { name: 3338.2, description: 'Các loại thuế khác' }
+                    { name: 33381, description: 'Thuế bảo vệ môi trường' },
+                    { name: 33382, description: 'Các loại thuế khác' }
                 ]
             },
             { name: 3339, description: 'Phí, lệ phí và các khoản phải nộp khác' }
@@ -322,12 +329,24 @@ exports.ITEM_ACCOUNTS = [
     { 
         name: 334, description: 'Phải trả người lao động',
          sub: [
-            { name: 2341, description: 'Phải trả công nhân viên' },
-            { name: 2348, description: 'Phải trả người lao động khác' }
+            { name: 3341, description: 'Phải trả công nhân viên' },
+            { name: 3348, description: 'Phải trả người lao động khác' }
         ]
     },
     { 
         name: 335, description: 'Chi phí phải trả',
+    },
+    { 
+        name: 336, description: 'Phải trả nội bộ',
+         sub: [
+            { name: 3361, description: 'Phải trả nội bộ về vốn kinh doanh' },
+            { name: 3362, description: 'Phải trả nội bộ về chênh lệch tỷ giá' },
+            { name: 3363, description: 'Phải trả nội bộ về chi phí đi vay đủ điều kiện được vốn hoá' },
+            { name: 3368, description: 'Phải trả nội bộ khác' },
+        ]
+    },
+    { 
+        name: 337, description: 'Thanh toán theo tiến độ kế hoạch hợp đồng xây dựng',
     },
     { 
         name: 338, description: 'Phải trả, phải nộp khác',
@@ -355,9 +374,9 @@ exports.ITEM_ACCOUNTS = [
             {
                 name: 3431, description: 'Trái phiếu thường',
                 sub2: [
-                    { name: 3431.1, description: 'Mệnh giá' },
-                    { name: 3431.2, description: 'Chiết khấu trái phiếu' },
-                    { name: 3431.3, description: 'Phụ trội trái phiếu' }
+                    { name: 34311, description: 'Mệnh giá' },
+                    { name: 34312, description: 'Chiết khấu trái phiếu' },
+                    { name: 34313, description: 'Phụ trội trái phiếu' }
                 ]
             },
             { name: 3432, description: 'Trái phiếu chuyển đổi' }
@@ -403,8 +422,8 @@ exports.ITEM_ACCOUNTS = [
             {
                 name: 4111, description: 'Vốn góp của chủ sở hữu',
                 sub2: [
-                    { name: 4111.1, description: 'Cổ phiếu phổ thông có quyền biểu quyết' },
-                    { name: 4111.2, description: 'Cổ phiếu ưu đãi' }
+                    { name: 41111, description: 'Cổ phiếu phổ thông có quyền biểu quyết' },
+                    { name: 41112, description: 'Cổ phiếu ưu đãi' }
                 ]
             },
             { name: 4112, description: 'Thặng dư vốn cổ phần' },
@@ -448,7 +467,7 @@ exports.ITEM_ACCOUNTS = [
         name: 461, description: 'Nguồn kinh phí sự nghiệp',
          sub: [
             { name: 4611, description: 'Nguồn kinh phí sự nghiệp năm trước' },
-            { name: 4613, description: 'Nguồn kinh phí sự nghiệp năm nay' }
+            { name: 4612, description: 'Nguồn kinh phí sự nghiệp năm nay' }
         ]
     },
     { 
@@ -541,7 +560,7 @@ exports.ITEM_ACCOUNTS = [
             { name: 6424, description: 'Chi phí khấu hao TSCĐ' },
             { name: 6425, description: 'Thuế, phí và lệ phí' },
             { name: 6427, description: 'Chi phí dịch vụ mua ngoài' },
-            { name: 6418, description: 'Chi phí bằng tiền khác' }
+            { name: 6428, description: 'Chi phí bằng tiền khác' }
         ]
     },
     { 
