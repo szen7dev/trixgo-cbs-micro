@@ -22,6 +22,7 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant')
 const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant')
 const { CF_ACTIONS_ZALO }               = require("../../zalo_oa/helper/zalo.actions")
+const { ITEM_ACCOUNTS }                 = require('../../item/helper/item.keys-constant')
 
 /**
  * COLLECTIONS
@@ -32,6 +33,7 @@ const COMPANY_COLL                              = require('../../auth/database/a
 const ANALYSIS__HISTORY_DATA_COLL               = require('../database/analysis.history_data-coll')
 const ANALYSIS__HISTORY_TRAFFIC_COLL            = require('../database/analysis.history_traffic-coll')
 const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
+const ITEM__ACCOUNT_COLL            		    = require('../../item/database/item.account-coll')
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            		    = require('../../item/database/item.doctype-coll')
 const ITEM__FUNDA_COLL            		        = require('../../item/database/item.funda-coll')
@@ -58,6 +60,7 @@ const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/mod
 const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
 const STORE_ORDER_PRODUCT_MODEL                 = require('../../store/model/store.order_product-model.js').MODEL;
 const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model.js').MODEL;
+const ITEM__ACCOUNT_MODEL                       = require('../../item/model/item.account-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -142,6 +145,44 @@ class Model extends BaseModel {
                                     { new: true })
                             }
                         }
+                     }
+                }
+                
+                // Tạo cây tài khoản Kế toán
+                else if(option == 3){
+                    for(const item of ITEM_ACCOUNTS){
+                        // console.log(item)
+
+                        // CẤP 1: Kiểm tra tên tồn tại trong công ty hay chưa
+                        let infoAccount = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: `${item.name}`.trim() })
+                        if(infoAccount){
+
+                            // CẤP 2: Tạo các mẩu tin con
+                            for(const subitem of item.sub){
+                                let infoSub = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: `${subitem.name}`.trim() })
+
+                                if(infoSub){
+
+                                    // CẤP 3: 
+                                }else{
+
+                                }
+                            }
+                        }else{
+                            // Tạo mẩu tin
+                            let info = await ITEM__ACCOUNT_MODEL.insert({
+                                companyID, 
+                                name: `${item.name}`.trim(), 
+                                description: `${item.description}`.trim(), 
+                                userID
+                            })
+                        }
+
+                        // console.log(infoAccount)
+
+                        // for(const subitem of orgList2){
+                            
+                        // }
                      }
                 }
 

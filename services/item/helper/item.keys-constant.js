@@ -96,3 +96,28 @@ exports.DOCUMENT_STATUS = [
     { value: 1, text: 'Còn hiệu lực' },
     { value: 2, text: 'Hết hiệu lực' },
 ]
+
+exports.ITEM_ACCOUNTS = [
+    { 
+        name: 111, description: 'Tiền mặt',
+        sub: [
+            {
+                name: 1111, description: 'Tiền Việt Nam',
+                sub2: [
+                    { name: 1111.1, description: 'Quỹ tiền mặt' }
+                ]
+            }
+        ]
+    },
+    { 
+        name: 112, description: 'Tiền gửi Ngân hàng',
+        sub: [
+            {
+                name: 1121, description: 'Tiền Việt Nam',
+                sub2: [
+                    { name: 1121.1, description: 'Ngân hàng VPBank' }
+                ]
+            }
+        ]
+    },
+]
