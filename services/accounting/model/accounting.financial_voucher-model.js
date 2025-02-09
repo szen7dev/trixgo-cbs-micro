@@ -80,22 +80,6 @@ class Model extends BaseModel {
         selectedJournals,
         ctx
      }) {
-        // console.log({ 
-        //     authorID, 
-        //     fundaID, 
-        //     customerID,
-        //     contractID, 
-        //     storageID, 
-        //     subtypeID,
-        //     warehouseID,
-        //     linkFundaID,
-        //     linkVoucherID,
-        //     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
-        //     receiver, note,
-        //     forward, forwardIs, returning, advancePayment, cancel, 
-        //     fcuExRate, 
-        //     selectedJournals
-        //  })
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -837,7 +821,7 @@ class Model extends BaseModel {
                     // console.log(listAccount)
 
                     // Phải trả nội bộ
-                    let info336 = await ITEM__ACCOUNT_COLL.findOne({name: '336'})                    
+                    let info336 = await ITEM__ACCOUNT_COLL.findOne({company: companyID, name: '336'})                    
                     // console.log(info336)
 
                     let listJournals = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({
