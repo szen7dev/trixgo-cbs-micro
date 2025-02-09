@@ -817,11 +817,10 @@ class Model extends BaseModel {
                     listAccount = listAccount.data.map(item=>item._id.toString())
                     // console.log(listAccount)
 
-                    // Phải trả nội bộ
-                    let info336 = await ITEM__ACCOUNT_COLL.findOne({company: companyID, name: '336'})                    
-                    // console.log(info336)
+                    // Phải trả nội bộ khác
+                    let info3368 = await ITEM__ACCOUNT_COLL.findOne({company: companyID, name: '3368'})                    
 
-                    if(info336){
+                    if(info3368){
                         let listJournals = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.find({
                             voucher: docID
                         })
@@ -842,7 +841,7 @@ class Model extends BaseModel {
                                     unitprice: item.unitprice,
                                     note: item.note,
                                     debit: item.credit,
-                                    credit: info336._id,
+                                    credit: info3368._id,
                                     customerDebit: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : item.customerDebit,
                                     customerDebit: infoVoucher.linkFunda?.contact ? infoVoucher.linkFunda?.contact : item.customerDebit,
                                     goods: item.goods,
