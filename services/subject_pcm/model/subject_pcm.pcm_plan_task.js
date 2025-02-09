@@ -580,11 +580,6 @@ class Model extends BaseModel {
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
         openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, descriptioncv, ctx
     }){
-        // console.log({ taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
-        //     contractID, draft, subType, approvalType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
-        //     links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        //     openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, descriptioncv
-        // })
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate   = {
@@ -1098,7 +1093,6 @@ class Model extends BaseModel {
                             dataUpdate.status = 3
                         }
                     }else{
-
                         // Việc thông khác/khác còn lại thì người tạo việc ký sẽ Hoàn thành
                         if(userID.toString() === infoTask.author?.toString()){
                             dataUpdate.approver = userID
