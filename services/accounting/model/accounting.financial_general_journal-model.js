@@ -821,7 +821,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
-                let conditionGroupDebit = {}, conditionGroupCredit = {}
+                let conditionGroup = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
                 let conditionMatchO = {}, conditionMatchIn = {}
                 let listDataO, listDataIn
 
@@ -1160,8 +1160,6 @@ class Model extends BaseModel {
      * Date  : 10/4/2022
      */
     getListByProperty({ option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts }) {
-        // console.log('==================getListByProperty>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-        // console.log({option, optionAccount, optionTerm, optionCal, arrAccNames, arrAccIDs, arrCompanyIDs, name, companyID, fundaID, projectID, contractID, contactID, warehouseID, goodsID, fromDate, toDate, userID, contacts})
         return new Promise(async resolve => {
             try {
                 // Record Traffic
@@ -1177,7 +1175,7 @@ class Model extends BaseModel {
                  * 3. Đầu kỳ = Kết chuyển cuối kỳ năm trước (31/12/2019) + Đầu năm nay đến ngày đầu kỳ (1/1/2020-30/5/2020)
                  */
                 let conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
-                let conditionGroupDebit = {}, conditionGroupCredit = {}
+                let conditionGroup = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
                 let conditionMatchO = {}, conditionMatchOF = {}, conditionMatchFT = {}, conditionMatchIn = {}
                 let listDataO, listDataOF, listDataFT, listDataIn
 
