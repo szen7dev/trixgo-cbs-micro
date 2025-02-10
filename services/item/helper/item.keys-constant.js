@@ -366,12 +366,12 @@ exports.ITEM_ACCOUNTS = [
          sub: [
             { name: 3381, description: 'Tài sản thừa chờ giải quyết' },
             { name: 3382, description: 'Kinh phí công đoàn' },
-            { name: 3883, description: 'Bảo hiểm xã hội' },
-            { name: 3884, description: 'Bảo hiểm tế' },
-            { name: 3885, description: 'Phải trả về cổ phần hóa' },
-            { name: 3886, description: 'Bảo hiểm thất nghiệp' },
-            { name: 3887, description: 'Doanh thu chưa thực hiện' },
-            { name: 3888, description: 'Phải trả, phải nộp khác' }
+            { name: 3383, description: 'Bảo hiểm xã hội' },
+            { name: 3384, description: 'Bảo hiểm tế' },
+            { name: 3385, description: 'Phải trả về cổ phần hóa' },
+            { name: 3386, description: 'Bảo hiểm thất nghiệp' },
+            { name: 3387, description: 'Doanh thu chưa thực hiện' },
+            { name: 3388, description: 'Phải trả, phải nộp khác' }
         ]
     },
     { 
