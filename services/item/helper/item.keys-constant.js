@@ -572,6 +572,7 @@ exports.ITEM_ACCOUNTS = [
             { name: 6423, description: 'Chi phí đồ dùng văn phòng' },
             { name: 6424, description: 'Chi phí khấu hao TSCĐ' },
             { name: 6425, description: 'Thuế, phí và lệ phí' },
+            { name: 6426, description: 'Chi phí dự phòng' },
             { name: 6427, description: 'Chi phí dịch vụ mua ngoài' },
             { name: 6428, description: 'Chi phí bằng tiền khác' }
         ]
