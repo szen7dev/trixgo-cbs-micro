@@ -821,90 +821,106 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 let conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
-                let conditionGroup = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                let conditionGroupDebit = {}, conditionGroupCredit = {}
                 let conditionMatchO = {}, conditionMatchIn = {}
                 let listDataO, listDataIn
 
                 let arrObjectID = [], listAccounts = []
                 
-                // Truyền theo ID tài khoản
-                if(!optionAccount){
-                    // console.log('============zzzzzzzzzzzz1111111111111111111111')
-                    listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
-                    // .select('name description nestedChilds')
-                    if(listAccounts){
-                        for(const item of listAccounts){
-                            arrObjectID.push(item._id)
-                            arrObjectID = [...arrObjectID,...item.nestedChilds]
-                        }
-                    }
-                }else{
-                    // Theo tên tài khoản
-                    if(optionAccount == 1){
-                        // console.log('============zzzzzzzzzzzz2222222222222222222')
-                        listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
-                        // .select('name description nestedChilds')
-                        if(listAccounts){
-                            for(const item of listAccounts){
-                                arrObjectID.push(item._id)
-                                arrObjectID = [...arrObjectID,...item.nestedChilds]
-                            }
-                        }
-                    }
+                // // Truyền theo ID tài khoản
+                // if(!optionAccount){
+                //     // console.log('============zzzzzzzzzzzz1111111111111111111111')
+                //     listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
+                //     // .select('name description nestedChilds')
+                //     if(listAccounts){
+                //         for(const item of listAccounts){
+                //             arrObjectID.push(item._id)
+                //             arrObjectID = [...arrObjectID,...item.nestedChilds]
+                //         }
+                //     }
+                // }else{
+                //     // Theo tên tài khoản
+                //     if(optionAccount == 1){
+                //         // console.log('============zzzzzzzzzzzz2222222222222222222')
+                //         listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
+                //         // .select('name description nestedChilds')
+                //         if(listAccounts){
+                //             for(const item of listAccounts){
+                //                 arrObjectID.push(item._id)
+                //                 arrObjectID = [...arrObjectID,...item.nestedChilds]
+                //             }
+                //         }
+                //     }
 
-                    // Theo toàn bộ tài khoản của công ty
-                    if(optionAccount == 2){
-                        // console.log('============zzzzzzzzzzzz4444444444444444444')
-                        listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID })
-                            // .select('name description nestedChilds')
-                        if(listAccounts){
-                            for(const item of listAccounts){
-                                arrObjectID.push(item._id)
-                                arrObjectID = [...arrObjectID,...item.nestedChilds]
-                            }
-                        }
-                    }
-                }
+                //     // Theo toàn bộ tài khoản của công ty
+                //     if(optionAccount == 2){
+                //         // console.log('============zzzzzzzzzzzz4444444444444444444')
+                //         listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID })
+                //             // .select('name description nestedChilds')
+                //         if(listAccounts){
+                //             for(const item of listAccounts){
+                //                 arrObjectID.push(item._id)
+                //                 arrObjectID = [...arrObjectID,...item.nestedChilds]
+                //             }
+                //         }
+                //     }
+                // }
                 // console.log(listAccounts)
                 // console.log(arrObjectID)
                 
+                // if(contractID && checkObjectIDs(contractID)){
+                //     // console.log('============1')
+                //     conditionDebitObj.contract = ObjectID(contractID)
+                //     conditionCreditObj.contract = ObjectID(contractID)
+                // }else{
+                //     if (projectID && checkObjectIDs(projectID)) {
+                //         // console.log('============2')
+                //         conditionDebitObj.project = ObjectID(projectID)
+                //         conditionCreditObj.project = ObjectID(projectID)
+                //     }else{
+                //         if(fundaID && checkObjectIDs(fundaID)){
+                //             // console.log('============3')
+                //             conditionDebitObj.funda = ObjectID(fundaID)
+                //             conditionCreditObj.funda = ObjectID(fundaID)
+                //         }else{
+                //             // console.log('============5')
+                //             conditionDebitObj.company = ObjectID(companyID)
+                //             conditionCreditObj.company = ObjectID(companyID)
+                //         }
+                //     }
+                // }
 
-                if(contractID && checkObjectIDs(contractID)){
-                    // console.log('============1')
-                    conditionDebitObj.contract = ObjectID(contractID)
-                    conditionCreditObj.contract = ObjectID(contractID)
-                }else{
-                    if (projectID && checkObjectIDs(projectID)) {
-                        // console.log('============2')
-                        conditionDebitObj.project = ObjectID(projectID)
-                        conditionCreditObj.project = ObjectID(projectID)
-                    }else{
-                        if(fundaID && checkObjectIDs(fundaID)){
-                            // console.log('============3')
-                            conditionDebitObj.funda = ObjectID(fundaID)
-                            conditionCreditObj.funda = ObjectID(fundaID)
-                        }else{
-                            // console.log('============5')
-                            conditionDebitObj.company = ObjectID(companyID)
-                            conditionCreditObj.company = ObjectID(companyID)
-                        }
-                    }
-                }
+                // if(warehouseID && checkObjectIDs(warehouseID)){
+                //     // console.log('============6')
+                //     conditionDebitObj.warehouse = ObjectID(warehouseID)
+                //     conditionCreditObj.warehouse = ObjectID(warehouseID)
+                // }
 
-                if(warehouseID && checkObjectIDs(warehouseID)){
-                    // console.log('============6')
-                    conditionDebitObj.warehouse = ObjectID(warehouseID)
-                    conditionCreditObj.warehouse = ObjectID(warehouseID)
-                }
-
-                if(goodsID && checkObjectIDs(goodsID)){
-                    // console.log('============7')
-                    conditionDebitObj.goods = ObjectID(goodsID)
-                    conditionCreditObj.goods = ObjectID(goodsID)
-                }
+                // if(goodsID && checkObjectIDs(goodsID)){
+                //     // console.log('============7')
+                //     conditionDebitObj.goods = ObjectID(goodsID)
+                //     conditionCreditObj.goods = ObjectID(goodsID)
+                // }
 
                 // console.log(conditionDebitObj)
                 // console.log(conditionCreditObj)
+
+                listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
+                if(listAccounts){
+                    for(const item of listAccounts){
+                        arrObjectID.push(item._id)
+                        arrObjectID = [...arrObjectID,...item.nestedChilds]
+                    }
+                }
+
+                conditionDebitObj.company = ObjectID(companyID)
+                conditionCreditObj.company = ObjectID(companyID)
+
+                conditionDebitObj.warehouse = ObjectID(warehouseID)
+                conditionCreditObj.warehouse = ObjectID(warehouseID)
+
+                conditionDebitObj.goods = ObjectID(goodsID)
+                conditionCreditObj.goods = ObjectID(goodsID)
 
                 /**
                  * Lấy năm của ngày đầu kỳ
@@ -1048,106 +1064,102 @@ class Model extends BaseModel {
                     }
                 ])
 
-                if(!option){
-                    let arrGoods = [], arrCombine = []
+                let arrGoods = [], arrCombine = []
 
-                    for(const item of listDataO[0]._debit){
-                        arrGoods.push(item._id.goods)
-                    }
-                    for(const item of listDataO[0]._credit){
-                        arrGoods.push(item._id.goods)
-                    }
-                    for(const item of listDataIn[0]._debit){
-                        arrGoods.push(item._id.goods)
-                    }
-                    for(const item of listDataIn[0]._credit){
-                        arrGoods.push(item._id.goods)
-                    }
-                    // console.log(arrGoods)
-
-                    let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arrGoods}}).select('name unit note')
-                    // console.log(listGoods)
-
-                    let arrDebitO = [], arrCreditO = [], arrDebitIn = [], arrCreditIn = []
-
-                    listDataO[0]._debit.forEach(element=>{
-                        let key = element._id.goods;
-                        if (!Array.isArray(arrDebitO[key])) {
-                            arrDebitO[key] = [];
-                        }
-                        arrDebitO[key].push(element)
-                    })
-
-                    listDataO[0]._credit.forEach(element=>{
-                        let key = element._id.goods;
-                        if (!Array.isArray(arrCreditO[key])) {
-                            arrCreditO[key] = [];
-                        }
-                        arrCreditO[key].push(element)
-                    })
-
-                    listDataIn[0]._debit.forEach(element=>{
-                        let key = element._id.goods;
-                        if (!Array.isArray(arrDebitIn[key])) {
-                            arrDebitIn[key] = [];
-                        }
-                        arrDebitIn[key].push(element)
-                    })
-
-                    listDataIn[0]._credit.forEach(element=>{
-                        let key = element._id.goods;
-                        if (!Array.isArray(arrCreditIn[key])) {
-                            arrCreditIn[key] = [];
-                        }
-                        arrCreditIn[key].push(element)
-                    })
-
-                    for(const item of listGoods){
-                        let kcNoDauKy = 0, klKcNoDauKy = 0
-                        let kcCoDauKy = 0, klKcCoDauKy = 0
-                        let noTrongKy = 0, klNoTrongKy = 0
-                        let coTrongKy = 0, klCoTrongKy = 0
-
-                        if(arrDebitO[item._id]){
-                            kcNoDauKy = arrDebitO[item._id][0].amount
-                            klKcNoDauKy = arrDebitO[item._id][0].quantity
-                        }
-                        if(arrCreditO[item._id]){
-                            kcCoDauKy = arrCreditO[item._id][0].amount
-                            klKcCoDauKy = arrCreditO[item._id][0].quantity
-                        }
-                        if(arrDebitIn[item._id]){
-                            noTrongKy = arrDebitIn[item._id][0].amount
-                            klNoTrongKy = arrDebitIn[item._id][0].quantity
-                        }
-                        if(arrCreditIn[item._id]){
-                            coTrongKy = arrCreditIn[item._id][0].amount
-                            klCoTrongKy = arrCreditIn[item._id][0].quantity
-                        }
-
-                        arrCombine.push({
-                            _id: item._id,
-                            name: item.name,
-                            unit: item.unit,
-                            kcNoDauKy: Number(kcNoDauKy),
-                            kcCoDauKy: Number(kcCoDauKy),
-                            noTrongKy: Number(noTrongKy),
-                            coTrongKy: Number(coTrongKy),
-
-                            klKcNoDauKy: Number(klKcNoDauKy),
-                            klKcCoDauKy: Number(klKcCoDauKy),
-                            klNoTrongKy: Number(klNoTrongKy),
-                            klCoTrongKy: Number(klCoTrongKy),
-                        })
-                    }
-                    // console.log(arrCombine)
-
-                    return resolve({ error: false, data: { 
-                        arrCombine
-                    }})
-                }else{
-
+                for(const item of listDataO[0]._debit){
+                    arrGoods.push(item._id.goods)
                 }
+                for(const item of listDataO[0]._credit){
+                    arrGoods.push(item._id.goods)
+                }
+                for(const item of listDataIn[0]._debit){
+                    arrGoods.push(item._id.goods)
+                }
+                for(const item of listDataIn[0]._credit){
+                    arrGoods.push(item._id.goods)
+                }
+                // console.log(arrGoods)
+
+                let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arrGoods}}).select('name unit note')
+                // console.log(listGoods)
+
+                let arrDebitO = [], arrCreditO = [], arrDebitIn = [], arrCreditIn = []
+
+                listDataO[0]._debit.forEach(element=>{
+                    let key = element._id.goods;
+                    if (!Array.isArray(arrDebitO[key])) {
+                        arrDebitO[key] = [];
+                    }
+                    arrDebitO[key].push(element)
+                })
+
+                listDataO[0]._credit.forEach(element=>{
+                    let key = element._id.goods;
+                    if (!Array.isArray(arrCreditO[key])) {
+                        arrCreditO[key] = [];
+                    }
+                    arrCreditO[key].push(element)
+                })
+
+                listDataIn[0]._debit.forEach(element=>{
+                    let key = element._id.goods;
+                    if (!Array.isArray(arrDebitIn[key])) {
+                        arrDebitIn[key] = [];
+                    }
+                    arrDebitIn[key].push(element)
+                })
+
+                listDataIn[0]._credit.forEach(element=>{
+                    let key = element._id.goods;
+                    if (!Array.isArray(arrCreditIn[key])) {
+                        arrCreditIn[key] = [];
+                    }
+                    arrCreditIn[key].push(element)
+                })
+
+                for(const item of listGoods){
+                    let kcNoDauKy = 0, klKcNoDauKy = 0
+                    let kcCoDauKy = 0, klKcCoDauKy = 0
+                    let noTrongKy = 0, klNoTrongKy = 0
+                    let coTrongKy = 0, klCoTrongKy = 0
+
+                    if(arrDebitO[item._id]){
+                        kcNoDauKy = arrDebitO[item._id][0].amount
+                        klKcNoDauKy = arrDebitO[item._id][0].quantity
+                    }
+                    if(arrCreditO[item._id]){
+                        kcCoDauKy = arrCreditO[item._id][0].amount
+                        klKcCoDauKy = arrCreditO[item._id][0].quantity
+                    }
+                    if(arrDebitIn[item._id]){
+                        noTrongKy = arrDebitIn[item._id][0].amount
+                        klNoTrongKy = arrDebitIn[item._id][0].quantity
+                    }
+                    if(arrCreditIn[item._id]){
+                        coTrongKy = arrCreditIn[item._id][0].amount
+                        klCoTrongKy = arrCreditIn[item._id][0].quantity
+                    }
+
+                    arrCombine.push({
+                        _id: item._id,
+                        name: item.name,
+                        unit: item.unit,
+                        kcNoDauKy: Number(kcNoDauKy),
+                        kcCoDauKy: Number(kcCoDauKy),
+                        noTrongKy: Number(noTrongKy),
+                        coTrongKy: Number(coTrongKy),
+
+                        klKcNoDauKy: Number(klKcNoDauKy),
+                        klKcCoDauKy: Number(klKcCoDauKy),
+                        klNoTrongKy: Number(klNoTrongKy),
+                        klCoTrongKy: Number(klCoTrongKy),
+                    })
+                }
+                // console.log(arrCombine)
+
+                return resolve({ error: false, data: { 
+                    arrCombine
+                }})
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
