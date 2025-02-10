@@ -138,7 +138,7 @@ exports.ITEM_ACCOUNTS = [
         sub: [
             { name: 1211, description: 'Cổ phiếu' },
             { name: 1212, description: 'Trái phiếu' },
-            { name: 1218, description: 'Chứng khoán và công cụ tài chính khách' }
+            { name: 1218, description: 'Chứng khoán và công cụ tài chính khác' }
         ]
     },
     { 
@@ -164,9 +164,17 @@ exports.ITEM_ACCOUNTS = [
         name: 136, description: 'Phải thu nội bộ',
         sub: [
             { name: 1361, description: 'Vốn kinhh doanh ở các đơn vị trực thộc' },
-            { name: 1362, description: 'Phảu thu nội bộ về chênh lệch tỉ giá' },
+            { name: 1362, description: 'Phải thu nội bộ về chênh lệch tỷ giá' },
             { name: 1363, description: 'Phải thu nội bộ vệ chi phí đi vay đủ điều kiện được vốn hóa' },
             { name: 1368, description: 'Phải thu nội bộ khác' }
+        ]
+    },
+    { 
+        name: 138, description: 'Phải thu khác',
+        sub: [
+            { name: 1381, description: 'Tài sản thiếu chờ xử lý' },
+            { name: 1385, description: 'Phải thu về cổ phần hoá' },
+            { name: 1388, description: 'Phải thu khác' }
         ]
     },
     { 
@@ -199,6 +207,11 @@ exports.ITEM_ACCOUNTS = [
     },
     { 
         name: 156, description: 'Hàng hóa',
+        sub: [
+            { name: 1561, description: 'Giá mua hàng hóa' },
+            { name: 1562, description: 'Chi phí thu mua hàng hóa' },
+            { name: 1567, description: 'Hàng hóa bất động sản' },
+        ]
     },
     { 
         name: 157, description: 'Hàng gửi đi bán',
@@ -221,8 +234,8 @@ exports.ITEM_ACCOUNTS = [
         sub: [
             { name: 2111, description: 'Nhà cửa, vật kiến trúc' },
             { name: 2112, description: 'Máy móc thết bị' },
-            { name: 2113, description: 'Phương iện vận tải, truyền dẫn' },
-            { name: 2114, description: 'Thiết vị, dụng cụ quản lý' },
+            { name: 2113, description: 'Phương tiện vận tải, truyền dẫn' },
+            { name: 2114, description: 'Thiết bị, dụng cụ quản lý' },
             { name: 2115, description: 'Cây lâu năm, súc vật làm việc và cho sản phẩm' },
             { name: 2118, description: 'TSCĐ khác' }
         ]
@@ -252,7 +265,7 @@ exports.ITEM_ACCOUNTS = [
             { name: 2141, description: 'Hao mòn TSCĐ hữu hình' },
             { name: 2142, description: 'Hao mòn TSCĐ thuê tài chính' },
             { name: 2143, description: 'Hao mòn TSCĐ vô hình' },
-            { name: 2147, description: 'Hao món bất động sản đầu tư' }
+            { name: 2147, description: 'Hao mòn bất động sản đầu tư' }
         ]
     },
     { 
@@ -410,7 +423,7 @@ exports.ITEM_ACCOUNTS = [
         name: 356, description: 'Quỹ phát triển khoa học và công nghệ',
          sub: [
             { name: 3561, description: 'Quỹ phát triển khoa học và công nghệ' },
-            { name: 3562, description: 'Quỹ phsat triển khoa học và công nghệ đã hình thành TSCĐ' }
+            { name: 3562, description: 'Quỹ phát triển khoa học và công nghệ đã hình thành TSCĐ' }
         ]
     },
     { 
