@@ -207,11 +207,11 @@ exports.ITEM_ACCOUNTS = [
     },
     { 
         name: 156, description: 'Hàng hóa',
-        sub: [
-            { name: 1561, description: 'Giá mua hàng hóa' },
-            { name: 1562, description: 'Chi phí thu mua hàng hóa' },
-            { name: 1567, description: 'Hàng hóa bất động sản' },
-        ]
+        // sub: [
+        //     { name: 1561, description: 'Giá mua hàng hóa' },
+        //     { name: 1562, description: 'Chi phí thu mua hàng hóa' },
+        //     { name: 1567, description: 'Hàng hóa bất động sản' },
+        // ]
     },
     { 
         name: 157, description: 'Hàng gửi đi bán',
