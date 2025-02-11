@@ -122,6 +122,9 @@ module.exports = {
                     valueApproved, bidPrice, bidPriceDiscount, bidPriceAdjustment, openedUsers, openedStatus, flags, flagsRemoves, lastLogID, isAddSignature, isOpenBidding, milestone, alert, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
                     ontime, quality, usersDeleteID, descriptioncv
                  } = ctx.params;
+
+                // console.log(ctx.params)
+
 				const { _id: userID, bizfullname, fullname, email, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({

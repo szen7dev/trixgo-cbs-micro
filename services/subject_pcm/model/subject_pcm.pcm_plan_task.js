@@ -599,6 +599,8 @@ class Model extends BaseModel {
                     path: 'project assignee',
                     select: '_id admins name fullname bizfullname'
                 }).lean()
+
+                console.log(infoTask)
                 if(!infoTask)
                     return resolve({ error: true, message: 'task_not_exists', status: 400 })
 
@@ -1098,20 +1100,22 @@ class Model extends BaseModel {
                             if(Number(infoTask.approvalType) === 6){
                                 let listData = await BUDGET__SUBMITTAL_COLL.find({task: taskID})
                                 for(const item of listData){
-                                    await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
-                                        {
-                                            assignee: item.staff,
-                                            date: {
-                                                $gte: new Date(item.fromDate),
-                                                $lte: new Date(item.toDate),
+                                    if(item?.staff && item?.fromDate && item?.toDate){
+                                        await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
+                                            {
+                                                assignee: item?.staff,
+                                                date: {
+                                                    $gte: new Date(item?.fromDate),
+                                                    $lte: new Date(item?.toDate),
+                                                },
                                             },
-                                        },
-                                        {
-                                            $set: {
-                                                "note": `Nghỉ phép | ${item.name} | ${item.note} | Từ ${moment(item.fromDate).format('DD/MM/YYYY')} - Đến ${moment(item.toDate).format('DD/MM/YYYY')}`
+                                            {
+                                                $set: {
+                                                    "note": `Nghỉ phép | ${item?.name} | ${item?.note} | Từ ${moment(item.fromDate).format('DD/MM/YYYY')} - Đến ${moment(item.toDate).format('DD/MM/YYYY')}`
+                                                }
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         }
