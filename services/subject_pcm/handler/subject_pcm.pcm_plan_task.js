@@ -405,7 +405,7 @@ module.exports = {
                 const {
                     option, sortOption, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, prioritys, keyword,
-                    limit, lastestID, select, populates, reportID, upcoming
+                    limit, lastestID, select, populates, reportID, upcoming, approvalType
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -414,7 +414,7 @@ module.exports = {
                     option, sortOption, companyID: company._id,
                     fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
                     projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, reportType, priority, prioritys, keyword,
-                    limit, lastestID, select, populates, userID, reportID, upcoming, ctx
+                    limit, lastestID, select, populates, userID, reportID, upcoming, approvalType, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
