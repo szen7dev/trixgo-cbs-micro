@@ -2456,7 +2456,7 @@ class Model extends BaseModel {
      */
     getListByFilter({
         option, sortOption, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, unlimited,
+        projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, approvalType, unlimited,
         limit = 20, lastestID, select, populates = '{"path":"assignee author userUpdate project group lastLog lastComment parent","select":"name fullname image sign content author createAt sign files","populate":{"path":"author files images","select":"fullname author image sign nameOrg path createAt","populate":{"path":"author","select":"bizfullname fullname image"}}}', userID, reportID, upcoming
     }) {
         // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
@@ -2568,6 +2568,10 @@ class Model extends BaseModel {
                 }
                 if(isParent && isParent == 2){
                     conditionObj.parent = { $exists: true };
+                }
+
+                if(approvalType && approvalType > 0){
+                    conditionObj.approvalType = Number(approvalType)
                 }
 
                 // Chưa xem (user nắm trong mảng new)
