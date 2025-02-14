@@ -167,7 +167,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     fcuExRate: { type: Number, default: 0 },
     //_________Thành tiền ngoại tệ
     fcuAmount: { type: Number, default: 0 }, 
-
+    //_________Lịch sử thay đổi
+    history: String,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

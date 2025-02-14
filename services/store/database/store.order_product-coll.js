@@ -288,6 +288,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Number,
         default: 1
     },
+    //_________Lịch sử thay đổi
+    history: String,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
