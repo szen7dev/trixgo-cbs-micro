@@ -784,7 +784,7 @@ class Model extends BaseModel {
      * Func: importFromExcel
      * Date: 8/12/2022
      */
-    importFromExcel({ companyID, dataImport, userID, ctx }) {
+    importFromExcel({ companyID, dataImport, projectID, userID, ctx }) {
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
@@ -809,6 +809,7 @@ class Model extends BaseModel {
                             usage: data?.__EMPTY_11,
                             status: data?.__EMPTY_12,
                             parentID: data?.__EMPTY_13,
+                            projectID: projectID ? projectID : null
                         }
 
                         let infoAfterInsert = await this.insert(dataInsert);
