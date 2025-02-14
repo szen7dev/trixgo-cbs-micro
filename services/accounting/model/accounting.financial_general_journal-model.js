@@ -34,7 +34,8 @@ const ITEM__GOODS_COLL            			            = require('../../item/database/
 const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
 const FINANCIAL_VOUCHER_COLL                            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
-const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll')
+const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
+const { notebooks } = require('googleapis/build/src/apis/notebooks');
 
 /**
  * MODELS
@@ -76,12 +77,6 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * VALIDATE DỮ LIỆU
-                 * 1-Kiểm tra ObjectID
-                 * 2-Kiểm tra Danh mục thuộc công ty
-                 * 3-Kiểm tra khác
-                 */
                 if(!checkObjectIDs([authorID, companyID, fundaID, voucherID, customerDebit, customerCredit]))
                     return { error: true, message: 'params_invalid', status: 400 };
 
@@ -248,12 +243,6 @@ class Model extends BaseModel {
      }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * VALIDATE DỮ LIỆU
-                 * 1-Kiểm tra ObjectID
-                 * 2-Kiểm tra Danh mục thuộc công ty
-                 * 3-Kiểm tra khác
-                 */
                  if(!checkObjectIDs([authorID, journalID, customerDebit, customerCredit, fundaID]))
                     return { error: true, message: 'params_invalid', status: 400 };
 
@@ -267,8 +256,6 @@ class Model extends BaseModel {
                 if(!infoJournal)
                     return resolve({ error: false, message: 'finacial_journal_exit', status: 400 })
 
-                let voucherID = infoJournal.voucher
-
                 /**
                  * CẬP NHẬT CHI TIẾT CHỨNG TỪ
                  */
@@ -280,6 +267,7 @@ class Model extends BaseModel {
                     quantity, unitprice, amount, fcuExRate, fcuAmount,
                     goods, warehouse, contract, project, budgetWork, subtype, parentSubtype,
                     note,
+                    history: `${infoJournal.history} | ${new Date()}, U_${authorID}, Khối lượng: ${quantity}, Đơn giá: ${unitprice}, Thành tiền: ${amount}, Ghi chú: ${note}`
                 }
 
                 /**
@@ -826,84 +814,6 @@ class Model extends BaseModel {
                 let listDataO, listDataIn
 
                 let arrObjectID = [], listAccounts = []
-                
-                // // Truyền theo ID tài khoản
-                // if(!optionAccount){
-                //     // console.log('============zzzzzzzzzzzz1111111111111111111111')
-                //     listAccounts = await ITEM_ACCOUNT_COLL.find({_id: {$in: arrAccIDs}})
-                //     // .select('name description nestedChilds')
-                //     if(listAccounts){
-                //         for(const item of listAccounts){
-                //             arrObjectID.push(item._id)
-                //             arrObjectID = [...arrObjectID,...item.nestedChilds]
-                //         }
-                //     }
-                // }else{
-                //     // Theo tên tài khoản
-                //     if(optionAccount == 1){
-                //         // console.log('============zzzzzzzzzzzz2222222222222222222')
-                //         listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
-                //         // .select('name description nestedChilds')
-                //         if(listAccounts){
-                //             for(const item of listAccounts){
-                //                 arrObjectID.push(item._id)
-                //                 arrObjectID = [...arrObjectID,...item.nestedChilds]
-                //             }
-                //         }
-                //     }
-
-                //     // Theo toàn bộ tài khoản của công ty
-                //     if(optionAccount == 2){
-                //         // console.log('============zzzzzzzzzzzz4444444444444444444')
-                //         listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID })
-                //             // .select('name description nestedChilds')
-                //         if(listAccounts){
-                //             for(const item of listAccounts){
-                //                 arrObjectID.push(item._id)
-                //                 arrObjectID = [...arrObjectID,...item.nestedChilds]
-                //             }
-                //         }
-                //     }
-                // }
-                // console.log(listAccounts)
-                // console.log(arrObjectID)
-                
-                // if(contractID && checkObjectIDs(contractID)){
-                //     // console.log('============1')
-                //     conditionDebitObj.contract = ObjectID(contractID)
-                //     conditionCreditObj.contract = ObjectID(contractID)
-                // }else{
-                //     if (projectID && checkObjectIDs(projectID)) {
-                //         // console.log('============2')
-                //         conditionDebitObj.project = ObjectID(projectID)
-                //         conditionCreditObj.project = ObjectID(projectID)
-                //     }else{
-                //         if(fundaID && checkObjectIDs(fundaID)){
-                //             // console.log('============3')
-                //             conditionDebitObj.funda = ObjectID(fundaID)
-                //             conditionCreditObj.funda = ObjectID(fundaID)
-                //         }else{
-                //             // console.log('============5')
-                //             conditionDebitObj.company = ObjectID(companyID)
-                //             conditionCreditObj.company = ObjectID(companyID)
-                //         }
-                //     }
-                // }
-
-                // if(warehouseID && checkObjectIDs(warehouseID)){
-                //     // console.log('============6')
-                //     conditionDebitObj.warehouse = ObjectID(warehouseID)
-                //     conditionCreditObj.warehouse = ObjectID(warehouseID)
-                // }
-
-                // if(goodsID && checkObjectIDs(goodsID)){
-                //     // console.log('============7')
-                //     conditionDebitObj.goods = ObjectID(goodsID)
-                //     conditionCreditObj.goods = ObjectID(goodsID)
-                // }
-
-                // console.log(conditionDebitObj)
-                // console.log(conditionCreditObj)
 
                 listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
                 if(listAccounts){
@@ -988,9 +898,7 @@ class Model extends BaseModel {
 
                 }
 
-                /**
-                 * DATA KẾT CHUYỂN/ĐẦU NĂM
-                 */
+                // Dữ liệu Đầu kỳ/Đầu năm
                 listDataO = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
                         $facet: {
@@ -1027,6 +935,7 @@ class Model extends BaseModel {
                     }
                 ])
 
+                // Dữ liệu đầu năm->Ngày số liệu
                 listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                     {
                         $facet: {
