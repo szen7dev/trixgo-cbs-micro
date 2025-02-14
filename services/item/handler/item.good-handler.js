@@ -211,11 +211,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport } = ctx.params;
+                const { dataImport, projectID } = ctx.params;
+                // console.log(ctx.params)
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await ITEM__GOODS_MODEL.importFromExcel({
-                    companyID: company._id, dataImport, userID, ctx
+                    companyID: company._id, dataImport, projectID, userID, ctx
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
