@@ -464,6 +464,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
+    //_________Lịch sử thay đổi
+    history: String,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

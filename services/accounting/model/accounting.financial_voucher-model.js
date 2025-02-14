@@ -307,7 +307,7 @@ class Model extends BaseModel {
                     if(Number(i) == Number(selectedJournals.length)){
                         // console.log('=================')
                         // console.log({__________i:i})
-                        await that.updateValue({ voucherID })
+                        await that.updateValue({ voucherID, userID: authorID })
                     }
                 }
 
@@ -583,14 +583,6 @@ class Model extends BaseModel {
                             
                             //_________Tiến hành tạo chi tiết_________//
                             let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
-    
-                            /**
-                             * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
-                             */
-                            // if(infoJournal){
-                            //     let newInfoVoucher = await that.updateValue({ voucherID })
-                            //     // console.log(newInfoVoucher)
-                            // }
                         }
 
                         // Cập nhật
@@ -714,14 +706,6 @@ class Model extends BaseModel {
                             
                             //_________Tiến hành tạo chi tiết_________//
                             let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update(dataUpdate);
-    
-                            /**
-                             * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
-                             */
-                            // if(infoJournal){
-                            //     let newInfoVoucher = await that.updateValue({ voucherID })
-                            //     // console.log(newInfoVoucher)
-                            // }
                         }
 
                         i++
@@ -739,9 +723,7 @@ class Model extends BaseModel {
                  * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
                  */
                 if(Number(i) == Number(selectedJournals.length)){
-                    // console.log('=================')
-                    // console.log({__________i:i})
-                    await that.updateValue({ voucherID })
+                    await that.updateValue({ voucherID, userID: authorID })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -756,37 +738,48 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    updateValue({ voucherID }){
+    updateValue({ voucherID, userID }){
         return new Promise(async (resolve, reject) => {
             try {
-                let dataUpdate = { amount: 0, fcuAmount: 0, revenue: 0, tax: 0 }
-
-                // Tính tổng các bút toán của Phiếu
-                let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $match: {
-                            voucher: ObjectID(voucherID),
-                        }
-                    }, 
-                    {
-                        $group: {
-                            _id: { },
-                            amount: { $sum: "$amount" },
-                            fcuAmount: { $sum: "$fcuAmount" },
-                        }
-                    }, 
-                ])
+                let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
+                if(info){
+                    let dataUpdate = { 
+                        userUpdate: userID, 
+                        modifyAt: new Date(),
+                        amount: 0, 
+                        fcuAmount: 0, 
+                        revenue: 0, 
+                        tax: 0,
+                    }
+    
+                    // Tính tổng các bút toán của Phiếu
+                    let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $match: {
+                                voucher: ObjectID(voucherID),
+                            }
+                        }, 
+                        {
+                            $group: {
+                                _id: { },
+                                amount: { $sum: "$amount" },
+                                fcuAmount: { $sum: "$fcuAmount" },
+                            }
+                        }, 
+                    ])
+                    
+                    if(listData && listData.length){
+                        dataUpdate.amount = Number(listData[0].amount)
+                        dataUpdate.fcuAmount = Number(listData[0].fcuAmount)
+                        dataUpdate.history = `${info?.history} | ${new Date()}, U_${userID}, Thành tiền: ${Number(listData[0].amount)}`
+                    }
+    
+                    const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate)
+                    if(!resultUpdateVoucher)
+                        return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400})
                 
-                if(listData && listData.length){
-                    dataUpdate.amount = Number(listData[0].amount)
-                    dataUpdate.fcuAmount = Number(listData[0].fcuAmount)
+                    return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher, status: 200 })
                 }
-
-                const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate)
-                if(!resultUpdateVoucher)
-                    return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400})
-            
-                return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher, status: 200 })
             } catch (error) {
                 console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`)
                 return resolve({ erorr: true, message: 'update_voucher_fail', status: 400})
@@ -944,11 +937,8 @@ class Model extends BaseModel {
         return new Promise(async (resolve, reject) => {
             try {
                 let listVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({company: companyID}).select('_id name')
-                console.log(listVoucher.length)
-                // console.log(listVoucher)
                 for (const item of listVoucher){
-                    let info = await that.updateValue({ voucherID: item._id })
-                    // console.log(info)
+                    await that.updateValue({ voucherID: item._id, userID })
                 }
 
                 return resolve({ erorr: false, message: 'convert_successfull', status: 200 })

@@ -62,6 +62,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_voucher", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
+    //_________Lịch sử thay đổi
+    history: String,
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
