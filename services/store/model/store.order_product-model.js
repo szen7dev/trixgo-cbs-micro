@@ -622,6 +622,7 @@ class Model extends BaseModel {
      * Date: 2/9/2024
      */
     getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate }) {
+        // console.log({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate })
         return new Promise(async resolve => {
             try {
                 /**
@@ -2279,7 +2280,6 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if (Number(option) === 1) {
-                    // console.log('==========================')
                     const populates = JSON.stringify({
                         path: 'department position field property area area1 area2 linkUser workingStatus contractType',
                         select: 'name sign fullname',
@@ -2311,73 +2311,6 @@ class Model extends BaseModel {
                     const result = await this.downloadExcelFile(data)
                     return resolve(result);
                 }
-
-                else if (Number(option) === 2) {
-
-                
-                }
-
-                else if (Number(option) === 3) {
-                    // // console.log('222222222222222223333')
-
-                    // let conditionObj = {
-                    //     company: ObjectID(companyID)
-                    // }
-
-                    // if (Number(validatePhone) === 1) {
-                    //     conditionObj.phone = { $exists: true, $ne: null }
-                    // }
-
-                    // if (Number(validateMail) === 1) {
-                    //     conditionObj.email = { $exists: true, $ne: null }
-                    // }
-
-                    // // let totalCustomer = 0, newCustomer = 0
-
-                    // let limit = Number(page * unit)
-                    // let listData = await ITEM__CONTACT_COLL.find(conditionObj)
-                    //     .select('_id name phone email birthday purchasedValue type note getVouchers modifyAt')
-                    //     .sort({ modifyAt: -1 })
-                    //     // .sort({purchasedValue: -1})
-                    //     .limit(limit)
-
-                    // // Modify the workbook.
-                    // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/contact_ads.xlsx')))
-                    //     .then(async workbook => {
-
-                    //         var i = 3;
-                    //         listData?.forEach((item, index) => {
-
-                    //             workbook.sheet("Export").row(i).cell(1).value(Number(index + 1))
-                    //             workbook.sheet("Export").row(i).cell(2).value(item.name)
-                    //             workbook.sheet("Export").row(i).cell(3).value(item?.phone)
-                    //             workbook.sheet("Export").row(i).cell(4).value(item?.email)
-                    //             workbook.sheet("Export").row(i).cell(5).value(item?.birthday)
-                    //             workbook.sheet("Export").row(i).cell(6).value(Number(item?.type))
-                    //             workbook.sheet("Export").row(i).cell(7).value(item?.note)
-                    //             workbook.sheet("Export").row(i).cell(8).value(Number(item?.purchasedValue))
-                    //             if (item?.getVouchers.length && item?.getVouchers.includes("64378d6618c77f00128abe93")) {
-                    //                 workbook.sheet("Export").row(i).cell(9).value('Quan tâm OA')
-                    //             }
-                    //             workbook.sheet("Export").row(i).cell(10).value(item.modifyAt)
-
-                    //             i++
-                    //         });
-
-                    //         const now = new Date();
-                    //         const filePath = '../../../files/temporary_uploads/';
-                    //         const fileName = `contact_ads${now.getTime()}.xlsx`;
-                    //         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    //         await workbook.toFileAsync(pathWriteFile);
-                    //         const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    //         fs.unlinkSync(pathWriteFile);
-                    //         return resolve({ error: false, data: result?.Location, status: 200 });
-                    //     });
-
-                    // // return resolve({ error: false, data: listData, status: 200 });
-                }
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -2393,22 +2326,43 @@ class Model extends BaseModel {
 
                     let i = 4;
                     data?.forEach((item, index) => {
+                        let donGiaTonDauKy = 0, donGiaNhapTrongKy = 0, donGiaXuatTrongKy = 0, donGiaTonCuoiKy = 0
+
+                        if(Number(item.klKcNoDauKy + item.klNoDauKy - item.klKcCoDauKy - item.klCoDauKy) != 0){
+                          donGiaTonDauKy = Number(item.kcNoDauKy + item.noDauKy - item.kcCoDauKy - item.coDauKy)/Number(item.klKcNoDauKy + item.klNoDauKy - item.klKcCoDauKy - item.klCoDauKy)
+                        }
+                        if(Number(item.klNoTrongKy) != 0){
+                          donGiaNhapTrongKy = Number(item.noTrongKy)/Number(item.klNoTrongKy)
+                        }
+                        if(Number(item.klCoTrongKy) != 0){
+                          donGiaXuatTrongKy = Number(item.coTrongKy)/Number(item.klCoTrongKy)
+                        }
+                        if(Number(item.klKcNoDauKy + item.klNoDauKy + item.klNoTrongKy - item.klKcCoDauKy - item.klCoDauKy - item.klCoTrongKy) != 0){
+                          donGiaTonCuoiKy = Number(item.kcNoDauKy + item.noDauKy + item.noTrongKy - item.kcCoDauKy - item.coDauKy - item.coTrongKy)/Number(item.klKcNoDauKy + item.klNoDauKy + item.klNoTrongKy - item.klKcCoDauKy - item.klCoDauKy - item.klCoTrongKy)
+                        }
+
                         workbook.sheet("Data").row(i).cell(1).value(Number(index + 1));
                         workbook.sheet("Data").row(i).cell(2).value(item.name);
                         workbook.sheet("Data").row(i).cell(3).value(item?.unit);
-                        workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantityIncome));
-                        workbook.sheet("Data").row(i).cell(5).value(Number(item?.income));
-                        workbook.sheet("Data").row(i).cell(6).value(Number(item?.quantityExpense));
-                        workbook.sheet("Data").row(i).cell(7).value(Number(item?.expense));
-                        workbook.sheet("Data").row(i).cell(8).value(Number(item?.quantityIncome - item?.quantityExpense));
-                        workbook.sheet("Data").row(i).cell(9).value(Number(item?.income - item?.expense));
+                        workbook.sheet("Data").row(i).cell(4).value(Number(item.klKcNoDauKy + item.klNoDauKy - item.klKcCoDauKy - item.klCoDauKy));
+                        workbook.sheet("Data").row(i).cell(5).value(Number(donGiaTonDauKy));
+                        workbook.sheet("Data").row(i).cell(6).value(Number(item.kcNoDauKy + item.noDauKy - item.kcCoDauKy - item.coDauKy));
+                        workbook.sheet("Data").row(i).cell(7).value(Number(item.klNoTrongKy));
+                        workbook.sheet("Data").row(i).cell(8).value(Number(donGiaNhapTrongKy));
+                        workbook.sheet("Data").row(i).cell(9).value(Number(item.noTrongKy));
+                        workbook.sheet("Data").row(i).cell(10).value(Number(item.klCoTrongKy));
+                        workbook.sheet("Data").row(i).cell(11).value(Number(donGiaXuatTrongKy));
+                        workbook.sheet("Data").row(i).cell(12).value(Number(item.coTrongKy));
+                        workbook.sheet("Data").row(i).cell(13).value(Number(item.klKcNoDauKy + item.klNoDauKy + item.klNoTrongKy - item.klKcCoDauKy - item.klCoDauKy - item.klCoTrongKy));
+                        workbook.sheet("Data").row(i).cell(14).value(Number(donGiaTonCuoiKy));
+                        workbook.sheet("Data").row(i).cell(15).value(Number(item.kcNoDauKy + item.noDauKy + item.noTrongKy - item.kcCoDauKy - item.coDauKy - item.coTrongKy));
                  
                         i++
                     });
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `store_inventory_report${now.getTime()}.xlsx`;
+                    const fileName = `BaoCaoTonKho_${now.getTime()}.xlsx`;
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
