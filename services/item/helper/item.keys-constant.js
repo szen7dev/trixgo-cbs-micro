@@ -1,5 +1,4 @@
 //FILE CONFIG || VARIABLE CONSTANT
-
  /**
  * PHÂN LOẠI
     1-Văn Bản Lĩnh vực hồ sơ
