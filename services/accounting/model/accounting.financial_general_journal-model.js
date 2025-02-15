@@ -808,266 +808,269 @@ class Model extends BaseModel {
     getAccountBalance({ option, optionAccount, arrAccNames, arrAccIDs, companyID, fundaID, projectID, contractID, warehouseID, goodsID, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
-                let conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
-                let conditionGroupDebit = {}, conditionGroupCredit = {}
-                let conditionMatchO = {}, conditionMatchIn = {}
-                let listDataO, listDataIn
+                // let conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
+                // let conditionGroupDebit = {}, conditionGroupCredit = {}
+                // let conditionMatchO = {}, conditionMatchIn = {}
+                // let listDataO, listDataIn
 
-                let arrObjectID = [], listAccounts = []
+                // let arrObjectID = [], listAccounts = []
 
-                listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
-                if(listAccounts){
-                    for(const item of listAccounts){
-                        arrObjectID.push(item._id)
-                        arrObjectID = [...arrObjectID,...item.nestedChilds]
-                    }
-                }
+                // listAccounts = await ITEM_ACCOUNT_COLL.find({ company: companyID, name: {$in: arrAccNames} })
+                // if(listAccounts){
+                //     for(const item of listAccounts){
+                //         arrObjectID.push(item._id)
+                //         arrObjectID = [...arrObjectID,...item.nestedChilds]
+                //     }
+                // }
 
-                conditionDebitObj.company = ObjectID(companyID)
-                conditionCreditObj.company = ObjectID(companyID)
+                // conditionDebitObj.company = ObjectID(companyID)
+                // conditionCreditObj.company = ObjectID(companyID)
 
-                conditionDebitObj.warehouse = ObjectID(warehouseID)
-                conditionCreditObj.warehouse = ObjectID(warehouseID)
+                // conditionDebitObj.warehouse = ObjectID(warehouseID)
+                // conditionCreditObj.warehouse = ObjectID(warehouseID)
 
-                conditionDebitObj.goods = ObjectID(goodsID)
-                conditionCreditObj.goods = ObjectID(goodsID)
+                // conditionDebitObj.goods = ObjectID(goodsID)
+                // conditionCreditObj.goods = ObjectID(goodsID)
 
-                /**
-                 * Lấy năm của ngày đầu kỳ
-                 */
-                let year = moment(fromDate).toDate().getFullYear()
-                let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
+                // /**
+                //  * Lấy năm của ngày đầu kỳ
+                //  */
+                // let year = moment(fromDate).toDate().getFullYear()
+                // let firstDayOfYear = `${Number(year)}-01-01T00:00:00.000Z`
 
-                conditionProject = {
-                    forward: '$forward',
-                    cancel: '$cancel',
-                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                    amount: 1,
-                }
+                // conditionProject = {
+                //     forward: '$forward',
+                //     cancel: '$cancel',
+                //     year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                //     amount: 1,
+                // }
 
-                // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
-                conditionMatchO = {
-                    "forward": 1,
-                    "cancel": 0,
-                    "year": Number(year)
-                }
+                // // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
+                // conditionMatchO = {
+                //     "forward": 1,
+                //     "cancel": 0,
+                //     "year": Number(year)
+                // }
 
-                // Từ đầu năm tới đầu kỳ (áp dụng lấy dữ liệu 1 mạch)
-                conditionMatchIn = {
-                    "forward": 0,
-                    "cancel": 0,
-                    "date": {
-                        $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
-                        $lte: moment(toDate).toDate(),
-                    },
-                }
+                // // Từ đầu năm tới đầu kỳ (áp dụng lấy dữ liệu 1 mạch)
+                // conditionMatchIn = {
+                //     "forward": 0,
+                //     "cancel": 0,
+                //     "date": {
+                //         $gte: moment(firstDayOfYear).toDate(), // Tính từ firstDayOfYear | fromDate
+                //         $lte: moment(toDate).toDate(),
+                //     },
+                // }
 
-                // Tồn kho sản phẩm
-                if(!option){
-                    conditionProject = {
-                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                        forward: '$forward',
-                        cancel: '$cancel',
-                        date: 1,
-                        quantity: 1,
-                        amount: 1,
-                        goods: 1,
-                        warehouse: 1,
-                        debit: 1,
-                        credit: 1
-                    }
+                // // Tồn kho sản phẩm
+                // if(!option){
+                //     conditionProject = {
+                //         year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                //         forward: '$forward',
+                //         cancel: '$cancel',
+                //         date: 1,
+                //         quantity: 1,
+                //         amount: 1,
+                //         goods: 1,
+                //         warehouse: 1,
+                //         debit: 1,
+                //         credit: 1
+                //     }
 
-                    conditionDebitObj.debit = {
-                        $in: arrObjectID
-                    }
-                    conditionCreditObj.credit = {
-                        $in: arrObjectID
-                    }
+                //     conditionDebitObj.debit = {
+                //         $in: arrObjectID
+                //     }
+                //     conditionCreditObj.credit = {
+                //         $in: arrObjectID
+                //     }
 
-                    conditionGroupDebit = {
-                        _id: { goods: "$goods" },
-                        quantity: { $sum: "$quantity" },
-                        amount: { $sum: "$amount" }
-                    }
-                    conditionGroupCredit = {
-                        _id: { goods: "$goods" },
-                        quantity: { $sum: "$quantity" },
-                        amount: { $sum: "$amount" }
-                    }
-                }else{
+                //     conditionGroupDebit = {
+                //         _id: { goods: "$goods" },
+                //         quantity: { $sum: "$quantity" },
+                //         amount: { $sum: "$amount" }
+                //     }
+                //     conditionGroupCredit = {
+                //         _id: { goods: "$goods" },
+                //         quantity: { $sum: "$quantity" },
+                //         amount: { $sum: "$amount" }
+                //     }
+                // }else{
 
-                }
+                // }
 
-                // Dữ liệu Đầu kỳ/Đầu năm
-                listDataO = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionDebitObj
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatchO
-                                },
-                                {
-                                    $group: conditionGroupDebit
-                                }
-                            ],
-                            _credit:[
-                                {
-                                    $match: conditionCreditObj
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatchO
-                                },
-                                {
-                                    $group: conditionGroupCredit
-                                }
-                            ],
+                // // Dữ liệu Đầu kỳ/Đầu năm
+                // listDataO = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                //     {
+                //         $facet: {
+                //             _debit:[
+                //                 {
+                //                     $match: conditionDebitObj
+                //                 },
+                //                 {
+                //                     $project: conditionProject
+                //                 },
+                //                 {
+                //                     $match: conditionMatchO
+                //                 },
+                //                 {
+                //                     $group: conditionGroupDebit
+                //                 }
+                //             ],
+                //             _credit:[
+                //                 {
+                //                     $match: conditionCreditObj
+                //                 },
+                //                 {
+                //                     $project: conditionProject
+                //                 },
+                //                 {
+                //                     $match: conditionMatchO
+                //                 },
+                //                 {
+                //                     $group: conditionGroupCredit
+                //                 }
+                //             ],
 
-                        }
-                    }
-                ])
+                //         }
+                //     }
+                // ])
 
-                // Dữ liệu đầu năm->Ngày số liệu
-                listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionDebitObj
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatchIn
-                                },
-                                {
-                                    $group: conditionGroupDebit
-                                }
-                            ],
+                // // Dữ liệu đầu năm->Ngày số liệu
+                // listDataIn = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                //     {
+                //         $facet: {
+                //             _debit:[
+                //                 {
+                //                     $match: conditionDebitObj
+                //                 },
+                //                 {
+                //                     $project: conditionProject
+                //                 },
+                //                 {
+                //                     $match: conditionMatchIn
+                //                 },
+                //                 {
+                //                     $group: conditionGroupDebit
+                //                 }
+                //             ],
 
-                            _credit:[
-                                {
-                                    $match: conditionCreditObj
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatchIn
-                                },
-                                {
-                                    $group: conditionGroupCredit
-                                }
-                            ],
+                //             _credit:[
+                //                 {
+                //                     $match: conditionCreditObj
+                //                 },
+                //                 {
+                //                     $project: conditionProject
+                //                 },
+                //                 {
+                //                     $match: conditionMatchIn
+                //                 },
+                //                 {
+                //                     $group: conditionGroupCredit
+                //                 }
+                //             ],
 
-                        }
-                    }
-                ])
+                //         }
+                //     }
+                // ])
 
-                let arrGoods = [], arrCombine = []
+                // let arrGoods = [], arrCombine = []
 
-                for(const item of listDataO[0]._debit){
-                    arrGoods.push(item._id.goods)
-                }
-                for(const item of listDataO[0]._credit){
-                    arrGoods.push(item._id.goods)
-                }
-                for(const item of listDataIn[0]._debit){
-                    arrGoods.push(item._id.goods)
-                }
-                for(const item of listDataIn[0]._credit){
-                    arrGoods.push(item._id.goods)
-                }
-                // console.log(arrGoods)
+                // for(const item of listDataO[0]._debit){
+                //     arrGoods.push(item._id.goods)
+                // }
+                // for(const item of listDataO[0]._credit){
+                //     arrGoods.push(item._id.goods)
+                // }
+                // for(const item of listDataIn[0]._debit){
+                //     arrGoods.push(item._id.goods)
+                // }
+                // for(const item of listDataIn[0]._credit){
+                //     arrGoods.push(item._id.goods)
+                // }
+                // // console.log(arrGoods)
 
-                let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arrGoods}}).select('name unit note')
-                // console.log(listGoods)
+                // let listGoods = await ITEM__GOODS_COLL.find({_id: {$in: arrGoods}}).select('name unit note')
+                // // console.log(listGoods)
 
-                let arrDebitO = [], arrCreditO = [], arrDebitIn = [], arrCreditIn = []
+                // let arrDebitO = [], arrCreditO = [], arrDebitIn = [], arrCreditIn = []
 
-                listDataO[0]._debit.forEach(element=>{
-                    let key = element._id.goods;
-                    if (!Array.isArray(arrDebitO[key])) {
-                        arrDebitO[key] = [];
-                    }
-                    arrDebitO[key].push(element)
-                })
+                // listDataO[0]._debit.forEach(element=>{
+                //     let key = element._id.goods;
+                //     if (!Array.isArray(arrDebitO[key])) {
+                //         arrDebitO[key] = [];
+                //     }
+                //     arrDebitO[key].push(element)
+                // })
 
-                listDataO[0]._credit.forEach(element=>{
-                    let key = element._id.goods;
-                    if (!Array.isArray(arrCreditO[key])) {
-                        arrCreditO[key] = [];
-                    }
-                    arrCreditO[key].push(element)
-                })
+                // listDataO[0]._credit.forEach(element=>{
+                //     let key = element._id.goods;
+                //     if (!Array.isArray(arrCreditO[key])) {
+                //         arrCreditO[key] = [];
+                //     }
+                //     arrCreditO[key].push(element)
+                // })
 
-                listDataIn[0]._debit.forEach(element=>{
-                    let key = element._id.goods;
-                    if (!Array.isArray(arrDebitIn[key])) {
-                        arrDebitIn[key] = [];
-                    }
-                    arrDebitIn[key].push(element)
-                })
+                // listDataIn[0]._debit.forEach(element=>{
+                //     let key = element._id.goods;
+                //     if (!Array.isArray(arrDebitIn[key])) {
+                //         arrDebitIn[key] = [];
+                //     }
+                //     arrDebitIn[key].push(element)
+                // })
 
-                listDataIn[0]._credit.forEach(element=>{
-                    let key = element._id.goods;
-                    if (!Array.isArray(arrCreditIn[key])) {
-                        arrCreditIn[key] = [];
-                    }
-                    arrCreditIn[key].push(element)
-                })
+                // listDataIn[0]._credit.forEach(element=>{
+                //     let key = element._id.goods;
+                //     if (!Array.isArray(arrCreditIn[key])) {
+                //         arrCreditIn[key] = [];
+                //     }
+                //     arrCreditIn[key].push(element)
+                // })
 
-                for(const item of listGoods){
-                    let kcNoDauKy = 0, klKcNoDauKy = 0
-                    let kcCoDauKy = 0, klKcCoDauKy = 0
-                    let noTrongKy = 0, klNoTrongKy = 0
-                    let coTrongKy = 0, klCoTrongKy = 0
+                // for(const item of listGoods){
+                //     let kcNoDauKy = 0, klKcNoDauKy = 0
+                //     let kcCoDauKy = 0, klKcCoDauKy = 0
+                //     let noTrongKy = 0, klNoTrongKy = 0
+                //     let coTrongKy = 0, klCoTrongKy = 0
 
-                    if(arrDebitO[item._id]){
-                        kcNoDauKy = arrDebitO[item._id][0].amount
-                        klKcNoDauKy = arrDebitO[item._id][0].quantity
-                    }
-                    if(arrCreditO[item._id]){
-                        kcCoDauKy = arrCreditO[item._id][0].amount
-                        klKcCoDauKy = arrCreditO[item._id][0].quantity
-                    }
-                    if(arrDebitIn[item._id]){
-                        noTrongKy = arrDebitIn[item._id][0].amount
-                        klNoTrongKy = arrDebitIn[item._id][0].quantity
-                    }
-                    if(arrCreditIn[item._id]){
-                        coTrongKy = arrCreditIn[item._id][0].amount
-                        klCoTrongKy = arrCreditIn[item._id][0].quantity
-                    }
+                //     if(arrDebitO[item._id]){
+                //         kcNoDauKy = arrDebitO[item._id][0].amount
+                //         klKcNoDauKy = arrDebitO[item._id][0].quantity
+                //     }
+                //     if(arrCreditO[item._id]){
+                //         kcCoDauKy = arrCreditO[item._id][0].amount
+                //         klKcCoDauKy = arrCreditO[item._id][0].quantity
+                //     }
+                //     if(arrDebitIn[item._id]){
+                //         noTrongKy = arrDebitIn[item._id][0].amount
+                //         klNoTrongKy = arrDebitIn[item._id][0].quantity
+                //     }
+                //     if(arrCreditIn[item._id]){
+                //         coTrongKy = arrCreditIn[item._id][0].amount
+                //         klCoTrongKy = arrCreditIn[item._id][0].quantity
+                //     }
 
-                    arrCombine.push({
-                        _id: item._id,
-                        name: item.name,
-                        unit: item.unit,
-                        kcNoDauKy: Number(kcNoDauKy),
-                        kcCoDauKy: Number(kcCoDauKy),
-                        noTrongKy: Number(noTrongKy),
-                        coTrongKy: Number(coTrongKy),
+                //     arrCombine.push({
+                //         _id: item._id,
+                //         name: item.name,
+                //         unit: item.unit,
+                //         kcNoDauKy: Number(kcNoDauKy),
+                //         kcCoDauKy: Number(kcCoDauKy),
+                //         noTrongKy: Number(noTrongKy),
+                //         coTrongKy: Number(coTrongKy),
 
-                        klKcNoDauKy: Number(klKcNoDauKy),
-                        klKcCoDauKy: Number(klKcCoDauKy),
-                        klNoTrongKy: Number(klNoTrongKy),
-                        klCoTrongKy: Number(klCoTrongKy),
-                    })
-                }
+                //         klKcNoDauKy: Number(klKcNoDauKy),
+                //         klKcCoDauKy: Number(klKcCoDauKy),
+                //         klNoTrongKy: Number(klNoTrongKy),
+                //         klCoTrongKy: Number(klCoTrongKy),
+                //     })
+                // }
                 // console.log(arrCombine)
 
+                // return resolve({ error: false, data: { 
+                //     arrCombine
+                // }})
                 return resolve({ error: false, data: { 
-                    arrCombine
+                    arrCombine: []
                 }})
             } catch (error) {
                 return resolve({ error: true, message: error.message })
