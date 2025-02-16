@@ -27,11 +27,11 @@ const { ITEM_ACCOUNTS }                 = require('../../item/helper/item.keys-c
 /**
  * COLLECTIONS
  */
+const ANALYSIS__HISTORY_DATA_COLL               = require('../database/analysis.history_data-coll')
+const ANALYSIS__HISTORY_TRAFFIC_COLL            = require('../database/analysis.history_traffic-coll')
 const USER_COLL                                 = require('../../auth/database/auth.user-coll')
 const APP_COLL                                  = require('../../auth/database/permission/auth.app-coll')
 const COMPANY_COLL                              = require('../../auth/database/auth.company-coll')
-const ANALYSIS__HISTORY_DATA_COLL               = require('../database/analysis.history_data-coll')
-const ANALYSIS__HISTORY_TRAFFIC_COLL            = require('../database/analysis.history_traffic-coll')
 const BUDGET__WORK_COLL                         = require('../../budget/database/budget.work-coll');
 const ITEM__ACCOUNT_COLL            		    = require('../../item/database/item.account-coll')
 const ITEM__CONTACT_COLL            		    = require('../../item/database/item.contact-coll')
@@ -61,6 +61,7 @@ const STORE_ORDER_MODEL                         = require('../../store/model/sto
 const STORE_ORDER_PRODUCT_MODEL                 = require('../../store/model/store.order_product-model.js').MODEL;
 const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model.js').MODEL;
 const ITEM__ACCOUNT_MODEL                       = require('../../item/model/item.account-model').MODEL;
+const ITEM__FUNDA_MODEL                         = require('../../item/model/item.funda-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -264,7 +265,167 @@ class Model extends BaseModel {
                      }
                 }
 
+                // Tạo đơn vị cơ sở mặc định của các phân vùng
+                else if(option == 4){
+                    let listCompany = await COMPANY_COLL.find({})
+                    for(const item of listCompany){
+                        let infoFunda = await ITEM__FUNDA_COLL.findOne({company: item._id}).select('name sign')
+                        if(!infoFunda){
+                            await ITEM__FUNDA_MODEL.insert({ 
+                                companyID: item._id, 
+                                userID,
+                                name: item.name, 
+                                sign: item.sign
+                            })
+                        }
+                    }
+                }
+
                 return resolve({ error: false, data: 'Clone thành công' });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    resetData({ option, companyID, page, unit, getNumber, newPassword, pass, salaryID, staffID, voucherIDs }){
+        return new Promise(async resolve => { 
+            try {
+                if(pass && pass == 'Hiepnh1985@#'){
+                    if(option == 1){
+                        return resolve({ error: false, data: 'Reset thành công' });
+                    }else if(option == 2){
+                        if(companyID && checkObjectIDs(companyID)){
+                            const newPassHash = await hash(newPassword, 8)
+                            await USER_COLL.updateMany({company: companyID},{$set: {password: newPassHash}})
+                            return resolve({ error: false, data: 'Reset thành công' })
+                        }else{
+                            return resolve({ error: false, data: 'Reset thất bại' })
+                        }
+                    }
+                    // else if(option == 3){
+                    //     if(salaryID && checkObjectIDs(salaryID)){    
+                    //         await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
+                    //         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
+                    //         return resolve({ error: false, data: 'Reset thành công' })
+                    //     }else{
+                    //         if(companyID && checkObjectIDs(companyID)){    
+                    //             await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({company: companyID})
+                    //             return resolve({ error: false, data: 'Reset thành công' })
+                    //         }
+                    //     }
+                    // }
+                    else if(option == 4){
+                        await FNB_MISTAKE_COLL.deleteMany({company: companyID})
+                        await ITEM__FUNDA_COLL.updateMany({company: companyID},{$set: {
+                            numberOfMistakes: 0,
+                            amountOfBonus: 0,
+                            amountOfMistakes: 0,
+                        }})
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
+
+                    // Reset nghỉ phép
+                    else if(option == 5){
+                        await USER_COLL.updateMany({company: companyID},{$set: {
+                            numberOnLeave: 0, // Số ngày đã nghỉ phép trong năm
+                        }})
+                        await ITEM__CONTACT_COLL.updateMany({company: companyID, linkUser: {$exists: true, $ne: null}},{$set: {
+                            numberOnLeave: 12, // Số ngày được nghỉ phép trong năm
+                            numberOnLeavePlus: 0,
+                        }})
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
+
+                    // Reset Voucher nhân viên khi nghỉ việc
+                    else if(option == 6){
+                        // Danh sách voucher của Nhân viên
+                        let listData = await FNB_VOUCHER_COLL.find({company: companyID, type: 5 })
+                        let listVouchers = []
+
+                        if(checkObjectIDs(voucherIDs)){
+                            listVouchers = voucherIDs
+                        }else{
+                            listVouchers = listData.map(item => item._id)
+                        }
+                        // console.log(listVouchers)
+
+                        for(const item of listVouchers){
+                            // Xóa nhân sự ra khỏi voucher
+                            let info1 = await FNB_VOUCHER_COLL.findByIdAndUpdate(item,
+                                {
+                                    $pull: {
+                                        receivers: staffID,
+                                    },
+                                },
+                                { new: true })
+
+                            // console.log(info1)
+
+                            // Xóa voucher ra khỏi nhân sự
+                            let info2 = await ITEM__CONTACT_COLL.findByIdAndUpdate(staffID,
+                                {
+                                    $pull: {
+                                        getVouchers: item,
+                                    },
+                                },
+                                { new: true })
+
+                            // console.log(info2)
+                        }
+
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
+
+                    // Reset phép nhân viên
+                    else if(option == 7){
+                        let listUser = await USER_COLL.find({numberOnLeave:{$gt: 0}})
+                        for(const item of listUser){
+                            let numberOnLeave = 0
+                            let yearFilter = new Date().getFullYear() // Chỉ Xử lý nghỉ phép của năm hiện tại
+    
+                            let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
+                                {
+                                    $match: {
+                                        assignee: ObjectID(item._id),
+                                        subtype: 2,
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        hours: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(yearFilter),
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { },
+                                        hours: { $sum: "$hours" },
+                                    }
+                                },
+                            ])
+                            // console.log(listData)
+    
+                            if(listData.length){
+                                numberOnLeave = Number(listData[0].hours)/8
+                            }
+                            
+                            // Cập nhật nghỉ phép vào User
+                            await USER_COLL.findByIdAndUpdate(item._id, {
+                                numberOnLeave: numberOnLeave
+                            }, { new: true })
+                        }
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
+                     
+                }else{
+                    return resolve({ error: false, data: 'Pass không đúng, Reset thất bại' })
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -1271,150 +1432,6 @@ class Model extends BaseModel {
                 return resolve({ error: true, message: error.message })
             }
         });
-    }
-
-    resetData({ option, companyID, page, unit, getNumber, newPassword, pass, salaryID, staffID, voucherIDs }){
-        return new Promise(async resolve => { 
-            try {
-                if(pass && pass == 'Hiepnh1985@#'){
-                    if(option == 1){
-                        return resolve({ error: false, data: 'Reset thành công' });
-                    }else if(option == 2){
-                        if(companyID && checkObjectIDs(companyID)){
-                            const newPassHash = await hash(newPassword, 8)
-                            await USER_COLL.updateMany({company: companyID},{$set: {password: newPassHash}})
-                            return resolve({ error: false, data: 'Reset thành công' })
-                        }else{
-                            return resolve({ error: false, data: 'Reset thất bại' })
-                        }
-                    }
-                    // else if(option == 3){
-                    //     if(salaryID && checkObjectIDs(salaryID)){    
-                    //         await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({parent: salaryID})
-                    //         await TIMESHEET__EXPERT_SALARY_COLL.findByIdAndDelete(salaryID);
-                    //         return resolve({ error: false, data: 'Reset thành công' })
-                    //     }else{
-                    //         if(companyID && checkObjectIDs(companyID)){    
-                    //             await TIMESHEET__EXPERT_SALARY_COLL.deleteMany({company: companyID})
-                    //             return resolve({ error: false, data: 'Reset thành công' })
-                    //         }
-                    //     }
-                    // }
-                    else if(option == 4){
-                        await FNB_MISTAKE_COLL.deleteMany({company: companyID})
-                        await ITEM__FUNDA_COLL.updateMany({company: companyID},{$set: {
-                            numberOfMistakes: 0,
-                            amountOfBonus: 0,
-                            amountOfMistakes: 0,
-                        }})
-                        return resolve({ error: false, data: 'Reset thành công' })
-                    }
-
-                    // Reset nghỉ phép
-                    else if(option == 5){
-                        await USER_COLL.updateMany({company: companyID},{$set: {
-                            numberOnLeave: 0, // Số ngày đã nghỉ phép trong năm
-                        }})
-                        await ITEM__CONTACT_COLL.updateMany({company: companyID, linkUser: {$exists: true, $ne: null}},{$set: {
-                            numberOnLeave: 12, // Số ngày được nghỉ phép trong năm
-                            numberOnLeavePlus: 0,
-                        }})
-                        return resolve({ error: false, data: 'Reset thành công' })
-                    }
-
-                    // Reset Voucher nhân viên khi nghỉ việc
-                    else if(option == 6){
-                        // Danh sách voucher của Nhân viên
-                        let listData = await FNB_VOUCHER_COLL.find({company: companyID, type: 5 })
-                        let listVouchers = []
-
-                        if(checkObjectIDs(voucherIDs)){
-                            listVouchers = voucherIDs
-                        }else{
-                            listVouchers = listData.map(item => item._id)
-                        }
-                        // console.log(listVouchers)
-
-                        for(const item of listVouchers){
-                            // Xóa nhân sự ra khỏi voucher
-                            let info1 = await FNB_VOUCHER_COLL.findByIdAndUpdate(item,
-                                {
-                                    $pull: {
-                                        receivers: staffID,
-                                    },
-                                },
-                                { new: true })
-
-                            // console.log(info1)
-
-                            // Xóa voucher ra khỏi nhân sự
-                            let info2 = await ITEM__CONTACT_COLL.findByIdAndUpdate(staffID,
-                                {
-                                    $pull: {
-                                        getVouchers: item,
-                                    },
-                                },
-                                { new: true })
-
-                            // console.log(info2)
-                        }
-
-                        return resolve({ error: false, data: 'Reset thành công' })
-                    }
-
-                    // Reset phép nhân viên
-                    else if(option == 7){
-                        let listUser = await USER_COLL.find({numberOnLeave:{$gt: 0}})
-                        for(const item of listUser){
-                            let numberOnLeave = 0
-                            let yearFilter = new Date().getFullYear() // Chỉ Xử lý nghỉ phép của năm hiện tại
-    
-                            let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
-                                {
-                                    $match: {
-                                        assignee: ObjectID(item._id),
-                                        subtype: 2,
-                                    }
-                                },
-                                {
-                                    $project: {
-                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                        hours: 1,
-                                    }
-                                },
-                                {
-                                    $match: {
-                                        year: Number(yearFilter),
-                                    }
-                                },
-                                {
-                                    $group: {
-                                        _id: { },
-                                        hours: { $sum: "$hours" },
-                                    }
-                                },
-                            ])
-                            // console.log(listData)
-    
-                            if(listData.length){
-                                numberOnLeave = Number(listData[0].hours)/8
-                            }
-                            
-                            // Cập nhật nghỉ phép vào User
-                            await USER_COLL.findByIdAndUpdate(item._id, {
-                                numberOnLeave: numberOnLeave
-                            }, { new: true })
-                        }
-                        return resolve({ error: false, data: 'Reset thành công' })
-                    }
-                     
-                }else{
-                    return resolve({ error: false, data: 'Pass không đúng, Reset thất bại' })
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
     }
 
     exportExcel({ option, isPrivate, companyID, year, fromDate, toDate }){

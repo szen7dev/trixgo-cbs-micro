@@ -87,6 +87,11 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
+    //_________Link với Danh bạ
+    linkContact: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
     //_______Link với các danh bạ của các phân vùng: quản lý thông tin, bảng lương/tài chính
     contacts: [{
         type: Schema.Types.ObjectId,

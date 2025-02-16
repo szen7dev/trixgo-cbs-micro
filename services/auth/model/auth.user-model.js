@@ -30,6 +30,7 @@ const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.ac
 const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO }               = require("../../zalo_oa/helper/zalo.actions");
 
+const ITEM__FUNDA_COLL                  = require('../../item/database/item.funda-coll')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
@@ -108,11 +109,9 @@ class Model extends BaseModel {
     }
 
     login({ email, password }) {
-        // console.log({ email, password })
         return new Promise(async resolve => {
             try {
                 let strValid = email.toLowerCase().trim();
-
                 let isExist = await AUTH__USER_COLL
                     .findOne({ 
                         $or: [
@@ -131,7 +130,7 @@ class Model extends BaseModel {
                         message: 'Email không tồn tại',
                         keyError: "email_or_phone_not_exists",
                         status: 400
-                    });
+                    })
                 }
 
                 const isMatchPass = await compare(password, isExist.password)
@@ -185,14 +184,15 @@ class Model extends BaseModel {
                     company: isExist.company,
                     department: isExist.department,
                     contacts: isExist.contacts,
+                    linkContact: isExist.linkContact, // thay cho contacts
                     image: isExist.image,
                     signature: isExist.signature,
                     status: isExist.status,
                     level: isExist.level,
                     lang: isExist.lang,
                     groupDefault: isExist.groupDefault,
-                    balance: isExist.balance,
-                    rewards: isExist.rewards,
+                    balance: isExist.balance, // Bỏ đi -> cần lấy theo linkContact.balance
+                    rewards: isExist.rewards, // Bỏ đi -> cần lấy theo linkContact.rewards
                     _id: isExist._id,
                 }
 
@@ -235,15 +235,27 @@ class Model extends BaseModel {
      * Func: Lấy mã OTP theo email hoặc phone gửi về => TẠO TK MỚI TRÊN ECOM
      * Date: 5/11/2024
      */
-    getOTP({ email, ctx }) {
+    getOTP({ email, companyID, ctx }) {
         // console.log({ email })
         return new Promise(async resolve => {
             try {
+                const strValid = email.toLowerCase().trim();
+
+                // Hàm kiểm tra Email
+                function isValidEmail(str) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(str);
+                }         
+                
+                // Hàm kiểm tra Phone
+                function isValidVietnamPhoneNumber(str) {
+                    const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                    return phoneRegex.test(str);
+                }
+
                 let authorID = "6046c63b2c1dc33996dd97e7" // Trợ lý viên sàn ECOM: FIX
                 let fundaID = "670c4e1de5851300129f80c5" // Cơ sở sàn Ecom: FIX
                 let companyID = "6046c63a2c1dc33996dd9762" // Phân vùng set làm Sàn TMĐT (Medgo): FIX
-
-                const strValid = email.toLowerCase().trim();
 
                 // Kiểm tra Tài khoản xem đã tồn tại trong hệ thống hay chưa
                 const info = await AUTH__USER_COLL.findOne({
@@ -274,18 +286,6 @@ class Model extends BaseModel {
                 let password        = randomStringFixLengthCode(6);
                 let hashPassword    = await hash(password, 8);
                 if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
-
-                // Hàm kiểm tra Email
-                function isValidEmail(str) {
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    return emailRegex.test(str);
-                }         
-                
-                // Hàm kiểm tra Phone
-                function isValidVietnamPhoneNumber(str) {
-                    const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
-                    return phoneRegex.test(str);
-                }
 
                 console.log({____isMail: isValidEmail(strValid)});
                 console.log({____isPhone: isValidVietnamPhoneNumber(strValid)});
@@ -344,11 +344,12 @@ class Model extends BaseModel {
                             templateId: "382295", // Bắn OTP
                             appId: "3185213136011361427", // Zalo OA Trixgo
                         };
-                        // console.log(dataOA)
+                        console.log(dataOA)
                         let infoZNS = await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                             dataOA,
                         );
+                        console.log(infoZNS)
                     }
                     
                     return resolve({
@@ -457,6 +458,98 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Số điện thoại không hợp lệ' });
                     }
                 }                
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Author: HiepNH
+     * Func: Lấy mã OTP theo số điện thoại
+     * Date: 16/2/2025
+     */
+    getPhoneOtp({ phone, companyID, fundaID, ctx }) {
+        return new Promise(async resolve => {
+            try {
+                // Hàm kiểm tra Phone
+                const strValid = phone.toLowerCase().trim();      
+                function isValidVietnamPhoneNumber(str) {
+                    const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                    return phoneRegex.test(str);
+                }
+
+                if(!isValidVietnamPhoneNumber(strValid))
+                    return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
+
+                let authorID = "6046c63b2c1dc33996dd97e7" // Trợ lý viên sàn ECOM: FIX
+
+                if(checkObjectIDs(companyID)){
+                    let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
+                    if(infoFunda){
+                        fundaID = infoFunda._id
+                    }else{
+                        // Tạo đơn vị cơ sở
+                    }
+                }else{
+                    companyID = "6046c63a2c1dc33996dd9762" // Phân vùng set làm Sàn TMĐT (Medgo): FIX
+                    fundaID = "670c4e1de5851300129f80c5" // Cơ sở sàn Ecom: FIX
+                }
+
+                // Kiểm tra tài khoản xem tồn tại hay chưa
+                const info = await AUTH__USER_COLL.findOne({ phone: strValid })
+                .select('fullname email phone contacts codeReset')
+                // .populate({
+                //     path: 'contacts',
+                //     select: 'name email phone'
+                // })
+                console.log(info)
+
+                /**
+                 * Lấy thông tin danh bạ ứng với user
+                 * - Nếu chưa có thì tạo
+                 * - Nếu có thì kiểm tra để link với user
+                 */
+                let infoContact = await ITEM__CONTACT_COLL.findOne({
+                    company: companyID, 
+                    $or: [
+                        {  email: strValid },
+                        {  phone: strValid },
+                    ]
+                })
+                .select('_id name phone email linkUser')
+                // console.log({infoContact})
+
+                // Mã hóa password
+                let password        = randomStringFixLengthCode(6);
+                let hashPassword    = await hash(password, 8);
+                if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
+
+                if(info){
+                    console.log("Tài khoản đã tồn tại")
+                    /**
+                     * Gửi mã OTP để đăng nhập
+                     */
+
+
+                }else{
+                    console.log("Tài khoản chưa tồn tại")
+                    /**
+                     * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
+                     * Tạo danh bạ link với tài khoản
+                     */
+                    let dataInsert = {
+                        userCreate: authorID,
+                        company: companyID,
+                        password: hashPassword,
+                        fullname: `fullname ${strValid}-ECOM`,
+                        bizfullname: `fullname ${strValid}-ECOM`,
+                        level: 1,
+                        phone: strValid,
+                        email: `${strValid}.trx.ecom@gmail.com`
+                    }
+                }
+                             
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
