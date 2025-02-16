@@ -73,10 +73,33 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { email } = ctx.params;
+                const { email, companyID } = ctx.params;
                 console.log(ctx.params)
 
-                const infoUser = await AUTH__USER_MODEL.getOTP({ email, ctx });
+                const infoUser = await AUTH__USER_MODEL.getOTP({ email, companyID, ctx });
+                return infoUser;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Author: HiepNH
+     * Func: Lấy mã OTP theo số điện thoại
+     * Date: 16/2/2025
+     */
+    getPhoneOtp: {
+        params: {
+            phone: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { phone, companyID, fundaID } = ctx.params;
+                console.log(ctx.params)
+
+                const infoUser = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, fundaID, ctx });
                 return infoUser;
             } catch (error) {
                 return { error: true, message: error.message };
