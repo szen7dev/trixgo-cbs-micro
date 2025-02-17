@@ -378,7 +378,7 @@ class Model extends BaseModel {
 						.select(select)
 						.populate(populates)
 						.lean();
-                        console.log(info)
+                        // console.log(info)
 
 						if (!info) return resolve({ error: true, message: 'cannot_get_info' })
 
@@ -391,7 +391,7 @@ class Model extends BaseModel {
                     .findById(goodsID)
                     .select(select)
                     .populate(populates)
-                    console.log(info)
+                    // console.log(info)
 
                     if(!info)
                         return resolve({ error: true, message: "cannot_get_info", status: 403 });
@@ -399,44 +399,6 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: info, status: 200 });
 				}
 
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    getInfoKySuHiep({ goodsID, vimeoId, select, populates }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(goodsID && !checkObjectIDs(goodsID))
-                    return resolve({ error: true, message: 'Request params goodsID invalid', status: 400 });
-
-                 if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                 const filter = {};
-                 goodsID && (filter['_id'] = goodsID);
-                 vimeoId && (filter['sign'] = vimeoId);
-                 console.log({ filter })
-
-                let infoAterGet = await ITEM__GOODS_COLL.findOne(filter)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
-
-                if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 });
-
-                return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -542,8 +504,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -591,6 +552,44 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
 
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    getInfoKySuHiep({ goodsID, vimeoId, select, populates }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(goodsID && !checkObjectIDs(goodsID))
+                    return resolve({ error: true, message: 'Request params goodsID invalid', status: 400 });
+
+                 if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                 const filter = {};
+                 goodsID && (filter['_id'] = goodsID);
+                 vimeoId && (filter['sign'] = vimeoId);
+                 console.log({ filter })
+
+                let infoAterGet = await ITEM__GOODS_COLL.findOne(filter)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoAterGet)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 });
+
+                return resolve({ error: false, data: infoAterGet, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
