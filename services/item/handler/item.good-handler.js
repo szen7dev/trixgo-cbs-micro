@@ -101,7 +101,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { option, goodsID, companyID, projectID, parentID, fundaID, type, isParent, status, usage, menuSlug, slug, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const infoUser = ctx?.meta?.infoUser;
 
