@@ -234,4 +234,4 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref: 'user'
     },
-}) // Đảm bảo tự động tạo index
+})

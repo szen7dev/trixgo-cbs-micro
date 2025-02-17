@@ -53,6 +53,7 @@ module.exports = {
 		//============================   AUTH: USER   ==========================//
 		[CF_ACTIONS_AUTH.REGISTER] 									: AUTH__USER_HANDLER.register,
 		[CF_ACTIONS_AUTH.LOGIN] 									: AUTH__USER_HANDLER.login,
+		[CF_ACTIONS_AUTH.CHECK_USER_EXISTS]							: AUTH__USER_HANDLER.checkUserExists,
 		[CF_ACTIONS_AUTH.GET_OTP]									: AUTH__USER_HANDLER.getOTP,
 		[CF_ACTIONS_AUTH.GET_PHONE_OTP]								: AUTH__USER_HANDLER.getPhoneOtp,
 		[CF_ACTIONS_AUTH.RECOVER_PASSWORD]							: AUTH__USER_HANDLER.recoverPassword,

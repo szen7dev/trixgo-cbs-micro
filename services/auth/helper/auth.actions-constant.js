@@ -23,6 +23,7 @@ const CF_ACTIONS_AUTH = {
      */
     REGISTER        					: `${BASE_ACTIONS}_${USER}_REGISTER`,
     LOGIN           					: `${BASE_ACTIONS}_${USER}_LOGIN`,
+    CHECK_USER_EXISTS   				: `${BASE_ACTIONS}_${USER}_CHECK_USER_EXISTS`,
     GET_OTP   					        : `${BASE_ACTIONS}_${USER}_GET_OTP`,
     GET_PHONE_OTP   				    : `${BASE_ACTIONS}_${USER}_GET_PHONE_OTP`,
     RECOVER_PASSWORD   					: `${BASE_ACTIONS}_${USER}_RECOVER_PASSWORD`,

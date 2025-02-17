@@ -206,12 +206,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove
-     * Author: Hiepnh
-     * Date: 9/4/2022
-     */
-
-    /**
      * Name: Get info 
      * Author: Hiepnh
      * Date: 9/4/2022
