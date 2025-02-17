@@ -2,7 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
-
+const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 /**
  * MODELS
  */
@@ -84,9 +84,7 @@ module.exports = {
     getInfoAndGetList: {
         params: {
             goodsID         : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
-            isListParentOfListChilds: { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -99,13 +97,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, goodsID, companyID, projectID, parentID, fundaID, type, isParent, status, usage, menuSlug, slug, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
+                let { option, optionSeller, goodsID, projectID, parentID, fundaID, type, isParent, status, usage, menuSlug, slug, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const infoUser = ctx?.meta?.infoUser;
 
-                if(!companyID && infoUser?.company){
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
                     companyID = infoUser?.company?._id
                 }
 
