@@ -520,11 +520,10 @@ class Model extends BaseModel {
                     if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
 
                     if(info){
-                        // console.log("Tài khoản đã tồn tại")
+                        console.log("Tài khoản đã tồn tại")
                         /**
                          * Gửi mã OTP để đăng nhập
                          */
-                        
                         if(infoContact){
                             // link user với contact
                             await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
@@ -589,11 +588,12 @@ class Model extends BaseModel {
 
                         return resolve({
                             error: false,
+                            isExist: 1,
                             data: password,
                             status: 200
                         })
                     }else{
-                        // console.log("Tài khoản chưa tồn tại")
+                        console.log("Tài khoản chưa tồn tại")
                         /**
                          * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
                          * Tạo danh bạ link với tài khoản
@@ -665,6 +665,7 @@ class Model extends BaseModel {
 
                         return resolve({
                             error: false,
+                            isExist: 0,
                             data: password,
                             status: 200
                         })
