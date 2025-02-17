@@ -1,13 +1,10 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-
+const crypto                            = require("crypto");
 const AUTH__USER_COLL                   = require('../database/auth.user-coll');
 const AUTH__COMPANY_COLL                = require('../database/auth.company-coll');
 
-/**
- * import util files
- */
 const { randomStringFixLengthCode }     = require('../../../tools/utils/string_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
@@ -505,7 +502,6 @@ class Model extends BaseModel {
         })
     }
 
-
     /**
      * Author: HiepNH
      * Func: Lấy mã OTP theo số điện thoại
@@ -558,7 +554,11 @@ class Model extends BaseModel {
                     // console.log({infoContact})
 
                     // Mã hóa password
-                    let password        = randomStringFixLengthCode(6);
+                    function getRandom6Digits() {
+                        return (crypto.randomInt(100000, 1000000)).toString();
+                      }
+                    // let password        = randomStringFixLengthCode(6);
+                    let password        = getRandom6Digits()
                     let hashPassword    = await hash(password, 8);
                     if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
 
