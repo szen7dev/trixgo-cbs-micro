@@ -63,6 +63,28 @@ module.exports = {
 
     /**
      * Author: HiepNH
+     * Func: checkUserExists
+     * Date: 16/2/2025
+     */
+    checkUserExists: {
+        params: {
+            phone: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { phone } = ctx.params;
+
+                const infoUser = await AUTH__USER_MODEL.checkUserExists({ phone });
+                return infoUser;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Author: HiepNH
      * Func: Lấy mã OTP theo email hoặc phone gửi về
      * Date: 5/11/2024
      */

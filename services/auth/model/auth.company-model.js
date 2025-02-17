@@ -11,6 +11,9 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
  * COLLECTION
  */
 const AUTH__COMPANY_COLL                = require('../database/auth.company-coll');
+const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll')
+
+const ITEM__FUNDA_MODEL                 = require('../../item/model/item.funda-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -21,13 +24,15 @@ class Model extends BaseModel {
     insert({ name, sign, taxid, address, area, phone, email, description, birthDay, website, userID }) {
         return new Promise(async (resolve) => {
             try {
+                if(!name || !sign)
+                    return resolve({ error: true, message: `Dữ liệu không hợp lệ` });
+
                 let info = await AUTH__COMPANY_COLL.findOne({
                     $or: [
                         { name: name },
                         { sign: sign },
                     ]
                 }).select('_id name sign')
-
                 if(info)
                     return resolve({ error: true, message: `Tên/Mã hiệu đã tồn tại: ${info.name}` });
 
@@ -35,11 +40,21 @@ class Model extends BaseModel {
                     name, sign, taxid, address, area, phone, email, description, birthDay, website, userCreate: userID, userUpdate: userID,
                 }
 
-                let infoCompanyAfterSave = await this.insertData(dataInsert);
-                if(!infoCompanyAfterSave)
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED });
 
-                return resolve({ error: false, data: infoCompanyAfterSave });
+                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: infoAfterInsert._id}).select('name sign')
+                if(!infoFunda){
+                    await ITEM__FUNDA_MODEL.insert({ 
+                        companyID: infoAfterInsert._id, 
+                        userID,
+                        name: infoAfterInsert.name, 
+                        sign: infoAfterInsert.sign
+                    })
+                }
+
+                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -47,7 +62,6 @@ class Model extends BaseModel {
     }
 
     update({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID, bankName, bankAccount, bank }) {
-        // console.log({ companyID, name, sign, taxid, address, area, phone, email, description, birthDay, image, website, userID, bankName, bankAccount, bank })
         return new Promise(async (resolve) => {
             try {
                 let infoCompany = await AUTH__COMPANY_COLL.findById(companyID);

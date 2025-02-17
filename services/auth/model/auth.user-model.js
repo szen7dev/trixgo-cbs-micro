@@ -1,13 +1,10 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-
+const crypto                            = require("crypto");
 const AUTH__USER_COLL                   = require('../database/auth.user-coll');
 const AUTH__COMPANY_COLL                = require('../database/auth.company-coll');
 
-/**
- * import util files
- */
 const { randomStringFixLengthCode }     = require('../../../tools/utils/string_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
 const { sign, verify }                  = require('../../../tools/jwt');
@@ -30,12 +27,12 @@ const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.ac
 const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO }               = require("../../zalo_oa/helper/zalo.actions");
 
+const COMPANY_COLL                      = require('../../auth/database/auth.company-coll')
 const ITEM__FUNDA_COLL                  = require('../../item/database/item.funda-coll')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../../timesheet/database/timesheet.expert_salary-coll');
-const e = require('express');
 
 const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;
 class Model extends BaseModel {
@@ -232,11 +229,52 @@ class Model extends BaseModel {
 
     /**
      * Author: HiepNH
+     * Func: Kiểm tra user tồn tại hay không theo Email hoặc điện thoại
+     * Date: 16/2/2025
+     */
+    checkUserExists({ phone }) {
+        return new Promise(async resolve => {
+            try {
+                // Hàm kiểm tra Email
+                function isValidEmail(str) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(str);
+                }   
+
+                // Hàm kiểm tra Phone
+                const strValid = phone.toLowerCase().trim();      
+                function isValidVietnamPhoneNumber(str) {
+                    const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                    return phoneRegex.test(str);
+                }
+
+                if(isValidVietnamPhoneNumber(strValid) || isValidEmail(strValid)){
+                    let infoUser = await AUTH__USER_COLL.findOne({
+                        $or: [
+                            {  email: strValid },
+                            {  phone: strValid },
+                        ]
+                     })
+                    if(!infoUser){
+                            return resolve({ error: true, message: 'Tài khoản chưa tồn tại', status: 400 })
+                    }else{
+                        return resolve({ error: false, message: 'Tài khoản đã tồn tại', status: 200 })
+                    }
+                }else{
+                    return resolve({ error: true, message: "Số điện thoại|Email không hợp lệ. Hãy vui lòng thử lại" })
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Author: HiepNH
      * Func: Lấy mã OTP theo email hoặc phone gửi về => TẠO TK MỚI TRÊN ECOM
      * Date: 5/11/2024
      */
-    getOTP({ email, companyID, ctx }) {
-        // console.log({ email })
+    getOTP({ email, ctx }) {
         return new Promise(async resolve => {
             try {
                 const strValid = email.toLowerCase().trim();
@@ -265,10 +303,10 @@ class Model extends BaseModel {
                     ]
                 })
                 .select('fullname email phone contacts codeReset')
-                .populate({
-                    path: 'contacts',
-                    select: 'name email phone'
-                })
+                // .populate({
+                //     path: 'contacts',
+                //     select: 'name email phone'
+                // })
                 // console.log(info)
 
                 // Kiểm tra/Tạo danh bạ/Link với tài khoản
@@ -287,13 +325,13 @@ class Model extends BaseModel {
                 let hashPassword    = await hash(password, 8);
                 if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
 
-                console.log({____isMail: isValidEmail(strValid)});
-                console.log({____isPhone: isValidVietnamPhoneNumber(strValid)});
+                // console.log({____isMail: isValidEmail(strValid)});
+                // console.log({____isPhone: isValidVietnamPhoneNumber(strValid)});
 
                 // Reset pass/code
                 if (info) {
                     if(infoContact){
-                        console.log('oldddd11111111111111111111111')
+                        // console.log('oldddd11111111111111111111111')
                         // link user với contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
                             linkUser: info._id
@@ -336,20 +374,20 @@ class Model extends BaseModel {
                         console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
                         const removeFirst1 = `84${strValid.slice(1)}`;
                         let dataOA = {
-                            phone: `${removeFirst1}`,
                             // phone: "84985199295",
+                            phone: `${removeFirst1}`,
                             templateData: {
                                 otp: password,
                             },
                             templateId: "382295", // Bắn OTP
                             appId: "3185213136011361427", // Zalo OA Trixgo
                         };
-                        console.log(dataOA)
+                        // console.log(dataOA)
                         let infoZNS = await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                             dataOA,
                         );
-                        console.log(infoZNS)
+                        // console.log(infoZNS)
                     }
                     
                     return resolve({
@@ -365,7 +403,7 @@ class Model extends BaseModel {
                 else{
                     // Bắt buộc phải tạo bằng Số điện thoại
                     if(isValidVietnamPhoneNumber(strValid)){                            
-                        console.log('newwww111111111111111111')
+                        // console.log('newwww111111111111111111')
                         // Tạo tài khoản trên phân vùng ECOM
                         let dataInsert = {
                             userCreate: authorID,
@@ -382,9 +420,9 @@ class Model extends BaseModel {
                         if (!infoUserAfterInsert)
                             return resolve({ error: true, message: 'cannot_insert_data' });
 
-                        console.log('newwww22222222222222222222')
+                        // console.log('newwww22222222222222222222')
                         if(infoContact){
-                            console.log('newwww333333333333333333')
+                            // console.log('newwww333333333333333333')
                             // link user với contact
                             await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
                                 linkUser: infoUserAfterInsert._id
@@ -394,7 +432,7 @@ class Model extends BaseModel {
                                 $addToSet: { contacts: infoContact._id } 
                             }, { new: true });
                         }else{
-                            console.log('newwww44444444444444444444')
+                            // console.log('newwww44444444444444444444')
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 authorID, 
                                 fundaID,
@@ -405,7 +443,7 @@ class Model extends BaseModel {
                             });
 
                             // console.log({infoNewContact})
-                            console.log('newwww55555555555555555555555')
+                            // console.log('newwww55555555555555555555555')
 
                             // link user với contact
                             if(infoNewContact){
@@ -434,20 +472,20 @@ class Model extends BaseModel {
                         console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
                         const removeFirst1 = `84${strValid.slice(1)}`;
                         let dataOA = {
-                            // phone: `${removeFirst1}`,
-                            phone: "84985199295",
+                            // phone: "84985199295",
+                            phone: `${removeFirst1}`,
                             templateData: {
                                 otp: password,
                             },
                             templateId: "382295", // Bắn OTP
                             appId: "3185213136011361427", // Zalo OA Trixgo
                         };
-                        console.log(dataOA)
+                        // console.log(dataOA)
                         let infoZNS = await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                             dataOA,
                         );
-                        console.log(infoZNS)
+                        // console.log(infoZNS)
 
                         return resolve({
                             error: false,
@@ -488,68 +526,193 @@ class Model extends BaseModel {
                     let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
                     if(infoFunda){
                         fundaID = infoFunda._id
-                    }else{
-                        // Tạo đơn vị cơ sở
                     }
                 }else{
                     companyID = "6046c63a2c1dc33996dd9762" // Phân vùng set làm Sàn TMĐT (Medgo): FIX
                     fundaID = "670c4e1de5851300129f80c5" // Cơ sở sàn Ecom: FIX
                 }
 
-                // Kiểm tra tài khoản xem tồn tại hay chưa
-                const info = await AUTH__USER_COLL.findOne({ phone: strValid })
-                .select('fullname email phone contacts codeReset')
-                // .populate({
-                //     path: 'contacts',
-                //     select: 'name email phone'
-                // })
-                console.log(info)
+                let infoCompany = await COMPANY_COLL.findById(companyID)
+                if(infoCompany){
+                    // Kiểm tra tài khoản xem tồn tại hay chưa
+                    const info = await AUTH__USER_COLL.findOne({ phone: strValid })
+                    .select('fullname email phone contacts codeReset')
 
-                /**
-                 * Lấy thông tin danh bạ ứng với user
-                 * - Nếu chưa có thì tạo
-                 * - Nếu có thì kiểm tra để link với user
-                 */
-                let infoContact = await ITEM__CONTACT_COLL.findOne({
-                    company: companyID, 
-                    $or: [
-                        {  email: strValid },
-                        {  phone: strValid },
-                    ]
-                })
-                .select('_id name phone email linkUser')
-                // console.log({infoContact})
-
-                // Mã hóa password
-                let password        = randomStringFixLengthCode(6);
-                let hashPassword    = await hash(password, 8);
-                if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
-
-                if(info){
-                    console.log("Tài khoản đã tồn tại")
                     /**
-                     * Gửi mã OTP để đăng nhập
+                     * Lấy thông tin danh bạ ứng với user
+                     * - Nếu chưa có thì tạo
+                     * - Nếu có thì kiểm tra để link với user
                      */
+                    let infoContact = await ITEM__CONTACT_COLL.findOne({
+                        company: companyID, 
+                        $or: [
+                            {  email: strValid },
+                            {  phone: strValid },
+                        ]
+                    })
+                    .select('_id name phone email linkUser')
+                    // console.log({infoContact})
 
+                    // Mã hóa password
+                    function getRandom6Digits() {
+                        return (crypto.randomInt(100000, 1000000)).toString();
+                      }
+                    // let password        = randomStringFixLengthCode(6);
+                    let password        = getRandom6Digits()
+                    let hashPassword    = await hash(password, 8);
+                    if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
 
-                }else{
-                    console.log("Tài khoản chưa tồn tại")
-                    /**
-                     * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
-                     * Tạo danh bạ link với tài khoản
-                     */
-                    let dataInsert = {
-                        userCreate: authorID,
-                        company: companyID,
-                        password: hashPassword,
-                        fullname: `fullname ${strValid}-ECOM`,
-                        bizfullname: `fullname ${strValid}-ECOM`,
-                        level: 1,
-                        phone: strValid,
-                        email: `${strValid}.trx.ecom@gmail.com`
+                    if(info){
+                        console.log("Tài khoản đã tồn tại")
+                        /**
+                         * Gửi mã OTP để đăng nhập
+                         */
+                        if(infoContact){
+                            // link user với contact
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
+                                linkUser: info._id
+                            }, { new: true })
+    
+                            await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                                linkContact: infoContact._id,
+                                $addToSet: { contacts: infoContact._id } 
+                            }, { new: true });
+                        }else{
+                            let infoNewContact = await ITEM__CONTACT_MODEL.insert({
+                                authorID, 
+                                fundaID,
+                                type: 2, 
+                                name: `fullname ${strValid}-${infoCompany.sign}`,
+                                phone: strValid, 
+                                email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
+                            })
+
+                            if(infoNewContact){
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
+                                    linkUser: info._id
+                                }, { new: true })
+    
+                                await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                                    linkContact: infoNewContact.data._id,
+                                    $addToSet: { contacts: infoNewContact.data._id } 
+                                }, { new: true })
+                            }
+                        }
+        
+                        const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                            codeReset: password
+                        }, { new: true });
+        
+                        if (!infoAfterUpdateCode) {
+                            return resolve({
+                                error: true,
+                                message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                                keyError: "error_occurred",
+                                status: 422
+                            })
+                        }
+
+                        // Gửi mã OTP
+                        // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                        const removeFirst1 = `84${strValid.slice(1)}`;
+                        let dataOA = {
+                            // phone: "84985199295",
+                            phone: `${removeFirst1}`,
+                            templateData: {
+                                otp: password,
+                            },
+                            templateId: "382295", // Bắn OTP
+                            appId: "3185213136011361427", // Zalo OA Trixgo
+                        }
+                        await ctx.call(
+                            `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                            dataOA,
+                        )
+
+                        return resolve({
+                            error: false,
+                            data: password,
+                            status: 200
+                        })
+                    }else{
+                        console.log("Tài khoản chưa tồn tại")
+                        /**
+                         * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
+                         * Tạo danh bạ link với tài khoản
+                         */
+                        let dataInsert = {
+                            userCreate: authorID,
+                            company: companyID,
+                            password: hashPassword,
+                            fullname: `fullname ${strValid}-${infoCompany.sign}`,
+                            bizfullname: `fullname ${strValid}-${infoCompany.sign}`,
+                            level: 1,
+                            phone: strValid,
+                            email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
+                        }
+
+                        let infoUserAfterInsert = await this.insertData(dataInsert)
+                        if (!infoUserAfterInsert)
+                            return resolve({ error: true, message: 'cannot_insert_data' })
+
+                        // link user với contact
+                        if(infoContact){
+                            await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
+                                linkUser: infoUserAfterInsert._id
+                            }, { new: true })
+
+                            await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                                linkContact: infoContact._id,
+                                $addToSet: { contacts: infoContact._id },
+                            }, { new: true });
+                        }else{
+                            let infoNewContact = await ITEM__CONTACT_MODEL.insert({
+                                authorID, 
+                                fundaID,
+                                type: 2, 
+                                name: `fullname ${strValid}-${infoCompany.sign}`,
+                                phone: strValid, 
+                                email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
+                            })
+
+                            if(infoNewContact){
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
+                                    linkUser: infoUserAfterInsert._id
+                                }, { new: true })
+    
+                                await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                                    linkContact: infoNewContact.data._id,
+                                    $addToSet: { contacts: infoNewContact.data._id } 
+                                }, { new: true })
+                            }
+                        }
+
+                        // Gửi mã OTP
+                        // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                        const removeFirst1 = `84${strValid.slice(1)}`;
+                        let dataOA = {
+                            // phone: "84985199295",
+                            phone: `${removeFirst1}`,
+                            templateData: {
+                                otp: password,
+                            },
+                            templateId: "382295", // Bắn OTP
+                            appId: "3185213136011361427", // Zalo OA Trixgo
+                        }
+                        await ctx.call(
+                            `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                            dataOA,
+                        )
+
+                        return resolve({
+                            error: false,
+                            data: password,
+                            status: 200
+                        })
                     }
-                }
-                             
+                }else{
+                    return resolve({ error: true, message: "Không lấy được dữ liệu" })
+                }    
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
