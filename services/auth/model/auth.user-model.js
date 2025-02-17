@@ -232,6 +232,48 @@ class Model extends BaseModel {
 
     /**
      * Author: HiepNH
+     * Func: Kiểm tra user tồn tại hay không theo Email hoặc điện thoại
+     * Date: 16/2/2025
+     */
+    checkUserExists({ phone }) {
+        return new Promise(async resolve => {
+            try {
+                // Hàm kiểm tra Email
+                function isValidEmail(str) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    return emailRegex.test(str);
+                }   
+
+                // Hàm kiểm tra Phone
+                const strValid = phone.toLowerCase().trim();      
+                function isValidVietnamPhoneNumber(str) {
+                    const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                    return phoneRegex.test(str);
+                }
+
+                if(isValidVietnamPhoneNumber(strValid) || isValidEmail(strValid)){
+                    let infoUser = await AUTH__USER_COLL.findOne({
+                        $or: [
+                            {  email: strValid },
+                            {  phone: strValid },
+                        ]
+                     })
+                    if(!infoUser){
+                            return resolve({ error: true, message: 'Tài khoản chưa tồn tại', status: 400 })
+                    }else{
+                        return resolve({ error: false, data: infoUser, status: 200 })
+                    }
+                }else{
+                    return resolve({ error: true, message: "Số điện thoại|Email không hợp lệ. Hãy vui lòng thử lại" })
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Author: HiepNH
      * Func: Lấy mã OTP theo email hoặc phone gửi về => TẠO TK MỚI TRÊN ECOM
      * Date: 5/11/2024
      */
@@ -463,6 +505,7 @@ class Model extends BaseModel {
         })
     }
 
+
     /**
      * Author: HiepNH
      * Func: Lấy mã OTP theo số điện thoại
@@ -588,7 +631,6 @@ class Model extends BaseModel {
 
                         return resolve({
                             error: false,
-                            isExist: 1,
                             data: password,
                             status: 200
                         })
@@ -598,7 +640,6 @@ class Model extends BaseModel {
                          * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
                          * Tạo danh bạ link với tài khoản
                          */
-                        // console.log('newwww111111111111111111')
                         let dataInsert = {
                             userCreate: authorID,
                             company: companyID,
@@ -665,7 +706,6 @@ class Model extends BaseModel {
 
                         return resolve({
                             error: false,
-                            isExist: 0,
                             data: password,
                             status: 200
                         })
