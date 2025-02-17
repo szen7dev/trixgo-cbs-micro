@@ -261,7 +261,7 @@ class Model extends BaseModel {
                     if(!infoUser){
                             return resolve({ error: true, message: 'Tài khoản chưa tồn tại', status: 400 })
                     }else{
-                        return resolve({ error: false, data: infoUser, status: 200 })
+                        return resolve({ error: false, message: 'Tài khoản đã tồn tại', status: 200 })
                     }
                 }else{
                     return resolve({ error: true, message: "Số điện thoại|Email không hợp lệ. Hãy vui lòng thử lại" })
