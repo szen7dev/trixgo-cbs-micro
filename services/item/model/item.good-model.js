@@ -39,7 +39,6 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID, fundaID, nods, date }){
-        // console.log({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")
@@ -200,7 +199,6 @@ class Model extends BaseModel {
 	 * Date: 13/12/2021
 	 */
 	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date }){
-        // console.log({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date })
         return new Promise(async resolve => {
             try {
 				let info = await ITEM__GOODS_COLL.findById(goodsID)
@@ -359,7 +357,6 @@ class Model extends BaseModel {
      * Code:
      */
     getInfo({ companyID, goodsID, slug, select, populates }) {
-        console.log({ companyID, goodsID, slug, select, populates })
         return new Promise(async (resolve) => {
             try {
                  if(populates && typeof populates === 'string'){
@@ -479,7 +476,8 @@ class Model extends BaseModel {
                 }
 
                 if(forCustomer && !isNaN(forCustomer)){
-                    conditionObj.forCustomer = Number(forCustomer)
+                    // conditionObj.forCustomer = Number(forCustomer)
+                    conditionObj.usage = 2
                 }
 
                 // Chỉ lấy danh mục
