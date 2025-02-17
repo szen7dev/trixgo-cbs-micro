@@ -3,6 +3,7 @@
  */
 const { renderStatusCodeAndResponse } 			= require('../../../tools/utils/status_code')
 const { validateDomainAndPlatform }             = require('../helper/auth.keys-constant')
+const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 
 /**
  * MODEL
@@ -96,7 +97,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { email, companyID } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const infoUser = await AUTH__USER_MODEL.getOTP({ email, companyID, ctx });
                 return infoUser;
@@ -118,10 +119,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { phone, companyID, fundaID } = ctx.params;
-                console.log(ctx.params)
+                const { optionSeller, phone } = ctx.params;
 
-                const infoUser = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, fundaID, ctx });
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }
+
+                const infoUser = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, ctx });
                 return infoUser;
             } catch (error) {
                 return { error: true, message: error.message };
