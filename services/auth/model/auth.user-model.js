@@ -520,7 +520,7 @@ class Model extends BaseModel {
                     if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
 
                     if(info){
-                        console.log("Tài khoản đã tồn tại")
+                        // console.log("Tài khoản đã tồn tại")
                         /**
                          * Gửi mã OTP để đăng nhập
                          */
@@ -571,7 +571,7 @@ class Model extends BaseModel {
                         }
 
                         // Gửi mã OTP
-                        console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                        // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
                         const removeFirst1 = `84${strValid.slice(1)}`;
                         let dataOA = {
                             // phone: "84985199295",
@@ -593,7 +593,7 @@ class Model extends BaseModel {
                             status: 200
                         })
                     }else{
-                        console.log("Tài khoản chưa tồn tại")
+                        // console.log("Tài khoản chưa tồn tại")
                         /**
                          * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
                          * Tạo danh bạ link với tài khoản
@@ -647,7 +647,7 @@ class Model extends BaseModel {
                         }
 
                         // Gửi mã OTP
-                        console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                        // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
                         const removeFirst1 = `84${strValid.slice(1)}`;
                         let dataOA = {
                             // phone: "84985199295",
