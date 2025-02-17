@@ -181,7 +181,7 @@ class Model extends BaseModel {
                     company: isExist.company,
                     department: isExist.department,
                     contacts: isExist.contacts,
-                    linkContact: isExist.linkContact, // thay cho contacts
+                    // linkContact: isExist.linkContact, // thay cho contacts
                     image: isExist.image,
                     signature: isExist.signature,
                     status: isExist.status,
@@ -537,6 +537,7 @@ class Model extends BaseModel {
                     // Kiểm tra tài khoản xem tồn tại hay chưa
                     const info = await AUTH__USER_COLL.findOne({ phone: strValid })
                     .select('fullname email phone contacts codeReset')
+                    // console.log(info)
 
                     /**
                      * Lấy thông tin danh bạ ứng với user
@@ -574,7 +575,7 @@ class Model extends BaseModel {
                             }, { new: true })
     
                             await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                                linkContact: infoContact._id,
+                                // linkContact: infoContact._id,
                                 $addToSet: { contacts: infoContact._id } 
                             }, { new: true });
                         }else{
@@ -593,7 +594,7 @@ class Model extends BaseModel {
                                 }, { new: true })
     
                                 await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                                    linkContact: infoNewContact.data._id,
+                                    // linkContact: infoNewContact.data._id,
                                     $addToSet: { contacts: infoNewContact.data._id } 
                                 }, { new: true })
                             }
@@ -662,7 +663,7 @@ class Model extends BaseModel {
                             }, { new: true })
 
                             await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                                linkContact: infoContact._id,
+                                // linkContact: infoContact._id,
                                 $addToSet: { contacts: infoContact._id },
                             }, { new: true });
                         }else{
@@ -681,7 +682,7 @@ class Model extends BaseModel {
                                 }, { new: true })
     
                                 await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                                    linkContact: infoNewContact.data._id,
+                                    // linkContact: infoNewContact.data._id,
                                     $addToSet: { contacts: infoNewContact.data._id } 
                                 }, { new: true })
                             }

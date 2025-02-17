@@ -96,6 +96,14 @@ exports.DOCUMENT_STATUS = [
     { value: 2, text: 'Hết hiệu lực' },
 ]
 
+exports.OPTION_SELLERS = [
+    { value: 1, company: '5e047dc05e30dce72849a4a4' }, // Kiểm thử
+    { value: 2, company: '6046bedeb55525368b11c5c3' }, // Winggo
+    { value: 3, company: '6046c4d32c1dc33996dd5bab' }, // EL2
+    { value: 4, company: '6046c6e92c1dc33996ddc089' }, // Việt Nguyên Clinic
+    { value: 5, company: '66df9da769209a00126d7667' }, // GENSAKI
+]
+
 exports.ITEM_ACCOUNTS = [
     { 
         name: 111, description: 'Tiền mặt',

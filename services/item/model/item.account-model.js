@@ -227,7 +227,6 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {},
         status, type, level
     }) {
-        // console.log( {option, companyID, parentID, arrNames, isListParentOfListChilds, keyword, limit, lastestID, select, populates, status, type, level })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -358,7 +357,6 @@ class Model extends BaseModel {
 	 * Date: 29/7/2023
 	 */
     getListRecursive({ companyID, arrAccNames, status }){
-        // console.log({ companyID, arrAccNames, status })
         return new Promise(async (resolve) => {
             try {
                 if( !ObjectID.isValid(companyID))
