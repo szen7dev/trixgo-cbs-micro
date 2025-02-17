@@ -109,10 +109,10 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     nods: { type: Number, default: 0 },
     //_________Đơn giá nhập
     unitprice: { type: Number, default: 0 },
-    //_________Đơn giá niêm Yết
-    listedUnitprice: { type: Number, default: 0 },
     //_________Đơn giá xuất bán
     sellingUnitprice: { type: Number, default: 0 },
+    //_________Đơn giá niêm Yết
+    listedUnitprice: { type: Number, default: 0 },
     //_________Số lượng đã bán ra
     quantitySold: { type: Number, default: 0 },
     //_________Rating chất lượng phục vụ
