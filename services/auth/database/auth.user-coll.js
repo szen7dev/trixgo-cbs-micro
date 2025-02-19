@@ -58,13 +58,13 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     bankName: String,
     //_________Swift code ngân hàng
     bankSwiftCode: String,
-    /**
-     * KHÁCH HÀNG
-     */
-    //_________Số dư tài khoản
-    balance: { type: Number, default: 0 },
-    //_________Điểm thưởng
-    rewards: { type: Number, default: 0 },
+    // /**
+    //  * KHÁCH HÀNG
+    //  */
+    // //_________Số dư tài khoản
+    // balance: { type: Number, default: 0 },
+    // //_________Điểm thưởng
+    // rewards: { type: Number, default: 0 },
     //_______Ngày sinh
     birthDay: {
         type   : Date,
