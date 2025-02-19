@@ -281,6 +281,24 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     recipientPhone: String,
     //_________
     recipientAddress: String,
+    /**
+     * Khu vực
+     */
+    //_________Tỉnh/Thành phố (lấy theo Funda)
+    area1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện/Quận (lấy theo Funda)
+    area2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Xã/Phường (lấy theo Funda)
+    area3: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
     //_________Product
     products : [{
         type   : Schema.Types.ObjectId,
