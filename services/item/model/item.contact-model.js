@@ -429,46 +429,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                /**
-                 * TẠO TÀI KHOẢN CHO KHÁCH HÀNG
-                 */
-                // if (option) {
-                //     let companyID, departmentID, positionID, userID;
-
-                //     // Dành cho Việt Nguyên Holding
-                //     if (option == 1) {
-                //         companyID = '6046be79b55525368b11bc2b';
-                //         departmentID = '6046be79b55525368b11bc36';
-                //         positionID = '6046be79b55525368b11bc38';
-                //         userID = '6046be7ab55525368b11bc7d';
-                //     }
-
-                //     let infoUserCustomer = await AUTH__USER.insert({
-                //         email,
-                //         fullname: name,
-                //         level: 1,
-                //         departmentID,
-                //         positionID,
-                //         companyID,
-                //         phone,
-                //         userID
-                //     })
-
-                //     if (infoUserCustomer && infoUserCustomer.data) {
-                //         await USER_COLL.findByIdAndUpdate(infoUserCustomer.data._id,
-                //             {
-                //                 $addToSet: { contacts: infoAfterInsert._id }
-                //             },
-                //             { new: true })
-
-                //         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoAfterInsert._id,
-                //             {
-                //                 linkUser: infoUserCustomer.data._id
-                //             },
-                //             { new: true })
-                //     }
-                // }
-
                 // Cập nhật linkUser với tài khoản
                 if (linkUser && checkObjectIDs(linkUser)) {
                     await USER_COLL.findByIdAndUpdate(linkUser,
@@ -538,9 +498,6 @@ class Model extends BaseModel {
                         })
                     }
                 }
-
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
 
                 return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
@@ -704,7 +661,6 @@ class Model extends BaseModel {
                 if (linkUser && checkObjectIDs(linkUser)) {
                     // Kiểm tra xem đã tồn tại hay chưa, nếu tồn tại rồi thì không cho link nữa
                     let checkExist = await ITEM__CONTACT_COLL.findOne({ linkUser: linkUser, company: company })
-                    // console.log(checkExist)
                     if (!checkExist) {
                         dataUpdate.linkUser = linkUser;
                     }
@@ -964,6 +920,9 @@ class Model extends BaseModel {
                 }
 
                 // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
+                /**
+                 * Xử lý lại BA cho chuẩn????
+                 */
                 if (linkUser && checkObjectIDs(linkUser)) {
                     await USER_COLL.findByIdAndUpdate(linkUser,
                         {

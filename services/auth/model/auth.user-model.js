@@ -118,7 +118,7 @@ class Model extends BaseModel {
                      })
                     .populate({
                         path: 'company department contacts',
-                        select: '_id name phone email sign image debt'
+                        select: '_id company name phone email sign image debt balance rewards'
                     })
 
                 if (!isExist) {
@@ -181,15 +181,12 @@ class Model extends BaseModel {
                     company: isExist.company,
                     department: isExist.department,
                     contacts: isExist.contacts,
-                    // linkContact: isExist.linkContact, // thay cho contacts
                     image: isExist.image,
                     signature: isExist.signature,
                     status: isExist.status,
                     level: isExist.level,
                     lang: isExist.lang,
                     groupDefault: isExist.groupDefault,
-                    balance: isExist.balance, // Bỏ đi -> cần lấy theo linkContact.balance
-                    rewards: isExist.rewards, // Bỏ đi -> cần lấy theo linkContact.rewards
                     _id: isExist._id,
                 }
 
@@ -575,7 +572,6 @@ class Model extends BaseModel {
                             }, { new: true })
     
                             await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                                // linkContact: infoContact._id,
                                 $addToSet: { contacts: infoContact._id } 
                             }, { new: true });
                         }else{
@@ -594,7 +590,6 @@ class Model extends BaseModel {
                                 }, { new: true })
     
                                 await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                                    // linkContact: infoNewContact.data._id,
                                     $addToSet: { contacts: infoNewContact.data._id } 
                                 }, { new: true })
                             }
@@ -663,7 +658,6 @@ class Model extends BaseModel {
                             }, { new: true })
 
                             await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                                // linkContact: infoContact._id,
                                 $addToSet: { contacts: infoContact._id },
                             }, { new: true });
                         }else{
@@ -682,7 +676,6 @@ class Model extends BaseModel {
                                 }, { new: true })
     
                                 await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                                    // linkContact: infoNewContact.data._id,
                                     $addToSet: { contacts: infoNewContact.data._id } 
                                 }, { new: true })
                             }
