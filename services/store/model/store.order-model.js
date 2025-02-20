@@ -52,7 +52,6 @@ class Model extends BaseModel {
  * Code: 8/9/2024
  */
 insert({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID }) {
-// console.log({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note })
 return new Promise(async (resolve) => {
     try {
         if([2,3,4,5,6].includes(Number(type))){
@@ -142,32 +141,21 @@ return new Promise(async (resolve) => {
 })
 }
 
-insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
+/**
+ * Name: Insert Full
+ * Sử dụng cho Tạo đơn hàng
+ * Author: HiepNH
+ * Code: 20/2/2025
+ */
+insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
         try {
-            // if([2,3,4,5,6].includes(Number(type))){
-            //     if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
-            //         return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-            // }else{
-            //     if (!checkObjectIDs(projectID) ||!checkObjectIDs(customerID) ||!name)
-            //         return resolve({error: true, message: "projectID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-            // }
-
-            if (
-                !checkObjectIDs(fundaID) ||
-                // !checkObjectIDs(customerID) ||
-                // !checkObjectIDs(shiftID) ||
-                !name
-              )
+            if (!checkObjectIDs(fundaID) || !name )
                 return resolve({
                   error: true,
                   message: "fundaID|customerID|shiftID|name invalid",
                   keyError: KEY_ERROR.PARAMS_INVALID,
-                });
-
-            // let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID);
-            // if (!infoFunda)
-            //     return resolve({ error: true, message: "cannot_get_infoFunda" });
+                })
 
             let dataInsert = {
                 company: companyID,
@@ -183,23 +171,22 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
                 // amount: Number(total - discount - salesoff - credit),
                 total: Number(total),
                 userCreate: userID,
-            };
+            }
+
+            if (checkObjectIDs(fundaID)) {
+                dataInsert.funda = fundaID;
+            }else{
+                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
+                if(infoFunda){
+                    dataInsert.funda = infoFunda._id;
+                }
+            }
 
             let amount = 0
             if(!isNaN(discount)){
                 amount = Number(total - discount)
             }
             dataInsert.amount = amount
-
-            if (checkObjectIDs(fundaID)) {
-                dataInsert.funda = fundaID;
-            }else{
-                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
-                // console.log(infoFunda)
-                if(infoFunda){
-                    dataInsert.funda = infoFunda._id;
-                }
-            }
 
             if (checkObjectIDs(businessID)) {
                 dataInsert.business = businessID;
@@ -210,12 +197,6 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
             if (checkObjectIDs(voucherID)) {
                 dataInsert.voucher = voucherID;
             }
-            // if (checkObjectIDs(warehouseID)) {
-            //     dataInsert.warehouse = warehouseID;
-            // }
-            // if (checkObjectIDs(toWarehouseID)) {
-            //     dataInsert.toWarehouse = toWarehouseID;
-            // }
             if (checkObjectIDs(customerID)) {
                 dataInsert.customer = customerID;
             }
@@ -292,14 +273,8 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
                     userID, 
                     fundaID: infoAfterInsert.funda, 
                     orderID, 
-                    // accountID, 
-                    // contraID, 
                     customerID, 
-                    // contractID, 
                     goodsID: item.productID, 
-                    // assetsID, 
-                    // workID, 
-                    // subtypeID, 
                     name: item.name, 
                     note: item.note, 
                     quantity: Number(item.quantity), 

@@ -3,6 +3,8 @@
  */
 const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code');
 
+const { OPTION_SELLERS }              = require('../../item/helper/item.keys-constant')
+
 /**
  * MODELS
  */
@@ -60,13 +62,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products } = ctx.params;
+                let { optionSeller, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products } = ctx.params;
 
                 console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
                     companyID = company._id
                 }
 

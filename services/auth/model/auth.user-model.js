@@ -118,7 +118,7 @@ class Model extends BaseModel {
                      })
                     .populate({
                         path: 'company department contacts',
-                        select: '_id company name phone email sign image debt balance rewards'
+                        select: '_id company name phone email sign image debt balance rewards remainLoyaltyPoints'
                     })
 
                 if (!isExist) {
