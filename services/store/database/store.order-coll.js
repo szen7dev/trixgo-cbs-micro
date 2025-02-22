@@ -174,24 +174,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         ref: "user"
     },
     /**
-     * Khu vực
-     */
-    //_________Tỉnh/Thành phố (lấy theo Funda)
-    area1: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Huyện/Quận (lấy theo Funda)
-    area2: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    //_________Xã/Phường (lấy theo Funda)
-    area3: {
-        type: Schema.Types.ObjectId,
-        ref : "area"
-    },
-    /**
      * Ca làm việc
      * - Chấm công theo ca
      * - Tính vật tư theo ca
@@ -279,22 +261,19 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     recipientName: String,
     //_________
     recipientPhone: String,
-    //_________
+    //_________Địa chỉ người nhận
     recipientAddress: String,
-    /**
-     * Khu vực
-     */
-    //_________Tỉnh/Thành phố (lấy theo Funda)
+    //_________Tỉnh/Thành phố
     area1: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Huyện/Quận (lấy theo Funda)
+    //_________Huyện/Quận
     area2: {
         type: Schema.Types.ObjectId,
         ref : "area"
     },
-    //_________Xã/Phường (lấy theo Funda)
+    //_________Xã/Phường
     area3: {
         type: Schema.Types.ObjectId,
         ref : "area"

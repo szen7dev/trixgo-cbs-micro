@@ -30,6 +30,7 @@ const ITEM__FUNDA_COLL = require("../../item/database/item.funda-coll");
 const ITEM__CONTACT_COLL = require("../../item/database/item.contact-coll");
 const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
 const ITEM__DOCTYPE_COLL = require("../../item/database/item.doctype-coll");
+const ITEM__AREA_COLL = require("../../item/database/item.area-coll");
 const STORE_ORDER_COLL = require("../database/store.order-coll");
 const STORE_ORDER_PRODUCT_COLL = require('../database/store.order_product-coll');
 const STORE_VOUCHER_COLL       = require('../database/store.voucher-coll');
@@ -148,7 +149,7 @@ return new Promise(async (resolve) => {
  * Author: HiepNH
  * Code: 20/2/2025
  */
-insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
+insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, areaID, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
         try {            
             let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID).select('remainLoyaltyPoints name phone')
@@ -290,6 +291,26 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
             }
 
             dataInsert.amount = amount
+
+            if (checkObjectIDs(areaID)) {
+                // Lấy các khu vực cha
+                let infoArea = await ITEM__AREA_COLL.findById(areaID)
+                .populate({
+                    path: 'parent',
+                    select: 'name',
+                    populate: {
+                        path: 'parent',
+                        select: 'name',
+                    }
+                })
+
+                dataInsert.area3 = areaID;
+
+                if(infoArea){
+                    dataInsert.area2 = infoArea?.parent?._id;
+                    dataInsert.area1 = infoArea?.parent?.parent?._id;
+                }
+            }
 
             if (checkObjectIDs(businessID)) {
                 dataInsert.business = businessID;
