@@ -101,6 +101,8 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     sign: String,    
     //_________Đơn vị
     unit: String,   
+    //_________Ghi chú đơn vị
+    unitNote: String,   
     //_________Ghi chú
     note: String, 
     //_________Ngày bắt đầu đưa vào sử dụng/hạch toán
@@ -111,7 +113,7 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     unitprice: { type: Number, default: 0 },
     //_________Đơn giá xuất bán
     sellingUnitprice: { type: Number, default: 0 },
-    //_________Đơn giá niêm Yết
+    //_________Đơn giá niêm yết
     listedUnitprice: { type: Number, default: 0 },
     //_________Số lượng đã bán ra
     quantitySold: { type: Number, default: 0 },
