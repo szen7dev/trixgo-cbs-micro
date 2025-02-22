@@ -118,7 +118,7 @@ class Model extends BaseModel {
                      })
                     .populate({
                         path: 'company department contacts',
-                        select: '_id company name phone email sign image debt balance rewards'
+                        select: '_id company name phone email sign image debt balance remainLoyaltyPoints'
                     })
 
                 if (!isExist) {
@@ -505,6 +505,7 @@ class Model extends BaseModel {
      * Date: 16/2/2025
      */
     getPhoneOtp({ phone, companyID, fundaID, ctx }) {
+        // console.log({ phone, companyID, fundaID })
         return new Promise(async resolve => {
             try {
                 // Hàm kiểm tra Phone
@@ -567,13 +568,15 @@ class Model extends BaseModel {
                          */
                         if(infoContact){
                             // link user với contact
-                            await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
+                            let info1 = await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
                                 linkUser: info._id
                             }, { new: true })
+                            // console.log(info1)
     
-                            await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                            let info2 = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
                                 $addToSet: { contacts: infoContact._id } 
                             }, { new: true });
+                            // console.log(info2)
                         }else{
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 authorID, 

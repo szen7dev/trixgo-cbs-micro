@@ -30,8 +30,10 @@ const ITEM__FUNDA_COLL = require("../../item/database/item.funda-coll");
 const ITEM__CONTACT_COLL = require("../../item/database/item.contact-coll");
 const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
 const ITEM__DOCTYPE_COLL = require("../../item/database/item.doctype-coll");
+const ITEM__AREA_COLL = require("../../item/database/item.area-coll");
 const STORE_ORDER_COLL = require("../database/store.order-coll");
-const STORE_ORDER_PRODUCT_COLL                 = require('../database/store.order_product-coll');
+const STORE_ORDER_PRODUCT_COLL = require('../database/store.order_product-coll');
+const STORE_VOUCHER_COLL       = require('../database/store.voucher-coll');
 
 const XlsxPopulate = require("xlsx-populate");
 const fs = require("fs");
@@ -52,7 +54,6 @@ class Model extends BaseModel {
  * Code: 8/9/2024
  */
 insert({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID }) {
-// console.log({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note })
 return new Promise(async (resolve) => {
     try {
         if([2,3,4,5,6].includes(Number(type))){
@@ -142,62 +143,172 @@ return new Promise(async (resolve) => {
 })
 }
 
-insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shiftID, customerID, affiliateID, voucherID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
+/**
+ * Name: Insert Full
+ * Sử dụng cho Tạo đơn hàng
+ * Author: HiepNH
+ * Code: 20/2/2025
+ */
+insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, areaID, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
-        try {
-            // if([2,3,4,5,6].includes(Number(type))){
-            //     if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
-            //         return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-            // }else{
-            //     if (!checkObjectIDs(projectID) ||!checkObjectIDs(customerID) ||!name)
-            //         return resolve({error: true, message: "projectID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-            // }
+        try {            
+            let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID).select('remainLoyaltyPoints name phone')
+            if(!name || !infoCustomer)
+                return resolve({ error: true, message: "customer|name invalid", keyError: KEY_ERROR.PARAMS_INVALID })
 
-            if (
-                !checkObjectIDs(fundaID) ||
-                // !checkObjectIDs(customerID) ||
-                // !checkObjectIDs(shiftID) ||
-                !name
-              )
-                return resolve({
-                  error: true,
-                  message: "fundaID|customerID|shiftID|name invalid",
-                  keyError: KEY_ERROR.PARAMS_INVALID,
-                });
+            // Tính số lượng đơn hàng của phân vùng hiện tại
+            let numberOfOrder = await STORE_ORDER_COLL.count({
+                company: companyID,
+            })
+            // console.log({numberOfOrder})
 
-            // let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID);
-            // if (!infoFunda)
-            //     return resolve({ error: true, message: "cannot_get_infoFunda" });
+            let nameNew = `${name}-Đơn hàng ${infoCustomer.name}-${infoCustomer.phone}-C${Number(numberOfOrder + 1)}`
 
             let dataInsert = {
                 company: companyID,
-                // funda: fundaID,
-                // customer: customerID,
-                // shift: shiftID,
-                name,
-                sign,
                 paymentMethod,
-                // name: `${name}-C${Number(numberOfOrder + 1)}`,
-                // sign: `C${Number(numberOfOrder + 1)}`,
-                // amount: Number(total - discount),
-                // amount: Number(total - discount - salesoff - credit),
+                name: nameNew,
+                sign: `C${Number(numberOfOrder + 1)}`,
                 total: Number(total),
                 userCreate: userID,
-            };
-
-            let amount = 0
-            if(!isNaN(discount)){
-                amount = Number(total - discount)
             }
-            dataInsert.amount = amount
 
             if (checkObjectIDs(fundaID)) {
                 dataInsert.funda = fundaID;
             }else{
                 let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
-                // console.log(infoFunda)
                 if(infoFunda){
                     dataInsert.funda = infoFunda._id;
+                }
+            }
+
+            /**
+             * BA-Trình tự tính toán giá trị thanh toán Amount
+             * total-salesoff-credit => ưu đãi voucher nếu được giảm giá % sẽ tính theo trình tự này
+             */
+            let amount = 0
+
+            // Giảm giá Food App
+            if(!isNaN(discount)){
+                amount = Number(total - discount)
+            }
+
+            // Giảm giá trực tiếp theo đơn hàng/theo sản phẩm
+            if(!isNaN(salesoff)){
+                amount = Number(amount) - Number(salesoff)
+            }
+
+            // Trừ tích điểm
+            if (!isNaN(credit) && Number(credit) >= 0) {
+                
+                let creditRound = 0
+                // Fix việc bị hack FE
+                if(Number(credit) >= Number(infoCustomer.remainLoyaltyPoints)){
+                    creditRound = 1000 * Math.round(infoCustomer.remainLoyaltyPoints / 1000);
+                }else{
+                    creditRound = 1000 * Math.round(credit / 1000);
+                }
+    
+                if (Number(amount) <= Number(creditRound)) {
+                  creditRound = amount;
+                  amount = 0;
+                } else {
+                  amount = Number(amount) - Number(creditRound);
+                }
+    
+                dataInsert.credit = Number(creditRound);
+            }
+
+            // Giảm giá voucher
+            if (voucherID && checkObjectIDs(voucherID)) {
+                let noticeVoucherErr = '', countVoucherErr = 0, offer = 0
+
+                let infoVoucher = await STORE_VOUCHER_COLL.findById(voucherID);
+                if (!infoVoucher){
+                    // console.log('111111111111')
+                    noticeVoucherErr = noticeVoucherErr + "Voucher không tồn tại"
+                    countVoucherErr++
+                }
+
+                // Kiểm tra xem đúng VoucherID của customerID hay không
+                if (!infoVoucher.receivers.includes(customerID)){
+                    // console.log('222222222222222')
+                    noticeVoucherErr = noticeVoucherErr + "Voucher không hợp lệ với khách hàng"
+                    countVoucherErr++
+                }
+
+                // Kiểm tra thời hạn VoucherID
+                let currentTime = new Date();
+                let checkExpired = compareTwoTime(currentTime, infoVoucher.expired);
+                if (checkExpired == 1){
+                    // console.log('33333333333333')
+                    noticeVoucherErr = noticeVoucherErr + "Voucher đã hết hạn"
+                    countVoucherErr++
+                }
+
+                // Kiểm tra giá trị đơn hàng xem có được áp dụng Voucher hay không
+                if (Number(amount) < Number(infoVoucher.minOrderAmount)){
+                    // console.log('44444444444444')
+                    noticeVoucherErr = noticeVoucherErr + `Đơn hàng không đủ điều kiện áp dụng (Giá trị phải >= ${infoVoucher.minOrderAmount})`
+                    countVoucherErr++
+                }
+
+                // Kiểm tra xem khách hàng đã sử dụng voucherID hay chưa
+                if (infoVoucher.buyers.includes(customerID)){
+                    // console.log('5555555555555')
+                    noticeVoucherErr = noticeVoucherErr + `Khách hàng đã sử dụng voucher`
+                    countVoucherErr++
+                }
+
+                if(countVoucherErr > 0)
+                    return resolve({ error: true, message: noticeVoucherErr, keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
+                /**
+                 * Kiểm tra nếu Giá trị Voucher
+                 */
+                if (Number(infoVoucher.salesoffAmount) > 0) {
+                    offer = Number(infoVoucher.salesoffAmount)
+                } else {
+                    offer = Number((Number(infoVoucher.salesoffRate) * Number(amount)) / 100).toFixed(0);
+                }
+
+                if (Number(amount) <= Number(offer)) {
+                    offer = amount; // Set Offer
+                    amount = 0; // Set Amount về 0
+                } else {
+                    amount = Number(amount) - Number(offer);
+                }
+
+                dataInsert.voucher = voucherID;
+                dataInsert.voucherType = Number(infoVoucher.type);
+                dataInsert.offer = Number(offer);
+            }
+
+            // Phí vận chuyển
+            if (!isNaN(shippingFee)) {
+                dataInsert.shippingFee = Number(shippingFee);
+                amount = Number(amount) + Number(shippingFee);
+            }
+
+            dataInsert.amount = amount
+
+            if (checkObjectIDs(areaID)) {
+                // Lấy các khu vực cha
+                let infoArea = await ITEM__AREA_COLL.findById(areaID)
+                .populate({
+                    path: 'parent',
+                    select: 'name',
+                    populate: {
+                        path: 'parent',
+                        select: 'name',
+                    }
+                })
+
+                dataInsert.area3 = areaID;
+
+                if(infoArea){
+                    dataInsert.area2 = infoArea?.parent?._id;
+                    dataInsert.area1 = infoArea?.parent?.parent?._id;
                 }
             }
 
@@ -207,15 +318,10 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
             if (checkObjectIDs(channelID)) {
                 dataInsert.channel = channelID;
             }
-            if (checkObjectIDs(voucherID)) {
-                dataInsert.voucher = voucherID;
+            if (checkObjectIDs(shiftID)) {
+                dataInsert.shift = shiftID;
             }
-            // if (checkObjectIDs(warehouseID)) {
-            //     dataInsert.warehouse = warehouseID;
-            // }
-            // if (checkObjectIDs(toWarehouseID)) {
-            //     dataInsert.toWarehouse = toWarehouseID;
-            // }
+
             if (checkObjectIDs(customerID)) {
                 dataInsert.customer = customerID;
             }
@@ -223,21 +329,16 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
                 dataInsert.affiliate = affiliateID;
             }
 
-            if (checkObjectIDs(shiftID)) {
-                dataInsert.shift = shiftID;
-            }
-
             if (!isNaN(outin) && Number(outin) >= 1) {
-              dataInsert.outin = Number(outin)
+                dataInsert.outin = Number(outin)
             }
             if (!isNaN(type) && Number(type) >= 1) {
                 dataInsert.type = Number(type)
             }
 
             if (date) {
-              dataInsert.date = date;
+                dataInsert.date = date;
             }
-
             if (toDate) {
                 dataInsert.toDate = toDate;
             }
@@ -262,9 +363,8 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
             }
 
             let convertStr = ''
-            if (name && name != '') {
-                dataInsert.name = name;
-                convertStr = convertStr + " " + stringUtils.removeAccents(name)
+            if (nameNew && nameNew != '') {
+                convertStr = convertStr + " " + stringUtils.removeAccents(nameNew)
             }
             if (sign && sign != '') {
                 dataInsert.sign = sign;
@@ -286,24 +386,23 @@ insertFull({ companyID, userID, outin, type, businessID, channelID, fundaID, shi
             // console.log(infoAfterInsert)
             const orderID = infoAfterInsert._id
 
+            /**
+             * CẦN TỐI ƯU HÀM TẠO SẢN PHẨM
+             * - Tạo một hàm khác để dùng riêng cho khách hàng đặt hàng
+             */
             if (products && products.length) {
                 const productsAsync = products.map((item) => {
                 const dataInsertProduct = {
                     userID, 
                     fundaID: infoAfterInsert.funda, 
                     orderID, 
-                    // accountID, 
-                    // contraID, 
                     customerID, 
-                    // contractID, 
                     goodsID: item.productID, 
-                    // assetsID, 
-                    // workID, 
-                    // subtypeID, 
                     name: item.name, 
                     note: item.note, 
                     quantity: Number(item.quantity), 
                     unitPrice: Number(item.unitPrice),
+                    listedUnitprice: Number(item.listedUnitprice),
                 }
 
                     return STORE_ORDER_PRODUCT_MODEL.insert(dataInsertProduct)

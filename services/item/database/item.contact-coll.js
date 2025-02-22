@@ -135,8 +135,6 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     },
     //_________Số dư tài khoản: trả trước (nạp vào ví trả trước tiêu sau)
     balance: { type: Number, default: 0 },
-    //_________Điểm thưởng: sinh ra từ tích điểm, quà tặng...
-    rewards: { type: Number, default: 0 },
     //_________Tài khoản ngân hàng
     bankAccount: String,
     //_________Thuộc ngân hàng

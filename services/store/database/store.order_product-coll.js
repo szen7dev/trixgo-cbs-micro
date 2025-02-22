@@ -269,8 +269,13 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
         type: Number,
         default : 1
     },
-    //______Đơn giá
+    //______Đơn giá xuất bán
     unitPrice: {
+        type: Number,
+        default : 0
+    },
+    //_________Đơn giá niêm yết
+    listedUnitprice: {
         type: Number,
         default : 0
     },
