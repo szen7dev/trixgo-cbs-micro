@@ -385,7 +385,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = { company: ObjectID(companyID) }
+                let conditionObj = { }
                 let sortBy;
                 let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
                 // let keys	 = ['createAt__-1', '_id__-1'];
@@ -408,6 +408,8 @@ class Model extends BaseModel {
                             conditionObj.receivers = { $in: [infoContact._id]}
                             conditionObj.buyers = { $nin: [infoContact._id]}
                         }
+
+                        conditionObj.company = ObjectID(companyID)
                     }
                 }
 
