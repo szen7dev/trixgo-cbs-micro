@@ -32,6 +32,7 @@
                 await this.validateEntity(ctx.params);
                 let { template, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired } = ctx.params;
 
+                // console.log(ctx.params)
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await STORE_VOUCHER_MODEL.insert({
@@ -69,16 +70,17 @@
          },
          async handler(ctx) {
              try {
-                 await this.validateEntity(ctx.params);
-                 let { voucherID, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove } = ctx.params;
+                await this.validateEntity(ctx.params);
+                let { voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove } = ctx.params;
+                // console.log(ctx.params)
 
-                 const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
 
-                 let resultAfterCallHandler = await STORE_VOUCHER_MODEL.update({
-                    companyID: company._id, userID, voucherID, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove
-                 });
+                let resultAfterCallHandler = await STORE_VOUCHER_MODEL.update({
+                companyID: company._id, userID, voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove
+                });
 
-                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
              } catch (error) {
                  return { error:  true, message: error.message };
              }
@@ -97,14 +99,15 @@
          },
          async handler(ctx) {
              try {
-                 await this.validateEntity(ctx.params);
-                 let {  voucherID } = ctx.params;
+                await this.validateEntity(ctx.params);
+                let {  voucherID } = ctx.params;
+                // console.log(ctx.params)
 
-                 let resultAfterCallHandler = await STORE_VOUCHER_MODEL.remove({
+                let resultAfterCallHandler = await STORE_VOUCHER_MODEL.remove({
                     voucherID
-                 });
+                });
 
-                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
              } catch (error) {
                  return { error:  true, message: error.message };
              }
@@ -140,7 +143,7 @@
 
                 // console.log(ctx.params)
 
-                 const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
 
                 let companyID
                 if(optionSeller){

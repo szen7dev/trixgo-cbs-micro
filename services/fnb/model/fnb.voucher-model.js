@@ -99,7 +99,6 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     update({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove }) {
-        // console.log({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove })
         const that = this
         return new Promise(async resolve => {
             try {
