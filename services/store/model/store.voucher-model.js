@@ -94,14 +94,16 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    update({ option, companyID, userID, voucherID, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove }) {
-        const that = this
+    update({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(voucherID))
                     return resolve({ error: true, message: 'voucherID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                }
                 let dataAddToset = {};
                 let dataPullAll  = {};
 
@@ -231,11 +233,11 @@ class Model extends BaseModel {
 
                 // Cập nhật vào Người sử dụng
                 if(checkObjectIDs(buyers)){
-                    // console.log('Cập nhật thông tin Người sử dụng voucher 22222222')
+                    console.log('Cập nhật thông tin Người sử dụng voucher 22222222222222')
                     await ITEM__CONTACT_COLL.updateMany(
                         {_id: { $in: buyers }},
                         { $addToSet:
-                            { usedVouchers: voucherID },
+                            { usedStoreVouchers: voucherID },
                         },
                     )
                 }
@@ -246,42 +248,14 @@ class Model extends BaseModel {
                 if(Number(checkErr) === 0){
                     // Cập nhật vào Người nhận
                     if(checkObjectIDs(receivers)){
+                        console.log('Cập nhật thông tin Người được nhận voucher 111111111111')
                         // Cấp phát voucher
                         await ITEM__CONTACT_COLL.updateMany(
                             {_id: { $in: receivers }},
                             { $addToSet:
-                                { getVouchers: voucherID },
+                                { getStoreVouchers: voucherID },
                             },
                         )
-
-                        // Đánh dấu phân loại chiến dịch
-                        await ITEM__CONTACT_COLL.updateMany(
-                            { _id: { $in: receivers }, campaignType: {$exists: false}},
-                            { 
-                                $set: {campaignType: voucherID}
-                            },
-                        )
-                    }
-
-                    // Cấp phát thêm các voucher ZOA khác
-                    if(voucherID && voucherID.toString() === '64378d6618c77f00128abe93'){
-                        await that.updateMultiple({ 
-                            companyID, 
-                            userID, 
-                            receivers, 
-                            vouchers: [
-                                '66095d0a0b315f001249d158',
-                                '66095d33c1da550011a6d2f8',
-                                '66095d53dc469e00123ac585',
-                                '66095d72dc469e00123ac586',
-                                '66095d910b315f001249d15a',
-                                '66095db6dc469e00123ac58a',
-                                '678099a81b7949004b8d5c74',
-                                '678099aa8934070012cdd896',
-                                '678099ae1b7949004b8d5c77',
-                                '678099b03e1d150012a8c14e',
-                            ]
-                        })
                     }
                 }else{
                     return resolve({ error: true, message: 'Khách hàng nhận voucher, không thể cấp phát lại' });
@@ -291,7 +265,7 @@ class Model extends BaseModel {
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
-        });
+        })
     }
 
     /**
@@ -483,7 +457,7 @@ class Model extends BaseModel {
                     select = JSON.parse(select);
                 }
                 // console.log(populates)
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){

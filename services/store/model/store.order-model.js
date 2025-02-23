@@ -42,6 +42,7 @@ const { uploadFileS3 } = require("../../../tools/s3");
 
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 const STORE_ORDER_PRODUCT_MODEL         = require('../model/store.order_product-model.js').MODEL
+const STORE_VOUCHER_MODEL               = require("../model/store.voucher-model").MODEL;
 
 class Model extends BaseModel {
   constructor() {
@@ -409,6 +410,17 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
                 })
 
                 await Promise.all(productsAsync)
+            }
+            
+            // Cập nhật voucher đã sử dụng
+            if (voucherID && checkObjectIDs(voucherID)) {
+                // console.log('Cập nhật thông tin Người sử dụng voucher')
+                //______Cập nhật thông tin Người sử dụng voucher
+                await STORE_VOUCHER_MODEL.update({
+                    userID,
+                    voucherID,
+                    buyers: [customerID],
+                });
             }
 
             return resolve({ error: false, data: infoAfterInsert, status: 200 });

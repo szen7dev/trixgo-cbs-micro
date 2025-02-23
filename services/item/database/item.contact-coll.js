@@ -30,7 +30,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default: 1 
     },
     /**
-     * ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU
+     * ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU AFFILIATE
      */
     //_________Toàn bộ các cấp cha bên trên => Dùng để tạo được nestedChilds
     nestedParents: [{
@@ -288,6 +288,16 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     usedVouchers: [{
         type: Schema.Types.ObjectId,
         ref: "fnb_voucher"
+    }],
+    //_________Voucher nhận được
+    getStoreVouchers: [{
+        type: Schema.Types.ObjectId,
+        ref: "store_voucher"
+    }],
+    //_________Voucher đã sử dụng
+    usedStoreVouchers: [{
+        type: Schema.Types.ObjectId,
+        ref: "store_voucher"
     }],
     /**
      * Khách biết tên hay vãng lai
