@@ -100,7 +100,10 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(voucherID))
                     return resolve({ error: true, message: 'voucherID__invalid', keyError: KEY_ERROR.PARAMS_INVALID });
 
-                let dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                }
                 let dataAddToset = {};
                 let dataPullAll  = {};
 

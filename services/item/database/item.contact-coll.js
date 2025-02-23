@@ -30,7 +30,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default: 1 
     },
     /**
-     * ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU
+     * ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU AFFILIATE
      */
     //_________Toàn bộ các cấp cha bên trên => Dùng để tạo được nestedChilds
     nestedParents: [{
