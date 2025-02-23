@@ -42,6 +42,7 @@ const ITEM__DOCTYPE_COLL = require('../database/item.doctype-coll')
 const ITEM__CONTRACT_COLL = require('../database/item.contract-coll')
 const ITEM__CONTACT_COLL = require('../database/item.contact-coll')
 const ITEM__AREA_COLL = require('../database/item.area-coll')
+const STORE_VOUCHER_COLL = require('../../store/database/store.voucher-coll')
 const FNB_VOUCHER_COLL = require('../../fnb/database/fnb.voucher-coll')
 const FNB_ORDER_COLL = require('../../fnb/database/fnb.order-coll')
 const HUMAN__CONTACT_DOCUMENT_COLL = require('../../human/database/human.contact_document-coll')
@@ -1104,9 +1105,7 @@ class Model extends BaseModel {
 
                     conditionObj.nestedParents = { $in: listContacts }
                     // conditionObj.nestedParents = {$in: [listContacts[0]]}
-                }
-
-                if (option && option == 2) {
+                }else if (option && option == 2) {
                     conditionObj.nestedParents = { $in: [ObjectID(uplineID)] }
                 }
 
@@ -1130,12 +1129,18 @@ class Model extends BaseModel {
                 }
 
                 // Lấy theo Voucher
-                if (voucherID && checkObjectIDs(voucherID)) {
-                    let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
-                    // console.log(infoVoucher)
-                    if (infoVoucher) {
-                        conditionObj._id = { $in: infoVoucher.receivers }
-                    }
+                if (checkObjectIDs(voucherID)) {
+                    if(!option){
+                        let infoVoucher = await FNB_VOUCHER_COLL.findById(voucherID)
+                        if (infoVoucher) {
+                            conditionObj._id = { $in: infoVoucher.receivers }
+                        }
+                    }else{
+                        let infoVoucher = await STORE_VOUCHER_COLL.findById(voucherID)
+                        if (infoVoucher) {
+                            conditionObj._id = { $in: infoVoucher.receivers }
+                        }
+                    } 
                 }
 
                 // Lấy nhân sự theo đơn vị cơ sở
@@ -1177,10 +1182,6 @@ class Model extends BaseModel {
                 }
 
                 let conditionObjOrg = {
-                    // _id: {
-                    //     $gte: ObjectID.createFromTime(moment(new Date(fromDate)).startOf('day')._d/1000),
-                    //     $lte: ObjectID.createFromTime(moment(new Date(toDate)).endOf('day')._d/1000)
-                    // },
                     ...conditionObj
                 };
 

@@ -222,6 +222,8 @@ module.exports = {
                 } = ctx.params;
 				const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
+                // console.log(ctx.params)
+
                 if(!companyID){
                     companyID = company._id
                 }
@@ -271,7 +273,7 @@ module.exports = {
                     parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, populates, isParent, type, genders
                 } = ctx.params;
 
-                // console.log({parentID, companyID, receiverID, types, isExportExcel, requestResponse, fromDate, toDate, marked, departmentsID, keyword, limit, lastestID, select, populates, isParent, type, genders})
+                 // console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
@@ -316,6 +318,8 @@ module.exports = {
 				const { _id: userID, contacts, company } = ctx.meta.infoUser;
                 let { option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate,
                      keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+
+                // console.log(ctx.params)
 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.getListByProperty({
                     companyID: company._id,
