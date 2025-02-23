@@ -411,7 +411,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = { }
+                let conditionObj = { company: ObjectID(companyID) }
                 let sortBy;
                 let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
                 // let keys	 = ['createAt__-1', '_id__-1'];
@@ -434,8 +434,6 @@ class Model extends BaseModel {
                             conditionObj.receivers = { $in: [infoContact._id]}
                             conditionObj.buyers = { $nin: [infoContact._id]}
                         }
-                    }else{
-                        conditionObj.company = ObjectID(companyID)
                     }
                 }
 
@@ -485,7 +483,7 @@ class Model extends BaseModel {
                     select = JSON.parse(select);
                 }
                 // console.log(populates)
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
                 if(lastestID && checkObjectIDs(lastestID)){
