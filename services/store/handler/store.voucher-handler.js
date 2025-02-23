@@ -3,6 +3,8 @@
  */
  const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 
+ const { OPTION_SELLERS }              = require('../../item/helper/item.keys-constant')
+
  /**
   * MODELS
   */
@@ -133,25 +135,32 @@
          },
          async handler(ctx) {
              try {
-                 await this.validateEntity(ctx.params);
-                 let { voucherID, option, sign, customerID, template, type, status, keyword, limit, lastestID, select, populates, isMember } = ctx.params;
+                await this.validateEntity(ctx.params);
+                let { optionSeller, voucherID, option, sign, customerID, template, type, status, keyword, limit, lastestID, select, populates, isMember } = ctx.params;
 
                 // console.log(ctx.params)
 
                  const { _id: userID, company } = ctx.meta.infoUser;
 
-                 let resultAfterCallHandler;
-                 if(voucherID || sign){
-                     resultAfterCallHandler = await STORE_VOUCHER_MODEL.getInfo({
-                        companyID: company._id, userID, voucherID, option, sign, select, populates,
-                     })
-                 }else{
-                     resultAfterCallHandler = await STORE_VOUCHER_MODEL.getList({
-                         companyID: company._id, userID, option, customerID, template,  type, status, keyword, limit, lastestID, select, populates, isMember
-                     })
-                 }
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company._id
+                }
 
-                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                let resultAfterCallHandler
+                if(voucherID || sign){
+                    resultAfterCallHandler = await STORE_VOUCHER_MODEL.getInfo({
+                    companyID, userID, voucherID, option, sign, select, populates,
+                    })
+                }else{
+                    resultAfterCallHandler = await STORE_VOUCHER_MODEL.getList({
+                        companyID, userID, option, customerID, template,  type, status, keyword, limit, lastestID, select, populates, isMember
+                    })
+                }
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
              } catch (error) {
                  return { error:  true, message: error.message };
              }
