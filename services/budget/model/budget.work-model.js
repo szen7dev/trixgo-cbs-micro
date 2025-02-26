@@ -798,6 +798,20 @@ class Model extends BaseModel {
 
                 // console.log(listData3)
 
+                let listData4 = await STORE_ORDER_PRODUCT_COLL.find({
+                    company: companyID, 
+                    budget: budgetID,
+                    budgetWork: { $exists: true, $ne: null }
+                })
+                .select('budgetGroup budgetWork date name sign quantity unitPrice amount')
+                .populate({
+                    path: 'budgetGroup budgetWork',
+                    select: '_id name sign unit',
+                })
+                .sort({
+                    "date": 1
+                })
+
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/budget_import_report.xlsx')))
                 .then(async workbook => {
                     workbook.sheet("1.BaoCaoNganSach").row(1).cell(1).value(infoBudget.name)
@@ -906,6 +920,18 @@ class Model extends BaseModel {
                         i++
                     })
 
+                    listData4.forEach((item, index) =>{
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(1).value(item.date)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(2).value(item.name)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(3).value(item?.budgetGroup.name)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(4).value(item?.budgetWork?.unit)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(5).value(Number(item.quantity))
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(6).value(Number(item.unitPrice))
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(7).value(Number(item.amount))
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(8).value(item.note)
+
+                        i++
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
