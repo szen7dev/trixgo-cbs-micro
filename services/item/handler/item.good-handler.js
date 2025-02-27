@@ -185,8 +185,12 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                await this.validateEntity(ctx.params);
-				const { _id: userID, company } = ctx.meta.infoUser;
+                await this.validateEntity(ctx.params)
+                const { filterParams } = ctx.params
+                // console.log('1222222222222222222222222222')
+                // console.log(ctx.params)
+
+				const { _id: userID, company } = ctx.meta.infoUser;                
 
                 const resultAfterCallHandler = await ITEM__GOODS_MODEL.downloadTemplateExcel({
                     companyID: company._id, userID

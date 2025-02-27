@@ -739,23 +739,28 @@ class Model extends BaseModel {
     downloadTemplateExcel({ companyID, userID }) {
         return new Promise(async resolve => {
             try {
-                // let listData  = await ITEM__CONTACT_COLL.find({ company: companyID })
-                // console.log(listData)
+                let listData  = await ITEM__GOODS_COLL.find({ company: companyID })
+                .select('level parent name sign unit note')
+                .populate({
+                    path: 'parent',
+                    select: 'name'
+                })
 
                 // Modify the workbook.
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/item_import_goods.xlsx')))
                 .then(async workbook => {
 
-                    // var i = 3;
-                    // listData?.forEach((item, index) => {
-                    //     workbook.sheet("Export").row(i).cell(1).value(Number(index+1));
-                    //     workbook.sheet("Export").row(i).cell(2).value(item.name);
-                    //     workbook.sheet("Export").row(i).cell(3).value(item.phone);
-                    //     workbook.sheet("Export").row(i).cell(4).value(item.address);
-                    //     // workbook.sheet("Export").row(i).cell(5).value(item.description);
-                    //     workbook.sheet("Export").row(i).cell(5).value(item.note);
-                    //     i++
-                    // });
+                    var i = 3;
+                    listData?.forEach((item, index) => {
+                        workbook.sheet("DanhMucKho").row(i).cell(1).value(Number(index+1));
+                        workbook.sheet("DanhMucKho").row(i).cell(2).value(item.name);
+                        workbook.sheet("DanhMucKho").row(i).cell(3).value(item?.parent ? item?.parent?.name : '');
+                        workbook.sheet("DanhMucKho").row(i).cell(4).value(item.unit);
+                        workbook.sheet("DanhMucKho").row(i).cell(5).value(item.sign);
+                        workbook.sheet("DanhMucKho").row(i).cell(6).value(item.note);
+
+                        i++
+                    })
 
                     const now = new Date();
                     const filePath = '../../../files/temporary_uploads/';
