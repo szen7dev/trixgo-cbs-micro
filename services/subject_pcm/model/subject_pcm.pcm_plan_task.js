@@ -600,7 +600,7 @@ class Model extends BaseModel {
                     select: '_id admins name fullname bizfullname'
                 }).lean()
 
-                console.log(infoTask)
+                // console.log(infoTask)
                 if(!infoTask)
                     return resolve({ error: true, message: 'task_not_exists', status: 400 })
 
