@@ -578,6 +578,15 @@ class Model extends BaseModel {
                             }, { new: true });
                             // console.log(info2)
                         }else{
+                            // console.log("Tạo danh bạ----------")
+                            // console.log({
+                            //     authorID, 
+                            //     fundaID,
+                            //     type: 2, 
+                            //     name: `fullname ${strValid}-${infoCompany.sign}`,
+                            //     phone: strValid, 
+                            //     email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
+                            // })
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 authorID, 
                                 fundaID,
@@ -586,6 +595,7 @@ class Model extends BaseModel {
                                 phone: strValid, 
                                 email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
                             })
+                            
 
                             if(infoNewContact){
                                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
@@ -651,19 +661,33 @@ class Model extends BaseModel {
                         }
 
                         let infoUserAfterInsert = await this.insertData(dataInsert)
+                        // console.log("111111111111111111")
+                        // console.log(infoUserAfterInsert)
+                        
                         if (!infoUserAfterInsert)
                             return resolve({ error: true, message: 'cannot_insert_data' })
 
                         // link user với contact
                         if(infoContact){
+                            // console.log("222222222222222")
                             await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
                                 linkUser: infoUserAfterInsert._id
                             }, { new: true })
 
+                            // console.log("33333333333333333333")
                             await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
                                 $addToSet: { contacts: infoContact._id },
                             }, { new: true });
                         }else{
+                            // console.log("44444444444444444")
+                            // console.log({
+                            //     authorID, 
+                            //     fundaID,
+                            //     type: 2, 
+                            //     name: `fullname ${strValid}-${infoCompany.sign}`,
+                            //     phone: strValid, 
+                            //     email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
+                            // })
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 authorID, 
                                 fundaID,
@@ -672,12 +696,15 @@ class Model extends BaseModel {
                                 phone: strValid, 
                                 email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
                             })
+                            // console.log(infoNewContact)
 
                             if(infoNewContact){
+                                // console.log("55555555555555555")
                                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
                                     linkUser: infoUserAfterInsert._id
                                 }, { new: true })
-    
+                                
+                                // console.log("66666666666666")
                                 await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
                                     $addToSet: { contacts: infoNewContact.data._id } 
                                 }, { new: true })
