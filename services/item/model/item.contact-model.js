@@ -48,7 +48,7 @@ const FNB_ORDER_COLL = require('../../fnb/database/fnb.order-coll')
 const HUMAN__CONTACT_DOCUMENT_COLL = require('../../human/database/human.contact_document-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 
-const AUTH__USER = require('../../auth/model/auth.user-model').MODEL
+// const AUTH__USER = require('../../auth/model/auth.user-model').MODEL // Gọi ở đây -> không chạy được bên user-model
 const AUTH__APP_USER = require('../.../../../auth/model/auth.app_users').MODEL
 const FNB_ORDER_VOUCHER_MODEL = require('../../fnb/model/fnb.voucher-model').MODEL
 const CONTACT_DOCUMENT_MODEL = require('../../human/model/human.contact_document-model').MODEL
