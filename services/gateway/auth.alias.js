@@ -35,6 +35,7 @@ const { CF_ROUTINGS_BUDGET }		= require('../budget/helper/budget.routes-constant
 const { CF_ROUTINGS_FNB }			= require('../fnb/helper/fnb.routes-constant');
 const { CF_ROUTINGS_PAYMENT }		= require('../payment/helper/payment.routes-constant');
 const { CF_ROUTINGS_STORE }			= require('../store/helper/store.routes-constant');
+const { CF_ROUTINGS_CRM }			= require('../crm/helper/crm.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -65,6 +66,7 @@ const { CF_ACTIONS_BUDGET }			= require('../budget/helper/budget.actions-constan
 const { CF_ACTIONS_FNB }			= require('../fnb/helper/fnb.actions-constant');
 const { CF_ACTIONS_PAYMENT } 		= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_STORE } 			= require('../store/helper/store.actions-constant');
+const { CF_ACTIONS_CRM } 			= require('../crm/helper/crm.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -1557,6 +1559,30 @@ module.exports = {
 		[`${CF_DOMAIN_SERVICES.ACCOUNTING}.${CF_ACTIONS_ACCOUNTING.REPORT_EXPORT_EXCEL}`],
 
 		//---------------------------🏁 END SERVICE ACCOUNTING   🏁---------------------------//
+
+		
+		//---------------------------🏁 BEGIN SERVICE CRM 🏁---------------------------//
+
+		[`POST ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_INSERT}`],
+
+		[`PUT ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_UPDATE}`],
+
+		[`DELETE ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_REMOVE}`],
+
+		[`GET ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_GET_INFO_AND_GET_LIST}`],
+
+		[`GET ${CF_ROUTINGS_CRM.CRM_GROW_TRACK_GET_LIST_BY_PROPERTY}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_GET_LIST_BY_PROPERTY}`],
+
+		[`GET ${CF_ROUTINGS_CRM.CRM_GROW_TRACK_EXPORT_EXCEL}`] :
+		[`${CF_DOMAIN_SERVICES.TIMESHEET}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_EXPORT_EXCEL}`],
+
+
+		//---------------------------🏁 END SERVICE CRM 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//
 
