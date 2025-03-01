@@ -43,7 +43,6 @@ const CF_ROUTINGS_ITEM = {
 
     // ================================DOCTYPE==========================================//
     DOCTYPES                                   : `${BASE_ROUTE}${DOCTYPE}`,
-    DOCTYPES_KYSUHIEP                          : `${BASE_ROUTE}${DOCTYPE}/kysuhiep`,
     DOCTYPES_IMPORT_FROM_EXCEL                 : `${BASE_ROUTE}${DOCTYPE}/import-from-excel`,
 
     // ================================CONTACT==========================================//
@@ -79,7 +78,6 @@ const CF_ROUTINGS_ITEM = {
     GOOD_DOWNLOAD_TEMPLATE_EXCEL                : `${BASE_ROUTE}${GOODS}/download-template-excel`,
     GOOD_IMPORT_FROM_EXCEL                      : `${BASE_ROUTE}${GOODS}/import-from-excel`,
     GOOD_EXPORT_EXCEL                           : `${BASE_ROUTE}${GOODS}/export-excel`,
-    GOODS_KYSUHIEP                              : `${BASE_ROUTE}${GOODS}/kysuhiep`,
 
     // ================================FUNDA===========================================//
     FUNDA                                      : `${BASE_ROUTE}${FUNDA}`,

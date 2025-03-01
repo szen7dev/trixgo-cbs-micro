@@ -76,59 +76,6 @@ module.exports = {
         }
     },
 
-    /**
-     * Name: Create order kysuhiep
-     * Author: MinhVH
-     * Code: 07/07/2024
-     */
-    insertOrderKySuHiep: {
-        auth: "required",
-        params: {
-            voucherID: { type: "string", optional: true },
-            parentID: { type: "string", optional: true },
-            customerID: { type: "string" },
-            businessID: { type: "string", optional: true },
-            channelID: { type: "string", optional: true },
-            affiliateID: { type: "string", optional: true },
-            date: { type: "string", optional: true },
-            assigneeID: { type: "string", optional: true },
-            name: { type: "string" },
-            appOrderSign: { type: "string", optional: true },
-            note: { type: "string", optional: true },
-            salesChannel: { type: "string", optional: true },
-            paymentMethod: { type: "string", optional: true },
-            sources: { type: "string", optional: true },
-            service: { type: "string", optional: true },
-            total: { type: "string", optional: true },
-            discount: { type: "string", optional: true },
-            salesoff: { type: "string", optional: true },
-            credit: { type: "string", optional: true },
-            vatAmount: { type: "string", optional: true },
-            products: { type: "array", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                console.log({ FNB_ORDER_INSERT_KYSUHIEP_PARAMS: ctx.params });
-                await this.validateEntity(ctx.params);
-
-                const { voucherID, parentID, customerID, channelID, affiliateID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID } = ctx.params;
-
-                const fundaID = "666895968d5b8b00121fc6bd";
-                const shiftID = "666896eb8d5b8b00121fc6be";
-                const businessID = "666897a88d5b8b00121fc6c1";
-
-                const resultAfterCallHandler = await FNB_ORDER_MODEL.insertOrderKySuHiep({
-                    voucherID, parentID, customerID, channelID, affiliateID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx,
-                    fundaID, shiftID, businessID,
-                })
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-            } catch (error) {
-                return { error: true, message: error.message };
-            }
-        }
-    },
-
     update: {
         auth: "required",
         params: {
