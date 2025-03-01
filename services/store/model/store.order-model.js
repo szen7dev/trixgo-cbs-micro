@@ -722,181 +722,162 @@ getInfo({ orderID, select, populates = '{"path":"assignee project userCreate use
  * Date: 9/4/2022
  */
 getList({ option, status, arrType, outin, type, userID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, keyword, limit = 50, lastestID, select, populates, sortKey, fromDate, toDate }) {
-    // console.log({option, userCreateID, userID})
-      return new Promise(async (resolve) => {
-          try {
-              let sortBy;
-              let conditionObj = {};
-              let keys = ['createAt__-1', '_id__-1'];
+    return new Promise(async (resolve) => {
+        try {
+            let sortBy;
+            let conditionObj = {};
+            let keys = ['createAt__-1', '_id__-1'];
 
-              if (limit > 50) {
-                  limit = 50
-              } else {
-                  limit = +limit;
-              }
+            if (limit > 50) {
+                limit = 50
+            } else {
+                limit = +limit;
+            }
 
-              if (populates && typeof populates === 'string') {
-                  if (!IsJsonString(populates))
-                      return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+            if (populates && typeof populates === 'string') {
+                if (!IsJsonString(populates))
+                    return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-                  populates = JSON.parse(populates);
-              } else {
-                  populates = {
-                      path: "",
-                      select: ""
-                  }
-              }
+                populates = JSON.parse(populates);
+            } else {
+                populates = {
+                    path: "",
+                    select: ""
+                }
+            }
 
-              if (sortKey && typeof sortKey === 'string') {
-                  if (!IsJsonString(sortKey))
-                      return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+            if (sortKey && typeof sortKey === 'string') {
+                if (!IsJsonString(sortKey))
+                    return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
 
-                  keys = JSON.parse(sortKey);
-              }
+                keys = JSON.parse(sortKey);
+            }
 
-              if(!option){
-                conditionObj.company = companyID;
-              }else{
-                    // Đơn hàng của userID đang truy cập
-                    if(option == 1){
-                        conditionObj.userCreate = userID
+            if(customerID && checkObjectIDs(customerID)){
+                conditionObj.customer = customerID;
+            }else{
+                conditionObj.company = companyID
+            }
+
+            // Chọn nhiều phân loại
+            arrType && arrType.length && (conditionObj.type = { $in: arrType })
+
+            if(fromDate && toDate){
+                if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
+                    let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                    let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
+                    conditionObj.date  = { 
+                        $gte: moment(startTime).toDate(),
+                        $lte: moment(endTime).toDate(),
+                    //   $gte: moment(fromDate).toDate(),
+                    //   $lte: moment(toDate).toDate(),
+                    //   $gte: new Date(fromDate),
+                    //   $lte: new Date(toDate),
                     }
-              }
-
-              // Chọn nhiều phân loại
-              arrType && arrType.length && (conditionObj.type = { $in: arrType })
-
-              if(fromDate && toDate){
-                  if(fromDate != 'Invalid Date' && toDate != 'Invalid Date'){
-                      let startTime   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-                      let endTime     = moment(toDate).endOf('day').format();// <=== fix ISODate here
-                      conditionObj.date  = { 
-                          $gte: moment(startTime).toDate(),
-                          $lte: moment(endTime).toDate(),
-                        //   $gte: moment(fromDate).toDate(),
-                        //   $lte: moment(toDate).toDate(),
-                        //   $gte: new Date(fromDate),
-                        //   $lte: new Date(toDate),
-                      }
-                  }
-              }
-
-              if (checkObjectIDs(projectID)) {
-                  conditionObj.project = projectID;
-              }
-
-              if (checkObjectIDs(packageID)) {
-                    conditionObj.package = packageID;
                 }
+            }
 
-                if (checkObjectIDs(toPackageID)) {
-                    conditionObj.toPackage = toPackageID;
+            if (checkObjectIDs(projectID)) {
+                conditionObj.project = projectID;
+            }
+
+            if (checkObjectIDs(packageID)) {
+                conditionObj.package = packageID;
+            }
+
+            if (checkObjectIDs(toPackageID)) {
+                conditionObj.toPackage = toPackageID;
+            }
+
+            if (checkObjectIDs(warehouseID)) {
+                conditionObj.warehouse = warehouseID;
+            }
+
+            if (checkObjectIDs(accountID)) {
+                conditionObj.account = accountID;
+            }
+
+            if (checkObjectIDs(userCreateID)) {
+                conditionObj.userCreate = userCreateID;
+            }
+
+            if (checkObjectIDs(goodsID)) {
+                conditionObj.goods = goodsID;
+            }
+
+            if (checkObjectIDs(assetsID)) {
+                conditionObj.assets = assetsID;
+            }
+
+            if (!isNaN(status) && Number(status) >= 1) {
+                conditionObj.status = Number(status)
+            }
+
+            if (!isNaN(outin) && Number(outin) >= 1) {
+                conditionObj.outin = Number(outin)
+            }
+
+            if (!isNaN(type) && Number(type) >= 1) {
+                conditionObj.type = Number(type)
+            }
+
+            if (keyword) {
+                keyword = keyword.split(" ");
+                keyword = '.*' + keyword.join(".*") + '.*';
+                conditionObj.name = RegExp(keyword, 'i');
+            }
+        //   console.log(conditionObj)
+
+            let conditionObjOrg = { ...conditionObj };
+
+            // PHÂN TRANG KIỂU MỚI
+            if (lastestID && checkObjectIDs(lastestID)) {
+                let infoData = await STORE_ORDER_COLL.findById(lastestID);
+                if (!infoData)
+                    return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                if (!dataPagingAndSort || dataPagingAndSort.error)
+                    return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                conditionObj = dataPagingAndSort.data.find;
+                sortBy = dataPagingAndSort.data.sort;
+            } else {
+                let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                sortBy = dataPagingAndSort.data.sort;
+            }
+            // console.log(sortBy)
+
+            let infoDataAfterGet = await STORE_ORDER_COLL.find(conditionObj)
+                .limit(limit + 1)
+                .sort(sortBy)
+                .select(select)
+                .populate(populates)
+                .lean();
+
+            if (!infoDataAfterGet)
+                return resolve({ error: true, message: "Can't get data", status: 403 });
+
+            let nextCursor = null;
+            if (infoDataAfterGet && infoDataAfterGet.length) {
+                if (infoDataAfterGet.length > limit) {
+                    nextCursor = infoDataAfterGet[limit - 1]._id;
+                    infoDataAfterGet.length = limit;
                 }
+            }
 
-              if (checkObjectIDs(warehouseID)) {
-                  conditionObj.warehouse = warehouseID;
-              }
+            let totalRecord = await STORE_ORDER_COLL.count(conditionObjOrg);
+            let totalPage = Math.ceil(totalRecord / limit);
 
-              if (checkObjectIDs(accountID)) {
-                  conditionObj.account = accountID;
-              }
-
-              if (checkObjectIDs(customerID)) {
-                  conditionObj.customer = customerID;
-              }
-
-              if (checkObjectIDs(userCreateID)) {
-                  conditionObj.userCreate = userCreateID;
-              }
-
-              if (checkObjectIDs(goodsID)) {
-                  conditionObj.goods = goodsID;
-              }
-
-              if (checkObjectIDs(assetsID)) {
-                  conditionObj.assets = assetsID;
-              }
-
-              if (!isNaN(status) && Number(status) >= 1) {
-                  conditionObj.status = Number(status)
-              }
-
-              if (!isNaN(outin) && Number(outin) >= 1) {
-                  conditionObj.outin = Number(outin)
-              }
-
-              if (!isNaN(type) && Number(type) >= 1) {
-                  conditionObj.type = Number(type)
-              }
-
-              // // Lấy dòng tiền vào ra (có giá trị income > 0)
-              // if(Number(outin) === 1){
-              //     conditionObj.income = { $gt: 0 }
-              // }
-
-              // // Lấy dòng tiền vào ra (có giá trị income > 0)
-              // if(Number(outin) === 2){
-              //     conditionObj.expense = { $gt: 0 }
-              // }
-
-              if (keyword) {
-                  keyword = keyword.split(" ");
-                  keyword = '.*' + keyword.join(".*") + '.*';
-                  conditionObj.name = RegExp(keyword, 'i');
-              }
-            //   console.log(conditionObj)
-
-              let conditionObjOrg = { ...conditionObj };
-
-              // PHÂN TRANG KIỂU MỚI
-              if (lastestID && checkObjectIDs(lastestID)) {
-                  let infoData = await STORE_ORDER_COLL.findById(lastestID);
-                  if (!infoData)
-                      return resolve({ error: true, message: "Can't get info lastest", status: 400 });
-
-                  let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-                  if (!dataPagingAndSort || dataPagingAndSort.error)
-                      return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-                  conditionObj = dataPagingAndSort.data.find;
-                  sortBy = dataPagingAndSort.data.sort;
-              } else {
-                  let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-                  sortBy = dataPagingAndSort.data.sort;
-              }
-              // console.log(sortBy)
-
-              let infoDataAfterGet = await STORE_ORDER_COLL.find(conditionObj)
-                  .limit(limit + 1)
-                  .sort(sortBy)
-                  .select(select)
-                  .populate(populates)
-                  .lean();
-
-              if (!infoDataAfterGet)
-                  return resolve({ error: true, message: "Can't get data", status: 403 });
-
-              let nextCursor = null;
-              if (infoDataAfterGet && infoDataAfterGet.length) {
-                  if (infoDataAfterGet.length > limit) {
-                      nextCursor = infoDataAfterGet[limit - 1]._id;
-                      infoDataAfterGet.length = limit;
-                  }
-              }
-
-              let totalRecord = await STORE_ORDER_COLL.count(conditionObjOrg);
-              let totalPage = Math.ceil(totalRecord / limit);
-
-              return resolve({
-                  error: false, data: {
-                      listRecords: infoDataAfterGet,
-                      limit,
-                      totalRecord,
-                      totalPage,
-                      nextCursor,
-                  }, status: 200
-              });
-
+            return resolve({
+                error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200
+            })
           } catch (error) {
               return resolve({ error: true, message: error.message, status: 500 });
           }
