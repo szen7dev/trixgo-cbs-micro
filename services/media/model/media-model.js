@@ -306,7 +306,7 @@ class Model extends BaseModel {
 					keyword = '.*' + keyword.join(".*") + '.*';
 					conditionObj.title = RegExp(keyword, 'i');
 				}
-
+				// console.log(conditionObj)
 				let conditionObjOrg = { ...conditionObj };
 
 				// PHÂN TRANG KIỂU MỚI
