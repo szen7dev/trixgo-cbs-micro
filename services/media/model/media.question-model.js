@@ -135,7 +135,7 @@ class Model extends BaseModel {
       return new Promise(async (resolve) => {
           try {
               let sortBy;
-              let conditionObj = {company: companyID};
+              let conditionObj = { };
               let keys = ['createAt__-1', '_id__-1'];
 
               if (limit > 50) {
