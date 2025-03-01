@@ -31,6 +31,7 @@ let CF_DOMAIN_SERVICES = {
     STORE           : 'store',
     FACEBOOK        : 'facebook',
     ZALO            : 'zalo',
+    CRM             : 'crm',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

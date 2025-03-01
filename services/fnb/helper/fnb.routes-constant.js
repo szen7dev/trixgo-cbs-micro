@@ -22,7 +22,6 @@ const CF_ROUTINGS_FNB = {
 
     //================================FNB_ORDER=======================================//
     ORDERS                                  : `${BASE_ROUTE}${ORDER}`,
-    ORDERS_KY_SU_HIEP                       : `${BASE_ROUTE}${ORDER}/kysuhiep`,
     ORDER_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}${ORDER}/get-list-by-property`,
     ORDER_UPDATE_VALUE                      : `${BASE_ROUTE}${ORDER}/update-value`,
     ORDER_DOWNLOAD_TEMPLATE_EXCEL           : `${BASE_ROUTE}${ORDER}/download-template-excel`,
