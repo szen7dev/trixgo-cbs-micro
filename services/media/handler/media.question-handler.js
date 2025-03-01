@@ -2,6 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code.js');
+const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
@@ -119,14 +120,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, questionID, goodsID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { optionSeller, questionID, goodsID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
 
                 let resultAfterCallHandler;
