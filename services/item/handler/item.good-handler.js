@@ -97,7 +97,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, goodsID, projectID, parentID, fundaID, type, isParent, status, usage, menuSlug, slug, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
+                let { optionSeller, option, goodsID, projectID, parentID, categoryID, fundaID, type, isParent, status, usage, menuSlug, slug, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -117,52 +117,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await ITEM__GOODS_MODEL.getList({
-                        option, companyID, projectID, parentID, fundaID, type, isParent, status, usage, menuSlug, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer, sortDirection
-                    });
-                }
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error: true, message: error.message };
-            }
-        }
-    },
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Danh sách goods (kysuhiep)
-	 */
-    getInfoAndGetListKySuHiep: {
-        params: {
-            goodsID         : { type: "string", optional: true },
-            vimeoId         : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            isListParentOfListChilds: { type: "string", optional: true },
-
-            // Field mặc định
-            limit           : { type: "string", optional: true },
-            lastestID       : { type: "string", optional: true },
-            keyword         : { type: "string", optional: true },
-            select          : { type: "string", optional: true },
-            populates       : { type: "string", optional: true },
-            sortDirection   : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { goodsID, parentID, fundaID, type, isParent, status, usage, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection, vimeoId } = ctx.params;
-                let resultAfterCallHandler = null;
-
-                const companyID = "6046c7962c1dc33996dddcb7";
-
-                if(goodsID || vimeoId){
-                    resultAfterCallHandler = await ITEM__GOODS_MODEL.getInfoKySuHiep({
-                        goodsID, vimeoId, select, populates
-                    });
-                } else{
-                    resultAfterCallHandler = await ITEM__GOODS_MODEL.getListKySuHiep({
-                        companyID, parentID, fundaID, type, isParent, status, usage, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer, sortDirection
+                        option, companyID, projectID, parentID, categoryID, fundaID, type, isParent, status, usage, menuSlug, lastestID, keyword, select, limit, populates, parentID, isListParentOfListChilds, forCustomer, sortDirection
                     });
                 }
 
@@ -187,7 +142,6 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params)
                 const { filterParams } = ctx.params
-                // console.log('1222222222222222222222222222')
                 // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;                
