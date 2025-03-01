@@ -101,7 +101,7 @@ exports.OPTION_SELLERS = [
     { value: 2, company: '6046bedeb55525368b11c5c3' }, // Winggo
     { value: 3, company: '6046c4d32c1dc33996dd5bab' }, // EL2
     { value: 4, company: '6046c6e92c1dc33996ddc089' }, // Việt Nguyên Clinic
-    { value: 5, company: '66df9da769209a00126d7667' }, // GENSAKI
+    { value: 5, company: '6046c63a2c1dc33996dd9762' }, // TMĐT ECOM
 ]
 
 exports.ITEM_ACCOUNTS = [
