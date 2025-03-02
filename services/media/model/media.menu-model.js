@@ -15,7 +15,6 @@ const { RANGE_BASE_PAGINATION_V2 } = require("../../../tools/cursor_base/playgro
  * import inter-coll, exter-coll
  */
 const MEDIA_MENU_COLL               = require("../database/media.menu-coll")
-const MEDIA_CATE_COLL               = require('../database/media.cate-coll')
 
 class Model extends BaseModel {
   constructor() {
