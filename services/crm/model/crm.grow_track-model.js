@@ -206,6 +206,8 @@ class Model extends BaseModel {
                 }
                 dataUpdate.namecv = convertStr
 
+                // console.log(dataUpdate)
+
                 let infoAfterUpdate = await CRM__GROW_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
                     return resolve({
