@@ -514,6 +514,7 @@ class Model extends BaseModel {
                     const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
                     return phoneRegex.test(str);
                 }
+                // console.log(isValidVietnamPhoneNumber(strValid))
 
                 if(!isValidVietnamPhoneNumber(strValid))
                     return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })

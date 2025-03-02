@@ -2,6 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
@@ -17,34 +18,31 @@ module.exports = {
      */
     insert: {
         params: {
-            name               : { type: "string"},
-            parentID           : { type: "string", optional: true },
-            date               : { type: "string", optional: true },
-            type               : { type: "string", optional: true },
-            note               : { type: "string", optional: true },
-            projectID          : { type: "string", optional: true },
-            humanID             : { type: "string", optional: true },
-            salary              : { type: "number", optional: true },
-            reward              : { type: "number", optional: true },
-            punishment          : { type: "number", optional: true },
-            advance             : { type: "number", optional: true },
-            remaining           : { type: "number", optional: true },
-            paid                : { type: "number", optional: true },
+            phone               : { type: "string", optional: true },
+            name                : { type: "string", optional: true },
+            contactID           : { type: "string", optional: true },
+            birthday            : { type: "string", optional: true },
+            note                : { type: "string", optional: true },
+            gender              : { type: "string", optional: true },
+            height              : { type: "string", optional: true },
+            weight              : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, date, type, note, projectID, humanID, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, name } = ctx.params;
+                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log(company)
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({
-                    userCreate: userID,
-                    companyID: company._id,
-                    parentID, date, type, note, projectID, humanID, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, name
-                })
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
+
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -60,62 +58,20 @@ module.exports = {
      */
     update: {
         params: {
-            expertSalaryID      : { type: "string" },
+            trackID      : { type: "string" },
             members             : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertSalaryID, admins, members, status, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22, filesID } = ctx.params;
+                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({
-                    companyID: company._id, 
-                    expertSalaryID, admins, members, userID, status, projectID, humanID, name, date, type, note, 
-                    salary: Number(salary).toFixed(0), 
-                    onLeaveSalary: Number(onLeaveSalary).toFixed(0), 
-                    overtimeSalary: Number(overtimeSalary).toFixed(0), 
-                    reward: Number(reward).toFixed(0), 
-                    punishment: Number(punishment).toFixed(0), 
-                    advance: Number(advance).toFixed(0), 
-                    convertFactor: convertFactor, 
-                    paid: Number(paid).toFixed(0), 
-                    revenueBonus: Number(revenueBonus).toFixed(0), 
-                    mealAllowance: Number(mealAllowance).toFixed(0), 
-                    insurance: Number(insurance).toFixed(0), 
-                    pitax: Number(pitax).toFixed(0), 
-                    union: Number(union).toFixed(0), 
-                    share: Number(share).toFixed(0), 
-                    other: Number(other).toFixed(0), 
-                    kpiFactor, 
-                    subAllowance1: Number(subAllowance1).toFixed(0), 
-                    subAllowance2: Number(subAllowance2).toFixed(0), 
-                    subAllowance3: Number(subAllowance3).toFixed(0), 
-                    subAllowance4: Number(subAllowance4).toFixed(0), 
-                    subAllowance5: Number(subAllowance5).toFixed(0), 
-                    subAllowance6: Number(subAllowance6).toFixed(0), 
-                    subAllowance7: Number(subAllowance7).toFixed(0), 
-                    subAllowance8: Number(subAllowance8).toFixed(0), 
-                    subAllowance9: Number(subAllowance9).toFixed(0), 
-                    subAllowance10: Number(subAllowance10).toFixed(0), 
-                    subAllowance11: Number(subAllowance11).toFixed(0), 
-                    subAllowance12: Number(subAllowance12).toFixed(0), 
-                    subAllowance13: Number(subAllowance13).toFixed(0), 
-                    subAllowance14: Number(subAllowance14).toFixed(0), 
-                    subAllowance15: Number(subAllowance15).toFixed(0), 
-                    subAllowance16: Number(subAllowance16).toFixed(0), 
-                    subAllowance17: Number(subAllowance17).toFixed(0), 
-                    subAllowance18: Number(subAllowance18).toFixed(0), 
-                    subAllowance19: Number(subAllowance19).toFixed(0), 
-                    subAllowance20: Number(subAllowance20).toFixed(0), 
-                    subAllowance21: Number(subAllowance21).toFixed(0), 
-                    subAllowance22: Number(subAllowance22).toFixed(0),
-                    filesID
-                });
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -152,46 +108,14 @@ module.exports = {
     },
 
     /**
-     * Name: syncData
-     * Author: HiepNH
-     * Code: 22/3/2024
-     */
-    syncData: {
-        params: {
-            salaryID : { type: "string", optional: true },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { option, salaryID, orderID, fundaID, arrUser, year, month } = ctx.params;
-                console.log(ctx.params)
-
-				const { _id: userID, company, email } = ctx.meta.infoUser;
-
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.syncData({
-                    userID, companyID: company._id, email, option, salaryID, orderID, fundaID, arrUser, year, month
-                });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error: true, message: error.message };
-            }
-        }
-    },
-
-    /**
      * Name: Get list
      * Author: HiepNH
      * Code: 22/11/2023
      */
     getInfoAndGetList: {
         params: {
-            sortOption        : { type: "string", optional: true },
-            expertSalaryID    : { type: "string", optional: true },
-            companyID         : { type: "string", optional: true },
-            projectID         : { type: "string", optional: true },
-            parentID          : { type: "string", optional: true },
-            departmentsID     : { type: "array", optional: true },
+            trackID       : { type: "string", optional: true },
+            contactID       : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -203,23 +127,25 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { expertSalaryID, subtype, salary, onLeaveSalary, overtimeSalary, mealAllowance, punishment, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, option, month, year } = ctx.params;
+                let { optionSeller, trackID, contactID, month, year, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log({ EXPERT_SALARY_PARAMS: ctx.params })
+                console.log(ctx.params)
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
-
                 let resultAfterCallHandler;
-                if(expertSalaryID){
+                if(trackID){
                     resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.getInfo({
-                        expertSalaryID, userID, select, populates
+                        trackID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.getList({
-                        subtype, salary, onLeaveSalary, overtimeSalary, mealAllowance, punishment, parentID, companyID, projectID, userID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, option, month, year
+                        companyID, contactID, month, year, keyword, limit, lastestID, select, populates
                     })
                 }
 

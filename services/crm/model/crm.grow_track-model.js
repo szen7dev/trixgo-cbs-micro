@@ -51,82 +51,72 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userCreate, companyID, projectID, humanID, name, date, type, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid }) {
+    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }) {
         return new Promise(async resolve => {
             try {
-                if(!name){
-                    return resolve({
-                        error: true,
-                        message: "Name invalid",
-                        keyError: "name_invalid",
-                    });
+                if(phone){
+                    // Hàm kiểm tra Phone
+                    const strValid = phone.toLowerCase().trim();
+                    // console.log(strValid)
+
+                    function isValidVietnamPhoneNumber(str) {
+                        const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                        return phoneRegex.test(str);
+                    }
+                    // console.log(isValidVietnamPhoneNumber(strValid))
+                    if(!isValidVietnamPhoneNumber(strValid))
+                        return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
+                }else{
+                    if(!checkObjectIDs(contactID) || !name)
+                        return resolve({ error: true, message: "Danh bạ không hợp lệ. Hãy vui lòng thử lại" })
                 }
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     company: companyID,
-                    userCreate,
-                    name,
-                    admins: [userCreate],
-                    members: [userCreate]
+                    userCreate: userID,
                 }
 
-                if(checkObjectIDs(humanID)){
-                    dataInsert.human = humanID;
+                if(!isNaN(status) && [1,2].includes(Number(status))){
+                    dataInsert.status = status;
                 }
 
-                let infoProject;
-                if(checkObjectIDs(projectID)){
-                    dataInsert.project = projectID
-
-                    infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda name')
-                    if(infoProject && checkObjectIDs(infoProject.funda)){
-                        dataInsert.funda = infoProject.funda
-                    }
+                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
+                    dataInsert.gender = gender;
                 }
 
-                if(date){
-                    dataInsert.date = date;
+                if(!isNaN(height)){
+                    dataInsert.height = height;
                 }
 
-                // if(type){
-                if(!isNaN(type) && [1,2].includes(Number(type))){
-                    dataInsert.type = type;
+                if(!isNaN(weight)){
+                    dataInsert.weight = weight;
                 }
 
-                if(convertFactor){
-                    dataInsert.convertFactor = Number(convertFactor);
+                if(checkObjectIDs(contactID)){
+                    dataInsert.contact = contactID;
                 }
 
-                if(note){
+                if(phone && phone != ""){
+                    dataInsert.phone = phone;
+                }
+
+                if(name && name != ""){
+                    dataInsert.name = name;
+                }
+
+                if(birthday && birthday != ""){
+                    dataInsert.birthday = birthday;
+                }
+
+                if(name && name != ""){
+                    dataInsert.name = name;
+                }
+
+                if(note && note != ""){
                     dataInsert.note = note;
                 }
 
-                if(salary){
-                    dataInsert.salary = Number(salary);
-                }
-                if(onLeaveSalary){
-                    dataInsert.onLeaveSalary = Number(onLeaveSalary);
-                }
-                if(overtimeSalary){
-                    dataInsert.overtimeSalary = Number(overtimeSalary);
-                }
-                if(reward){
-                    dataInsert.reward = Number(reward);
-                }
-                if(punishment){
-                    dataInsert.punishment = Number(punishment);
-                }
-                if(advance){
-                    dataInsert.advance = Number(advance);
-                }
-                if(paid){
-                    dataInsert.paid = Number(paid);
-                }
-
-                /**
-                 * Convert to query
-                 */
                 let convertStr = ''
                 if(name && name != ""){
                     convertStr = stringUtils.removeAccents(name)
@@ -140,69 +130,6 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
-                /**
-                 * Tạo chi tiết lương cho các User đang hoạt động
-                 */
-                let listHuman = await AUTH__USER_COLL.find({ company: companyID, status: 1 })
-                .select('fullname department position contacts')
-                .populate({
-                    path: 'contacts',
-                    select: 'company sallaryBasic insuranceFee union share'
-                })
-
-                for(const item of listHuman){
-                    let insuranceFee = 0, union = 0, share = 0
-                    if(item.contacts && item.contacts.length){
-                        for(const contact of item.contacts){
-                            if(contact.company && contact.company.toString() === companyID.toString()){
-                                insuranceFee = Number(insuranceFee) + Number(contact.insuranceFee)
-                                union = Number(union) + Number(contact.union)
-                                share = Number(share) + Number(contact.share)
-                            }
-                        }
-                    }
-
-                    let dataInsertDetail = {
-                        userCreate,
-                        name: 'Default',
-                        admins: [userCreate],
-                        members: [userCreate],
-                        human: item._id,
-                        parent: infoAfterInsert._id, // Bảng lương cha
-                        company: infoAfterInsert.company,
-                        convertFactor: infoAfterInsert.convertFactor,
-                        project: item.department,
-                        position: item.position,
-                        date: infoAfterInsert.date,
-                        type: infoAfterInsert.type,
-                    }
-
-                    if(checkObjectIDs(projectID)){
-                        if(infoProject && checkObjectIDs(infoProject.funda)){
-                            dataInsertDetail.funda = infoProject.funda
-                        }
-                    }
-
-                    if(Number(insuranceFee) > 0){
-                        dataInsertDetail.insurance = Number(insuranceFee)
-                    }
-
-                    if(Number(union) > 0){
-                        dataInsertDetail.union = Number(union)
-                    }
-
-                    if(Number(share) > 0){
-                        dataInsertDetail.share = Number(share)
-                    }
-
-                    await this.insertData(dataInsertDetail)
-                }
-
-                // Cập nhật số nhân sự vào Bảng lương cha
-                await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
-                    numberOfHuman: Number(listHuman.length)
-                }, { new: true })
-
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -215,27 +142,10 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ expertSalaryID, type, admins, members, userID, status, projectID, humanID, name, date, note, salary, onLeaveSalary, overtimeSalary, reward, punishment, advance, convertFactor, paid, revenueBonus, mealAllowance, insurance, pitax, union, share, other, kpiFactor, subAllowance1, subAllowance2, subAllowance3, subAllowance4, subAllowance5, subAllowance6, subAllowance7, subAllowance8, subAllowance9, subAllowance10, subAllowance11, subAllowance12, subAllowance13, subAllowance14, subAllowance15, subAllowance16, subAllowance17, subAllowance18, subAllowance19, subAllowance20, subAllowance21, subAllowance22, filesID }){
+    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }){
         return new Promise(async (resolve) => {
             const that = this
             try {
-                let infoSalary = await CRM__GROW_TRACK_COLL.findById(expertSalaryID).
-                populate({
-                    path: 'parent',
-                    select: 'status'
-                })
-                if(!infoSalary) {
-                    return resolve({
-                        error: true,
-                        message: 'Timesheet không tồn tại',
-                        keyError: "timesheet_not_exists",
-                        status: 400
-                    })
-                }
-
-                if(infoSalary.parent && infoSalary.parent?.status == 2 )
-                    return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
-
                 let dataUpdate = {
                     userUpdate: userID,
                     modifyAt: Date.now(),
@@ -251,59 +161,42 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = dataAddToset;
                 }
 
-                // if(type){
-                if(!isNaN(type) && [1,2].includes(Number(type))){
-                    dataUpdate.type = type;
+                if(!isNaN(status) && [1,2].includes(Number(status))){
+                    dataUpdate.status = status;
                 }
 
-                // Bảng lương
-                let infoProject;
-                if(checkObjectIDs(projectID)){
-                    infoProject = await ITEM__DEPARTMENT_COLL.findById(projectID).select('funda name')
-                    dataUpdate.project = projectID;
-
-                    if(infoProject && checkObjectIDs(infoProject.funda)){
-                        dataUpdate.funda = infoProject.funda
-                    }
+                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
+                    dataUpdate.gender = gender;
                 }
 
-                if(checkObjectIDs(humanID)){
-                    dataUpdate.human = humanID;
+                if(!isNaN(height)){
+                    dataUpdate.height = height;
+                }
+
+                if(!isNaN(weight)){
+                    dataUpdate.weight = weight;
+                }
+
+                if(checkObjectIDs(contactID)){
+                    dataUpdate.contact = contactID;
+                }
+
+                if(phone && phone != ""){
+                    dataUpdate.phone = phone;
+                }
+
+                if(birthday && birthday != ""){
+                    dataUpdate.birthday = birthday;
                 }
 
                 if(name && name != ""){
                     dataUpdate.name = name;
                 }
 
-                if(date){
-                    dataUpdate.date = date;
-                }
-
-                if(status){
-                    let checkPermission = 1 // Không có quyền
-                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                        appID: "61e049cffdebf77b072d1b14",
-                        userID
-                    })
-                    if((!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0)){
-                        checkPermission = Number(checkPermission) + 1
-                    }
-                    if(infoSalary.userCreate.toString() === userID.toString()){
-                        checkPermission = Number(checkPermission) + 1
-                    }
-
-                    if(checkPermission >= 2){
-                        dataUpdate.status = +status;
-                    }
-                }
-
                 if(note && note != ""){
                     dataUpdate.note = note;
                 }
-                
-                /**
-                 * Convert to query
-                 */
+
                 let convertStr = ''
                 if(name && name != ""){
                     convertStr = stringUtils.removeAccents(name)
@@ -313,203 +206,15 @@ class Model extends BaseModel {
                 }
                 dataUpdate.namecv = convertStr
 
-                if(convertFactor){
-                    dataUpdate.convertFactor = convertFactor;
-                }
-
-                if(kpiFactor){
-                    dataUpdate.kpiFactor = Number(kpiFactor);
-                }
-
-                if(!isNaN(subAllowance1)){
-                    dataUpdate.subAllowance1 = Number(subAllowance1).toFixed(0);
-                }
-                if(!isNaN(subAllowance2)){
-                    dataUpdate.subAllowance2 = Number(subAllowance2).toFixed(0);
-                }
-                if(!isNaN(subAllowance3)){
-                    dataUpdate.subAllowance3 = Number(subAllowance3).toFixed(0);
-                }
-                if(!isNaN(subAllowance4)){
-                    dataUpdate.subAllowance4 = Number(subAllowance4).toFixed(0);
-                }
-                if(!isNaN(subAllowance5)){
-                    dataUpdate.subAllowance5 = Number(subAllowance5).toFixed(0);
-                }
-                if(!isNaN(subAllowance6)){
-                    dataUpdate.subAllowance6 = Number(subAllowance6).toFixed(0);
-                }
-                if(!isNaN(subAllowance7)){
-                    dataUpdate.subAllowance7 = Number(subAllowance7).toFixed(0);
-                }
-                if(!isNaN(subAllowance8)){
-                    dataUpdate.subAllowance8 = Number(subAllowance8).toFixed(0);
-                }
-                if(!isNaN(subAllowance9)){
-                    dataUpdate.subAllowance9 = Number(subAllowance9).toFixed(0);
-                }
-                if(!isNaN(subAllowance10)){
-                    dataUpdate.subAllowance10 = Number(subAllowance10).toFixed(0);
-                }
-                if(!isNaN(subAllowance11)){
-                    dataUpdate.subAllowance11 = Number(subAllowance11).toFixed(0);
-                }
-                if(!isNaN(subAllowance12)){
-                    dataUpdate.subAllowance12 = Number(subAllowance12).toFixed(0);
-                }
-                if(!isNaN(subAllowance13)){
-                    dataUpdate.subAllowance13 = Number(subAllowance13).toFixed(0);
-                }
-                if(!isNaN(subAllowance14)){
-                    dataUpdate.subAllowance14 = Number(subAllowance14).toFixed(0);
-                }
-                if(!isNaN(subAllowance15)){
-                    dataUpdate.subAllowance15 = Number(subAllowance15).toFixed(0);
-                }
-                if(!isNaN(subAllowance16)){
-                    dataUpdate.subAllowance16 = Number(subAllowance16).toFixed(0);
-                }
-                if(!isNaN(subAllowance17)){
-                    dataUpdate.subAllowance17 = Number(subAllowance17).toFixed(0);
-                }
-                if(!isNaN(subAllowance18)){
-                    dataUpdate.subAllowance18 = Number(subAllowance18).toFixed(0);
-                }
-                if(!isNaN(subAllowance19)){
-                    dataUpdate.subAllowance19 = Number(subAllowance19).toFixed(0);
-                }
-                if(!isNaN(subAllowance20)){
-                    dataUpdate.subAllowance20 = Number(subAllowance20).toFixed(0);
-                }
-                if(!isNaN(subAllowance21)){
-                    dataUpdate.subAllowance21 = Number(subAllowance21).toFixed(0);
-                }
-                if(!isNaN(subAllowance22)){
-                    dataUpdate.subAllowance22 = Number(subAllowance22).toFixed(0);
-                }
-
-                // let mealAllowance = 0, other = 0
-                // Tính toán phụ cấp và phải trả khác
-                let mealAllowance = Number(Number(subAllowance1) + Number(subAllowance2) + Number(subAllowance3) + Number(subAllowance4) + Number(subAllowance5) + Number(subAllowance6) + Number(subAllowance7) + Number(subAllowance8) + Number(subAllowance9) + Number(subAllowance10) + Number(subAllowance11) + Number(subAllowance12) + Number(subAllowance13) + Number(subAllowance14) + Number(subAllowance15)).toFixed(0)
-
-                let other = Number(Number(subAllowance16) + Number(subAllowance17) + Number(subAllowance18) + Number(subAllowance19) + Number(subAllowance20) + Number(subAllowance21) + Number(subAllowance22)).toFixed(0)
-
-                if(!isNaN(salary) && Number(infoSalary.salary) != Number(salary)){
-                    dataUpdate.salary = Number(salary).toFixed(0)
-                }
-                if(!isNaN(onLeaveSalary) && Number(infoSalary.onLeaveSalary) != Number(onLeaveSalary)){
-                    dataUpdate.onLeaveSalary = Number(onLeaveSalary).toFixed(0)
-                }
-                if(!isNaN(overtimeSalary) && Number(infoSalary.overtimeSalary) != Number(overtimeSalary)){
-                    dataUpdate.overtimeSalary = Number(overtimeSalary).toFixed(0)
-                }
-
-                if(!isNaN(reward) && Number(infoSalary.reward) != Number(reward)){
-                    dataUpdate.reward = Number(reward).toFixed(0)
-                }
-                if(!isNaN(revenueBonus) && Number(infoSalary.revenueBonus) != Number(revenueBonus)){
-                    dataUpdate.revenueBonus = Number(revenueBonus).toFixed(0)
-                }
-                if(!isNaN(punishment) && Number(infoSalary.punishment) != Number(punishment)){
-                    dataUpdate.punishment = Number(punishment).toFixed(0)
-                }
-                if(!isNaN(mealAllowance) && Number(infoSalary.mealAllowance) != Number(mealAllowance)){
-                    dataUpdate.mealAllowance = Number(mealAllowance).toFixed(0)
-                }
-                if(!isNaN(insurance) && Number(infoSalary.insurance) != Number(insurance)){
-                    dataUpdate.insurance = Number(insurance).toFixed(0)
-                }
-                if(!isNaN(pitax) && Number(infoSalary.pitax) != Number(pitax)){
-                    dataUpdate.pitax = Number(pitax).toFixed(0)
-                }
-                if(!isNaN(union) && Number(infoSalary.union) != Number(union)){
-                    dataUpdate.union = Number(union).toFixed(0)
-                }
-                if(!isNaN(share) && Number(infoSalary.share) != Number(share)){
-                    dataUpdate.share = Number(share).toFixed(0)
-                }
-                if(!isNaN(other) && Number(infoSalary.other) != Number(other)){
-                    dataUpdate.other = Number(other).toFixed(0)
-                }
-                if(!isNaN(advance) && Number(infoSalary.advance) != Number(advance)){
-                    dataUpdate.advance = Number(advance).toFixed(0)
-                }
-                if(!isNaN(paid) && Number(infoSalary.paid) != Number(paid)){
-                    dataUpdate.paid = Number(paid).toFixed(0)
-                }
-
-                // Tính toán giá trị còn lại
-                if(!isNaN(salary) || !isNaN(onLeaveSalary) || !isNaN(overtimeSalary) || !isNaN(reward) || !isNaN(revenueBonus) || !isNaN(mealAllowance) || !isNaN(punishment) || !isNaN(insurance) || !isNaN(pitax) || !isNaN(advance) || !isNaN(paid)){
-                    dataUpdate.remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
-                }
                 // console.log(dataUpdate)
 
-                // Kiểm tra quyền cập nhật: chỉ Admin mới được phân quyền cho người khác
-                const adminsID = [...infoSalary.admins?.map(item => item?.toString())]
-                if(adminsID.includes(userID.toString())) {
-                    if(admins) {
-                        if(admins.length && checkObjectIDs(admins)) {
-                            admins = [...new Set(admins)];
-                            dataUpdate.admins = admins;
-                        } else{
-                            dataUpdate.admins = [];
-                        }
-                    }
-
-                    if(members) {
-                        if(members.length && checkObjectIDs(members)) {
-                            members = [...new Set(members)];
-                            dataUpdate.members = members;
-                        } else{
-                            dataUpdate.members = [];
-                        }
-                    }
-                }
-
-                let infoAfterUpdate = await CRM__GROW_TRACK_COLL.findByIdAndUpdate(expertSalaryID, dataUpdate, { new: true })
+                let infoAfterUpdate = await CRM__GROW_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
                     return resolve({
                         error: true,
                         message: "Cannot update",
                         keyError: "cannot_update",
                     })
-                }
-
-                /**
-                 * CẬP NHẬT VÀO CHI TIẾT LƯƠNG CON
-                 */
-                if(!infoAfterUpdate.parent){
-                    // Cập nhật số nhân sự bảng lương
-                    let numberOfHuman = await CRM__GROW_TRACK_COLL.count({parent: expertSalaryID})
-                    if(numberOfHuman){
-                        await CRM__GROW_TRACK_COLL.findByIdAndUpdate(expertSalaryID, {
-                            userUpdate: userID,
-                            modifyAt: Date.now(),
-                            numberOfHuman
-                        }, { new: true })
-                    }
-
-                    let dataUpdateNew = {
-                        date: infoAfterUpdate.date,
-                        userUpdate: userID,
-                        modifyAt: Date.now()
-                    }
-
-                    if(checkObjectIDs(projectID)){
-                        if(infoProject && infoProject.funda){
-                            dataUpdateNew.funda = infoProject.funda
-                        }
-                    }
-
-                    // Cập nhật ngày tháng
-                    await CRM__GROW_TRACK_COLL.updateMany({parent: expertSalaryID},{$set: dataUpdateNew})
-                }
-
-                /**
-                 * CẬP NHẬT VÀO BẢNG LƯƠNG CHA
-                 */
-                if(infoAfterUpdate.parent && checkObjectIDs(infoAfterUpdate.parent)){
-                    await that.updateValue({ expertSalaryID: infoAfterUpdate.parent, userID })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
@@ -595,7 +300,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ expertSalaryID, userID, select, populates }) {
+    getInfo({ trackID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {                
                 if(populates && typeof populates === 'string'){
@@ -610,7 +315,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await CRM__GROW_TRACK_COLL.findById(expertSalaryID)
+                let infoAterGet = await CRM__GROW_TRACK_COLL.findById(trackID)
                 .select(select)
                 .populate(populates)
 
@@ -629,18 +334,16 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({
-        subtype, salary, onLeaveSalary, overtimeSalary, mealAllowance, punishment, option, sortOption, parentID, userID,
-        keyword, limit = 10, lastestID, select, populates= {}, companyID, positionsID, departmentsID, month, year }) {
+    getList({ companyID, contactID, month, year, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
                 // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                    appID: "61e049cffdebf77b072d1b14",
-                    userID
-                })
+                // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                //     appID: "61e049cffdebf77b072d1b14",
+                //     userID
+                // })
 
                 if(Number(limit) > 50){
                     limit = 50;
@@ -654,16 +357,6 @@ class Model extends BaseModel {
                 let keys	 = ['project__1', '_id__1'];
                 // let keys	 = ['createAt__1', '_id__1'];
 
-                if(sortOption == 1){
-                    keys	 = ['date__-1', '_id__-1'];
-                }
-
-                const validation = validateParamsObjectID({
-                    positionsID           : { value: positionsID, isRequire: false },
-                    departmentsID         : { value: departmentsID, isRequire: false },
-                })
-                if(validation.error) return resolve(validation);
-
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -676,127 +369,26 @@ class Model extends BaseModel {
                     }
                 }
 
-				if(checkObjectIDs(parentID)){                    
-                    let infoParent = await CRM__GROW_TRACK_COLL.findById(parentID)
-                    let checkPermission = 1 // Không có quyền
-                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                        appID: "61e049cffdebf77b072d1b14",
-                        userID
-                    })
-                    if(infoParent.userCreate.toString() === userID.toString()){
-                        checkPermission = Number(checkPermission) + 1
-                    }
-                    if(infoParent.admins.includes(userID)){
-                        checkPermission = Number(checkPermission) + 1
-                    }
-                    if(infoParent.members.includes(userID)){
-                        checkPermission = Number(checkPermission) + 1
-                    }
-                    if((!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0)){
-                        checkPermission = Number(checkPermission) + 1
-                    }
-
-                    if(checkPermission >= 2){
-
-                        conditionObj.parent = parentID
-
-                        // Lọc dữ liệu
-                        if(subtype && Number(subtype) > 1){
-                            conditionObj.subtype = Number(subtype)
-                        }
-
-                        if(salary && Number(salary) === 1){
-                            conditionObj.salary = {$gt: 0}
-                        }
-                        if(salary && Number(salary) === 2){
-                            conditionObj.salary = 0
-                        }
-
-                        if(onLeaveSalary && Number(onLeaveSalary) === 1){
-                            conditionObj.onLeaveSalary = {$gt: 0}
-                        }
-                        if(onLeaveSalary && Number(onLeaveSalary) === 2){
-                            conditionObj.onLeaveSalary = 0
-                        }
-
-                        if(overtimeSalary && Number(overtimeSalary) === 1){
-                            conditionObj.overtimeSalary = {$gt: 0}
-                        }
-                        if(overtimeSalary && Number(overtimeSalary) === 2){
-                            conditionObj.overtimeSalary = 0
-                        }
-
-                        if(mealAllowance && Number(mealAllowance) === 1){
-                            conditionObj.mealAllowance = {$gt: 0}
-                        }
-                        if(mealAllowance && Number(mealAllowance) === 2){
-                            conditionObj.mealAllowance = 0
-                        }
-
-                        if(punishment && Number(punishment) === 1){
-                            conditionObj.punishment = {$gt: 0}
-                        }
-                        if(punishment && Number(punishment) === 2){
-                            conditionObj.punishment = 0
-                        }
-
-                        if(departmentsID && departmentsID.length){
-                            conditionObj.project = { $in: departmentsID }
-                        }
-
-                        if(positionsID && positionsID.length){
-                            conditionObj.position = { $in: positionsID }
-                        }
-
-                        if(keyword){
-                            keyword = keyword.split(" ");
-                            keyword = '.*' + keyword.join(".*") + '.*';
-
-                            let listUser = await AUTH__USER_COLL.find({company:companyID, fullname: new RegExp(keyword, 'i')})
-                            .select('_id fullname')
-                            .limit(20)
-
-                            conditionObj.human = {$in: listUser.map(item=>item._id)}
-                        }
-                    }else{
-                        // Trả về dữ liệu rỗng (BE)
-                        conditionObj.company = { $exists: false } 
-                    }
+				if(checkObjectIDs(contactID)){                    
+                    conditionObj.contact = contactID
 				}else{
-                    if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                        conditionObj.company = companyID
-                        conditionObj.parent = { $exists: false }
-                    }else{
-                        conditionObj.$or = [
-                            {admins: { $in: [userID] }},
-                            {members: { $in: [userID] }}
-                        ]
-                        conditionObj.company = companyID
-                        conditionObj.parent = { $exists: false }
-                    }
-
-                    // Bảng lương theo tháng, năm
-                    if(month && year){
-                        conditionObj.$where = `return this.date.getMonth() === ${Number(month - 1)} && this.date.getFullYear() === ${Number(year)}`
-                    }
-
-                    if(keyword){
-                        keyword = stringUtils.removeAccents(keyword)
-                        keyword = keyword.split(" ");
-                        keyword = '.*' + keyword.join(".*") + '.*';
-                        const regSearch = new RegExp(keyword, 'i');
-                        conditionObj.namecv = regSearch
-                    }
+                    conditionObj.company = companyID
                 }
 
-                /**
-                 * Phiếu lương của userID đang truy cập
-                 */
-                if(option && option == 1){
-                    conditionObj.human = userID
-                    conditionObj.parent = { $exists: true, $ne: null }
-                    delete conditionObj.$or;
+                // Bảng lương theo tháng, năm
+                if(month && year){
+                    conditionObj.$where = `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(year)}`
                 }
+
+                if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
+                    conditionObj.namecv = regSearch
+                }
+
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 

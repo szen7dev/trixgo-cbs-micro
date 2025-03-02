@@ -13,6 +13,7 @@ const { CF_ROUTINGS_FACEBOOK } 	= require('../facebook/helper/facebook.routes');
 const { CF_ROUTINGS_PAYMENT }	= require('../payment/helper/payment.routes-constant');
 const { CF_ROUTINGS_ITEM }		= require('../item/helper/item.routes-constant');
 const { CF_ROUTINGS_FNB }		= require('../fnb/helper/fnb.routes-constant');
+const { CF_ROUTINGS_CRM }		= require('../crm/helper/crm.routes-constant');
 
 /**
  * ------import action's Services--------
@@ -24,6 +25,7 @@ const { CF_ACTIONS_FACEBOOK }	= require('../facebook/helper/facebook.actions');
 const { CF_ACTIONS_PAYMENT } 	= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_ITEM } 		= require('../item/helper/item.actions-constant');
 const { CF_ACTIONS_FNB } 		= require('../fnb/helper/fnb.actions-constant');
+const { CF_ACTIONS_CRM } 		= require('../crm/helper/crm.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -128,6 +130,28 @@ module.exports = {
 
 		[`POST ${CF_ROUTINGS_FNB.ORDERS_KY_SU_HIEP}`] :
 		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_KY_SU_HIEP}`],
+
+		// //---------------------------🏁 BEGIN SERVICE CRM 🏁---------------------------//
+
+		// [`POST ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :
+		// [`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_INSERT}`],
+
+		// [`PUT ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :
+		// [`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_UPDATE}`],
+
+		// [`DELETE ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :
+		// [`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_REMOVE}`],
+
+		// [`GET ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :
+		// [`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_GET_INFO_AND_GET_LIST}`],
+
+		// [`GET ${CF_ROUTINGS_CRM.CRM_GROW_TRACK_GET_LIST_BY_PROPERTY}`] :
+		// [`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_GET_LIST_BY_PROPERTY}`],
+
+		// [`GET ${CF_ROUTINGS_CRM.CRM_GROW_TRACK_EXPORT_EXCEL}`] :
+		// [`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_GROW_TRACK_EXPORT_EXCEL}`],
+
+		// //---------------------------🏁 END SERVICE CRM 🏁---------------------------//
 	},
 	// Disable to call not-mapped actions
 	mappingPolicy: "all", // Available values: "all", "restrict"
