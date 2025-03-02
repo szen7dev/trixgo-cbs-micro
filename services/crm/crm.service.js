@@ -15,6 +15,7 @@ const { CF_ACTIONS_CRM }				=	 require('./helper/crm.actions-constant');
 const CRM_GROW_TRACK_HANDLER			= require('./handler/crm.grow_track-handler');
 const CRM_SURVEY_HANDLER				= require('./handler/crm.survey-handler');
 const CRM_SURVEY_RESULT_HANDLER			= require('./handler/crm.survey_result-handler');
+const CRM_SEARCH_KEYWORD_HANDLER		= require('./handler/crm.search_keyword-handler');
 
 /**
  * COLLECTIONS
@@ -22,6 +23,7 @@ const CRM_SURVEY_RESULT_HANDLER			= require('./handler/crm.survey_result-handler
 const CRM_GROW_TRACK_COLL 				= require('./database/crm.grow_track-coll');
 const CRM_SURVEY_COLL 					= require('./database/crm.survey-coll');
 const CRM_SURVEY_RESULT_COLL 			= require('./database/crm.survey_result-coll');
+const CRM_SEARCH_KEYWORD_COLL 			= require('./database/crm.search_keyword-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CRM,
@@ -29,6 +31,7 @@ module.exports = {
 		DbService(CRM_GROW_TRACK_COLL),
 		DbService(CRM_SURVEY_COLL),
 		DbService(CRM_SURVEY_RESULT_COLL),
+		DbService(CRM_SEARCH_KEYWORD_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
     ],
 
@@ -73,6 +76,14 @@ module.exports = {
 		[CF_ACTIONS_CRM.CRM_SURVEY_RESULT_GET_INFO_AND_GET_LIST] : CRM_SURVEY_RESULT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_CRM.CRM_SURVEY_RESULT_GET_LIST_BY_PROPERTY] : CRM_SURVEY_RESULT_HANDLER.getListByProperty,
 		[CF_ACTIONS_CRM.CRM_SURVEY_RESULT_EXPORT_EXCEL] : CRM_SURVEY_RESULT_HANDLER.exportExcel,
+
+		// ==================== CRM_SEARCH_KEYWORD ======================== //
+		[CF_ACTIONS_CRM.CRM_SEARCH_KEYWORD_INSERT] : CRM_SEARCH_KEYWORD_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_SEARCH_KEYWORD_UPDATE] : CRM_SEARCH_KEYWORD_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_SEARCH_KEYWORD_REMOVE] : CRM_SEARCH_KEYWORD_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_SEARCH_KEYWORD_GET_INFO_AND_GET_LIST] : CRM_SEARCH_KEYWORD_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_SEARCH_KEYWORD_GET_LIST_BY_PROPERTY] : CRM_SEARCH_KEYWORD_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_SEARCH_KEYWORD_EXPORT_EXCEL] : CRM_SEARCH_KEYWORD_HANDLER.exportExcel,
 
 	},
 
