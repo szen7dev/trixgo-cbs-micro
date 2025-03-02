@@ -298,7 +298,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ contactID, userID, select, populates }) {
+    getInfo({ trackID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {                
                 if(populates && typeof populates === 'string'){
@@ -313,7 +313,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await CRM__GROW_TRACK_COLL.findById(contactID)
+                let infoAterGet = await CRM__GROW_TRACK_COLL.findById(trackID)
                 .select(select)
                 .populate(populates)
 
