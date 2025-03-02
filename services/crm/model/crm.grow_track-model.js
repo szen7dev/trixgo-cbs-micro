@@ -130,7 +130,16 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
-                return resolve({ error: false, data: infoAfterInsert });
+                /**
+                 * TÍNH TOÁN KẾT QUẢ TRẢ VỀ BIỂU ĐỒ ĐO CAO
+                 */
+                let ageHeight = [
+                    {age: 5.9, height: 112},
+                    {age: 6, height: 113.1},
+                    {age: 7, height: 119.8},
+                ]
+
+                return resolve({ error: false, data: infoAfterInsert, ageHeight });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
