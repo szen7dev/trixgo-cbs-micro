@@ -355,16 +355,6 @@ class Model extends BaseModel {
                 let keys	 = ['project__1', '_id__1'];
                 // let keys	 = ['createAt__1', '_id__1'];
 
-                if(sortOption == 1){
-                    keys	 = ['date__-1', '_id__-1'];
-                }
-
-                const validation = validateParamsObjectID({
-                    positionsID           : { value: positionsID, isRequire: false },
-                    departmentsID         : { value: departmentsID, isRequire: false },
-                })
-                if(validation.error) return resolve(validation);
-
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -396,14 +386,7 @@ class Model extends BaseModel {
                     conditionObj.namecv = regSearch
                 }
 
-                /**
-                 * Phiếu lương của userID đang truy cập
-                 */
-                if(option && option == 1){
-                    conditionObj.human = userID
-                    conditionObj.parent = { $exists: true, $ne: null }
-                    delete conditionObj.$or;
-                }
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
