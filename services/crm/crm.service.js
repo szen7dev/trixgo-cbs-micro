@@ -20,7 +20,7 @@ const CRM_GROW_TRACK_HANDLER			= require('./handler/crm.grow_track-handler');
 const CRM_GROW_TRACK_COLL 				= require('./database/crm.grow_track-coll');
 
 module.exports = {
-	name: CF_DOMAIN_SERVICES.TIMESHEET,
+	name: CF_DOMAIN_SERVICES.CRM,
 	mixins: [
 		DbService(CRM_GROW_TRACK_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
