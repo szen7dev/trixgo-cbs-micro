@@ -57,13 +57,12 @@ class Model extends BaseModel {
                 if(phone){
                     // Hàm kiểm tra Phone
                     const strValid = phone.toLowerCase().trim();
-                    // console.log(strValid)
 
                     function isValidVietnamPhoneNumber(str) {
                         const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
                         return phoneRegex.test(str);
                     }
-                    // console.log(isValidVietnamPhoneNumber(strValid))
+
                     if(!isValidVietnamPhoneNumber(strValid))
                         return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
                 }else{
@@ -134,9 +133,26 @@ class Model extends BaseModel {
                  * TÍNH TOÁN KẾT QUẢ TRẢ VỀ BIỂU ĐỒ ĐO CAO
                  */
                 let ageHeight = [
-                    {age: 5.9, height: 112},
-                    {age: 6, height: 113.1},
-                    {age: 7, height: 119.8},
+                    {age: 1, height: 90},
+                    {age: 2, height: 91},
+                    {age: 3, height: 93},
+                    {age: 4, height: 94},
+                    {age: 5, height: 95},
+                    {age: 6, height: 96},
+                    {age: 7, height: 97},
+                    {age: 8, height: 98},
+                    {age: 9, height: 99},
+                    {age: 10, height: 100},
+                    {age: 11, height: 101},
+                    {age: 12, height: 102},
+                    {age: 13, height: 103},
+                    {age: 14, height: 104},
+                    {age: 15, height: 105},
+                    {age: 16, height: 106},
+                    {age: 17, height: 107},
+                    {age: 18, height: 108},
+                    {age: 19, height: 109},
+                    {age: 20, height: 110},
                 ]
 
                 return resolve({ error: false, data: infoAfterInsert, ageHeight });
