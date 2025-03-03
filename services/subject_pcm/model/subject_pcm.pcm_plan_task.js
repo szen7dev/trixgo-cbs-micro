@@ -889,8 +889,13 @@ class Model extends BaseModel {
                          * Chỉ người Giao việc với các việc khác còn lại
                          */
                         if(status == 3){
-                            if(([0,1,4,6,7,7,9,10,11].includes(infoTask?.subtype) && infoTask?.author.toString() === userID.toString()) ||
-                            ([2,3,5].includes(infoTask?.subtype) && infoTask?.assignee?._id.toString() === userID.toString())){
+                            // if(([0,1,4,6,7,7,9,10,11].includes(infoTask?.subtype) && infoTask?.author.toString() === userID.toString()) ||
+                            // ([2,3,5].includes(infoTask?.subtype) && infoTask?.assignee?._id.toString() === userID.toString())){
+                            //     dataUpdate.status = status
+                            //     dataUpdate.percentage = 100
+                            // }
+
+                            if( (infoTask?.assignee?._id.toString() === userID.toString()) || infoTask?.author.toString() === userID.toString()){
                                 dataUpdate.status = status
                                 dataUpdate.percentage = 100
                             }
@@ -1082,6 +1087,44 @@ class Model extends BaseModel {
                     }
 
                     /**
+                     * Các công việc khác
+                     */
+                    else{
+                        if( (infoTask?.assignee?._id.toString() === userID.toString()) 
+                            || (infoTask?.author.toString() === userID.toString()) 
+                            || (infoTask.project.admins.map(item=>item.toString()).includes(userID?.toString())))
+                        {
+                            dataUpdate.approver = userID
+                            dataUpdate.timeApproved = Date.now()
+                            dataUpdate.percentage = 100
+                            dataUpdate.status = 3
+                        }
+
+                        // Trình nghỉ phép
+                        if(Number(infoTask.approvalType) === 6){
+                            let listData = await BUDGET__SUBMITTAL_COLL.find({task: taskID})
+                            for(const item of listData){
+                                if(item?.staff && item?.fromDate && item?.toDate){
+                                    await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
+                                        {
+                                            assignee: item?.staff,
+                                            date: {
+                                                $gte: new Date(item?.fromDate),
+                                                $lte: new Date(item?.toDate),
+                                            },
+                                        },
+                                        {
+                                            $set: {
+                                                "note": `Nghỉ phép | ${item?.name} | ${item?.note} | Từ ${moment(item.fromDate).format('DD/MM/YYYY')} - Đến ${moment(item.toDate).format('DD/MM/YYYY')}`
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    /**
                      * TH1:
                      * - Nếu là Đề nghị phê duyệt (2) + Thanh toán (3) + Nghiệm thu (5)
                      * - Người thực hiện ký => phê duyệt luôn
@@ -1089,45 +1132,45 @@ class Model extends BaseModel {
                      * - Nếu là Các chủ đề khác còn lại
                      * - Người tạo việc ký => phê duyệt luôn
                      */
-                    if([2,3,5].includes(Number(infoTask.subtype))){
-                        if(userID.toString() === infoTask.assignee?._id.toString()){
-                            dataUpdate.approver = userID
-                            dataUpdate.timeApproved = Date.now()
-                            dataUpdate.percentage = 100
-                            dataUpdate.status = 3
+                    // if([2,3,5].includes(Number(infoTask.subtype))){
+                    //     if(userID.toString() === infoTask.assignee?._id.toString()){
+                    //         dataUpdate.approver = userID
+                    //         dataUpdate.timeApproved = Date.now()
+                    //         dataUpdate.percentage = 100
+                    //         dataUpdate.status = 3
 
-                            // Trình nghỉ phép
-                            if(Number(infoTask.approvalType) === 6){
-                                let listData = await BUDGET__SUBMITTAL_COLL.find({task: taskID})
-                                for(const item of listData){
-                                    if(item?.staff && item?.fromDate && item?.toDate){
-                                        await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
-                                            {
-                                                assignee: item?.staff,
-                                                date: {
-                                                    $gte: new Date(item?.fromDate),
-                                                    $lte: new Date(item?.toDate),
-                                                },
-                                            },
-                                            {
-                                                $set: {
-                                                    "note": `Nghỉ phép | ${item?.name} | ${item?.note} | Từ ${moment(item.fromDate).format('DD/MM/YYYY')} - Đến ${moment(item.toDate).format('DD/MM/YYYY')}`
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }else{
-                        // Việc thông khác/khác còn lại thì người tạo việc ký sẽ Hoàn thành
-                        if(userID.toString() === infoTask.author?.toString()){
-                            dataUpdate.approver = userID
-                            dataUpdate.timeApproved = Date.now()
-                            dataUpdate.percentage = 100
-                            dataUpdate.status = 3
-                        }
-                    }
+                    //         // Trình nghỉ phép
+                    //         if(Number(infoTask.approvalType) === 6){
+                    //             let listData = await BUDGET__SUBMITTAL_COLL.find({task: taskID})
+                    //             for(const item of listData){
+                    //                 if(item?.staff && item?.fromDate && item?.toDate){
+                    //                     await TIMESHEET__EXPERT_TIMESHEET_COLL.updateMany(
+                    //                         {
+                    //                             assignee: item?.staff,
+                    //                             date: {
+                    //                                 $gte: new Date(item?.fromDate),
+                    //                                 $lte: new Date(item?.toDate),
+                    //                             },
+                    //                         },
+                    //                         {
+                    //                             $set: {
+                    //                                 "note": `Nghỉ phép | ${item?.name} | ${item?.note} | Từ ${moment(item.fromDate).format('DD/MM/YYYY')} - Đến ${moment(item.toDate).format('DD/MM/YYYY')}`
+                    //                             }
+                    //                         }
+                    //                     )
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }else{
+                    //     // Việc thông khác/khác còn lại thì người tạo việc ký sẽ Hoàn thành
+                    //     if(userID.toString() === infoTask.author?.toString()){
+                    //         dataUpdate.approver = userID
+                    //         dataUpdate.timeApproved = Date.now()
+                    //         dataUpdate.percentage = 100
+                    //         dataUpdate.status = 3
+                    //     }
+                    // }
                 }
 
                 /**
