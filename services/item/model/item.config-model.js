@@ -40,7 +40,7 @@ class Model extends BaseModel {
                 if(!name || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'param_not_valid' });
 
-                let checkInfo = await ITEM__CONFIG_COLL.findOne({type, company: companyID})
+                let checkInfo = await ITEM__CONFIG_COLL.findOne({ type, company: companyID })
                 if(checkInfo)
                     return resolve({ error: true, message: 'Cấu hình đã tồn tại' });  
 
@@ -223,11 +223,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ configID, type, companyID, select, populates }) { 
+    getInfo({ configID, isInfo, type, companyID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                if(!checkObjectIDs(configID))
-                    return resolve({ error: true, message: 'Request params configID invalid', status: 400 });
+                // if(!checkObjectIDs(configID) || !isInfo)
+                //     return resolve({ error: true, message: 'Request params configID invalid', status: 400 });
                 
                  // populates
                  if(populates && typeof populates === 'string'){
@@ -242,7 +242,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(type && checkObjectIDs(companyID)){
+                if(isInfo){
                     let infoAterGet = await ITEM__CONFIG_COLL.findOne({type, company: companyID})
                     .select(select)
                     .populate(populates)
