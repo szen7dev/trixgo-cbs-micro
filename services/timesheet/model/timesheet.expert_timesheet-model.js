@@ -105,25 +105,25 @@ class Model extends BaseModel {
                     if(infoParent.assignee){
                         dataInsert.project = infoParent.assignee.department;
                         dataInsert.position = infoParent.assignee.position;
-                        // dataInsert.startingTime = infoParent.assignee.startingTime; //
+                        // dataInsert.startingTime = infoParent.assignee.startingTime; // Bỏ
 
-                         // Thời gian chấm công của bạn (a)
-                        const timeA = new Date();
+                        //  // Thời gian chấm công của bạn (a)
+                        // const timeA = new Date();
 
-                        // Thời gian quy định chấm công (b)
-                        const timeB = new Date(infoParent.assignee.startingTime);
+                        // // Thời gian quy định chấm công (b)
+                        // const timeB = new Date(infoParent.assignee.startingTime);
 
-                        // Lấy phần giờ, phút, giây từ thời gian b
-                        const hoursB = timeB.getHours();
-                        const minutesB = timeB.getMinutes();
-                        const secondsB = timeB.getSeconds();
+                        // // Lấy phần giờ, phút, giây từ thời gian b
+                        // const hoursB = timeB.getHours();
+                        // const minutesB = timeB.getMinutes();
+                        // const secondsB = timeB.getSeconds();
 
-                        // Tạo thời gian mới với ngày từ a và giờ từ b
-                        const mergedTime = new Date(timeA);
-                        mergedTime.setHours(hoursB, minutesB, secondsB);
+                        // // Tạo thời gian mới với ngày từ a và giờ từ b
+                        // const mergedTime = new Date(timeA);
+                        // mergedTime.setHours(hoursB, minutesB, secondsB);
 
-                        // console.log(mergedTime.toISOString()); // Kết quả: 2025-01-15T08:00:00.000Z
-                        dataInsert.startingTime = mergedTime   
+                        // // console.log(mergedTime.toISOString()); // Kết quả: 2025-01-15T08:00:00.000Z
+                        // dataInsert.startingTime = mergedTime   
 
                         if(infoParent.assignee?.contacts && infoParent.assignee?.contacts[0]?.sallary){
                             unitprice2 = Number(Number(infoParent.assignee.contacts[0].sallary * 12 / infoParent.assignee.contacts[0].annualWorkingHours)).toFixed(0)
@@ -146,25 +146,25 @@ class Model extends BaseModel {
                         dataInsert.project = infoAssignee.department;
                         dataInsert.position = infoAssignee.position;
 
-                        // dataInsert.startingTime = infoAssignee.startingTime;
+                        // dataInsert.startingTime = infoAssignee.startingTime; // Bỏ
                         
-                        // Thời gian chấm công của bạn (a)
-                        const timeA = new Date();
+                        // // Thời gian chấm công của bạn (a)
+                        // const timeA = new Date();
 
-                        // Thời gian quy định chấm công (b)
-                        const timeB = new Date(infoAssignee.startingTime);
+                        // // Thời gian quy định chấm công (b)
+                        // const timeB = new Date(infoAssignee.startingTime);
 
-                        // Lấy phần giờ, phút, giây từ thời gian b
-                        const hoursB = timeB.getHours();
-                        const minutesB = timeB.getMinutes();
-                        const secondsB = timeB.getSeconds();
+                        // // Lấy phần giờ, phút, giây từ thời gian b
+                        // const hoursB = timeB.getHours();
+                        // const minutesB = timeB.getMinutes();
+                        // const secondsB = timeB.getSeconds();
 
-                        // Tạo thời gian mới với ngày từ a và giờ từ b
-                        const mergedTime = new Date(timeA);
-                        mergedTime.setHours(hoursB, minutesB, secondsB);
+                        // // Tạo thời gian mới với ngày từ a và giờ từ b
+                        // const mergedTime = new Date(timeA);
+                        // mergedTime.setHours(hoursB, minutesB, secondsB);
 
-                        // console.log(mergedTime.toISOString()); // Kết quả: 2025-01-15T08:00:00.000Z
-                        dataInsert.startingTime = mergedTime                        
+                        // // console.log(mergedTime.toISOString()); // Kết quả: 2025-01-15T08:00:00.000Z
+                        // dataInsert.startingTime = mergedTime                        
 
                         if(infoAssignee.contacts && infoAssignee?.contacts[0]?.sallary){
                             unitprice2 = Number(Number(infoAssignee.contacts[0].sallary * 12 / infoAssignee.contacts[0].annualWorkingHours)).toFixed(0)
@@ -672,6 +672,7 @@ class Model extends BaseModel {
     syncData({
         option, companyID, userID, timesheetID, month, year
     }){
+        console.log({option, companyID, userID, timesheetID, month, year})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -731,6 +732,7 @@ class Model extends BaseModel {
                 else if(option == 1){
                     // Khởi tạo lại và đồng bộ
                     let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
+                    console.log(infoTimeSheet)
 
                     if(infoTimeSheet.convert == 2){
                         if(infoTimeSheet.official == 1){

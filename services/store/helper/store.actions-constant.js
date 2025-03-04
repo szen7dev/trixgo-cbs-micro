@@ -1,4 +1,4 @@
-const BASE_ACTIONS = 'ACT_STORE';
+const BASE_ACTIONS               = 'ACT_STORE';
 
 const ORDER                      = 'ORDER';
 const ORDER_PRODUCT              = 'ORDER_PRODUCT';

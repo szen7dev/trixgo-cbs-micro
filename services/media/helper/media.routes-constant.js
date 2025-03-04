@@ -1,9 +1,9 @@
-const BASE_ROUTE = '/medias';
-const COMMENTS = '/comments';
-const REACTIONS = '/reactions';
-const MENU      = '/menu';
-const TAG      = '/tag';
-const QUESTION      = '/question';
+const BASE_ROUTE        = '/medias';
+const COMMENTS          = '/comments';
+const REACTIONS         = '/reactions';
+const MENU              = '/menu';
+const TAG               = '/tag';
+const QUESTION          = '/question';
 
 const CF_ROUTINGS_MEDIA = {
     ORIGIN_APP: BASE_ROUTE,
