@@ -29,7 +29,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company  } = ctx.meta.infoUser;
-                const { companyID, name, type, active, channel, template, secretKey, tokenKey, metadata } = ctx.params;
+                const { companyID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -37,7 +37,7 @@ module.exports = {
                     companyID = company._id
                 }
 
-                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata });
+                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

@@ -34,8 +34,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata }) {
-        // console.log({ userID, name, type, active, channel, template, secretKey, tokenKey })
+    insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -65,6 +64,38 @@ class Model extends BaseModel {
 
                 if(metadata && metadata != ""){
                     dataInsert.metadata = metadata
+                }
+
+                if(hotline1 && hotline1 != ""){
+                    dataInsert.hotline1 = hotline1
+                }
+
+                if(hotline2 && hotline2 != ""){
+                    dataInsert.hotline2 = hotline2
+                }
+
+                if(hotline3 && hotline3 != ""){
+                    dataInsert.hotline3 = hotline3
+                }
+
+                if(qrcode1 && qrcode1 != ""){
+                    dataInsert.qrcode1 = qrcode1
+                }
+
+                if(qrcode2 && qrcode2 != ""){
+                    dataInsert.qrcode2 = qrcode2
+                }
+
+                if(youtube && youtube != ""){
+                    dataInsert.youtube = youtube
+                }
+
+                if(facebook && facebook != ""){
+                    dataInsert.facebook = facebook
+                }
+
+                if(zalo && zalo != ""){
+                    dataInsert.zalo = zalo
                 }
 
                 if (!isNaN(type)) {
@@ -97,7 +128,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata }){
+    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo }){
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(configID) )
@@ -130,6 +161,38 @@ class Model extends BaseModel {
 
                 if(metadata && metadata != ""){
                     dataUpdate.metadata = metadata
+                }
+
+                if(hotline1 && hotline1 != ""){
+                    dataUpdate.hotline1 = hotline1
+                }
+
+                if(hotline2 && hotline2 != ""){
+                    dataUpdate.hotline2 = hotline2
+                }
+
+                if(hotline3 && hotline3 != ""){
+                    dataUpdate.hotline3 = hotline3
+                }
+
+                if(qrcode1 && qrcode1 != ""){
+                    dataUpdate.qrcode1 = qrcode1
+                }
+
+                if(qrcode2 && qrcode2 != ""){
+                    dataUpdate.qrcode2 = qrcode2
+                }
+
+                if(youtube && youtube != ""){
+                    dataUpdate.youtube = youtube
+                }
+
+                if(facebook && facebook != ""){
+                    dataUpdate.facebook = facebook
+                }
+
+                if(zalo && zalo != ""){
+                    dataUpdate.zalo = zalo
                 }
 
                 if (!isNaN(type)) {

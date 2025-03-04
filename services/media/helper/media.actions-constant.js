@@ -1,8 +1,9 @@
-const BASE_ACTIONS = 'ACT_MEDIA';
-const COMMENT      = 'COMMENT';
-const MENU      = 'MENU';
-const TAG      = 'TAG';
-const QUESTION      = 'QUESTION';
+const BASE_ACTIONS            = 'ACT_MEDIA';
+
+const COMMENT                 = 'COMMENT';
+const MENU                    = 'MENU';
+const TAG                     = 'TAG';
+const QUESTION                = 'QUESTION';
 
 const CF_ACTIONS_MEDIA = {
 	/**
