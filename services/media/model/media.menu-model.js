@@ -26,7 +26,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 8/9/2024
    */
-  insert({ companyID, userID, parentID, name, order }) {
+  insert({ companyID, userID, parentID, name, order, type }) {
     return new Promise(async (resolve) => {
         try {
             if(!name || name == "")
@@ -44,6 +44,10 @@ class Model extends BaseModel {
             }
 
             dataInsert.slug = stringUtils.getSlugAccents(name)
+
+            if (!isNaN(type)) {
+                dataInsert.type = Number(type)
+            }
 
             if (!isNaN(order)) {
                 dataInsert.order = Number(order)
@@ -78,7 +82,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ userID, menuID, name, slug, order }) {
+  update({ userID, menuID, name, slug, order, type }) {
       return new Promise(async (resolve) => {
           try {
             // Kiểm tra xem tên có bị trùng hay không
@@ -110,6 +114,10 @@ class Model extends BaseModel {
             if (name && name != '') {
                 dataUpdate.name = name;
                 dataUpdate.slug = stringUtils.getSlugAccents(name)
+            }
+
+            if (!isNaN(type)) {
+                dataUpdate.type = Number(type)
             }
 
             if (!isNaN(order)) {
