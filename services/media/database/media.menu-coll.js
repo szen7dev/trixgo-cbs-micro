@@ -23,6 +23,16 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
         type: Number,
         default: 1
     },
+    /**
+     * Phân loại
+     * 1-Trang sản phẩm
+     * 2-Trang bài viết
+     * 3-Các trang khác còn lại
+     */
+    type: {
+        type: Number,
+        default: 1
+    },
     //_________Tên
     name: String,
     //_________Slug/URL

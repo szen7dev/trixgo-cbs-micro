@@ -25,14 +25,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, name, slug, order } = ctx.params;
+                let { parentID, name, slug, order, type } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await MEDIA_MENU_MODEL.insert({
-                    companyID: company._id, userID, parentID, name, slug, order
+                    companyID: company._id, userID, parentID, name, slug, order, type
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -59,13 +59,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { menuID, name, slug, order } = ctx.params;
+                const { menuID, name, slug, order, type } = ctx.params;
                 
                 // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_MENU_MODEL.update({ userID, menuID, name, slug, order });
+                const resultAfterCallHandler = await MEDIA_MENU_MODEL.update({ userID, menuID, name, slug, order, type });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
