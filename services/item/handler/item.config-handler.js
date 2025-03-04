@@ -33,7 +33,6 @@ module.exports = {
                 const { optionSeller, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo } = ctx.params;
 
                 console.log(ctx.params)
-
                 let companyID
                 if(optionSeller){
                     companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
@@ -90,6 +89,7 @@ module.exports = {
         auth: "required",
         params: {
             configID          : { type: "string", optional: true },
+
             // Field mặc định
             limit           : { type: "string", optional: true },
             lastestID       : { type: "string", optional: true },
@@ -100,8 +100,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, configID, type, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, configID, isInfo, type, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -111,9 +113,9 @@ module.exports = {
                 }
                 
                 let resultAfterCallHandler;
-                if(configID || (companyID && type)){
+                if(isInfo || configID){
                     resultAfterCallHandler = await ITEM__CONFIG_MODEL.getInfo({
-                        configID, companyID, type, select, populates
+                        configID, isInfo, companyID, type, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONFIG_MODEL.getList({
