@@ -4,6 +4,7 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 // https://chatgpt.com/c/67c42862-e6d8-800f-8ac0-740580104ac4
+// hiepnh.pmi@gmail.com
 
 module.exports  = DATABASE_MIDDLEWARE("crm_search_keyword", {
     //________Công ty
@@ -11,38 +12,12 @@ module.exports  = DATABASE_MIDDLEWARE("crm_search_keyword", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Mã khách
-    contact: {
-        type: Schema.Types.ObjectId,
-        ref : "contact"
-    },
-    //________Trạng thái (1-Active|2-Hủy)
-    status: {
-        type: Number,
-        default: 1
-    },
-    //_______Ngày sinh
-    birthday: { type: Date, default: Date.now },
-    //_________Giới tính(1-nam/ 2 - nữ/3-khác)
-    gender: { type: Number, default: 1 },
-    //_________Chiều cao (cm)
-    height: { type: Number, default: 0 },
-    //_________Cân nặng (kg)
-    weight: { type: Number, default: 0 },
     //________Nội dung
-    name: String,
-    namecv: String,
-    //________Điện thoại liên hệ
-    phone: String,
-    //________Ghi chú
-    note: String,
+    keyword: String,
     //_________Số lượt tìm kiếm
-    search_count: { type: Number, default: 0 },
-    //_________File/ảnh đính kèm
-    files: [{
-        type: Schema.Types.ObjectId,
-        ref: "file"
-    }],
+    searchCount: { type: Number, default: 0 },
+    //_________Lần tìm kiếm cuối cùng
+    lastSearched: { type: Date, default: Date.now },
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'

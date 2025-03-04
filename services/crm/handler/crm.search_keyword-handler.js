@@ -18,22 +18,15 @@ module.exports = {
      */
     insert: {
         params: {
-            phone               : { type: "string", optional: true },
-            name                : { type: "string", optional: true },
-            contactID           : { type: "string", optional: true },
-            birthday            : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            gender              : { type: "string", optional: true },
-            height              : { type: "string", optional: true },
-            weight              : { type: "string", optional: true },
+            keyword                : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { optionSeller, keyword } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -42,7 +35,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM__SEARCH_KEYWORD_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID })
+                let resultAfterCallHandler = await CRM__SEARCH_KEYWORD_MODEL.insert({ userID, companyID, keyword })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -58,20 +51,25 @@ module.exports = {
      */
     update: {
         params: {
-            trackID      : { type: "string" },
-            members             : { type: "array", optional: true },
-            admins              : { type: "array", optional: true },
+
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { optionSeller, keyword } = ctx.params;
 
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM__SEARCH_KEYWORD_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID });
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
+
+                let resultAfterCallHandler = await CRM__SEARCH_KEYWORD_MODEL.update({ companyID, userID, keyword });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -145,7 +143,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM__SEARCH_KEYWORD_MODEL.getList({
-                        companyID, contactID, month, year, keyword, limit, lastestID, select, populates
+                        companyID, limit
                     })
                 }
 

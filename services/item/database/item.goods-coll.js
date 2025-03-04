@@ -8,7 +8,7 @@ const Schema    = require('mongoose').Schema;
  *  HÀNG HOÁ, SẢN PHẨM, TÀI SẢN, CÔNG CỤ DỤNG CỤ,...
  */
 module.exports  = DATABASE_MIDDLEWARE("goods", {
-    //________Thuộc về công ty nào
+    //________Công ty
     company: {
         type: Schema.Types.ObjectId,
         ref : "company"
@@ -38,24 +38,6 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         default: 1 
     },
     /**
-     * HỆ THỐNG QUẢN LÝ
-     */
-    //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)
-    belongSystem: { type: Number, default: 0 },
-    /**
-     * THÔNG TIN CĂN BẢN
-     */
-    //_________Mã link với phân loại chi phí của hệ thống
-    linkSystem: {
-        type: Schema.Types.ObjectId,
-        ref: "goods"
-    },
-    //_________Có phải là mẫu hay không
-    template: { type: Number, default: 0 },
-    /**
-     * THÔNG TIN
-     */
-    /**
      * Phân loại
      * 1-Thông thường
      * 2-Topping
@@ -79,7 +61,7 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     },
     /**
      * Kích cỡ
-     * 1-Size M
+     * 1-Size M$
      * 2-Size L
      */
     size: {
@@ -104,7 +86,7 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     //_________Ghi chú đơn vị
     unitNote: String,   
     //_________Ghi chú
-    note: String, 
+    note: String,
     //_________Ngày bắt đầu đưa vào sử dụng/hạch toán
     date: { type: Date, default: Date.now },
     //_________Number of depreciation months: số tháng khấu hao
@@ -150,9 +132,6 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Number,
         default: 0 
     },
-    /**
-     * Chuyển đổi đơn vị tính
-     */
     //_________Link
     convert: {
         type: Schema.Types.ObjectId,
@@ -169,11 +148,6 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Number,
         default : 1
     },
-    //______Sử dụng cho khách hàng (1-Sử dụng, 2-Không)
-    forCustomer: {
-        type: Number,
-        default : 1
-    },
     //______Trạng thái (1-ON, 2-OFF)
     status: {
         type: Number,
@@ -184,16 +158,36 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
+    // /**
+    //  * HỆ THỐNG QUẢN LÝ
+    //  */
+    // //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)
+    // // belongSystem: { type: Number, default: 0 },
+    // /**
+    //  * THÔNG TIN CĂN BẢN
+    //  */
+    // //_________Mã link với phân loại chi phí của hệ thống
+    // linkSystem: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "goods"
+    // },
+    // //_________Có phải là mẫu hay không
+    // template: { type: Number, default: 0 },
     /**
-     * KHÓA HỌC
+     * THÔNG TIN
      */
-    //_________Tác giả
-    author: {
-        type: Schema.Types.ObjectId,
-        ref : 'user'
-    },
-    //_________Thời lượng (giờ)
-    duration: { type: Number, default: 0 },
+    // //______Sử dụng cho khách hàng (1-Sử dụng, 2-Không)
+    // forCustomer: {
+    //     type: Number,
+    //     default : 1
+    // },
+    // //_________Tác giả
+    // author: {
+    //     type: Schema.Types.ObjectId,
+    //     ref : 'user'
+    // },
+    // //_________Thời lượng (giờ)
+    // duration: { type: Number, default: 0 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
