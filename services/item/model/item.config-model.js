@@ -40,6 +40,10 @@ class Model extends BaseModel {
                 if(!name || !checkObjectIDs(userID))
                     return resolve({ error: true, message: 'param_not_valid' });
 
+                let checkInfo = await ITEM__CONFIG_COLL.findOne({type, company: companyID})
+                if(checkInfo)
+                    return resolve({ error: true, message: 'Cấu hình đã tồn tại' });  
+
                 let dataInsert = {
                     company: companyID,
                     userCreate: userID,
@@ -219,7 +223,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code: 
      */
-    getInfo({ configID, select, populates }) { 
+    getInfo({ configID, type, companyID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(configID))
@@ -238,13 +242,25 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await ITEM__CONFIG_COLL.findById(configID)
-                                    .select(select)
-                                    .populate(populates)
-                if(!infoAterGet)
+                if(type && checkObjectIDs(companyID)){
+                    let infoAterGet = await ITEM__CONFIG_COLL.findOne({type, company: companyID})
+                    .select(select)
+                    .populate(populates)
+                    if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 });
- 
-                return resolve({ error: false, data: infoAterGet, status: 200 });
+
+                    return resolve({ error: false, data: infoAterGet, status: 200 });
+                }else{
+
+                    let infoAterGet = await ITEM__CONFIG_COLL.findById(configID)
+                    .select(select)
+                    .populate(populates)
+                    if(!infoAterGet)
+                        return resolve({ error: true, message: "can't_get_info", status: 403 });
+
+                    return resolve({ error: false, data: infoAterGet, status: 200 });
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

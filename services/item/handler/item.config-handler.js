@@ -2,6 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
@@ -29,12 +30,15 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company  } = ctx.meta.infoUser;
-                const { companyID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo } = ctx.params;
+                const { optionSeller, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
 
                 const resultAfterCallHandler = await ITEM__CONFIG_MODEL.insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo });
@@ -66,11 +70,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { configID, name, type, active, channel, template, secretKey, tokenKey, metadata } = ctx.params;
+                const { configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo } = ctx.params;
 
                 console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata });
+                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -96,17 +100,24 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { configID,  keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, configID, type, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
                 
                 let resultAfterCallHandler;
-                if(configID){
+                if(configID || (companyID && type)){
                     resultAfterCallHandler = await ITEM__CONFIG_MODEL.getInfo({
-                        configID, select, populates
+                        configID, companyID, type, select, populates
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONFIG_MODEL.getList({
-                        companyID: company._id, lastestID, keyword, select, limit, populates
+                        companyID, lastestID, keyword, select, limit, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
