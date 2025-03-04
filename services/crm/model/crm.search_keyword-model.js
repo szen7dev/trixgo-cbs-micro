@@ -33,12 +33,6 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM__SEARCH_KEYWORD_COLL              = require('../database/crm.search_keyword-coll')
 
-// let dataTF = {
-//     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
-//     menuID: "623f1ecae998e94feda0cd70", //
-//     type: 1,
-//     action: 1,
-// }
 
 class Model extends BaseModel {
 
@@ -51,334 +45,27 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }) {
+    insert({ userID, companyID, keyword }) {
         return new Promise(async resolve => {
             try {
-                if(phone){
-                    // Hàm kiểm tra Phone
-                    const strValid = phone.toLowerCase().trim();
-                    // console.log(strValid)
+                if(!keyword || keyword == "")
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params keyword invalid" })
 
-                    function isValidVietnamPhoneNumber(str) {
-                        const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
-                        return phoneRegex.test(str);
-                    }
-                    // console.log(isValidVietnamPhoneNumber(strValid))
-                    if(!isValidVietnamPhoneNumber(strValid))
-                        return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
-                }else{
-                    if(!checkObjectIDs(contactID) || !name)
-                        return resolve({ error: true, message: "Danh bạ không hợp lệ. Hãy vui lòng thử lại" })
-                }
+                let checkName = await CRM__SEARCH_KEYWORD_COLL.findOne({ company: companyID, keyword: keyword.trim() })
+                if(checkName)
+                    return resolve({ error: true, message: "keyword_existed" })
 
-                //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     company: companyID,
                     userCreate: userID,
+                    keyword: keyword,
                 }
-
-                if(!isNaN(status) && [1,2].includes(Number(status))){
-                    dataInsert.status = status;
-                }
-
-                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
-                    dataInsert.gender = gender;
-                }
-
-                if(!isNaN(height)){
-                    dataInsert.height = height;
-                }
-
-                if(!isNaN(weight)){
-                    dataInsert.weight = weight;
-                }
-
-                if(checkObjectIDs(contactID)){
-                    dataInsert.contact = contactID;
-                }
-
-                if(phone && phone != ""){
-                    dataInsert.phone = phone;
-                }
-
-                if(name && name != ""){
-                    dataInsert.name = name;
-                }
-
-                if(birthday && birthday != ""){
-                    dataInsert.birthday = birthday;
-                }
-
-                if(name && name != ""){
-                    dataInsert.name = name;
-                }
-
-                if(note && note != ""){
-                    dataInsert.note = note;
-                }
-
-                let convertStr = ''
-                if(name && name != ""){
-                    convertStr = stringUtils.removeAccents(name)
-                }
-                if(note && note != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
-                dataInsert.namecv = convertStr
 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
-                /**
-                 * TÍNH TOÁN KẾT QUẢ TRẢ VỀ BIỂU ĐỒ ĐO CAO
-                 */
-                let ageHeightNow = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP3 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP5 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP10 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP25 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP50 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP75 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP90 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP95 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                let ageHeightP97 = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                return resolve({ error: false, data: infoAfterInsert, growTrack: {
-                    ageHeightNow, 
-                    ageHeightP3,
-                    ageHeightP5,
-                    ageHeightP10,
-                    ageHeightP25,
-                    ageHeightP50,
-                    ageHeightP75,
-                    ageHeightP90,
-                    ageHeightP95,
-                    ageHeightP97,
-                    hdfs: -1, // Height Deviation from Standard
-                    whoHS: 105,
-                    wdfs: 2, // Weight Deviation from Standard
-                    whoWS: 28,
-                } });
+                return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -390,80 +77,15 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }){
+    update({ companyID, userID, keyword }){
         return new Promise(async (resolve) => {
             const that = this
             try {
-                let dataUpdate = {
-                    userUpdate: userID,
-                    modifyAt: Date.now(),
-                }
-
-                let dataAddToset = {};
-
-                if (checkObjectIDs(filesID)) {
-                    dataAddToset = { files: filesID };
-                }
-
-                if(dataAddToset){
-                    dataUpdate.$addToSet = dataAddToset;
-                }
-
-                if(!isNaN(status) && [1,2].includes(Number(status))){
-                    dataUpdate.status = status;
-                }
-
-                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
-                    dataUpdate.gender = gender;
-                }
-
-                if(!isNaN(height)){
-                    dataUpdate.height = height;
-                }
-
-                if(!isNaN(weight)){
-                    dataUpdate.weight = weight;
-                }
-
-                if(checkObjectIDs(contactID)){
-                    dataUpdate.contact = contactID;
-                }
-
-                if(phone && phone != ""){
-                    dataUpdate.phone = phone;
-                }
-
-                if(birthday && birthday != ""){
-                    dataUpdate.birthday = birthday;
-                }
-
-                if(name && name != ""){
-                    dataUpdate.name = name;
-                }
-
-                if(note && note != ""){
-                    dataUpdate.note = note;
-                }
-
-                let convertStr = ''
-                if(name && name != ""){
-                    convertStr = stringUtils.removeAccents(name)
-                }
-                if(note && note != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
-                dataUpdate.namecv = convertStr
-
-                // console.log(dataUpdate)
-
-                let infoAfterUpdate = await CRM__SEARCH_KEYWORD_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
-                if(!infoAfterUpdate) {
-                    return resolve({
-                        error: true,
-                        message: "Cannot update",
-                        keyError: "cannot_update",
-                    })
-                }
+                let infoAfterUpdate = await CRM__SEARCH_KEYWORD_COLL.findOneAndUpdate(
+                    { company: companyID, userCreate: userID, keyword },
+                    { $inc: { searchCount: 1 }, lastSearched: new Date() },
+                    { upsert: true, new: true }
+                  )
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -582,107 +204,22 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, contactID, month, year, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, limit = 10 }) {
         return new Promise(async (resolve) => {
             try {
-                // Record Traffic
-                // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                //     appID: "61e049cffdebf77b072d1b14",
-                //     userID
-                // })
-
-                if(Number(limit) > 50){
-                    limit = 50;
-                } else{
-                    limit = +Number(limit);
-                }
-
-                let conditionObj = {};
-                let nextCursor	= null;
-                let sortBy      = null;
-                let keys	 = ['project__1', '_id__1'];
-                // let keys	 = ['createAt__1', '_id__1'];
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-				if(checkObjectIDs(contactID)){                    
-                    conditionObj.contact = contactID
-				}else{
-                    conditionObj.company = companyID
-                }
-
-                // Bảng lương theo tháng, năm
-                if(month && year){
-                    conditionObj.$where = `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(year)}`
-                }
-
-                if(keyword){
-                    keyword = stringUtils.removeAccents(keyword)
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    const regSearch = new RegExp(keyword, 'i');
-                    conditionObj.namecv = regSearch
-                }
-
-                console.log(conditionObj)
-
-                let conditionObjOrg = { ...conditionObj }
-
-				if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await CRM__SEARCH_KEYWORD_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
-
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-                    conditionObj = dataPagingAndSort.data.find;
-					sortBy       = dataPagingAndSort.data.sort;
-				}else{
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-					sortBy        = dataPagingAndSort.data.sort;
-                }
-
-                let infoDataAfterGet = await CRM__SEARCH_KEYWORD_COLL.find(conditionObj)
-                    .select(select)
-                    .limit(+limit+1)
-                    .sort(sortBy)
-                    .populate(populates)
-                    .lean();
+                let infoDataAfterGet = await CRM__SEARCH_KEYWORD_COLL.find({
+                    company: companyID
+                })
+                .select('keyword searchCount')
+                .sort({ searchCount: -1 })
+                .limit(limit)
+                .lean()
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                if(infoDataAfterGet && infoDataAfterGet.length){
-                    if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
-                        infoDataAfterGet.length = limit;
-                    }
-                }
-
-                let totalRecord = await CRM__SEARCH_KEYWORD_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit);
-
                 return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit: +limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor,
+                    listRecords: infoDataAfterGet
                 }, status: 200 });
 
             } catch (error) {
