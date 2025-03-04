@@ -1,4 +1,4 @@
-const BASE_ROUTE = '/store';
+const BASE_ROUTE            = '/store';
 const ORDER                 = '/orders';
 const ORDER_PRODUCT         = '/order_products';
 const VOUCHER               = '/vouchers';

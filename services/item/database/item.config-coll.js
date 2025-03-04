@@ -1,5 +1,6 @@
 "use strict";
 
+const { youtube } = require('googleapis/build/src/apis/youtube');
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
@@ -20,11 +21,12 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
      */
     name: String,
     /**
-     * Phân loại kênh/...
+     * Phân loại cấu hình
+     * Mỗi type ứng với 1 companyID thì chỉ có 1 mẩu tin duy nhất
      * 1-ZNS (Zalo)
      * 2-Facebook
-     * 3-...
-     * 1 type ứng với 1 companyID thì chỉ có 1 mẩu tin duy nhất
+     * 3-Contact công ty
+     * 
      */
     type: { type: Number, default: 1 },
     /**
@@ -50,7 +52,28 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
      * ...
      */
     key: String,
-
+    //_________Điện thoại
+    hotline1: String,
+    //_________Điện thoại
+    hotline2: String,
+    //_________Điện thoại
+    hotline3: String,
+    //_________Social
+    youtube: String,
+    //_________Social
+    facebook: String,
+    //_________Zalo OA
+    zalo: String,
+    //_________QR1 (app Mobile)
+    qrcode1: {
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    },
+    //_________QR2 (Zalo OA)
+    qrcode2: {
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    },
     metadata: {
       type: Schema.Types.Mixed,
     },
