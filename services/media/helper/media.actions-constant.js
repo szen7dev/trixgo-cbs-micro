@@ -4,6 +4,7 @@ const COMMENT                 = 'COMMENT';
 const MENU                    = 'MENU';
 const TAG                     = 'TAG';
 const QUESTION                = 'QUESTION';
+const BANNER                  = 'BANNER';
 
 const CF_ACTIONS_MEDIA = {
 	/**
@@ -23,6 +24,14 @@ const CF_ACTIONS_MEDIA = {
 	MENU_UPDATE                 			          : `${BASE_ACTIONS}_${MENU}_UPDATE`,
 	MENU_REMOVE                			          : `${BASE_ACTIONS}_${MENU}_REMOVE`,
 	MENU_GET_INFO_AND_GET_LIST                        : `${BASE_ACTIONS}_${MENU}_GET_INFO_AND_GET_LIST`,
+
+     /**
+     * BANNER
+     */
+	BANNER_INSERT                		               : `${BASE_ACTIONS}_${BANNER}_INSERT`,
+	BANNER_UPDATE                 			     : `${BASE_ACTIONS}_${BANNER}_UPDATE`,
+	BANNER_REMOVE                			          : `${BASE_ACTIONS}_${BANNER}_REMOVE`,
+	BANNER_GET_INFO_AND_GET_LIST                      : `${BASE_ACTIONS}_${BANNER}_GET_INFO_AND_GET_LIST`,
 
      /**
      * TAG

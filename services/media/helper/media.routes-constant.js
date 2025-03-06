@@ -4,6 +4,7 @@ const REACTIONS         = '/reactions';
 const MENU              = '/menu';
 const TAG               = '/tag';
 const QUESTION          = '/question';
+const BANNER            = '/banner';
 
 const CF_ROUTINGS_MEDIA = {
     ORIGIN_APP: BASE_ROUTE,
@@ -34,6 +35,9 @@ const CF_ROUTINGS_MEDIA = {
 
     //================================MEDIA_QUESTION=======================================//
     QUESTION                                   : `${BASE_ROUTE}${QUESTION}`,
+
+    //================================MEDIA_BANNER=======================================//
+    BANNER                                      : `${BASE_ROUTE}${BANNER}`,
 }
 
 exports.CF_ROUTINGS_MEDIA = CF_ROUTINGS_MEDIA;
