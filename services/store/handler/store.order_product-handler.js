@@ -358,7 +358,7 @@ module.exports = {
 
                 let { option, filterParams } = ctx.params;
                 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.exportExcelByFilter({
                     userID, companyID: company._id, option, filterParams, ctx
