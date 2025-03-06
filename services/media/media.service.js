@@ -20,6 +20,7 @@ const MEDIA__REACTION_COMMENT_HANDLER	= require('./handler/media.reaction_commen
 const MEDIA__MENU_HANDLER				= require('./handler/media.menu-handler');
 const MEDIA__TAG_HANDLER				= require('./handler/media.tag-handler');
 const MEDIA__QUESTION_HANDLER			= require('./handler/media.question-handler');
+const MEDIA__BANNER_HANDLER				= require('./handler/media.banner-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.MEDIA,
@@ -34,6 +35,7 @@ module.exports = {
 		DbService('media_menu'),
 		DbService('media_tag'),
 		DbService('media_question'),
+		DbService('media_banner'),
 		CacheCleaner([CF_DOMAIN_SERVICES.MEDIA])
     ],
 
@@ -125,6 +127,12 @@ module.exports = {
 		[CF_ACTIONS_MEDIA.QUESTION_UPDATE]								: MEDIA__QUESTION_HANDLER.update,
 		[CF_ACTIONS_MEDIA.QUESTION_REMOVE]								: MEDIA__QUESTION_HANDLER.remove,
 		[CF_ACTIONS_MEDIA.QUESTION_GET_INFO_AND_GET_LIST]				: MEDIA__QUESTION_HANDLER.getInfoAndGetList,
+
+		//========================================== MEDIA_BANNER ==============================================//
+		[CF_ACTIONS_MEDIA.BANNER_INSERT]								: MEDIA__BANNER_HANDLER.insert,
+		[CF_ACTIONS_MEDIA.BANNER_UPDATE]								: MEDIA__BANNER_HANDLER.update,
+		[CF_ACTIONS_MEDIA.BANNER_REMOVE]								: MEDIA__BANNER_HANDLER.remove,
+		[CF_ACTIONS_MEDIA.BANNER_GET_INFO_AND_GET_LIST]					: MEDIA__BANNER_HANDLER.getInfoAndGetList,
 	},
 
 	/**
