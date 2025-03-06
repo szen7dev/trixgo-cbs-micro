@@ -10,23 +10,21 @@ module.exports  = DATABASE_MIDDLEWARE("media_banner", {
         ref : "company"
     },
     /**
-     * Type: vị trí
-     * 1-Banner
-     * 2-Footer
+     * Type: phân loại vị trí
      */
     type: {
         type: Number,
         default: 1 
     },
+    //_________Name
+    name: String,
+    //_________Link
+    link: String,
     //_________Thumbnail
     thumbnail: {
         type: Schema.Types.ObjectId,
         ref: 'file'
     },
-    //_________Name
-    name: String,
-    //_________Link
-    link: String,
     userCreate: {
         type: Schema.Types.ObjectId,
         ref: "user"
