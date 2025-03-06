@@ -397,7 +397,7 @@ class Model extends BaseModel {
                     conditionObj.namecv = regSearch
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 

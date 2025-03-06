@@ -437,7 +437,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
-        // console.log({ option, status, outin, type, userID, companyID, fundaID, populates, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, orderID, userCreateID, fromDate, toDate, keyword })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -497,6 +496,13 @@ class Model extends BaseModel {
                     populates = {
                         path: "",
                         select: ""
+                    }
+                }
+            
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
                     }
                 }
 
@@ -626,7 +632,6 @@ class Model extends BaseModel {
      * Date: 2/9/2024
      */
     getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate }) {
-        // console.log({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate })
         return new Promise(async resolve => {
             try {
                 /**
@@ -1203,7 +1208,6 @@ class Model extends BaseModel {
      * Date: 20/9/2024
      */
     getAmountByProperty({ userID, companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate, ctx }){
-        // console.log({ userID, companyID, parentID, accountID, year, month, option })
         return new Promise(async resolve => {
             try {
                 /**
@@ -2280,27 +2284,11 @@ class Model extends BaseModel {
     }
 
     exportExcelByFilter({ option, userID, companyID, filterParams, ctx }) {
-        // console.log({ option, userID, companyID, filterParams })
         return new Promise(async resolve => {
             try {
                 if (Number(option) === 1) {
-                    const populates = JSON.stringify({
-                        path: 'department position field property area area1 area2 linkUser workingStatus contractType',
-                        select: 'name sign fullname',
-                        populate: {
-                            path: 'parent',
-                            select: 'name',
-                            populate: {
-                                path: 'parent',
-                                select: 'name',
-                            }
-                        }
-                    })
-
                     const { data, error } = await this.getListByProperty({
                         ...filterParams,
-                        // populates,
-                        // type: 1,
                         userID,
                         companyID,
                         isExportExcel: false,
@@ -2314,6 +2302,59 @@ class Model extends BaseModel {
 
                     const result = await this.downloadExcelFile(data)
                     return resolve(result);
+                }
+
+                else if (Number(option) === 2) {
+                    const year = (new Date()).getFullYear(filterParams?.toDate)
+
+                    let listData = await STORE_ORDER_PRODUCT_COLL.find({
+                        company: companyID,
+                        goods: filterParams.goodsID,
+                        $where: `return this.date.getFullYear() === ${Number(year)}`
+                    })
+                    .select('outin type forward quantity unitPrice amount order date goods')
+                    .populate({
+                        path: 'order goods',
+                        select: 'name date unit'
+                    })
+                    .sort({date: 1})
+                    // console.log(listData)
+
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/store_detail_report.xlsx')))
+                    .then(async workbook => {
+
+                        let i = 3;
+                        if(listData && listData.length){
+                            listData?.forEach((item, index) => {
+                                workbook.sheet("Data").row(i).cell(1).value(item.date);
+                                workbook.sheet("Data").row(i).cell(2).value(item?.order?.name);
+                                if(item.forward == 1){
+                                    workbook.sheet("Data").row(i).cell(3).value('Đầu kỳ');
+                                }else{
+                                    workbook.sheet("Data").row(i).cell(3).value('Trong kỳ');
+                                }
+                                workbook.sheet("Data").row(i).cell(4).value(Number(item?.outin));
+                                workbook.sheet("Data").row(i).cell(5).value(item?.goods?.name);
+                                workbook.sheet("Data").row(i).cell(6).value(item?.goods?.unit);
+                                workbook.sheet("Data").row(i).cell(7).value(Number(item.quantity));
+                                workbook.sheet("Data").row(i).cell(8).value(Number(item.unitPrice));
+                                workbook.sheet("Data").row(i).cell(9).value(Number(item.amount));
+                        
+                                i++
+                            })
+                        }
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `BaoCaoChiTiet_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
                 }
             } catch (error) {
                 console.log({ error })
