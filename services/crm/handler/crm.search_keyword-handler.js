@@ -51,14 +51,14 @@ module.exports = {
      */
     update: {
         params: {
-
+            keyword                : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 let { optionSeller, keyword } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 

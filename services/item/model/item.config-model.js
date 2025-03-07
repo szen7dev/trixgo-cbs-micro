@@ -34,7 +34,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo }) {
+    insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -102,6 +102,14 @@ class Model extends BaseModel {
                     dataInsert.zalo = zalo
                 }
 
+                if(tiktok && tiktok != ""){
+                    dataInsert.tiktok = tiktok
+                }
+
+                if(shopee && shopee != ""){
+                    dataInsert.shopee = shopee
+                }
+
                 if (!isNaN(type)) {
                     dataInsert.type = Number(type)
                 }
@@ -132,7 +140,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo }){
+    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee }){
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(configID) )
@@ -199,6 +207,14 @@ class Model extends BaseModel {
                     dataUpdate.zalo = zalo
                 }
 
+                if(tiktok && tiktok != ""){
+                    dataUpdate.tiktok = tiktok
+                }
+
+                if(shopee && shopee != ""){
+                    dataUpdate.shopee = shopee
+                }
+
                 if (!isNaN(type)) {
                     dataUpdate.type = Number(type)
                 }
@@ -226,13 +242,10 @@ class Model extends BaseModel {
     getInfo({ configID, isInfo, type, companyID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
-                // if(!checkObjectIDs(configID) || !isInfo)
-                //     return resolve({ error: true, message: 'Request params configID invalid', status: 400 });
-                
-                 // populates
-                 if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+                // populates
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                    return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
 					populates = JSON.parse(populates);
 				}else{
@@ -273,7 +286,6 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ companyID, keyword, limit = 10, lastestID, select, populates= {} }) { 
-        // console.log({ companyID, keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
