@@ -317,7 +317,6 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     nightShiftStaffSalary: { type: Number, default: 0 },
     //_________Phụ cấp ăn trưa/bữa
     lunchStaffAllowance: { type: Number, default: 0 },
-
     //_________Chi phí thuê mặt bằng
     planExpense: { type: Number, default: 0 },
     //_________Chi phí điện nước, internet
@@ -330,6 +329,14 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     materialExpenseRate: { type: Number, default: 30 },
     //_________% Chi phí khác
     otherExpenseRate: { type: Number, default: 1 },
+
+    /**
+     * ĐÁNH GIÁ CỬA HÀNG
+     */
+    //_________Rating chất lượng phục vụ
+    rating: { type: Number, default: 0 },
+    //_________Số lượng đánh giá
+    numberOfRating: { type: Number, default: 0 },
     
     /**
      * PHÂN QUYỀN TRUY CẬP
@@ -362,5 +369,5 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
     userUpdate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
-    },
+    }
 })

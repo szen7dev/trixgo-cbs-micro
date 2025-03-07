@@ -39,7 +39,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, userID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
+	insert({ companyID, parentID, userID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -71,6 +71,14 @@ class Model extends BaseModel {
                     }else{
                         return resolve({ error: true, message: "Khu vực chọn cần phải là Phường/Xã", keyError: "Request params name invalid" });
                     }
+                }
+
+                if(rating && !isNaN(rating)){
+                    dataInsert.rating = +rating;
+                }
+
+                if(numberOfRating && !isNaN(numberOfRating)){
+                    dataInsert.numberOfRating = +numberOfRating;
                 }
 
                 // Link danh bạ
@@ -202,7 +210,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ userID, fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
+	update({ userID, fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -240,6 +248,14 @@ class Model extends BaseModel {
 
                 if(manager && checkObjectIDs(manager)){
                     dataUpdate.manager = manager;
+                }
+
+                if(rating && !isNaN(rating)){
+                    dataUpdate.rating = +rating;
+                }
+
+                if(numberOfRating && !isNaN(numberOfRating)){
+                    dataUpdate.numberOfRating = +numberOfRating;
                 }
 
                 let dataAddToset = {};
@@ -538,6 +554,7 @@ class Model extends BaseModel {
                     keyword = '.*' + keyword.join(".*") + '.*';
                     conditionObj.name = new RegExp(keyword, 'i');
                 }
+                // console.log('111111111111111111111111')
                 // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
