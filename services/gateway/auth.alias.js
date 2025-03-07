@@ -1657,6 +1657,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_CRM.CRM_COMBO_EXPORT_EXCEL}`] :
 		[`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_COMBO_EXPORT_EXCEL}`],
 
+		[`GET ${CF_ROUTINGS_CRM.CRM_COMBO_BEST_SELLER}`] :
+		[`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_COMBO_BEST_SELLER}`],
+
 		//---------------------------🏁 END SERVICE CRM 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//

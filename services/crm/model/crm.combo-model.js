@@ -29,9 +29,9 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 /**
  * COLLECTIONS
  */
-// const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_COMBO_COLL                    = require('../database/crm.combo-coll')
+const ITEM__GOODS_COLL                  = require("../../item/database/item.goods-coll");
 
 // let dataTF = {
 //     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
@@ -51,111 +51,32 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }) {
+    insert({ userID, companyID, status, name, note, expired, productsID }) {
         return new Promise(async resolve => {
             try {
-                if(phone){
-                    // Hàm kiểm tra Phone
-                    const strValid = phone.toLowerCase().trim();
-
-                    function isValidVietnamPhoneNumber(str) {
-                        const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
-                        return phoneRegex.test(str);
-                    }
-
-                    if(!isValidVietnamPhoneNumber(strValid))
-                        return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
-                }else{
-                    if(!checkObjectIDs(contactID) || !name)
-                        return resolve({ error: true, message: "Danh bạ không hợp lệ. Hãy vui lòng thử lại" })
-                }
+                if(!name || name == "")
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" })
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     company: companyID,
                     userCreate: userID,
-                }
-
-                if(!isNaN(status) && [1,2].includes(Number(status))){
-                    dataInsert.status = status;
-                }
-
-                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
-                    dataInsert.gender = gender;
-                }
-
-                if(!isNaN(height)){
-                    dataInsert.height = height;
-                }
-
-                if(!isNaN(weight)){
-                    dataInsert.weight = weight;
-                }
-
-                if(checkObjectIDs(contactID)){
-                    dataInsert.contact = contactID;
-                }
-
-                if(phone && phone != ""){
-                    dataInsert.phone = phone;
-                }
-
-                if(name && name != ""){
-                    dataInsert.name = name;
-                }
-
-                if(birthday && birthday != ""){
-                    dataInsert.birthday = birthday;
-                }
-
-                if(name && name != ""){
-                    dataInsert.name = name;
+                    name,
                 }
 
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
 
-                let convertStr = ''
-                if(name && name != ""){
-                    convertStr = stringUtils.removeAccents(name)
+                if(expired && expired != ""){
+                    dataInsert.expired = expired;
                 }
-                if(note && note != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
-                dataInsert.namecv = convertStr
 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
-                /**
-                 * TÍNH TOÁN KẾT QUẢ TRẢ VỀ BIỂU ĐỒ ĐO CAO
-                 */
-                let ageHeight = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
-
-                return resolve({ error: false, data: infoAfterInsert, ageHeight });
+                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -167,7 +88,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }){
+    update({ comboID, userID, companyID, status, name, note, expired, productsID }){
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -178,8 +99,8 @@ class Model extends BaseModel {
 
                 let dataAddToset = {};
 
-                if (checkObjectIDs(filesID)) {
-                    dataAddToset = { files: filesID };
+                if (checkObjectIDs(productsID)) {
+                    dataAddToset = { products: productsID };
                 }
 
                 if(dataAddToset){
@@ -190,30 +111,6 @@ class Model extends BaseModel {
                     dataUpdate.status = status;
                 }
 
-                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
-                    dataUpdate.gender = gender;
-                }
-
-                if(!isNaN(height)){
-                    dataUpdate.height = height;
-                }
-
-                if(!isNaN(weight)){
-                    dataUpdate.weight = weight;
-                }
-
-                if(checkObjectIDs(contactID)){
-                    dataUpdate.contact = contactID;
-                }
-
-                if(phone && phone != ""){
-                    dataUpdate.phone = phone;
-                }
-
-                if(birthday && birthday != ""){
-                    dataUpdate.birthday = birthday;
-                }
-
                 if(name && name != ""){
                     dataUpdate.name = name;
                 }
@@ -222,18 +119,13 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                let convertStr = ''
-                if(name && name != ""){
-                    convertStr = stringUtils.removeAccents(name)
+                if(expired && expired != ""){
+                    dataUpdate.expired = expired;
                 }
-                if(note && note != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
-                dataUpdate.namecv = convertStr
 
                 // console.log(dataUpdate)
 
-                let infoAfterUpdate = await CRM_COMBO_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
+                let infoAfterUpdate = await CRM_COMBO_COLL.findByIdAndUpdate(comboID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
                     return resolve({
                         error: true,
@@ -250,82 +142,11 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove
-     * Author: HiepNH
-     * Code: 22/3/2024
-     */
-    remove({ arraysRemove, userID }) {
-        const that = this
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(arraysRemove)) {
-                    return resolve({ error: true, message: 'Yêu cầu không hợp lệ', status: 200 });
-                }
-
-                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                    appID: "61e049cffdebf77b072d1b14",
-                    userID
-                })
-
-                if(!infoAppUser.error && infoAppUser.data.level == 0){
-                    let info = await CRM_COMBO_COLL.findById(arraysRemove[0])
-
-                    const result = await CRM_COMBO_COLL.deleteMany({
-                        _id: { $in: arraysRemove },
-                        // userCreate: userID,
-                        // $or: [
-                        //     { userCreate: userID },
-                        //     { admins: { $in: [userID] } }
-                        // ]
-                    })
-
-                    if(result.deletedCount !== arraysRemove.length) {
-                        return resolve({
-                            error: true,
-                            message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
-                            status: 200
-                        });
-                    }
-
-                    // Cập nhật số nhân sự bảng lương
-                    if(info && info.parent){
-                        let numberOfHuman = await CRM_COMBO_COLL.count({parent: info?.parent})
-                        if(numberOfHuman){
-                            await CRM_COMBO_COLL.findByIdAndUpdate(info?.parent, {
-                                userUpdate: userID,
-                                modifyAt: Date.now(),
-                                numberOfHuman
-                            }, { new: true })
-                        }
-                    }
-
-                    /**
-                     * CẬP NHẬT VÀO BẢNG LƯƠNG CHA
-                     */
-                    if(info.parent && checkObjectIDs(info.parent)){
-                        await that.updateValue({ expertSalaryID: info.parent, userID })
-                    }
-
-                    return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });
-                }else{
-                    return resolve({
-                        error: true,
-                        message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
-                        status: 200
-                    });
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
      * Name: get info expert timesheet
      * Author: Depv
      * Code:
      */
-    getInfo({ trackID, userID, select, populates }) {
+    getInfo({ comboID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {                
                 if(populates && typeof populates === 'string'){
@@ -340,7 +161,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await CRM_COMBO_COLL.findById(trackID)
+                let infoAterGet = await CRM_COMBO_COLL.findById(comboID)
                 .select(select)
                 .populate(populates)
 
@@ -359,7 +180,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, contactID, month, year, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, status, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -376,11 +197,10 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {};
+                let conditionObj = {company: companyID};
                 let nextCursor	= null;
                 let sortBy      = null;
-                let keys	 = ['project__1', '_id__1'];
-                // let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['createAt__1', '_id__1'];
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -394,15 +214,8 @@ class Model extends BaseModel {
                     }
                 }
 
-				if(checkObjectIDs(contactID)){                    
-                    conditionObj.contact = contactID
-				}else{
-                    conditionObj.company = companyID
-                }
-
-                // Bảng lương theo tháng, năm
-                if(month && year){
-                    conditionObj.$where = `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(year)}`
+                if(!isNaN(status) && [1,2].includes(Number(status))){
+                    conditionObj.status = status;
                 }
 
                 if(keyword){
@@ -413,7 +226,7 @@ class Model extends BaseModel {
                     conditionObj.namecv = regSearch
                 }
 
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
@@ -460,6 +273,62 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: bestSeller
+     * Author: HiepNH
+     * Code: 7/3/2025
+     */
+    bestSeller({ companyID, limit = 10, select, populates= {} }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(Number(limit) > 50){
+                    limit = 50;
+                } else{
+                    limit = +Number(limit);
+                }
+
+                let conditionObj = {
+                    company: companyID,
+                    usage: 2,
+                }
+                let sortBy = {quantitySold: -1};
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                // console.log(conditionObj)
+
+                let infoDataAfterGet = await ITEM__GOODS_COLL.find(conditionObj)
+                    .select(select)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean();
+                
+                // console.log(infoDataAfterGet.length)
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet
                 }, status: 200 });
 
             } catch (error) {

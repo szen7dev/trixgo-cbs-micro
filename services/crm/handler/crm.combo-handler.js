@@ -18,19 +18,13 @@ module.exports = {
      */
     insert: {
         params: {
-            phone               : { type: "string", optional: true },
             name                : { type: "string", optional: true },
-            contactID           : { type: "string", optional: true },
-            birthday            : { type: "string", optional: true },
             note                : { type: "string", optional: true },
-            gender              : { type: "string", optional: true },
-            height              : { type: "string", optional: true },
-            weight              : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { optionSeller, status, name, note, expired, productsID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 console.log(ctx.params)
@@ -42,7 +36,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_COMBO_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID })
+                let resultAfterCallHandler = await CRM_COMBO_MODEL.insert({ userID, companyID, status, name, note, expired, productsID })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -58,20 +52,20 @@ module.exports = {
      */
     update: {
         params: {
-            trackID      : { type: "string" },
+            comboID      : { type: "string" },
             members             : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { comboID, status, name, note, expired, productsID } = ctx.params;
 
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_COMBO_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID });
+                let resultAfterCallHandler = await CRM_COMBO_MODEL.update({ userID, comboID, status, name, note, expired, productsID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -114,8 +108,7 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            trackID       : { type: "string", optional: true },
-            contactID       : { type: "string", optional: true },
+            comboID       : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -127,7 +120,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, trackID, contactID, month, year, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, comboID, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 console.log(ctx.params)
@@ -138,20 +131,56 @@ module.exports = {
                 }else{
                     companyID = company?._id
                 }
+                
                 let resultAfterCallHandler;
-                if(trackID){
+                if(comboID){
                     resultAfterCallHandler = await CRM_COMBO_MODEL.getInfo({
-                        trackID, userID, select, populates
+                        comboID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await CRM_COMBO_MODEL.getList({
-                        companyID, contactID, month, year, keyword, limit, lastestID, select, populates
+                        companyID, status, keyword, limit, lastestID, select, populates
                     })
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
+     * Name: bestSeller
+     * Author: HiepNH
+     * Code: 7/3/2025
+     */
+    bestSeller: {
+        auth: 'required',
+        params: {
+
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { optionSeller, limit, select, populates } = ctx.params;
+
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
+
+                const resultAfterCallHandler = await CRM_COMBO_MODEL.bestSeller({
+                    companyID, limit, select, populates
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
             }
         }
     },

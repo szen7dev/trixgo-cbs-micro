@@ -25,6 +25,7 @@ const CF_ROUTINGS_CRM = {
     CRM_COMBO                                   : `${BASE_ROUTE}/combo`,
     CRM_COMBO_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}/combo/get-list-by-property`,
     CRM_COMBO_EXPORT_EXCEL                      : `${BASE_ROUTE}/combo/export-excel`,
+    CRM_COMBO_BEST_SELLER                       : `${BASE_ROUTE}/combo/best-seller`,
 }
 
 exports.CF_ROUTINGS_CRM = CF_ROUTINGS_CRM;
