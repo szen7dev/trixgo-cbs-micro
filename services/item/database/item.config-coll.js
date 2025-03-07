@@ -64,6 +64,10 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
     facebook: String,
     //_________Zalo OA
     zalo: String,
+    //_________TikTok
+    tiktok: String,
+    //_________Shopee
+    shopee: String,
     //_________QR1 (app Mobile)
     qrcode1: {
         type: Schema.Types.ObjectId,

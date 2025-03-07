@@ -30,7 +30,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company  } = ctx.meta.infoUser;
-                const { optionSeller, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo } = ctx.params;
+                const { optionSeller, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee } = ctx.params;
 
                 console.log(ctx.params)
                 let companyID
@@ -40,7 +40,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo });
+                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -69,11 +69,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo } = ctx.params;
+                const { configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee } = ctx.params;
 
                 console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo });
+                const resultAfterCallHandler = await ITEM__CONFIG_MODEL.update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
