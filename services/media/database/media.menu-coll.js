@@ -27,7 +27,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
      * Phân loại
      * 1-Trang sản phẩm
      * 2-Trang bài viết
-     * 3-Các trang khác còn lại
+     * 3-Khác còn lại
      */
     type: {
         type: Number,
@@ -37,7 +37,7 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
     name: String,
     //_________Slug/URL
     slug: String,
-    //_________Thứ tự để hiển thị giữa các menu cùng cấp
+    //_________Thứ tự hiển thị
     order: {
         type: Number,
         default: 1

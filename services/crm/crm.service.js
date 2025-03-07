@@ -16,6 +16,7 @@ const CRM_GROW_TRACK_HANDLER			= require('./handler/crm.grow_track-handler');
 const CRM_SURVEY_HANDLER				= require('./handler/crm.survey-handler');
 const CRM_SURVEY_RESULT_HANDLER			= require('./handler/crm.survey_result-handler');
 const CRM_SEARCH_KEYWORD_HANDLER		= require('./handler/crm.search_keyword-handler');
+const CRM_COMBO_HANDLER					= require('./handler/crm.combo-handler');
 
 /**
  * COLLECTIONS
@@ -24,6 +25,7 @@ const CRM_GROW_TRACK_COLL 				= require('./database/crm.grow_track-coll');
 const CRM_SURVEY_COLL 					= require('./database/crm.survey-coll');
 const CRM_SURVEY_RESULT_COLL 			= require('./database/crm.survey_result-coll');
 const CRM_SEARCH_KEYWORD_COLL 			= require('./database/crm.search_keyword-coll');
+const CRM_COMBO_COLL 					= require('./database/crm.combo-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CRM,
@@ -32,6 +34,7 @@ module.exports = {
 		DbService(CRM_SURVEY_COLL),
 		DbService(CRM_SURVEY_RESULT_COLL),
 		DbService(CRM_SEARCH_KEYWORD_COLL),
+		DbService(CRM_COMBO_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
     ],
 
@@ -85,6 +88,13 @@ module.exports = {
 		[CF_ACTIONS_CRM.CRM_SEARCH_KEYWORD_GET_LIST_BY_PROPERTY] : CRM_SEARCH_KEYWORD_HANDLER.getListByProperty,
 		[CF_ACTIONS_CRM.CRM_SEARCH_KEYWORD_EXPORT_EXCEL] : CRM_SEARCH_KEYWORD_HANDLER.exportExcel,
 
+		// ==================== CRM_COMBO ======================== //
+		[CF_ACTIONS_CRM.CRM_COMBO_INSERT] : CRM_COMBO_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_COMBO_UPDATE] : CRM_COMBO_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_COMBO_REMOVE] : CRM_COMBO_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_COMBO_GET_INFO_AND_GET_LIST] : CRM_COMBO_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_COMBO_GET_LIST_BY_PROPERTY] : CRM_COMBO_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_COMBO_EXPORT_EXCEL] : CRM_COMBO_HANDLER.exportExcel,
 	},
 
 	/**
