@@ -23,7 +23,12 @@ module.exports  = DATABASE_MIDDLEWARE("media_banner", {
     //_________Name
     name: String,
     //_________Link
-    link: String,
+    slug: String,
+    //________Trạng thái (1-Active|2-Hủy)
+    status: {
+        type: Number,
+        default: 1
+    },
     //_________Thumbnail
     thumbnail: {
         type: Schema.Types.ObjectId,
