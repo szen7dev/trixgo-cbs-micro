@@ -47,6 +47,11 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
         type: Number,
         default: 1
     },
+    //_________Hình ảnh
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     userCreate: {
         type: Schema.Types.ObjectId,
         ref: "user"

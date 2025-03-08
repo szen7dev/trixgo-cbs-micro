@@ -34,6 +34,11 @@ module.exports  = DATABASE_MIDDLEWARE("media_banner", {
         type: Schema.Types.ObjectId,
         ref: 'file'
     },
+    //_________Hình ảnh
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     userCreate: {
         type: Schema.Types.ObjectId,
         ref: "user"

@@ -16,6 +16,11 @@ module.exports  = DATABASE_MIDDLEWARE("media_tag", {
     },
     //_________Tên
     name: String,
+    //_________Hình ảnh
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: "file"
+    }],
     userCreate: {
         type: Schema.Types.ObjectId,
         ref: "user"
