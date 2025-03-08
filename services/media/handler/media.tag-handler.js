@@ -54,12 +54,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { tagID, name } = ctx.params;
+                const { tagID, name, status } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_TAG_MODEL.update({ userID, tagID, name });
+                const resultAfterCallHandler = await MEDIA_TAG_MODEL.update({ userID, tagID, name, status });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

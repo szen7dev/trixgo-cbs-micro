@@ -27,7 +27,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { parentID, name, slug, order, type } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -59,13 +59,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { menuID, name, slug, order, type } = ctx.params;
+                const { menuID, name, slug, order, type, status } = ctx.params;
                 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_MENU_MODEL.update({ userID, menuID, name, slug, order, type });
+                const resultAfterCallHandler = await MEDIA_MENU_MODEL.update({ userID, menuID, name, slug, order, type, status });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -121,10 +121,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, menuID, parentID, keyword, limit, lastestID, populates, select, sortKey
-                } = ctx.params;
+                let { optionSeller, menuID, parentID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 

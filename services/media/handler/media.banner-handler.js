@@ -19,12 +19,12 @@ module.exports = {
         auth: "required",
         params: {
             name: { type: "string" },
-            link: { type: "string" },
+            slug: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, type, name, link, thumbnailID } = ctx.params;
+                let { optionSeller, type, name, slug, thumbnailID } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -38,7 +38,7 @@ module.exports = {
                 }                
 
                 let resultAfterCallHandler = await MEDIA_BANNER_MODEL.insert({
-                    companyID, userID, type, name, link, thumbnailID
+                    companyID, userID, type, name, slug, thumbnailID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -64,12 +64,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { bannerID, type, name, link, thumbnailID } = ctx.params;
+                const { bannerID, type, name, slug, thumbnailID, status } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_BANNER_MODEL.update({ userID, bannerID, type, name, link, thumbnailID });
+                const resultAfterCallHandler = await MEDIA_BANNER_MODEL.update({ userID, bannerID, type, name, slug, thumbnailID, status });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

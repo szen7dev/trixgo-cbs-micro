@@ -38,7 +38,7 @@ const MEDIA__SAVE_COLL					    	= require('../database/media.save-coll');
 class Model extends BaseModel {
 
     constructor() {
-        super(MEDIA_COLL);
+        super(MEDIA_COLL)
     }
 
 		/**
