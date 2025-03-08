@@ -1,12 +1,13 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code')
+const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
  */
-const ITEM__FUNDA_MODEL                   = require('../model/item.funda-model').MODEL;
+const ITEM__FUNDA_MODEL                   = require('../model/item.funda-model').MODEL
 
 module.exports = {
 
@@ -26,9 +27,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const { platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, parentID, materialExpenseRate,
-                     materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, project } = ctx.params;
+                     materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, project, rating, numberOfRating } = ctx.params;
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, project });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.insert({ companyID: company._id, parentID, platform, name, sign, description, phone, bankAccount, address, initialDay, campaign, internal, area, materialExpenseRate, materialExpense, planExpense, utilityExpense, humanExpense, otherExpense, userID, activeCampaign, loyaltyPointsRate, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, project, rating, numberOfRating });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -52,11 +53,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  } = ctx.params;
+                const { fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  } = ctx.params;
 
                     console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ userID, fundaID, project, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  });
+                const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ userID, fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -88,13 +89,16 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, fundaID, companyID, keyword, limit, lastestID, select, populates, parentID, platform, isListParentOfListChilds, isMember } = ctx.params;
-                // console.log(ctx.params)
+                let { optionSeller, option, fundaID, keyword, limit, lastestID, select, populates, parentID, platform, isListParentOfListChilds, isMember } = ctx.params;
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
 
                 let resultAfterCallHandler;

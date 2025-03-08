@@ -153,7 +153,7 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Number,
         default : 1
     },
-    //_________Ảnh đại diện
+    //_________Hình ảnh
     images: [{
         type: Schema.Types.ObjectId,
         ref: "file"

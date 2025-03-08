@@ -51,7 +51,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  update({ userID, tagID, name }) {
+  update({ userID, tagID, name, status }) {
       return new Promise(async (resolve) => {
           try {
             const info = await MEDIA_TAG_COLL.findById(tagID)
@@ -71,6 +71,10 @@ class Model extends BaseModel {
 
             if (name && name != '') {
                 dataUpdate.name = name;
+            }
+
+            if (!isNaN(status)) {
+                dataUpdate.status = Number(status)
             }
 
             let infoAfterUpdate = await MEDIA_TAG_COLL.findByIdAndUpdate(tagID, dataUpdate, { new: true });

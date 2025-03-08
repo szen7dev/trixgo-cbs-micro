@@ -82,7 +82,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ userID, menuID, name, slug, order, type }) {
+  update({ userID, menuID, name, slug, order, type, status }) {
       return new Promise(async (resolve) => {
           try {
             // Kiểm tra xem tên có bị trùng hay không
@@ -118,6 +118,10 @@ class Model extends BaseModel {
 
             if (!isNaN(type)) {
                 dataUpdate.type = Number(type)
+            }
+
+            if (!isNaN(status)) {
+                dataUpdate.status = Number(status)
             }
 
             if (!isNaN(order)) {
