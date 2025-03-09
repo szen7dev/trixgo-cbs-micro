@@ -24,9 +24,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, type, name, slug, thumbnailID } = ctx.params;
+                let { optionSeller, type, name, note, slug, expired, thumbnailID } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -38,7 +38,7 @@ module.exports = {
                 }                
 
                 let resultAfterCallHandler = await MEDIA_BANNER_MODEL.insert({
-                    companyID, userID, type, name, slug, thumbnailID
+                    companyID, userID, type, name, note, slug, expired, thumbnailID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -59,17 +59,17 @@ module.exports = {
         params: {
             bannerID  : { type: "string" },
             name: { type: "string" },
-            link: { type: "string" },
+            slug: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { bannerID, type, name, slug, thumbnailID, status } = ctx.params;
-                // console.log(ctx.params)
+                const { bannerID, type, name, note, slug, expired, thumbnailID, status } = ctx.params;
+                console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_BANNER_MODEL.update({ userID, bannerID, type, name, slug, thumbnailID, status });
+                const resultAfterCallHandler = await MEDIA_BANNER_MODEL.update({ userID, bannerID, type, name, note, slug, expired, thumbnailID, status });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -127,7 +127,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { optionSeller, type, bannerID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 

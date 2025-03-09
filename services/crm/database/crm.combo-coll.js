@@ -14,8 +14,17 @@ module.exports  = DATABASE_MIDDLEWARE("crm_combo", {
         type: Number,
         default: 1
     },
-    //________Nội dung
+    /**
+     * Phân loại
+     */
+    type: {
+        type: Number,
+        default: 1
+    },
+    //_________Tên
     name: String,
+    //_________Slug/URL
+    slug: String,
     //_________Thời hạn
     expired: Date,
     //________Ghi chú
