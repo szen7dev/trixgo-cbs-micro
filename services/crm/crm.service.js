@@ -17,6 +17,8 @@ const CRM_SURVEY_HANDLER				= require('./handler/crm.survey-handler');
 const CRM_SURVEY_RESULT_HANDLER			= require('./handler/crm.survey_result-handler');
 const CRM_SEARCH_KEYWORD_HANDLER		= require('./handler/crm.search_keyword-handler');
 const CRM_COMBO_HANDLER					= require('./handler/crm.combo-handler');
+const CRM_HABIT_HANDLER					= require('./handler/crm.habit-handler');
+const CRM_HABIT_TRACK_HANDLER			= require('./handler/crm.habit_track-handler');
 
 /**
  * COLLECTIONS
@@ -26,6 +28,8 @@ const CRM_SURVEY_COLL 					= require('./database/crm.survey-coll');
 const CRM_SURVEY_RESULT_COLL 			= require('./database/crm.survey_result-coll');
 const CRM_SEARCH_KEYWORD_COLL 			= require('./database/crm.search_keyword-coll');
 const CRM_COMBO_COLL 					= require('./database/crm.combo-coll');
+const CRM_HABIT_COLL 					= require('./database/crm.habit-coll');
+const CRM_HABIT_TRACK_COLL 				= require('./database/crm.habit_track-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CRM,
@@ -35,6 +39,8 @@ module.exports = {
 		DbService(CRM_SURVEY_RESULT_COLL),
 		DbService(CRM_SEARCH_KEYWORD_COLL),
 		DbService(CRM_COMBO_COLL),
+		DbService(CRM_HABIT_COLL),
+		DbService(CRM_HABIT_TRACK_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
     ],
 
@@ -63,6 +69,22 @@ module.exports = {
 		[CF_ACTIONS_CRM.CRM_GROW_TRACK_GET_INFO_AND_GET_LIST] : CRM_GROW_TRACK_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_CRM.CRM_GROW_TRACK_GET_LIST_BY_PROPERTY] : CRM_GROW_TRACK_HANDLER.getListByProperty,
 		[CF_ACTIONS_CRM.CRM_GROW_TRACK_EXPORT_EXCEL] : CRM_GROW_TRACK_HANDLER.exportExcel,
+
+		// ==================== CRM_HABIT ======================== //
+		[CF_ACTIONS_CRM.CRM_HABIT_INSERT] : CRM_HABIT_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_HABIT_UPDATE] : CRM_HABIT_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_HABIT_REMOVE] : CRM_HABIT_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_HABIT_GET_INFO_AND_GET_LIST] : CRM_HABIT_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_HABIT_GET_LIST_BY_PROPERTY] : CRM_HABIT_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_HABIT_EXPORT_EXCEL] : CRM_HABIT_HANDLER.exportExcel,
+
+		// ==================== CRM_HABIT_TRACK ======================== //
+		[CF_ACTIONS_CRM.CRM_HABIT_TRACK_INSERT] : CRM_HABIT_TRACK_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_HABIT_TRACK_UPDATE] : CRM_HABIT_TRACK_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_HABIT_TRACK_REMOVE] : CRM_HABIT_TRACK_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_HABIT_TRACK_GET_INFO_AND_GET_LIST] : CRM_HABIT_TRACK_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_HABIT_TRACK_GET_LIST_BY_PROPERTY] : CRM_HABIT_TRACK_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_HABIT_TRACK_EXPORT_EXCEL] : CRM_HABIT_TRACK_HANDLER.exportExcel,
 
 		// ==================== CRM_SURVEY ======================== //
 		[CF_ACTIONS_CRM.CRM_SURVEY_INSERT] : CRM_SURVEY_HANDLER.insert,
