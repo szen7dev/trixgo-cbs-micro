@@ -41,6 +41,13 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
     phone: String,
     //________Ghi chú
     note: String,
+    /**
+     * Tài khoản khách hàng yêu cầu
+     */
+    //_________Social
+    facebook: String,
+    //_________TikTok
+    tiktok: String,
     //_________Thumbnail
     thumbnail: {
         type: Schema.Types.ObjectId,

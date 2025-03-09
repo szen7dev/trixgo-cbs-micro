@@ -18,22 +18,22 @@ module.exports = {
      */
     insert: {
         params: {
-            phone               : { type: "string", optional: true },
-            name                : { type: "string", optional: true },
-            contactID           : { type: "string", optional: true },
-            birthday            : { type: "string", optional: true },
-            note                : { type: "string", optional: true },
-            gender              : { type: "string", optional: true },
-            height              : { type: "string", optional: true },
-            weight              : { type: "string", optional: true },
+            // phone               : { type: "string" },
+            // name                : { type: "string", optional: true },
+            // contactID           : { type: "string", optional: true },
+            // birthday            : { type: "string", optional: true },
+            // note                : { type: "string", optional: true },
+            // gender              : { type: "string", optional: true },
+            // height              : { type: "string", optional: true },
+            // weight              : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -42,7 +42,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID })
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -58,20 +58,18 @@ module.exports = {
      */
     update: {
         params: {
-            trackID      : { type: "string" },
-            members             : { type: "array", optional: true },
-            admins              : { type: "array", optional: true },
+            trackID             : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, thumbnailID, imagesID } = ctx.params;
+                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, thumbnailID, imagesID });
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -114,7 +112,7 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            trackID       : { type: "string", optional: true },
+            trackID         : { type: "string", optional: true },
             contactID       : { type: "string", optional: true },
 
             // Field mặc định
