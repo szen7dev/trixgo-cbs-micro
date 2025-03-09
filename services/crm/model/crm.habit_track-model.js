@@ -20,7 +20,6 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
 const {
   checkObjectIDs,
   IsJsonString,
-  validateParamsObjectID
 }  = require('../../../tools/utils/utils.js');
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
 const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
@@ -30,6 +29,7 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
  * COLLECTIONS
  */
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
+const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
 
 class Model extends BaseModel {
@@ -43,39 +43,59 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, name, note, slug, expired }) {
+    insert({ userID, companyID, habitID, status, date, name, note, duration }) {
         return new Promise(async resolve => {
             try {
-                if(!name || name == "")
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" })
+                let infoHabit = await CRM_HABIT_COLL.findById(habitID)
+                if(!infoHabit)
+                    return resolve({ error: true, message: "Habit không hợp lệ", keyError: "Request params name invalid" })
 
-                //__________Khai báo và validate dữ liệu
-                let dataInsert = {
-                    userCreate: userID, 
-                    company: companyID,
-                }
+                if(!date)
+                    return resolve({ error: true, message: "Ngày thực hiện không hợp lệ", keyError: "Request params name invalid" })
 
-                if(name && name != ""){
-                    dataInsert.name = name;
-                }
+                const formattedDate = new Date(date);
+                // console.log(formattedDate)
+                let infoTrack = await CRM_HABIT_TRACK_COLL.findOne({ habit: habitID, date: formattedDate })
+                // console.log(infoTrack)
+
+                if(!infoTrack){
+                    let dataInsert = {
+                        userCreate: userID, 
+                        company: companyID,
+                        habit: habitID,
+                        type: infoHabit.type,
+                        contact: infoHabit.contact,
+                    }
     
-                if(slug && slug != ""){
-                    dataInsert.slug = slug;
-                }
+                    if(name && name != ""){
+                        dataInsert.name = name;
+                    }
+        
+                    if(note && note != ""){
+                        dataInsert.note = note;
+                    }
+        
+                    if(date && date != ""){
+                        dataInsert.date = date;
+                    }
     
-                if(note && note != ""){
-                    dataInsert.note = note;
-                }
+                    if (!isNaN(status)) {
+                        dataInsert.status = Number(status)
+                    }
+        
+                    if (!isNaN(duration)) {
+                        dataInsert.duration = Number(duration)
+                    }
     
-                if(expired && expired != ""){
-                    dataInsert.expired = expired;
+                    let infoAfterInsert = await this.insertData(dataInsert)
+                    if(!infoAfterInsert)
+                        return resolve({ error: true, message: "cannot_insert" })
+    
+                    return resolve({ error: false, data: infoAfterInsert })
+                }else{
+                    return resolve({ error: true, message: "Mẫu tin đã tồn tại" })
                 }
 
-                let infoAfterInsert = await this.insertData(dataInsert)
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert" })
-
-                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
@@ -87,7 +107,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, type, status, name, note, slug, expired, productsID, thumbnailID, imagesID }){
+    update({ trackID, userID, status, name, note, duration, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -99,46 +119,23 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = {
                         images: imagesID,
                     }
-    
-                    if(!checkObjectIDs(thumbnailID)){
-                        dataUpdate.thumbnail = imagesID[0];
-                    }
-                }
-    
-                if (checkObjectIDs(thumbnailID)) {
-                    dataUpdate.thumbnail = thumbnailID;
-                }
-
-                if(productsID && productsID.length) {
-                    dataUpdate.$addToSet = {
-                        products: productsID,
-                    }
                 }
 
                 if (!isNaN(status)) {
                     dataUpdate.status = Number(status)
                 }
-    
-                if (!isNaN(type)) {
-                    dataUpdate.type = Number(type)
-                }
 
                 if(name && name != ""){
                     dataUpdate.name = name;
-                }
-
-                if(slug && slug != ""){
-                    dataUpdate.slug = slug;
                 }
     
                 if(note && note != ""){
                     dataUpdate.note = note;
                 }
 
-                if(expired && expired != ""){
-                    dataUpdate.expired = expired;
+                if (!isNaN(duration)) {
+                    dataUpdate.duration = Number(duration)
                 }
-                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
@@ -195,7 +192,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, status, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, habitID, status, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -204,7 +201,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {company: companyID};
+                let conditionObj = { };
                 let nextCursor	= null;
                 let sortBy      = null;
                 let keys	 = ['createAt__1', '_id__1'];
@@ -219,6 +216,12 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(checkObjectIDs(habitID)){
+                    conditionObj.habit = habitID
+                }else{
+                    conditionObj.company = companyID
                 }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
