@@ -30,10 +30,6 @@ const stringUtils					    		= require('../../../tools/utils/string_utils');
  */
 const MEDIA__MENU_COLL					        = require('../database/media.menu-coll');
 const MEDIA_COLL					        	= require('../database/media-coll');
-const MEDIA__SEEN_COLL					       	= require('../database/media.seen-coll');
-const MEDIA__SAVE_COLL					    	= require('../database/media.save-coll');
-// const MEDIA__FILE_COLL					        = require('../database/media.file-coll');
-// const MEDIA__REACIONT_COLL              		= require('../database/media.reaction-coll');
 
 class Model extends BaseModel {
 
