@@ -2,6 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
@@ -10,19 +11,14 @@ const MEDIA__COMMENT_MODEL                      = require('../model/media.commen
 
 module.exports = {
     /**
-	 * ============================ ****************** ===============================
-	 * ============================    COMMENT MEDIA   ===============================
-	 * ============================ ****************** ===============================
-	 */
-
-    /**
      * Dev: MinhVH
      * Func: Create comment media
      */
     insert: {
         auth: "required",
         params: {
-            mediaID         : { type: "string" },
+            mediaID         : { type: "string", optional: true },
+            goodsID         : { type: "string", optional: true },
             parentID        : { type: "string", optional: true },
             content         : { type: "string", optional: true },
             files           : { type: "array", optional: true },
@@ -33,12 +29,21 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { _id: authorID, bizfullname } = ctx.meta.infoUser;
-                const { mediaID, parentID, content, files, images, select, populates } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                const { optionSeller, type, status, rating, mediaID, goodsID, parentID, content, files, images } = ctx.params;
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company._id
+                }
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.insert({
-                    mediaID, parentID, content, files, images, select, populates, authorID, bizfullname, ctx
-                });
+                    companyID, userID, type, status, rating, mediaID, goodsID, parentID, content, files, images
+                })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -66,10 +71,10 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: authorID } = ctx.meta.infoUser;
-                const { commentID, content, files, images, select, populates } = ctx.params;
+                const { commentID, type, status, rating, content, files, images, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA__COMMENT_MODEL.update({
-					commentID, authorID, content, files, images, select, populates
+					commentID, authorID, type, status, rating, content, files, images, select, populates
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -112,7 +117,8 @@ module.exports = {
     getInfoAndGetList: {
         auth: "required",
         params: {
-            mediaID     : { type: "string" },
+            mediaID     : { type: "string", optional: true },
+            goodsID     : { type: "string", optional: true },
             commentID   : { type: "string", optional: true },
             parentID    : { type: "string", optional: true },
             limit       : { type: "string", optional: true },
@@ -125,17 +131,19 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { 
-                    commentID, mediaID, parentID, limit, lastestID, select, populates, isLoadAll
+                    commentID, mediaID, goodsID, parentID, limit, lastestID, select, populates, isLoadAll
                 } = ctx.params;
-                let resultAfterCallHandler;
 
+                // console.log(ctx.params)
+
+                let resultAfterCallHandler;
                 if(commentID){
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getInfo({
                         commentID, select, populates
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getList({
-                        mediaID, parentID, limit, lastestID, select, populates, authorID, isLoadAll
+                        mediaID, goodsID, parentID, limit, lastestID, select, populates, authorID, isLoadAll
                     });
                 }
 
