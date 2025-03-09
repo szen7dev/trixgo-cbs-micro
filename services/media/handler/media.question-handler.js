@@ -25,14 +25,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { name, note, goodsID } = ctx.params;
+                let { name, note, goodsID, status, thumbnailID, imagesID } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await MEDIA_QUESTION_MODEL.insert({
-                    companyID: company._id, userID, name, note, goodsID
+                    companyID: company._id, userID, name, note, goodsID, status, thumbnailID, imagesID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -58,12 +58,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { questionID, name, note } = ctx.params;
+                const { questionID, name, note, status, thumbnailID, imagesID } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_QUESTION_MODEL.update({ userID, questionID, name, note });
+                const resultAfterCallHandler = await MEDIA_QUESTION_MODEL.update({ userID, questionID, name, note, status, thumbnailID, imagesID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
