@@ -95,7 +95,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ comboID, userID, type, status, name, note, slug, expired, productsID }){
+    update({ comboID, userID, type, status, name, note, slug, expired, productsID, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -103,14 +103,10 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                let dataAddToset = {};
-
-                if (checkObjectIDs(productsID)) {
-                    dataAddToset = { products: productsID };
-                }
-
-                if(dataAddToset){
-                    dataUpdate.$addToSet = dataAddToset;
+                if(imagesID && imagesID.length) {
+                    dataUpdate.$addToSet = {
+                        images: imagesID,
+                    }
                 }
 
                 if (!isNaN(status)) {

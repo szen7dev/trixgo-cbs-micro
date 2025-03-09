@@ -59,13 +59,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { comboID, type, status, name, note, slug, expired, productsID } = ctx.params;
+                let { comboID, type, status, name, note, slug, expired, productsID, imagesID } = ctx.params;
 
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_COMBO_MODEL.update({ userID, comboID, type, status, name, note, slug, expired, productsID });
+                let resultAfterCallHandler = await CRM_COMBO_MODEL.update({ userID, comboID, type, status, name, note, slug, expired, productsID, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

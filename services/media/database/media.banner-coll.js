@@ -11,9 +11,9 @@ module.exports  = DATABASE_MIDDLEWARE("media_banner", {
     },
     /**
      * Type: phân loại vị trí
-     * 1-5-Banner tĩnh 1-5
+     * 1-5-Banner 1-5
      * 6-Slide
-     * 7-Các tính năng hay dùng
+     * 7-Chức năng phổ biến
      * 8-11-Footer cột 1-4
      */
     type: {

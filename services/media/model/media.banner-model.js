@@ -75,7 +75,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  update({ userID, bannerID, type, name, note, slug, expired, thumbnailID, status}) {
+  update({ userID, bannerID, type, name, note, slug, expired, thumbnailID, status, imagesID }) {
       return new Promise(async (resolve) => {
           try {
             const info = await MEDIA_BANNER_COLL.findById(bannerID)
@@ -91,6 +91,12 @@ class Model extends BaseModel {
             let dataUpdate = { 
                 userUpdate: userID, 
                 modifyAt: new Date(),
+            }
+
+            if(imagesID && imagesID.length) {
+                dataUpdate.$addToSet = {
+                    images: imagesID,
+                }
             }
 
             if(name && name != ""){
