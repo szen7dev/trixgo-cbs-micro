@@ -65,13 +65,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, thumbnailID, imagesID } = ctx.params;
 
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID });
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, thumbnailID, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
