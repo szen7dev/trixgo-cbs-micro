@@ -29,6 +29,11 @@ module.exports  = DATABASE_MIDDLEWARE("media_tag", {
     expired: Date,
     //________Ghi chú
     note: String,
+    //_________Thumbnail
+    thumbnail: {
+        type: Schema.Types.ObjectId,
+        ref: 'file'
+    },
     //_________Hình ảnh
     images: [{
         type: Schema.Types.ObjectId,

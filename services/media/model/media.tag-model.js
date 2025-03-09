@@ -66,7 +66,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  update({ userID, type, tagID, name, note, slug, expired, status, imagesID }) {
+  update({ userID, type, tagID, name, note, slug, expired, status, thumbnailID, imagesID }) {
       return new Promise(async (resolve) => {
           try {
             const info = await MEDIA_TAG_COLL.findById(tagID)
@@ -82,6 +82,10 @@ class Model extends BaseModel {
             let dataUpdate = { 
                 userUpdate: userID, 
                 modifyAt: new Date() ,
+            }
+
+            if (checkObjectIDs(thumbnailID)) {
+                dataUpdate.thumbnail = thumbnailID;
             }
 
             if(imagesID && imagesID.length) {
