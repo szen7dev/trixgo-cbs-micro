@@ -1009,9 +1009,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ contactID, linkUserID, select, populates, ctx }) {
-        // console.log('===========Thông tin danh bạ========')
-        // console.log({ contactID, linkUserID, select, populates })
+    getInfo({ contactID, linkUserID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if (contactID) {
@@ -1034,9 +1032,6 @@ class Model extends BaseModel {
                         .populate(populates)
                     if (!infoAterGet)
                         return resolve({ error: true, message: "can't_get_info", status: 403 })
-
-                    // Record Traffic
-                    // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                     return resolve({ error: false, data: infoAterGet, status: 200 })
                 } else {
@@ -1061,9 +1056,6 @@ class Model extends BaseModel {
                             .populate(populates)
                         if (!infoAterGet)
                             return resolve({ error: true, message: "can't_get_info", status: 403 })
-
-                        // Record Traffic
-                        // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                         return resolve({ error: false, data: infoAterGet, status: 200 })
                     } else {
