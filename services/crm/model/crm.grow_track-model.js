@@ -51,7 +51,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }) {
+    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok }) {
         return new Promise(async resolve => {
             try {
                 if(phone){
@@ -67,7 +67,7 @@ class Model extends BaseModel {
                     if(!isValidVietnamPhoneNumber(strValid))
                         return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
                 }else{
-                    if(!checkObjectIDs(contactID) || !name)
+                    if(!checkObjectIDs(contactID) || !name || !birthday)
                         return resolve({ error: true, message: "Danh bạ không hợp lệ. Hãy vui lòng thử lại" })
                 }
 
@@ -97,35 +97,30 @@ class Model extends BaseModel {
                     dataInsert.contact = contactID;
                 }
 
-                if(phone && phone != ""){
-                    dataInsert.phone = phone;
-                }
-
-                if(name && name != ""){
-                    dataInsert.name = name;
-                }
-
                 if(birthday && birthday != ""){
                     dataInsert.birthday = birthday;
                 }
 
-                if(name && name != ""){
-                    dataInsert.name = name;
-                }
-
-                if(note && note != ""){
-                    dataInsert.note = note;
-                }
-
                 let convertStr = ''
                 if(name && name != ""){
+                    dataInsert.name = name;
                     convertStr = stringUtils.removeAccents(name)
                 }
+                if(phone && phone != ""){
+                    dataInsert.phone = phone;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(phone)
+                }
                 if(note && note != ""){
+                    dataInsert.note = note;
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
-                if(phone && phone != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(phone)
+                if(facebook && facebook != ""){
+                    dataInsert.facebook = facebook;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(facebook)
+                }
+                if(tiktok && tiktok != ""){
+                    dataInsert.tiktok = tiktok;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
                 }
                 dataInsert.namecv = convertStr
 
@@ -393,9 +388,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, thumbnailID, imagesID }){
+    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID }){
         return new Promise(async (resolve) => {
-            const that = this
             try {
                 let dataUpdate = {
                     userUpdate: userID,
@@ -432,35 +426,32 @@ class Model extends BaseModel {
                     dataUpdate.contact = contactID;
                 }
 
-                if(phone && phone != ""){
-                    dataUpdate.phone = phone;
-                }
-
                 if(birthday && birthday != ""){
                     dataUpdate.birthday = birthday;
                 }
 
-                if(name && name != ""){
-                    dataUpdate.name = name;
-                }
-
-                if(note && note != ""){
-                    dataUpdate.note = note;
-                }
-
                 let convertStr = ''
                 if(name && name != ""){
+                    dataUpdate.name = name;
                     convertStr = stringUtils.removeAccents(name)
                 }
-                if(note && note != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
                 if(phone && phone != ""){
+                    dataUpdate.phone = phone;
                     convertStr = convertStr + " " + stringUtils.removeAccents(phone)
                 }
+                if(note && note != ""){
+                    dataUpdate.note = note;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(facebook && facebook != ""){
+                    dataUpdate.facebook = facebook;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(facebook)
+                }
+                if(tiktok && tiktok != ""){
+                    dataUpdate.tiktok = tiktok;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
+                }
                 dataUpdate.namecv = convertStr
-
-                // console.log(dataUpdate)
 
                 let infoAfterUpdate = await CRM__GROW_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
@@ -632,8 +623,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
