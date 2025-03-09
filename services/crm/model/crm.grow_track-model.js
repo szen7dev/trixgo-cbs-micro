@@ -393,7 +393,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }){
+    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, thumbnailID, imagesID }){
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -402,14 +402,14 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                let dataAddToset = {};
-
-                if (checkObjectIDs(filesID)) {
-                    dataAddToset = { files: filesID };
-                }
-
-                if(dataAddToset){
-                    dataUpdate.$addToSet = dataAddToset;
+                if(imagesID && imagesID.length) {
+                    dataUpdate.$addToSet = {
+                        images: imagesID,
+                    }
+    
+                    if(!checkObjectIDs(thumbnailID)){
+                        dataUpdate.thumbnail = imagesID[0];
+                    }
                 }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){

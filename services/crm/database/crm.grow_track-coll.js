@@ -34,8 +34,13 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
     phone: String,
     //________Ghi chú
     note: String,
-    //_________File/ảnh đính kèm
-    files: [{
+    //_________Thumbnail
+    thumbnail: {
+        type: Schema.Types.ObjectId,
+        ref: 'file'
+    },
+    //_________Hình ảnh
+    images: [{
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
