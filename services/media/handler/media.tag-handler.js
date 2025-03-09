@@ -59,7 +59,7 @@ module.exports = {
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_TAG_MODEL.update({ userID, tagID, type, status, name, note, slug, expired, thumbnailID: imagesID[0], imagesID });
+                const resultAfterCallHandler = await MEDIA_TAG_MODEL.update({ userID, tagID, type, status, name, note, slug, expired, thumbnailID, imagesID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };

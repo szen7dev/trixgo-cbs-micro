@@ -65,7 +65,7 @@ module.exports = {
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_COMBO_MODEL.update({ userID, comboID, type, status, name, note, slug, expired, productsID, thumbnailID: imagesID[0], imagesID });
+                let resultAfterCallHandler = await CRM_COMBO_MODEL.update({ userID, comboID, type, status, name, note, slug, expired, productsID, thumbnailID, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
