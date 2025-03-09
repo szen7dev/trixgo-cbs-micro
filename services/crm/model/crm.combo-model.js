@@ -103,14 +103,18 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                if (checkObjectIDs(thumbnailID)) {
-                    dataUpdate.thumbnail = thumbnailID;
-                }
-
                 if(imagesID && imagesID.length) {
                     dataUpdate.$addToSet = {
                         images: imagesID,
                     }
+    
+                    if(!checkObjectIDs(thumbnailID)){
+                        dataUpdate.thumbnail = imagesID[0];
+                    }
+                }
+    
+                if (checkObjectIDs(thumbnailID)) {
+                    dataUpdate.thumbnail = thumbnailID;
                 }
 
                 if(productsID && productsID.length) {
