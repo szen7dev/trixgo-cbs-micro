@@ -87,6 +87,25 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     unitNote: String,   
     //_________Ghi chú
     note: String,
+    /**
+     * PHARMA
+     */
+    //_________Mô tả sản phẩm
+    description: String,
+    //_________Đặc điểm nổi bật
+    features: String,
+    //_________Thành phần
+    ingredients: String,
+    //_________Công dụng/lợi ích
+    benefits : String,
+    //_________Cách dùng
+    instructions: String,
+    //_________Tác dụng phụ 
+    sideEffects: String,
+    //_________Lưu ý
+    warnings: String,
+    //_________Bảo quản
+    storage: String,
     //_________Ngày bắt đầu đưa vào sử dụng/hạch toán
     date: { type: Date, default: Date.now },
     //_________Number of depreciation months: số tháng khấu hao
