@@ -13,12 +13,9 @@ const { ENV_DEVICE_WEB_CBS }            = require('../../notification/helper/not
 /**s
  * import inter-coll, exter-coll
  */
-const MEDIA__COMMENT_COLL               = require('../database/media.comment-coll');
-const MEDIA__COMMENT_FILE_COLL          = require('../database/media.comment_file-coll');
-const MEDIA__COMMENT_REACTION_COLL      = require('../database/media.reaction_comment-coll');
 const MEDIA_COLL                        = require('../database/media-coll');
-const MEDIA__FILE_COLL                  = require('../database/media.file-coll');
 const ITEM__GOODS_COLL                  = require('../../item/database/item.goods-coll');
+const MEDIA__COMMENT_COLL               = require('../database/media.comment-coll');
 
 class Model extends BaseModel {
 
