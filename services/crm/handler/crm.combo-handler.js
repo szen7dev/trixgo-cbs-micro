@@ -52,7 +52,7 @@ module.exports = {
      */
     update: {
         params: {
-            comboID      : { type: "string" },
+            comboID             : { type: "string" },
             members             : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
         },
