@@ -193,7 +193,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getList({ companyID, userID, parentID, keyword, limit, lastestID, populates, select, sortKey }) {
+  getList({ companyID, parentID, status, keyword, limit, lastestID, populates, select, sortKey }) {
       return new Promise(async (resolve) => {
           try {
               let sortBy;
@@ -231,6 +231,10 @@ class Model extends BaseModel {
               } else {
                 conditionObj.company = companyID;
               }
+
+             if (!isNaN(status)) {
+                conditionObj.status = Number(status)
+            }
 
               if (keyword) {
                   keyword = keyword.split(" ");
