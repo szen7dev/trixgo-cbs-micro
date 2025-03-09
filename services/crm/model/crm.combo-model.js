@@ -112,10 +112,6 @@ class Model extends BaseModel {
                         dataUpdate.thumbnail = imagesID[0];
                     }
                 }
-    
-                if (checkObjectIDs(thumbnailID)) {
-                    dataUpdate.thumbnail = thumbnailID;
-                }
 
                 if(productsID && productsID.length) {
                     dataUpdate.$addToSet = {
@@ -206,14 +202,6 @@ class Model extends BaseModel {
     getList({ companyID, status, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
-                // Record Traffic
-                // await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                //     appID: "61e049cffdebf77b072d1b14",
-                //     userID
-                // })
-
                 if(Number(limit) > 50){
                     limit = 50;
                 } else{

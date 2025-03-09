@@ -5,6 +5,16 @@ const CF_ROUTINGS_CRM = {
     CRM_GROW_TRACK                              : `${BASE_ROUTE}/grow_track`,
     CRM_GROW_TRACK_GET_LIST_BY_PROPERTY         : `${BASE_ROUTE}/grow_track/get-list-by-property`,
     CRM_GROW_TRACK_EXPORT_EXCEL                 : `${BASE_ROUTE}/grow_track/export-excel`,
+       
+    // ==================== CRM_HABIT ======================== //
+    CRM_HABIT                                   : `${BASE_ROUTE}/habit`,
+    CRM_HABIT_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}/habit/get-list-by-property`,
+    CRM_HABIT_EXPORT_EXCEL                      : `${BASE_ROUTE}/habit/export-excel`,
+
+    // ==================== CRM_HABIT_TRACK ======================== //
+    CRM_HABIT_TRACK                             : `${BASE_ROUTE}/habit_track`,
+    CRM_HABIT_TRACK_GET_LIST_BY_PROPERTY        : `${BASE_ROUTE}/habit_track/get-list-by-property`,
+    CRM_HABIT_TRACK_EXPORT_EXCEL                : `${BASE_ROUTE}/habit_track/export-excel`,
 
     // ==================== CRM_SURVEY ======================== //
     CRM_SURVEY                                  : `${BASE_ROUTE}/survey`,
