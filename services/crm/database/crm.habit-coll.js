@@ -35,6 +35,8 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
     namecv: String,
     //_______Ngày bắt đầu
     date: { type: Date, default: Date.now },
+    //_________Streak days 
+    streakDays : { type: Number, default: 0 },
     //________Ghi chú
     note: String,
     //_________Hình ảnh
