@@ -61,7 +61,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-    //_________Phân loại theo Lĩnh vực/ngành nghề
+    //_________Lĩnh vực/ngành nghề/Chuyên ngành
     field: {
         type: Schema.Types.ObjectId,
         ref : "doctype"
