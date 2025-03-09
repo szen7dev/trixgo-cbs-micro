@@ -38,7 +38,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage }){
+	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired }){
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")
@@ -84,6 +84,10 @@ class Model extends BaseModel {
 
                 if(date && date != ""){
                     dataInsert.date = date;
+                }
+
+                if(expired && expired != ""){
+                    dataInsert.expired = expired;
                 }
 
                 if(sign && sign != ""){
@@ -222,7 +226,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage }){
+	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired }){
         return new Promise(async resolve => {
             try {
 				let info = await ITEM__GOODS_COLL.findById(goodsID)
@@ -280,6 +284,10 @@ class Model extends BaseModel {
 
                 if(date && date != ""){
                     dataUpdate.date = date;
+                }
+
+                if(expired && expired != ""){
+                    dataUpdate.expired = expired;
                 }
 
                 if(!isNaN(nods)){
