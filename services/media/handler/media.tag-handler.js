@@ -48,8 +48,7 @@ module.exports = {
     update: {
         auth: "required",
         params: {
-            tagID  : { type: "string" },
-            name  : { type: "string" },
+            tagID  : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
