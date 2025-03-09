@@ -18,6 +18,7 @@ const MEDIA__COMMENT_FILE_COLL          = require('../database/media.comment_fil
 const MEDIA__COMMENT_REACTION_COLL      = require('../database/media.reaction_comment-coll');
 const MEDIA_COLL                        = require('../database/media-coll');
 const MEDIA__FILE_COLL                  = require('../database/media.file-coll');
+const ITEM__GOODS_COLL                  = require('../../item/database/item.goods-coll');
 
 class Model extends BaseModel {
 
@@ -26,10 +27,311 @@ class Model extends BaseModel {
     }
 
     /**
-	 * ============================ ****************** ===============================
-	 * ============================    COMMENT MEDIA   ===============================
-	 * ============================ ****************** ===============================
+     * Dev: MinhVH
+     * Func: Create comment media
+     */
+    insert({ companyID, userID, type, status, rating, mediaID, goodsID, parentID, content, files, images }) { 
+        return new Promise(async (resolve) => {
+            try {
+                let dataInsert = {  
+                    company: companyID,
+                    author: userID
+                }
+
+                if(checkObjectIDs(mediaID)) {
+                    dataInsert.media = mediaID;
+                }
+
+                if(checkObjectIDs(goodsID)) {
+                    dataInsert.goods = goodsID;
+                }
+
+                if(checkObjectIDs(parentID)) {
+                    dataInsert.parent = parentID;
+                }
+
+                if (!isNaN(status)) {
+                    dataInsert.status = Number(status)
+                }
+    
+                if (!isNaN(type)) {
+                    dataInsert.type = Number(type)
+                }
+
+                if (!isNaN(rating)) {
+                    dataInsert.rating = Number(rating)
+                }
+
+                content && (dataInsert.content  = content);
+                files   && (dataInsert.files    = files);
+                images  && (dataInsert.images   = images);
+
+                let infoAfterInsert = await this.insertData(dataInsert);
+                if(!infoAfterInsert) 
+                    return resolve({
+                        error: true,
+                        message: "Khởi tạo thất bại",
+                        keyError: "error_occurred",
+                        status: 422
+                    })
+                
+
+                if(parentID){
+                    await MEDIA__COMMENT_COLL.findByIdAndUpdate(parentID, { 
+                        $set: {
+                            lastestReply: infoAfterInsert._id
+                        },
+                        $inc: {
+                            amountReply: 1
+                        }
+                    });
+                }
+
+                // Cập nhật số lượng comment
+                if(checkObjectIDs(mediaID)) {
+                    await MEDIA_COLL.findByIdAndUpdate(mediaID, {
+                        $inc: {
+                            amountComment: 1
+                        }
+                    })
+                }
+
+                if(checkObjectIDs(goodsID)) {
+                    if (!isNaN(rating)) {
+                        await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, {
+                            $inc: {
+                                numberOfRating: 1,
+                                amountComment: 1,
+                            }
+                        })
+                    }else{
+                        await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, {
+                            $inc: {
+                                amountComment: 1
+                            }
+                        })
+                    }
+                }
+
+                return resolve({ error: false, data: infoAfterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Dev: MinhVH
+     * Func: Update comment media
+     * Date: 22/02/2022
+     */ 
+    update({ commentID, authorID, type, status, rating, content, files, images }) {
+        return new Promise(async (resolve) => {
+            try {
+                let dataUpdate = {
+                    author: authorID,
+                    modifyAt: new Date()
+                }
+
+                content && (dataUpdate.content = content);
+
+                // CẬP NHẬT FILE MỚI
+                if(files.length && checkObjectIDs(files)){
+                    dataUpdate.files = files;
+                } else{
+                    dataUpdate.files = [];
+                }
+
+                // CẬP NHẬT HÌNH ẢNH MỚI
+                if(images.length && checkObjectIDs(images)){
+                    dataUpdate.images = images;
+                } else{
+                    dataUpdate.images = [];
+                }
+
+                if (!isNaN(status)) {
+                    dataUpdate.status = Number(status)
+                }
+    
+                if (!isNaN(type)) {
+                    dataUpdate.type = Number(type)
+                }
+
+                if (!isNaN(rating)) {
+                    dataUpdate.rating = Number(rating)
+                }
+
+                let infoAfterUpdate = await MEDIA__COMMENT_COLL.findByIdAndUpdate(commentID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại" })
+
+                if(!infoAfterUpdate)
+                    return resolve({
+                        error: true,
+                        message: "Cập nhật thất bại",
+                        keyError: "error_occurred",
+                        status: 422
+                    })
+                
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+       })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: Info comment media
 	 */
+    getInfo({ commentID, select, populates }){
+        return new Promise(async resolve => {
+            try {
+                if (!checkObjectIDs([commentID])) {
+                    return resolve({
+                        error: true,
+                        message: "Tham số commentID không hợp lệ",
+                        keyError: "params_commentID_invalid",
+                        status: 400
+                    })
+                }
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				} else{
+					populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let infoComment = await MEDIA__COMMENT_COLL
+                    .findById(commentID)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+				if (!infoComment) {
+                    return resolve({
+                        error: true,
+                        message: "Comment không tồn tại",
+                        keyError: "comment_not_exists",
+                        status: 400
+                    })
+                }
+
+                return resolve({ error: false, data: infoComment, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+	 * Dev: MinhVH
+	 * Func: List comment media
+	 */
+    getList({ mediaID, goodsID, parentID, limit = 5, lastestID, select, populates, authorID, isLoadAll }) { 
+        return new Promise(async (resolve) => {
+            try {
+                let conditionObj = { };
+                let nextCursor	= null;
+                let sortBy      = null;
+                let keys = ['createAt__-1', '_id__-1']
+
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                }else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(checkObjectIDs(mediaID)) {
+                    conditionObj.media = mediaID
+                }
+                if(checkObjectIDs(goodsID)) {
+                    conditionObj.goods = goodsID
+                }
+                if(checkObjectIDs(parentID)) {
+                    conditionObj.parent = parentID
+                }else{
+                    conditionObj.parent = { $exists: false }
+                }
+
+                if(isNaN(limit) || +limit > 20) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
+                
+                if(isLoadAll) {
+                    let listComments = await MEDIA__COMMENT_COLL
+                        .find({})
+                        .select('author')
+                        .lean(); 
+
+                    return resolve({ error: false, data: listComments, status: 200 });
+                }
+
+				let conditionObjOrg = { ...conditionObj }
+                
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await MEDIA__COMMENT_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+                    sortBy       = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await MEDIA__COMMENT_COLL.find(conditionObj)
+                    .select(select)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await MEDIA__COMMENT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 
     /**
      * Dev: MinhVH
@@ -127,24 +429,7 @@ class Model extends BaseModel {
                         dataSend,
                         web_url: `/media/post/${infoMedia._id}#${infoComment._id}`,
                         env: ENV_DEVICE_WEB_CBS
-                    });
-
-                    // ctx.call(`${CF_DOMAIN_SERVICES.NOTIFICATION}.${CF_ACTIONS_NOTIFICATION.INSERT_NOTIFICATION}`, {
-                    //     content: content || 'Đã gửi 1 bình luận file',
-                    //     receivers: arrReceiver,
-                    //     path: `/media/post/${infoMedia._id}#${infoComment._id}`,
-                    //     languageKey: LANGUAGE_KEYS.CREATE_COMMENT_MEDIA,
-                    //     app: APP_KEYS.MEDIA,
-                    //     mainColl: {
-                    //         kind: "media",
-                    //         item: infoMedia._id
-                    //     },
-                    //     subColl: {
-                    //         kind: "media_comment",
-                    //         item: infoComment._id
-                    //     },
-                    //     type: 1 // InApp (Socket)
-                    // });
+                    })
                 }
 
                 return resolve({ error: false, data: arrReceiver, status: 200 });
@@ -197,489 +482,6 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: dataResponse, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Dev: MinhVH
-     * Func: Create comment media
-     */
-    insert({ mediaID, parentID, content, files, images, authorID, select, populates, bizfullname, ctx }) { 
-        return new Promise(async (resolve) => {
-            try {
-                let dataInsert = {  
-                    media: mediaID,
-                    author: authorID
-                }
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs([mediaID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số mediaID không hợp lệ",
-                        keyError: "params_mediaID_invalid",
-                        status: 400
-                    })
-                }
-
-                if(!checkObjectIDs([authorID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số authorID không hợp lệ",
-                        keyError: "params_authorID_invalid",
-                        status: 400
-                    })
-                }
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				} else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                if(parentID) {
-                    if(!checkObjectIDs([parentID])) {
-                        return resolve({
-                            error: true,
-                            message: "Tham số parentID không hợp lệ",
-                            keyError: "params_parentID_invalid",
-                            status: 400
-                        })
-                    }
-
-                    dataInsert.parent = parentID;
-                }
-
-                const infoMedia = await MEDIA_COLL
-                    .findById(mediaID)
-                    .populate('author', '_id bizfullname image')
-                    .lean();
-
-                if(!infoMedia) {
-                    return resolve({
-                        error: true,
-                        message: "Bài viết không tồn tại",
-                        keyError: "media_not_exists",
-                        status: 400
-                    })
-                }
-
-                content && (dataInsert.content  = content);
-                files   && (dataInsert.files    = files);
-                images  && (dataInsert.images   = images);
-
-                let infoAfterInsert = await this.insertData(dataInsert);
-                if(!infoAfterInsert) {
-                    return resolve({
-                        error: true,
-                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-                        keyError: "error_occurred",
-                        status: 422
-                    })
-                }
-
-                if(parentID){
-                    await MEDIA__COMMENT_COLL.findByIdAndUpdate(parentID, { 
-                        $set: {
-                            lastestReplyID: infoAfterInsert._id
-                        },
-                        $inc: {
-                            amountCommentReply: 1
-                        }
-                    });
-                }
-
-                // Cập nhật số lượng comment
-                await MEDIA_COLL.findByIdAndUpdate(mediaID, {
-                    $inc: {
-                        amountComment: 1
-                    }
-                })
-
-                // Insert notification to DB
-                const infoAfterCreateNoti = await this.createNotification({ 
-                    infoMedia, 
-                    infoComment: infoAfterInsert, 
-                    bizfullname,
-                    authorID,
-                    ctx 
-                });
-                if(infoAfterCreateNoti.error) return resolve(infoAfterCreateNoti);
-
-                infoAfterInsert = await MEDIA__COMMENT_COLL
-                    .findById(infoAfterInsert._id)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
-
-                infoAfterInsert.receivers = infoAfterCreateNoti.data;
-
-                return resolve({ error: false, data: infoAfterInsert, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Dev: MinhVH
-     * Func: Update comment media
-     * Date: 22/02/2022
-     */ 
-    update({ commentID, authorID, content, files, images, select, populates }) {
-        return new Promise(async (resolve) => {
-            try {
-               /**
-                * DECALARTION VARIABLE (1)
-                */
-               let dataUpdate = {};
-
-               /** 
-                * VALIDATION STEP (2)
-                *  - kiểm tra valid từ các input
-                *  - kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                */
-                if(!checkObjectIDs([commentID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số commentID không hợp lệ",
-                        keyError: "params_commentID_invalid",
-                        status: 400
-                    })
-                }
-
-                if(!checkObjectIDs([authorID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số authorID không hợp lệ",
-                        keyError: "params_authorID_invalid",
-                        status: 400
-                    })
-                }
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				} else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-               /**
-                * LOGIC STEP (3)
-                *  3.1: convert type + update name (ví dụ: string -> number)
-                *  3.2: operation database
-                */    
-                content && (dataUpdate.content = content);
-
-                // CẬP NHẬT FILE MỚI
-                if(files.length && checkObjectIDs(files)){
-                    dataUpdate.files = files;
-                } else{
-                    dataUpdate.files = [];
-                }
-
-                // CẬP NHẬT HÌNH ẢNH MỚI
-                if(images.length && checkObjectIDs(images)){
-                    dataUpdate.images = images;
-                } else{
-                    dataUpdate.images = [];
-                }
-
-                let infoAfterUpdate = await MEDIA__COMMENT_COLL.findOneAndUpdate({
-                    _id: commentID,
-                    author: authorID
-                }, dataUpdate);
-
-                if(!infoAfterUpdate) {
-                    return resolve({
-                        error: true,
-                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-                        keyError: "error_occurred",
-                        status: 422
-                    })
-                }
-
-                infoAfterUpdate = await MEDIA__COMMENT_COLL
-                    .findById(commentID)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
-
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-       })
-    }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Delete comment media
-	 */
-	delete({ authorID, commentID }) {
-        return new Promise(async resolve => {
-            try {
-				if(!checkObjectIDs([authorID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số authorID không hợp lệ",
-                        keyError: "params_authorID_invalid",
-                        status: 400
-                    })
-                }
-
-                if(!checkObjectIDs([commentID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số commentID không hợp lệ",
-                        keyError: "params_commentID_invalid",
-                        status: 400
-                    })
-                }
-
-                let infoComment = await MEDIA__COMMENT_COLL
-                    .findOne({ _id: commentID, author: authorID })
-                    .lean();
-
-                if(!infoComment) {
-                    return resolve({
-                        error: true,
-                        message: "Comment không tồn tại hoặc bạn không phải người tạo comment",
-                        keyError: "comment_not_exists_or_you_are_not_author_of_comment",
-                        status: 400
-                    })
-                }
-
-				let infoCommentAfterDelete = await MEDIA__COMMENT_COLL.findByIdAndDelete(commentID);
-
-				if (!infoCommentAfterDelete) {
-                    return resolve({
-                        error: true,
-                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-                        keyError: "error_occurs",
-                        status: 422
-                    })
-				}
-
-                if(infoComment.parent){
-                    // Cập nhật số lượng comment reply trong comment cha
-                    await MEDIA__COMMENT_COLL.findByIdAndUpdate(infoComment.parent, {
-                        $inc: {
-                            amountCommentReply: -1
-                        }
-                    })
-                }
-
-                // Cập nhật số lượng comment trong media
-                await MEDIA_COLL.findByIdAndUpdate(infoComment.media, {
-                    $inc: {
-                        amountComment: -1
-                    }
-                })
-
-				return resolve({ 
-					error: false,
-					status: 200,
-					data: infoCommentAfterDelete
-				});
-			} catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: Info comment media
-	 */
-    getInfo({ commentID, select, populates }){
-        return new Promise(async resolve => {
-            try {
-                if (!checkObjectIDs([commentID])) {
-                    return resolve({
-                        error: true,
-                        message: "Tham số commentID không hợp lệ",
-                        keyError: "params_commentID_invalid",
-                        status: 400
-                    })
-                }
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				} else{
-					populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                let infoComment = await MEDIA__COMMENT_COLL
-                    .findById(commentID)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
-
-				if (!infoComment) {
-                    return resolve({
-                        error: true,
-                        message: "Comment không tồn tại",
-                        keyError: "comment_not_exists",
-                        status: 400
-                    })
-                }
-
-                return resolve({ error: false, data: infoComment, status: 200 });
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-	 * Dev: MinhVH
-	 * Func: List comment media
-	 */
-    getList({ mediaID, parentID, limit = 5, lastestID, select, populates, authorID, isLoadAll }) { 
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let conditionObj = { media: mediaID };
-                let keys = ['createAt__-1', '_id__-1']
-                let sortBy = {
-					createAt: -1,
-					_id: -1,
-				};
-
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs([mediaID])) {
-                    return resolve({
-						error: true, 
-						message: 'Tham số mediaID không hợp lệ', 
-						keyError: 'params_mediaID_invalid',
-						status: 400
-					});
-                }
-
-                if(isNaN(limit) || +limit > 20) {
-					limit = 20;
-				} else{
-					limit = +limit;
-				}
-
-                if(checkObjectIDs([parentID])){
-                    conditionObj.parent = parentID;
-                } else{
-                    conditionObj.parent = { $exists: false };
-                }
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				} else{
-					populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                if(isLoadAll) {
-                    let listComments = await MEDIA__COMMENT_COLL
-                        .find({})
-                        .select('author')
-                        .lean(); 
-
-                    return resolve({ error: false, data: listComments, status: 200 });
-                }
-
-				let conditionObjOrg = { ...conditionObj };
-                if(lastestID && checkObjectIDs(lastestID)){
-					let infoData = await MEDIA__COMMENT_COLL.findById(lastestID);
-					if(!infoData)
-						return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
-
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-					if(!dataPagingAndSort || dataPagingAndSort.error)
-						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-
-                    conditionObj  = dataPagingAndSort.data.find;
-					sortBy        = dataPagingAndSort.data.sort;
-				} else{
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-					sortBy        = dataPagingAndSort.data.sort;
-                }
-
-                let infoDataAfterGet = await MEDIA__COMMENT_COLL
-                    .find(conditionObj)
-                    .limit(limit + 1)
-                    .sort(sortBy)
-                    .select(select)
-                    .populate(populates)
-                    .lean(); 
-
-                if(!infoDataAfterGet) {
-                    return resolve({
-                        error: true,
-                        message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-                        keyError: "error_occurs",
-                        status: 422
-                    })
-                }
-
-                let totalRecord  = await MEDIA__COMMENT_COLL.count(conditionObjOrg);
-                let dataResponse = await this.responseDataComment({ authorID, comments: infoDataAfterGet });
-                let totalPage    = Math.ceil(totalRecord / limit);
-                let nextCursor	= null;
-
-                if(dataResponse.error) return resolve(dataResponse);
-
-                if(infoDataAfterGet && infoDataAfterGet.length){
-                    if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
-                        infoDataAfterGet.length = limit;
-                    }
-                }
-
-                return resolve({ error: false, data: {
-                    listRecords: dataResponse?.data || infoDataAfterGet,
-                    limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor,
-                }, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

@@ -608,8 +608,7 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let nextCursor	= null;
                 let sortBy      = null;
-                let keys	 = ['project__1', '_id__1'];
-                // let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['createAt__1', '_id__1'];
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))

@@ -19,6 +19,13 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
         type: Number,
         default: 1
     },
+    /**
+     * Phân loại
+     */
+    type: {
+        type: Number,
+        default: 1
+    },
     //_______Ngày sinh
     birthday: { type: Date, default: Date.now },
     //_________Giới tính(1-nam/ 2 - nữ/3-khác)
