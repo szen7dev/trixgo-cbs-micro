@@ -26,7 +26,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  insert({ companyID, userID, name, note, goodsID }) {
+  insert({ companyID, userID, name, note, goodsID, status, thumbnailID, imagesID }) {
     return new Promise(async (resolve) => {
         try {
             let dataInsert = { 
@@ -35,6 +35,20 @@ class Model extends BaseModel {
               name,
               note,
               goods: goodsID
+            }
+
+            if (!isNaN(status)) {
+                dataInsert.status = Number(status)
+            }
+
+            if(imagesID && imagesID.length) {
+                dataInsert.$addToSet = {
+                    images: imagesID,
+                }
+
+                if(!checkObjectIDs(thumbnailID)){
+                    dataInsert.thumbnail = imagesID[0];
+                }
             }
 
             let infoAfterInsert = await this.insertData(dataInsert);
@@ -53,7 +67,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  update({ userID, questionID, name, note }) {
+  update({ userID, questionID, name, note, status, thumbnailID, imagesID }) {
       return new Promise(async (resolve) => {
           try {
             const info = await MEDIA_QUESTION_COLL.findById(questionID)
@@ -77,6 +91,20 @@ class Model extends BaseModel {
 
             if (note && note != '') {
                 dataUpdate.note = note;
+            }
+
+            if (!isNaN(status)) {
+                dataUpdate.status = Number(status)
+            }
+
+            if(imagesID && imagesID.length) {
+                dataUpdate.$addToSet = {
+                    images: imagesID,
+                }
+
+                if(!checkObjectIDs(thumbnailID)){
+                    dataUpdate.thumbnail = imagesID[0];
+                }
             }
 
             let infoAfterUpdate = await MEDIA_QUESTION_COLL.findByIdAndUpdate(questionID, dataUpdate, { new: true });
