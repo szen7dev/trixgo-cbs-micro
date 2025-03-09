@@ -38,7 +38,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID, fundaID, nods, date }){
+	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage }){
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")
@@ -153,6 +153,30 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
+                if(description && description != ""){
+                    dataInsert.description = description;
+                }
+                if(features && features != ""){
+                    dataInsert.features = features;
+                }
+                if(ingredients && ingredients != ""){
+                    dataInsert.ingredients = ingredients;
+                }
+                if(benefits && benefits != ""){
+                    dataInsert.benefits = benefits;
+                }
+                if(instructions && instructions != ""){
+                    dataInsert.instructions = instructions;
+                }
+                if(sideEffects && sideEffects != ""){
+                    dataInsert.sideEffects = sideEffects;
+                }
+                if(warnings && warnings != ""){
+                    dataInsert.warnings = warnings;
+                }
+                if(storage && storage != ""){
+                    dataInsert.storage = storage;
+                }
 
                 if(convertID && checkObjectIDs(convertID)){
                     dataInsert.convert = convertID;
@@ -198,7 +222,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date }){
+	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage }){
         return new Promise(async resolve => {
             try {
 				let info = await ITEM__GOODS_COLL.findById(goodsID)
@@ -316,6 +340,30 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataUpdate.note = note;
+                }
+                if(description && description != ""){
+                    dataUpdate.description = description;
+                }
+                if(features && features != ""){
+                    dataUpdate.features = features;
+                }
+                if(ingredients && ingredients != ""){
+                    dataUpdate.ingredients = ingredients;
+                }
+                if(benefits && benefits != ""){
+                    dataUpdate.benefits = benefits;
+                }
+                if(instructions && instructions != ""){
+                    dataUpdate.instructions = instructions;
+                }
+                if(sideEffects && sideEffects != ""){
+                    dataUpdate.sideEffects = sideEffects;
+                }
+                if(warnings && warnings != ""){
+                    dataUpdate.warnings = warnings;
+                }
+                if(storage && storage != ""){
+                    dataUpdate.storage = storage;
                 }
 
                 if(convertID && checkObjectIDs(convertID)){
