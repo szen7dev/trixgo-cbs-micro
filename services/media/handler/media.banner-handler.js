@@ -58,8 +58,8 @@ module.exports = {
         auth: "required",
         params: {
             bannerID  : { type: "string" },
-            name: { type: "string" },
-            slug: { type: "string" },
+            name: { type: "string", optional: true },
+            slug: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
