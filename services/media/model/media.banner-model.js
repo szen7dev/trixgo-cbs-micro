@@ -97,6 +97,14 @@ class Model extends BaseModel {
                 dataUpdate.$addToSet = {
                     images: imagesID,
                 }
+
+                if(!checkObjectIDs(thumbnailID)){
+                    dataUpdate.thumbnail = imagesID[0];
+                }
+            }
+
+            if (checkObjectIDs(thumbnailID)) {
+                dataUpdate.thumbnail = thumbnailID;
             }
 
             if(name && name != ""){
@@ -121,10 +129,6 @@ class Model extends BaseModel {
 
             if (!isNaN(type)) {
                 dataUpdate.type = Number(type)
-            }
-
-            if (checkObjectIDs(thumbnailID)) {
-                dataUpdate.thumbnail = thumbnailID;
             }
 
             let infoAfterUpdate = await MEDIA_BANNER_COLL.findByIdAndUpdate(bannerID, dataUpdate, { new: true });
