@@ -25,10 +25,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, type, status, challenge, contactID, name, note } = ctx.params;
+                let { optionSeller, type, status, challenge, duration, contactID, name, note, date } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -37,7 +37,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, type, status, challenge, contactID, name, note })
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, type, status, challenge, duration, contactID, name, note, date })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -54,19 +54,17 @@ module.exports = {
     update: {
         params: {
             habitID             : { type: "string" },
-            members             : { type: "array", optional: true },
-            admins              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { habitID, type, status, challenge, name, note, imagesID } = ctx.params;
+                let { habitID, type, status, challenge, duration, name, note, date, imagesID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.update({ userID, habitID, type, status, challenge, name, note, imagesID });
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.update({ userID, habitID, type, status, challenge, duration, name, note, date, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -124,7 +122,7 @@ module.exports = {
                 let { optionSeller, habitID, contactID, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){

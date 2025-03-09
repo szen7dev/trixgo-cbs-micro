@@ -28,9 +28,13 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
     },
     //_________Số ngày thử thách
     challenge: { type: Number, default: 0 },
+    //_________Thời lượng thực hiện hàng ngày (phút)
+    duration: { type: Number, default: 0 },
     //________Nội dung
     name: String,
     namecv: String,
+    //_______Ngày bắt đầu
+    date: { type: Date, default: Date.now },
     //________Ghi chú
     note: String,
     //_________Hình ảnh

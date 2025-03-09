@@ -42,7 +42,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, type, status, challenge, contactID, name, note }) {
+    insert({ userID, companyID, type, status, challenge, duration, contactID, name, note, date }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(contactID))
@@ -67,12 +67,20 @@ class Model extends BaseModel {
                     dataInsert.challenge = Number(challenge)
                 }
 
+                if (!isNaN(duration)) {
+                    dataInsert.duration = Number(duration)
+                }
+
                 if(name && name != ""){
                     dataInsert.name = name;
                 }
     
                 if(note && note != ""){
                     dataInsert.note = note;
+                }
+
+                if(date && date != ""){
+                    dataInsert.date = date;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert)
@@ -91,7 +99,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ userID, habitID, type, status, challenge, name, note, imagesID }){
+    update({ userID, habitID, type, status, challenge, duration, name, note, date, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -117,12 +125,20 @@ class Model extends BaseModel {
                     dataUpdate.challenge = Number(challenge)
                 }
 
+                if (!isNaN(duration)) {
+                    dataUpdate.duration = Number(duration)
+                }
+
                 if(name && name != ""){
                     dataUpdate.name = name;
                 }
     
                 if(note && note != ""){
                     dataUpdate.note = note;
+                }
+
+                if(date && date != ""){
+                    dataUpdate.date = date;
                 }
 
                 let infoAfterUpdate = await CRM_HABIT_COLL.findByIdAndUpdate(habitID, dataUpdate, { new: true })
@@ -146,7 +162,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ habitID, userID, select, populates }) {
+    getInfo({ habitID, select, populates }) {
         return new Promise(async (resolve) => {
             try {                
                 if(populates && typeof populates === 'string'){
