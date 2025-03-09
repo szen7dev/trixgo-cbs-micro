@@ -64,12 +64,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { bannerID, type, name, note, slug, expired, thumbnailID, status } = ctx.params;
+                const { bannerID, type, name, note, slug, expired, thumbnailID, status, imagesID } = ctx.params;
                 console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_BANNER_MODEL.update({ userID, bannerID, type, name, note, slug, expired, thumbnailID, status });
+                const resultAfterCallHandler = await MEDIA_BANNER_MODEL.update({ userID, bannerID, type, name, note, slug, expired, thumbnailID, status, imagesID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
