@@ -51,7 +51,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, status, name, note, expired, productsID }) {
+    insert({ userID, companyID, name, note, slug, expired }) {
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")
@@ -59,15 +59,22 @@ class Model extends BaseModel {
 
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
+                    userCreate: userID, 
                     company: companyID,
-                    userCreate: userID,
-                    name,
                 }
 
+                if(name && name != ""){
+                    dataInsert.name = name;
+                }
+    
+                if(slug && slug != ""){
+                    dataInsert.slug = slug;
+                }
+    
                 if(note && note != ""){
                     dataInsert.note = note;
                 }
-
+    
                 if(expired && expired != ""){
                     dataInsert.expired = expired;
                 }
@@ -88,9 +95,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ comboID, userID, companyID, status, name, note, expired, productsID }){
+    update({ comboID, userID, type, status, name, note, slug, expired, productsID }){
         return new Promise(async (resolve) => {
-            const that = this
             try {
                 let dataUpdate = {
                     userUpdate: userID,
@@ -107,14 +113,22 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = dataAddToset;
                 }
 
-                if(!isNaN(status) && [1,2].includes(Number(status))){
-                    dataUpdate.status = status;
+                if (!isNaN(status)) {
+                    dataUpdate.status = Number(status)
+                }
+    
+                if (!isNaN(type)) {
+                    dataUpdate.type = Number(type)
                 }
 
                 if(name && name != ""){
                     dataUpdate.name = name;
                 }
 
+                if(slug && slug != ""){
+                    dataUpdate.slug = slug;
+                }
+    
                 if(note && note != ""){
                     dataUpdate.note = note;
                 }
@@ -122,7 +136,6 @@ class Model extends BaseModel {
                 if(expired && expired != ""){
                     dataUpdate.expired = expired;
                 }
-
                 // console.log(dataUpdate)
 
                 let infoAfterUpdate = await CRM_COMBO_COLL.findByIdAndUpdate(comboID, dataUpdate, { new: true })

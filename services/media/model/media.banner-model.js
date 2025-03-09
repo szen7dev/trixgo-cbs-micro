@@ -27,14 +27,12 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  insert({ companyID, userID, type, name, slug, thumbnailID }) {
+  insert({ companyID, userID, type, name, note, slug, expired, thumbnailID }) {
     return new Promise(async (resolve) => {
         try {
             let dataInsert = { 
               company: companyID,
               userCreate: userID, 
-              name,
-              slug,
             }
 
             if (!isNaN(type)) {
@@ -43,6 +41,22 @@ class Model extends BaseModel {
 
             if (checkObjectIDs(thumbnailID)) {
                 dataInsert.thumbnail = thumbnailID;
+            }
+
+            if(name && name != ""){
+                dataInsert.name = name;
+            }
+
+            if(slug && slug != ""){
+                dataInsert.slug = slug;
+            }
+
+            if(note && note != ""){
+                dataInsert.note = note;
+            }
+
+            if(expired && expired != ""){
+                dataInsert.expired = expired;
             }
 
             let infoAfterInsert = await this.insertData(dataInsert);
@@ -61,7 +75,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  update({ userID, bannerID, type, name, slug, thumbnailID, status}) {
+  update({ userID, bannerID, type, name, note, slug, expired, thumbnailID, status}) {
       return new Promise(async (resolve) => {
           try {
             const info = await MEDIA_BANNER_COLL.findById(bannerID)
@@ -77,8 +91,26 @@ class Model extends BaseModel {
             let dataUpdate = { 
                 userUpdate: userID, 
                 modifyAt: new Date(),
-                name,
-                slug,
+            }
+
+            if(name && name != ""){
+                dataUpdate.name = name;
+            }
+
+            if(slug && slug != ""){
+                dataUpdate.slug = slug;
+            }
+
+            if(note && note != ""){
+                dataUpdate.note = note;
+            }
+
+            if(expired && expired != ""){
+                dataUpdate.expired = expired;
+            }
+
+            if (!isNaN(status)) {
+                dataUpdate.status = Number(status)
             }
 
             if (!isNaN(type)) {
@@ -87,10 +119,6 @@ class Model extends BaseModel {
 
             if (checkObjectIDs(thumbnailID)) {
                 dataUpdate.thumbnail = thumbnailID;
-            }
-
-            if (!isNaN(status)) {
-                dataUpdate.status = Number(status)
             }
 
             let infoAfterUpdate = await MEDIA_BANNER_COLL.findByIdAndUpdate(bannerID, dataUpdate, { new: true });

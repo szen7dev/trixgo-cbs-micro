@@ -20,10 +20,14 @@ module.exports  = DATABASE_MIDDLEWARE("media_banner", {
         type: Number,
         default: 1 
     },
-    //_________Name
+    //_________Tên
     name: String,
-    //_________Link
+    //_________Slug/URL
     slug: String,
+    //_________Thời hạn
+    expired: Date,
+    //________Ghi chú
+    note: String,
     //________Trạng thái (1-Active|2-Hủy)
     status: {
         type: Number,

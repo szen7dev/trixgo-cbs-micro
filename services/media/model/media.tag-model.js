@@ -26,13 +26,28 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  insert({ companyID, userID, name }) {
+  insert({ companyID, userID, name, note, slug, expired }) {
     return new Promise(async (resolve) => {
         try {
             let dataInsert = { 
               company: companyID,
               userCreate: userID, 
-              name
+            }
+
+            if(name && name != ""){
+                dataInsert.name = name;
+            }
+
+            if(slug && slug != ""){
+                dataInsert.slug = slug;
+            }
+
+            if(note && note != ""){
+                dataInsert.note = note;
+            }
+
+            if(expired && expired != ""){
+                dataInsert.expired = expired;
             }
 
             let infoAfterInsert = await this.insertData(dataInsert);
@@ -51,7 +66,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  update({ userID, tagID, name, status }) {
+  update({ userID, type, tagID, name, note, slug, expired, status }) {
       return new Promise(async (resolve) => {
           try {
             const info = await MEDIA_TAG_COLL.findById(tagID)
@@ -69,12 +84,28 @@ class Model extends BaseModel {
                 modifyAt: new Date() ,
             }
 
-            if (name && name != '') {
+            if(name && name != ""){
                 dataUpdate.name = name;
+            }
+
+            if(slug && slug != ""){
+                dataUpdate.slug = slug;
+            }
+
+            if(note && note != ""){
+                dataUpdate.note = note;
+            }
+
+            if(expired && expired != ""){
+                dataUpdate.expired = expired;
             }
 
             if (!isNaN(status)) {
                 dataUpdate.status = Number(status)
+            }
+
+            if (!isNaN(type)) {
+                dataUpdate.type = Number(type)
             }
 
             let infoAfterUpdate = await MEDIA_TAG_COLL.findByIdAndUpdate(tagID, dataUpdate, { new: true });
