@@ -58,20 +58,20 @@ module.exports = {
      */
     update: {
         params: {
-            trackID      : { type: "string" },
+            surveyID      : { type: "string" },
             members             : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { surveyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
 
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_SURVEY_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID });
+                let resultAfterCallHandler = await CRM_SURVEY_MODEL.update({ surveyID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -114,7 +114,7 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            trackID       : { type: "string", optional: true },
+            surveyID       : { type: "string", optional: true },
             contactID       : { type: "string", optional: true },
 
             // Field mặc định
@@ -127,7 +127,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, trackID, contactID, month, year, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, surveyID, contactID, month, year, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 console.log(ctx.params)
@@ -139,9 +139,9 @@ module.exports = {
                     companyID = company?._id
                 }
                 let resultAfterCallHandler;
-                if(trackID){
+                if(surveyID){
                     resultAfterCallHandler = await CRM_SURVEY_MODEL.getInfo({
-                        trackID, userID, select, populates
+                        surveyID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await CRM_SURVEY_MODEL.getList({

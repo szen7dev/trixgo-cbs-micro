@@ -124,6 +124,9 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
+                if(phone && phone != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(phone)
+                }
                 dataInsert.namecv = convertStr
 
                 let infoAfterInsert = await this.insertData(dataInsert)
@@ -451,6 +454,9 @@ class Model extends BaseModel {
                 }
                 if(note && note != ""){
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(phone && phone != ""){
+                    convertStr = convertStr + " " + stringUtils.removeAccents(phone)
                 }
                 dataUpdate.namecv = convertStr
 

@@ -167,7 +167,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }){
+    update({ surveyID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID }){
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -233,7 +233,7 @@ class Model extends BaseModel {
 
                 // console.log(dataUpdate)
 
-                let infoAfterUpdate = await CRM_SURVEY_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
+                let infoAfterUpdate = await CRM_SURVEY_COLL.findByIdAndUpdate(surveyID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
                     return resolve({
                         error: true,
@@ -325,7 +325,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ trackID, userID, select, populates }) {
+    getInfo({ surveyID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {                
                 if(populates && typeof populates === 'string'){
@@ -340,7 +340,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await CRM_SURVEY_COLL.findById(trackID)
+                let infoAterGet = await CRM_SURVEY_COLL.findById(surveyID)
                 .select(select)
                 .populate(populates)
 
