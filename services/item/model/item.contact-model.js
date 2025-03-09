@@ -1082,7 +1082,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ option, companyID, userID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month, ctx }) {
+    getList({ option, companyID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month }) {
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -1104,7 +1104,6 @@ class Model extends BaseModel {
                     let listContacts = contacts.map(item => ObjectID(item._id))
 
                     conditionObj.nestedParents = { $in: listContacts }
-                    // conditionObj.nestedParents = {$in: [listContacts[0]]}
                 }else if (option && option == 2) {
                     conditionObj.nestedParents = { $in: [ObjectID(uplineID)] }
                 }

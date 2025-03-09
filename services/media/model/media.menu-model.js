@@ -82,7 +82,7 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  update({ userID, menuID, name, slug, order, type, status, imagesID }) {
+  update({ userID, menuID, name, slug, order, type, status, thumbnailID, imagesID }) {
       return new Promise(async (resolve) => {
           try {
             // Kiểm tra xem tên có bị trùng hay không
@@ -109,6 +109,10 @@ class Model extends BaseModel {
             let dataUpdate = { 
                 userUpdate: userID, 
                 modifyAt: new Date() 
+            }
+
+            if (checkObjectIDs(thumbnailID)) {
+                dataUpdate.thumbnail = thumbnailID;
             }
 
             if(imagesID && imagesID.length) {
