@@ -51,6 +51,11 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
         type: Number,
         default: 1
     },
+    //_________Thumbnail
+    thumbnail: {
+        type: Schema.Types.ObjectId,
+        ref: 'file'
+    },
     //_________Hình ảnh
     images: [{
         type: Schema.Types.ObjectId,
