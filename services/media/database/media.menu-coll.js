@@ -37,6 +37,10 @@ module.exports  = DATABASE_MIDDLEWARE("media_menu", {
     name: String,
     //_________Slug/URL
     slug: String,
+    //_________Thời hạn
+    expired: Date,
+    //________Ghi chú
+    note: String,
     //_________Thứ tự hiển thị
     order: {
         type: Number,

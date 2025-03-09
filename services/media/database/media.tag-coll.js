@@ -14,8 +14,21 @@ module.exports  = DATABASE_MIDDLEWARE("media_tag", {
         type: Number,
         default: 1
     },
+    /**
+     * Phân loại
+     */
+    type: {
+        type: Number,
+        default: 1
+    },
     //_________Tên
     name: String,
+    //_________Slug/URL
+    slug: String,
+    //_________Thời hạn
+    expired: Date,
+    //________Ghi chú
+    note: String,
     //_________Hình ảnh
     images: [{
         type: Schema.Types.ObjectId,

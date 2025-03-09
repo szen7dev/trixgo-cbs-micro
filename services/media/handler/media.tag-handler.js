@@ -22,14 +22,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { name } = ctx.params;
+                let { name, note, slug, expired } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await MEDIA_TAG_MODEL.insert({
-                    companyID: company._id, userID, name
+                    companyID: company._id, userID, name, note, slug, expired
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -54,12 +54,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { tagID, name, status } = ctx.params;
-                // console.log(ctx.params)
+                const { tagID, type, status, name, note, slug, expired } = ctx.params;
+                console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await MEDIA_TAG_MODEL.update({ userID, tagID, name, status });
+                const resultAfterCallHandler = await MEDIA_TAG_MODEL.update({ userID, tagID, type, status, name, note, slug, expired });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -117,7 +117,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { tagID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
