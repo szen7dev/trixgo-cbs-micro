@@ -193,12 +193,11 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getList({ companyID, parentID, status, keyword, limit, lastestID, populates, select, sortKey }) {
+  getList({ companyID, isParent, parentID, status, keyword, limit, lastestID, populates, select, sortKey }) {
       return new Promise(async (resolve) => {
           try {
               let sortBy;
               let conditionObj = { };
-            //   let keys = ['createAt__-1', '_id__-1'];
               let keys = ['createAt__1', '_id__1'];
 
               if (limit > 50) {
@@ -229,7 +228,10 @@ class Model extends BaseModel {
               if (checkObjectIDs(parentID)) {
                 conditionObj.parent = parentID;
               } else {
-                conditionObj.company = companyID;
+                    conditionObj.company = companyID;
+                if(isParent){
+                    conditionObj.parent = {$exists: false};
+                }
               }
 
              if (!isNaN(status)) {
