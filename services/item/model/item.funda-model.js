@@ -210,7 +210,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ userID, fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
+	update({ userID, fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, thumbnailID, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -297,6 +297,10 @@ class Model extends BaseModel {
                     dataAddToset = {
                         ...dataAddToset,
                         images: imagesID
+                    }
+
+                    if(!checkObjectIDs(thumbnailID)){
+                        dataUpdate.thumbnail = imagesID[0];
                     }
                 }
 

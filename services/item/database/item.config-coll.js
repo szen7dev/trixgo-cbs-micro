@@ -68,6 +68,16 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
     tiktok: String,
     //_________Shopee
     shopee: String,
+    //_________Address
+    address: String,
+    //_________phone
+    phone: String,
+    //_________email
+    email: String,
+    //_________content
+    content: String,
+    //_________registration 
+    registration: String,
     //_________QR1 (app Mobile)
     qrcode1: {
         type: Schema.Types.ObjectId,
