@@ -194,11 +194,14 @@ class Model extends BaseModel {
    * Date: 9/4/2022
    */
   getList({ companyID, isParent, parentID, status, keyword, limit, lastestID, populates, select, sortKey }) {
+    // console.log()
       return new Promise(async (resolve) => {
           try {
               let sortBy;
               let conditionObj = { };
-              let keys = ['createAt__1', '_id__1'];
+            //   let keys = ['createAt__1', '_id__1'];
+              let keys	 = ['order__1', '_id__1'];
+              // sortKey = ["order__1", "_id__1"] (khai báo trên post man)
 
               if (limit > 50) {
                   limit = 50
@@ -224,6 +227,7 @@ class Model extends BaseModel {
 
                   keys = JSON.parse(sortKey);
               }
+            //   console.log(keys)
 
               if (checkObjectIDs(parentID)) {
                 conditionObj.parent = parentID;
@@ -243,7 +247,7 @@ class Model extends BaseModel {
                   keyword = '.*' + keyword.join(".*") + '.*';
                   conditionObj.name = RegExp(keyword, 'i');
               }
-            //   console.log(conditionObj)
+              console.log(conditionObj)
 
               let conditionObjOrg = { ...conditionObj };
 
