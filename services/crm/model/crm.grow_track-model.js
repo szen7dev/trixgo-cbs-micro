@@ -128,10 +128,201 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
-                /**
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Update
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
+    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID }){
+        return new Promise(async (resolve) => {
+            try {
+                let dataUpdate = {
+                    userUpdate: userID,
+                    modifyAt: Date.now(),
+                }
+
+                if(imagesID && imagesID.length) {
+                    dataUpdate.$addToSet = {
+                        images: imagesID,
+                    }
+    
+                    if(!checkObjectIDs(thumbnailID)){
+                        dataUpdate.thumbnail = imagesID[0];
+                    }
+                }
+
+                if(!isNaN(status) && [1,2].includes(Number(status))){
+                    dataUpdate.status = status;
+                }
+
+                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
+                    dataUpdate.gender = gender;
+                }
+
+                if(!isNaN(height)){
+                    dataUpdate.height = height;
+                }
+
+                if(!isNaN(weight)){
+                    dataUpdate.weight = weight;
+                }
+
+                if(checkObjectIDs(contactID)){
+                    dataUpdate.contact = contactID;
+                }
+
+                if(birthday && birthday != ""){
+                    dataUpdate.birthday = birthday;
+                }
+
+                let convertStr = ''
+                if(name && name != ""){
+                    dataUpdate.name = name;
+                    convertStr = stringUtils.removeAccents(name)
+                }
+                if(phone && phone != ""){
+                    dataUpdate.phone = phone;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(phone)
+                }
+                if(note && note != ""){
+                    dataUpdate.note = note;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(facebook && facebook != ""){
+                    dataUpdate.facebook = facebook;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(facebook)
+                }
+                if(tiktok && tiktok != ""){
+                    dataUpdate.tiktok = tiktok;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
+                }
+                dataUpdate.namecv = convertStr
+
+                let infoAfterUpdate = await CRM__GROW_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
+                if(!infoAfterUpdate) {
+                    return resolve({
+                        error: true,
+                        message: "Cannot update",
+                        keyError: "cannot_update",
+                    })
+                }
+
+                return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Remove
+     * Author: HiepNH
+     * Code: 22/3/2024
+     */
+    remove({ arraysRemove, userID }) {
+        const that = this
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(arraysRemove)) {
+                    return resolve({ error: true, message: 'Yêu cầu không hợp lệ', status: 200 });
+                }
+
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049cffdebf77b072d1b14",
+                    userID
+                })
+
+                if(!infoAppUser.error && infoAppUser.data.level == 0){
+                    let info = await CRM__GROW_TRACK_COLL.findById(arraysRemove[0])
+
+                    const result = await CRM__GROW_TRACK_COLL.deleteMany({
+                        _id: { $in: arraysRemove },
+                        // userCreate: userID,
+                        // $or: [
+                        //     { userCreate: userID },
+                        //     { admins: { $in: [userID] } }
+                        // ]
+                    })
+
+                    if(result.deletedCount !== arraysRemove.length) {
+                        return resolve({
+                            error: true,
+                            message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
+                            status: 200
+                        });
+                    }
+
+                    // Cập nhật số nhân sự bảng lương
+                    if(info && info.parent){
+                        let numberOfHuman = await CRM__GROW_TRACK_COLL.count({parent: info?.parent})
+                        if(numberOfHuman){
+                            await CRM__GROW_TRACK_COLL.findByIdAndUpdate(info?.parent, {
+                                userUpdate: userID,
+                                modifyAt: Date.now(),
+                                numberOfHuman
+                            }, { new: true })
+                        }
+                    }
+
+                    /**
+                     * CẬP NHẬT VÀO BẢNG LƯƠNG CHA
+                     */
+                    if(info.parent && checkObjectIDs(info.parent)){
+                        await that.updateValue({ expertSalaryID: info.parent, userID })
+                    }
+
+                    return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });
+                }else{
+                    return resolve({
+                        error: true,
+                        message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
+                        status: 200
+                    });
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name: get info expert timesheet
+     * Author: Depv
+     * Code:
+     */
+    getInfo({ trackID, userID, select, populates }) {
+        return new Promise(async (resolve) => {
+            try {                
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                }else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                let infoAterGet = await CRM__GROW_TRACK_COLL.findById(trackID)
+                .select(select)
+                .populate(populates)
+
+                if(!infoAterGet)
+                    return resolve({ error: true, message: "can't_get_info", status: 403 })
+
+                 /**
                  * TÍNH TOÁN KẾT QUẢ TRẢ VỀ BIỂU ĐỒ ĐO CAO
                  */
-                let ageHeightNow = [
+                 let ageHeightNow = [
                     {age: 1, height: 90},
                     {age: 2, height: 91},
                     {age: 3, height: 93},
@@ -361,213 +552,26 @@ class Model extends BaseModel {
                     {age: 20, height: 110},
                 ]
 
-                return resolve({ error: false, data: infoAfterInsert, growTrack: {
-                    ageHeightNow, 
-                    ageHeightP3,
-                    ageHeightP5,
-                    ageHeightP10,
-                    ageHeightP25,
-                    ageHeightP50,
-                    ageHeightP75,
-                    ageHeightP90,
-                    ageHeightP95,
-                    ageHeightP97,
-                    hdfs: -1, // Height Deviation from Standard
-                    whoHS: 105,
-                    wdfs: 2, // Weight Deviation from Standard
-                    whoWS: 28,
-                } });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
-     * Name: Update
-     * Author: HiepNH
-     * Code: 22/11/2023
-     */
-    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID }){
-        return new Promise(async (resolve) => {
-            try {
-                let dataUpdate = {
-                    userUpdate: userID,
-                    modifyAt: Date.now(),
-                }
-
-                if(imagesID && imagesID.length) {
-                    dataUpdate.$addToSet = {
-                        images: imagesID,
-                    }
-    
-                    if(!checkObjectIDs(thumbnailID)){
-                        dataUpdate.thumbnail = imagesID[0];
-                    }
-                }
-
-                if(!isNaN(status) && [1,2].includes(Number(status))){
-                    dataUpdate.status = status;
-                }
-
-                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
-                    dataUpdate.gender = gender;
-                }
-
-                if(!isNaN(height)){
-                    dataUpdate.height = height;
-                }
-
-                if(!isNaN(weight)){
-                    dataUpdate.weight = weight;
-                }
-
-                if(checkObjectIDs(contactID)){
-                    dataUpdate.contact = contactID;
-                }
-
-                if(birthday && birthday != ""){
-                    dataUpdate.birthday = birthday;
-                }
-
-                let convertStr = ''
-                if(name && name != ""){
-                    dataUpdate.name = name;
-                    convertStr = stringUtils.removeAccents(name)
-                }
-                if(phone && phone != ""){
-                    dataUpdate.phone = phone;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(phone)
-                }
-                if(note && note != ""){
-                    dataUpdate.note = note;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
-                if(facebook && facebook != ""){
-                    dataUpdate.facebook = facebook;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(facebook)
-                }
-                if(tiktok && tiktok != ""){
-                    dataUpdate.tiktok = tiktok;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
-                }
-                dataUpdate.namecv = convertStr
-
-                let infoAfterUpdate = await CRM__GROW_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
-                if(!infoAfterUpdate) {
-                    return resolve({
-                        error: true,
-                        message: "Cannot update",
-                        keyError: "cannot_update",
-                    })
-                }
-
-                return resolve({ error: false, data: infoAfterUpdate });
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
-
-    /**
-     * Name: Remove
-     * Author: HiepNH
-     * Code: 22/3/2024
-     */
-    remove({ arraysRemove, userID }) {
-        const that = this
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(arraysRemove)) {
-                    return resolve({ error: true, message: 'Yêu cầu không hợp lệ', status: 200 });
-                }
-
-                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                    appID: "61e049cffdebf77b072d1b14",
-                    userID
+                return resolve({ error: false, 
+                    data: infoAterGet, 
+                    growTrack: {
+                        ageHeightNow, 
+                        ageHeightP3,
+                        ageHeightP5,
+                        ageHeightP10,
+                        ageHeightP25,
+                        ageHeightP50,
+                        ageHeightP75,
+                        ageHeightP90,
+                        ageHeightP95,
+                        ageHeightP97,
+                        hdfs: -1, // Height Deviation from Standard
+                        whoHS: 105,
+                        wdfs: 2, // Weight Deviation from Standard
+                        whoWS: 28,
+                    },
+                    status: 200 
                 })
-
-                if(!infoAppUser.error && infoAppUser.data.level == 0){
-                    let info = await CRM__GROW_TRACK_COLL.findById(arraysRemove[0])
-
-                    const result = await CRM__GROW_TRACK_COLL.deleteMany({
-                        _id: { $in: arraysRemove },
-                        // userCreate: userID,
-                        // $or: [
-                        //     { userCreate: userID },
-                        //     { admins: { $in: [userID] } }
-                        // ]
-                    })
-
-                    if(result.deletedCount !== arraysRemove.length) {
-                        return resolve({
-                            error: true,
-                            message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
-                            status: 200
-                        });
-                    }
-
-                    // Cập nhật số nhân sự bảng lương
-                    if(info && info.parent){
-                        let numberOfHuman = await CRM__GROW_TRACK_COLL.count({parent: info?.parent})
-                        if(numberOfHuman){
-                            await CRM__GROW_TRACK_COLL.findByIdAndUpdate(info?.parent, {
-                                userUpdate: userID,
-                                modifyAt: Date.now(),
-                                numberOfHuman
-                            }, { new: true })
-                        }
-                    }
-
-                    /**
-                     * CẬP NHẬT VÀO BẢNG LƯƠNG CHA
-                     */
-                    if(info.parent && checkObjectIDs(info.parent)){
-                        await that.updateValue({ expertSalaryID: info.parent, userID })
-                    }
-
-                    return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });
-                }else{
-                    return resolve({
-                        error: true,
-                        message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
-                        status: 200
-                    });
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
-     * Name: get info expert timesheet
-     * Author: Depv
-     * Code:
-     */
-    getInfo({ trackID, userID, select, populates }) {
-        return new Promise(async (resolve) => {
-            try {                
-                if(populates && typeof populates === 'string'){
-                    if(!IsJsonString(populates))
-                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-                    populates = JSON.parse(populates);
-                }else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                let infoAterGet = await CRM__GROW_TRACK_COLL.findById(trackID)
-                .select(select)
-                .populate(populates)
-
-                if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 })
-
-                return resolve({ error: false, data: infoAterGet, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
