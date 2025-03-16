@@ -297,7 +297,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 7/3/2025
      */
-    bestSeller({ companyID, limit = 10, select, populates= {} }) {
+    bestSeller({ companyID, option, categoryID, limit = 10, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -307,10 +307,15 @@ class Model extends BaseModel {
                 }
 
                 let conditionObj = {
-                    company: companyID,
                     usage: 2,
                 }
                 let sortBy = {quantitySold: -1};
+
+                if(!option){
+                    conditionObj.company = companyID
+                }else{
+                    conditionObj.category = categoryID
+                }
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -323,7 +328,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-
                 // console.log(conditionObj)
 
                 let infoDataAfterGet = await ITEM__GOODS_COLL.find(conditionObj)

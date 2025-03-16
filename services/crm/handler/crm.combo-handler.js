@@ -163,7 +163,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, limit, select, populates } = ctx.params;
+                let { optionSeller, option, categoryID, limit, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -175,7 +175,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await CRM_COMBO_MODEL.bestSeller({
-                    companyID, limit, select, populates
+                    companyID, option, categoryID, limit, select, populates
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
