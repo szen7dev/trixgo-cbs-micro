@@ -140,7 +140,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee }){
+    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration }){
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(configID) )
@@ -213,6 +213,26 @@ class Model extends BaseModel {
 
                 if(shopee && shopee != ""){
                     dataUpdate.shopee = shopee
+                }
+
+                if(address && address != ""){
+                    dataUpdate.address = address
+                }
+
+                if(phone && phone != ""){
+                    dataUpdate.phone = phone
+                }
+
+                if(email && email != ""){
+                    dataUpdate.email = email
+                }
+
+                if(content && content != ""){
+                    dataUpdate.content = content
+                }
+
+                if(registration && registration != ""){
+                    dataUpdate.registration = registration
                 }
 
                 if (!isNaN(type)) {

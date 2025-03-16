@@ -354,6 +354,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
         type: Schema.Types.ObjectId,
         ref : "user"
     }],
+    //_________Thumbnail
+    thumbnail: {
+        type: Schema.Types.ObjectId,
+        ref: 'file'
+    },
     //_________Ảnh đại diện
     images: [{
         type: Schema.Types.ObjectId,
