@@ -58,6 +58,8 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
     bankName: String,
     //_________Swift code ngân hàng
     bankSwiftCode: String,
+    //_________Note
+    note: String,
     //_______Ngày sinh
     birthDay: {
         type   : Date,

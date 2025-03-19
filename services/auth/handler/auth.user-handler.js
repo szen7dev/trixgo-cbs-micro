@@ -174,7 +174,6 @@ module.exports = {
                 console.log({ email, codeReset })
 
                 const result = await AUTH__USER_MODEL.checkOTPRecoverPassword({ email, codeReset });
-                console.log(result)
                 return result;
             } catch (error) {
                 return { error: true, message: error.message };
@@ -564,14 +563,14 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID, company } = ctx.meta.infoUser;
-                const { email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse } = ctx.params;
+                const { email, fullname, level, departmentID, positionID, companyID, phone, note, birthDay, storageUse } = ctx.params;
 
                 if(!companyID){
                     companyID = company._id
                 }
 
                 const resultAfterCallHandler = await AUTH__USER_MODEL.insert({
-                    userID, email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse
+                    userID, email, fullname, level, departmentID, positionID, companyID, phone, note, birthDay, storageUse
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -616,7 +615,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    userID, resetPass, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
+                    userID, resetPass, currentPass, newPass, email, fullname, phone, note, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
                     companyID, departmentID, positionID, level, status, startingTime, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode
                 } = ctx.params;
@@ -630,7 +629,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await AUTH__USER_MODEL.update({
-                    userID, resetPass, currentPass, newPass, email, fullname, phone, birthDay, gender, lang, image, signature,
+                    userID, resetPass, currentPass, newPass, email, fullname, phone, note, birthDay, gender, lang, image, signature,
                     sendRequestToFriendID, acceptFriendRequestID, removeFriendRequestID, unFriendID, groupDefault,
                     companyID, departmentID, positionID, level, status, company, startingTime, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode, ctx
                 });
