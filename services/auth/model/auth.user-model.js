@@ -1652,9 +1652,9 @@ class Model extends BaseModel {
 	 * Func: Hàm cập nhật thông tin
 	 * Date: 14/01/2022
 	 */
-    update({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, startingTime, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode, ctx }) {
+    update({ userID, resetPass, currentPass, newPass, email, phone, note, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, startingTime, storageUse, bankName, bankAccountNumber, bankAccountName, bankSwiftCode, ctx }) {
         // console.log('====================>>>>>>>>>>>>>>>>>>>>')
-        // console.log({ userID, resetPass, currentPass, newPass, email, phone, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, bankName, bankAccount, bank })
+        // console.log({ userID, resetPass, currentPass, newPass, email, phone, note, birthDay, gender, lang, image, signature, level, fullname, status, groupDefault, companyID, departmentID, positionID, storageUse, bankName, bankAccount, bank })
         return new Promise(async (resolve) => {
             try {
                 if(!ObjectID.isValid(userID)) {
@@ -1696,6 +1696,10 @@ class Model extends BaseModel {
 
                 if(phone){
                     dataUpdate.phone = phone;
+                }
+
+                if(note){
+                    dataUpdate.note = note;
                 }
 
                 if(birthDay){
