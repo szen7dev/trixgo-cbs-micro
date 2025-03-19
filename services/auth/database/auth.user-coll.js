@@ -80,11 +80,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type: Schema.Types.ObjectId,
         ref : "position"
     },
-    //_________Link với Danh bạ
-    linkContact: {
-        type: Schema.Types.ObjectId,
-        ref: "contact"
-    },
     //_______Link với các danh bạ của các phân vùng: quản lý thông tin, bảng lương/tài chính
     contacts: [{
         type: Schema.Types.ObjectId,
@@ -142,13 +137,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : Date,
         default: null
     },
-	/**
-     * Danh sách pin cuộc hội thoại
-    */
-	conversationsPin: [{
-        type: Schema.Types.ObjectId,
-        ref: 'message_conversation'
-    }],
     /**
      * Cấu hình hiển thị view mặc định ở trang chủ
      * 1: Giao diện Gmail (chung cho cấp nhân viên)
@@ -164,21 +152,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
         type   : String,
         default: "vn"
     },
-    //_______Yêu cầu gửi đi tới người khác(Mình gửi đi)
-    sendToFriends: [{
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
-    //_______Yêu cầu nhận được từ người khác gửi đến(Người khác gửi đến)
-    receiveFromFriends: [{
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
-    //_______Danh sách bạn bè
-    friends: [{
-        type: Schema.Types.ObjectId,
-        ref: 'user'
-    }],
     /**
      * Dung lượng sử dụng trong tất cả các ứng dụng
      * khi record của các ứng dụng insert file thì sẽ ++ (increment)
@@ -209,13 +182,6 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
             default: 1
         }
     }],
-    /**
-     * Group default để chọn khi tạo chủ đề
-     */
-    groupDefault: {
-        type: Schema.Types.ObjectId,
-        ref: 'pcm_plan_group'
-    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
