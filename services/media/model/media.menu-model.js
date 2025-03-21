@@ -96,15 +96,17 @@ class Model extends BaseModel {
                 });
             }
 
-            let checkName = await MEDIA_MENU_COLL.findOne({
-                company: info.company,
-                name: name.trim(),
-                _id: {
-                    $ne: menuID
-                }
-                });
-            if(checkName)
-                return resolve({ error: true, message: "name_existed" });
+            if(name && name != ""){
+                let checkName = await MEDIA_MENU_COLL.findOne({
+                    company: info.company,
+                    name: name.trim(),
+                    _id: {
+                        $ne: menuID
+                    }
+                    });
+                if(checkName)
+                    return resolve({ error: true, message: "name_existed" })
+            }
 
             let dataUpdate = { 
                 userUpdate: userID, 
