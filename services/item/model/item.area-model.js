@@ -35,7 +35,6 @@ class Model extends BaseModel {
      * Code: 19/9/2022
      */
     insert({ name, sign, userID, parentID }) {
-        // console.log({ name, sign, userID, parentID })
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -82,7 +81,6 @@ class Model extends BaseModel {
      * Code: 19/9/2022
      */
     update({ areaID, name, sign, userID }){
-        console.log({ areaID, name, sign, userID })
         return new Promise(async (resolve) => {
             try {
                 if(!name || !checkObjectIDs(userID) || !checkObjectIDs(areaID) )
@@ -149,12 +147,8 @@ class Model extends BaseModel {
      * Code  : 
      */
     getList({ keyword, limit = 10, lastestID, select, populates= {} }) { 
-        // console.log({keyword, limit, lastestID, select, populates})
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 if(limit > 20){
                     limit = 20
                 }else{

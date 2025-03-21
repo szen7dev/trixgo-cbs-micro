@@ -5,7 +5,8 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 
 const Schema    = require('mongoose').Schema;
 /**
- *  HÀNG HOÁ, SẢN PHẨM, TÀI SẢN, CÔNG CỤ DỤNG CỤ,...
+ * HÀNG HOÁ, SẢN PHẨM, TÀI SẢN, CÔNG CỤ DỤNG CỤ,...
+ * Bổ sung: Thương hiệu, mã hiệu, dạng bào chế, quy cách, xuất xứ, nhà sản xuất, nước sản xuất
  */
 module.exports  = DATABASE_MIDDLEWARE("goods", {
     //________Công ty
@@ -68,10 +69,10 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Number,
         default : 1
     },
-    //_________Chuyên mục
+    //_________Chuyên mục/Danh mục
     category: {
-        type    : Schema.Types.ObjectId,
-        ref     : 'media_menu'
+        type: Schema.Types.ObjectId,
+        ref : 'media_menu'
     },
     //_________Tên
     name: String,
@@ -186,39 +187,6 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref: "file"
     }],
-    // /**
-    //  * HỆ THỐNG QUẢN LÝ
-    //  */
-    // //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)
-    // // belongSystem: { type: Number, default: 0 },
-    // /**
-    //  * THÔNG TIN CĂN BẢN
-    //  */
-    // //_________Mã link với phân loại chi phí của hệ thống
-    // linkSystem: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: "goods"
-    // },
-    // //_________Có phải là mẫu hay không
-    // template: { type: Number, default: 0 },
-    /**
-     * THÔNG TIN
-     */
-    // //______Sử dụng cho khách hàng (1-Sử dụng, 2-Không)
-    // forCustomer: {
-    //     type: Number,
-    //     default : 1
-    // },
-    // //_________Tác giả
-    // author: {
-    //     type: Schema.Types.ObjectId,
-    //     ref : 'user'
-    // },
-    // //_________Thời lượng (giờ)
-    // duration: { type: Number, default: 0 },
-    /**
-     * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
-     */
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
