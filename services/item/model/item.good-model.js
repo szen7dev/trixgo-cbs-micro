@@ -489,6 +489,23 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: true, $ne: null }
                 }
 
+                // Chỉ lấy danh sách cha hoặc con
+                if(isListParentOfListChilds == 1){
+                    if(parentID){
+                        conditionObj.parent = parentID;
+                    }else{
+                        conditionObj.parent = { $exists: false };
+                    }
+                }
+
+                if(companyID && checkObjectIDs(companyID)){
+                    conditionObj.company = companyID;
+                }
+
+                if(projectID && checkObjectIDs(projectID)){
+                    conditionObj.project = projectID;
+                }
+
                 if(fundaID && checkObjectIDs(fundaID)){
                     conditionObj.fundas = {$in: [fundaID]}
                 }
@@ -537,29 +554,12 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(companyID && checkObjectIDs(companyID)){
-                    conditionObj.company = companyID;
-                }
-
-                if(projectID && checkObjectIDs(projectID)){
-                    conditionObj.project = projectID;
-                }
-
                 if(menuSlug){
 					let infoMenu = await MEDIA__MENU_COLL.findOne({ company: companyID, slug: menuSlug})
 					if(infoMenu){
 						conditionObj.category = infoMenu._id;
 					}
 				}
-
-                // Chỉ lấy danh sách cha hoặc con
-                if(isListParentOfListChilds == 1){
-                    if(parentID){
-                        conditionObj.parent = parentID;
-                    }else{
-                        conditionObj.parent = { $exists: false };
-                    }
-                }
 
                 if(keyword){
                     keyword = stringUtils.removeAccents(keyword)
@@ -568,7 +568,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
