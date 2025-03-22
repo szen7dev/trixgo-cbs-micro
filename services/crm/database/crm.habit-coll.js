@@ -1,5 +1,6 @@
 "use strict";
 
+const { template } = require('lodash');
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
@@ -9,14 +10,21 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Phần tử cha
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: "crm_habit"
+    },
+    level: {
+        type: Number,
+        default: 1 
+    },
     //_________Mã khách
     contact: {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
-    /**
-     * Phân loại
-     */
+    //________Trạng thái (1-Active|2-Hủy)
     type: {
         type: Number,
         default: 1
