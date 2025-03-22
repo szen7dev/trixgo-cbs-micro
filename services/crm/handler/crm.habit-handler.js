@@ -1,13 +1,13 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code')
 const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
  */
-const CRM_HABIT_MODEL            = require('../model/crm.habit-model').MODEL;
+const CRM_HABIT_MODEL            = require('../model/crm.habit-model').MODEL
 
 module.exports = {
 
@@ -18,14 +18,14 @@ module.exports = {
      */
     insert: {
         params: {
-            contactID           : { type: "string" },
             name                : { type: "string" },
+            contactID           : { type: "string", optional: true },
             note                : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, type, status, challenge, duration, contactID, name, note, date } = ctx.params;
+                let { optionSeller, parentID, type, status, challenge, duration, contactID, name, note, date } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -37,7 +37,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, type, status, challenge, duration, contactID, name, note, date })
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, parentID, type, status, challenge, duration, contactID, name, note, date })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {

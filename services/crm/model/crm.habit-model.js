@@ -31,6 +31,8 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 
+const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
+
 class Model extends BaseModel {
 
     constructor() {
@@ -42,17 +44,35 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, type, status, challenge, duration, contactID, name, note, date }) {
+    insert({ userID, companyID, parentID, type, status, challenge, duration, contactID, name, note, date }) {
         return new Promise(async resolve => {
             try {
-                if(!name || !checkObjectIDs(contactID))
-                    return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
-
-                //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     userCreate: userID, 
                     company: companyID,
-                    contact: contactID
+                }
+
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049f6fdebf77b072d1b16", 
+                    userID
+                })
+
+                if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 1){
+                    if(!name || !checkObjectIDs(contactID))
+                        return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name|contactID invalid" })
+                    
+                    dataInsert.contact = contactID
+                }else{
+                    if(!name)
+                        return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
+                }
+
+                if(checkObjectIDs(parentID)){
+                    dataInsert.parent = parentID
+
+                    let infoParent = await CRM_HABIT_COLL.findById(parentID);
+                    dataInsert.parent = parentID;
+                    dataInsert.level = Number(infoParent.level) + 1;
                 }
 
                 if (!isNaN(status)) {
