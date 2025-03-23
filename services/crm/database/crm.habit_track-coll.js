@@ -33,7 +33,7 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit_track", {
     },
     //_________Ngày thực hiện
     date: { type: Date, default: Date.now },
-    //_________Số phút thực hiện
+    //_________Thời lượng (số phút, số gói,...)
     duration: { type: Number, default: 0 },
     //________Nội dung
     name: String,

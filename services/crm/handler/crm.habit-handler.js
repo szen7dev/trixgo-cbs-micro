@@ -79,7 +79,6 @@ module.exports = {
      * Code: 22/3/2024
      */
     remove: {
-        auth: "required",
         params: {
             arraysRemove : { type: "array", optional: true },
         },

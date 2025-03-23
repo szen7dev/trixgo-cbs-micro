@@ -25,7 +25,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, habitID, status, date, name, note, duration } = ctx.params;
+                let { optionSeller, habitID, contactID, status, date, name, note, duration } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -37,7 +37,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.insert({ userID, companyID, habitID, status, date, name, note, duration })
+                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.insert({ userID, companyID, habitID, contactID, status, date, name, note, duration })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -58,7 +58,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {trackID, status, name, note, duration, imagesID } = ctx.params;
+                let { trackID, status, name, note, duration, imagesID } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -73,13 +73,34 @@ module.exports = {
         }
     },
 
+    updateMany: {
+        params: {
+
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { tracks } = ctx.params;
+
+                // console.log(ctx.params)
+
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.updateMany({ companyID: company._id, userID, tracks });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
     /**
      * Name: Remove
      * Author: HiepNH
      * Code: 22/3/2024
      */
     remove: {
-        auth: "required",
         params: {
             arraysRemove : { type: "array", optional: true },
         },
@@ -119,7 +140,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, trackID, habitID, status, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, trackID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
@@ -138,7 +159,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getList({
-                        companyID, habitID, status, keyword, limit, lastestID, select, populates
+                        companyID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates
                     })
                 }
 
