@@ -3350,12 +3350,6 @@ class Model extends BaseModel {
                     }
 
                     else if(type == 3){
-                        // let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                        //     appID: "61e049aefdebf77b072d1b12", 
-                        //     userID
-                        // })
-                        // console.log({infoAppUser})
-
                         let infoVoucher = await FINANCIAL_VOUCHER_COLL.findById(voucherID)
                         .populate({
                             path: 'customer funda',
@@ -3363,9 +3357,11 @@ class Model extends BaseModel {
                         })
 
                         workbook.sheet("Data").row(2).cell(1).value(`Mã hóa đơn: ${infoVoucher.sign}`);
-                        workbook.sheet("Data").row(3).cell(1).value(`Ngày: ${moment(infoVoucher.date).format('DD/MM/YYYY')}`);
+                        workbook.sheet("Data").row(3).cell(1).value(`Ngày: ${moment(infoVoucher.date).format('DD/MM/YYYY HH:mm')}`);
+                        workbook.sheet("Data").row(4).cell(1).value(`Ngày tạo phiếu: ${moment(infoVoucher.createAt).format('DD/MM/YYYY HH:mm')}`);
 
                         workbook.sheet("Data").row(5).cell(1).value(`Người gửi: ${infoVoucher.funda?.name}`);
+                        workbook.sheet("Data").row(6).cell(1).value(`Ngày đóng hàng: ${moment(new Date()).format('DD/MM/YYYY HH:mm')}`);
 
                         workbook.sheet("Data").row(8).cell(1).value(`Người nhận: ${infoVoucher.customer?.name}`);
                         workbook.sheet("Data").row(9).cell(1).value(`${infoVoucher.customer?.address} - ${infoVoucher.customer?.phone}`);
