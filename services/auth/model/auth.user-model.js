@@ -580,21 +580,13 @@ class Model extends BaseModel {
                             // console.log(info2)
                         }else{
                             // console.log("Tạo danh bạ----------")
-                            // console.log({
-                            //     authorID, 
-                            //     fundaID,
-                            //     type: 2, 
-                            //     name: `fullname ${strValid}-${infoCompany.sign}`,
-                            //     phone: strValid, 
-                            //     email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
-                            // })
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 authorID, 
                                 fundaID,
                                 type: 2, 
                                 name: `fullname ${strValid}-${infoCompany.sign}`,
                                 phone: strValid, 
-                                email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
+                                email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
                             })
                             
 
@@ -645,7 +637,7 @@ class Model extends BaseModel {
                             status: 200
                         })
                     }else{
-                        console.log("Tài khoản chưa tồn tại")
+                        // console.log("Tài khoản chưa tồn tại")
                         /**
                          * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
                          * Tạo danh bạ link với tài khoản
@@ -658,7 +650,7 @@ class Model extends BaseModel {
                             bizfullname: `fullname ${strValid}-${infoCompany.sign}`,
                             level: 1,
                             phone: strValid,
-                            email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
+                            email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
                         }
 
                         let infoUserAfterInsert = await this.insertData(dataInsert)
@@ -681,21 +673,13 @@ class Model extends BaseModel {
                             }, { new: true });
                         }else{
                             // console.log("44444444444444444")
-                            // console.log({
-                            //     authorID, 
-                            //     fundaID,
-                            //     type: 2, 
-                            //     name: `fullname ${strValid}-${infoCompany.sign}`,
-                            //     phone: strValid, 
-                            //     email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
-                            // })
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 authorID, 
                                 fundaID,
                                 type: 2, 
                                 name: `fullname ${strValid}-${infoCompany.sign}`,
                                 phone: strValid, 
-                                email: `${strValid}.trx.${infoCompany.sign.toLowerCase()}@gmail.com`
+                                email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
                             })
                             // console.log(infoNewContact)
 
