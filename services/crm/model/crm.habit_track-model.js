@@ -54,9 +54,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Ngày thực hiện không hợp lệ", keyError: "Request params name invalid" })
 
                 const formattedDate = new Date(date);
-                // console.log(formattedDate)
                 let infoTrack = await CRM_HABIT_TRACK_COLL.findOne({ habit: habitID, date: formattedDate })
-                // console.log(infoTrack)
 
                 if(!infoTrack){
                     let dataInsert = {
@@ -147,6 +145,47 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    updateMany({ companyID, userID, tracks }){
+        const that = this
+        return new Promise(async (resolve) => {
+            try {
+                if(tracks && tracks.length){
+                    for(const item of tracks){
+                        // Cập nhật
+                        if(item.trackID && checkObjectIDs(item.trackID)){
+                            await that.update({
+                                userID,
+                                trackID: item.trackID, 
+                                status: item.status, 
+                                name: item.name, 
+                                note: item.note, 
+                                duration: item.duration,
+                            })
+                        }
+
+                        // Tạo mới
+                        else{
+                            await that.insert({
+                                companyID,
+                                userID,
+                                habitID: item.habitID,
+                                date: item.date, 
+                                name: item.name, 
+                                note: item.note, 
+                                duration: item.duration,
+                                status: item.status, 
+                            })
+                        }
+                    }
+                }
+
+                return resolve({ error: false, message: 'Cập nhật thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

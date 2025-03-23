@@ -58,7 +58,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let {trackID, status, name, note, duration, imagesID } = ctx.params;
+                let { trackID, status, name, note, duration, imagesID } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -73,13 +73,34 @@ module.exports = {
         }
     },
 
+    updateMany: {
+        params: {
+
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { tracks } = ctx.params;
+
+                // console.log(ctx.params)
+
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.updateMany({ companyID: company._id, userID, tracks });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
     /**
      * Name: Remove
      * Author: HiepNH
      * Code: 22/3/2024
      */
     remove: {
-        auth: "required",
         params: {
             arraysRemove : { type: "array", optional: true },
         },
