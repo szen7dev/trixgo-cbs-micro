@@ -216,7 +216,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, contactID, status, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, option, contactID, status, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -242,10 +242,15 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(checkObjectIDs(contactID)){
-                    conditionObj.contact = contactID
+                if(!option){
+                    if(checkObjectIDs(contactID)){
+                        conditionObj.contact = contactID
+                    }else{
+                        conditionObj.company = companyID
+                    }
                 }else{
                     conditionObj.company = companyID
+                    conditionObj.parent = { $exists: true, $ne: null }
                 }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){

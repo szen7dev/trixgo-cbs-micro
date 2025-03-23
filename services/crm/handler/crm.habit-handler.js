@@ -107,7 +107,7 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            habitID       : { type: "string", optional: true },
+            habitID         : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -119,7 +119,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, habitID, contactID, status, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, option, habitID, contactID, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
@@ -138,7 +138,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM_HABIT_MODEL.getList({
-                        companyID, contactID, status, keyword, limit, lastestID, select, populates
+                        companyID, option, contactID, status, keyword, limit, lastestID, select, populates
                     })
                 }
 
