@@ -43,7 +43,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, habitID, status, date, name, note, duration }) {
+    insert({ userID, companyID, habitID, contactID, status, date, name, note, duration }) {
         return new Promise(async resolve => {
             try {
                 let infoHabit = await CRM_HABIT_COLL.findById(habitID)
@@ -54,7 +54,17 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Ngày thực hiện không hợp lệ", keyError: "Request params name invalid" })
 
                 const formattedDate = new Date(date);
-                let infoTrack = await CRM_HABIT_TRACK_COLL.findOne({ habit: habitID, date: formattedDate })
+                let condition = {
+                    habit: habitID,
+                    date: formattedDate,
+                    contact: infoHabit.contact
+                }
+
+                if(checkObjectIDs(contactID)){
+                    condition.contact = contactID
+                }
+                
+                let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
 
                 if(!infoTrack){
                     let dataInsert = {
@@ -63,6 +73,10 @@ class Model extends BaseModel {
                         habit: habitID,
                         type: infoHabit.type,
                         contact: infoHabit.contact,
+                    }
+
+                    if(checkObjectIDs(contactID)){
+                        dataInsert.contact = contactID
                     }
     
                     if(name && name != ""){
@@ -175,6 +189,7 @@ class Model extends BaseModel {
                                 companyID,
                                 userID,
                                 habitID: item.habitID,
+                                contactID: item.contactID, 
                                 date: item.date, 
                                 name: item.name, 
                                 note: item.note, 
@@ -231,7 +246,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, habitID, status, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, habitID, contactID, status, date, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -260,12 +275,27 @@ class Model extends BaseModel {
                 if(checkObjectIDs(habitID)){
                     conditionObj.habit = habitID
                 }else{
-                    conditionObj.company = companyID
+                    if(checkObjectIDs(contactID)){
+                        conditionObj.contact = contactID
+                    }else{
+                        conditionObj.company = companyID
+                    }
                 }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     conditionObj.status = status;
                 }
+
+                if (date) {
+                    const inputDate = new Date(date);
+                    const nextDate = new Date(inputDate);
+                    nextDate.setDate(inputDate.getDate() + 1);
+                  
+                    conditionObj.date = {
+                      $gte: inputDate,
+                      $lt: nextDate,
+                    };
+                  }
 
                 if(keyword){
                     keyword = stringUtils.removeAccents(keyword)
@@ -274,8 +304,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
