@@ -226,7 +226,7 @@ class Model extends BaseModel {
 						.select(select)
 						.populate(populates)
 						.lean();
-						console.log(info)
+						// console.log(info)
 
 						if (!info) return resolve({ error: true, message: 'cannot_get' })
 
