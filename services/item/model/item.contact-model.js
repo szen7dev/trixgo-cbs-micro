@@ -34,6 +34,7 @@ const stringUtils = require('../../../tools/utils/string_utils')
 /**
  * COLLECTIONS
  */
+const COMPANY_COLL                      = require('../../auth/database/auth.company-coll')
 const USER_COLL = require('../../auth/database/auth.user-coll')
 const ITEM__FUNDA_COLL = require('../database/item.funda-coll')
 const ITEM__DEPARTMENT_COLL = require('../database/item.department-coll')
@@ -935,6 +936,82 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Author: HiepNH
+     * Func: Lấy ID theo số điện thoại
+     * Date: 26/3/2025
+     */
+    getIdByPhone({ phone, companyID, fundaID }) {
+        const that = this
+        return new Promise(async resolve => {
+            try {
+                // Hàm kiểm tra Phone
+                const strValid = phone.toLowerCase().trim();      
+                function isValidVietnamPhoneNumber(str) {
+                    const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                    return phoneRegex.test(str);
+                }
+                // console.log(isValidVietnamPhoneNumber(strValid))
+
+                if(!isValidVietnamPhoneNumber(strValid))
+                    return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
+
+                let authorID = "6046c63b2c1dc33996dd97e7" // Trợ lý viên sàn ECOM: FIX
+
+                if(checkObjectIDs(companyID)){
+                    let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
+                    if(infoFunda){
+                        fundaID = infoFunda._id
+                    }
+                }else{
+                    companyID = "6046c63a2c1dc33996dd9762" // Phân vùng set làm Sàn TMĐT (Medgo): FIX
+                    fundaID = "670c4e1de5851300129f80c5" // Cơ sở sàn Ecom: FIX
+                }
+
+                let infoCompany = await COMPANY_COLL.findById(companyID)
+                if(infoCompany){
+                    // Kiểm tra Danh bạ xem tồn tại hay chưa
+                    let infoContact = await ITEM__CONTACT_COLL.findOne({
+                        company: companyID, 
+                        phone: strValid
+                    })
+                    .select('_id name phone')
+
+                    if(infoContact){
+                        return resolve({
+                            error: false,
+                            contactID: infoContact._id,
+                            status: 200
+                        })
+                    }else{
+                        let infoNewContact = await that.insert({
+                            authorID, 
+                            fundaID,
+                            type: 2, 
+                            name: `fullname ${strValid}-${infoCompany.sign}`,
+                            phone: strValid, 
+                            email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
+                        })
+
+                        if(infoNewContact){
+                            return resolve({
+                                error: false,
+                                contactID: infoNewContact.data._id,
+                                status: 200
+                            })
+                        }else{
+                            return resolve({ error: true, message: "Không lấy được dữ liệu" })
+                        }
+                    }
+                }else{
+                    return resolve({ error: true, message: "Không lấy được dữ liệu" })
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

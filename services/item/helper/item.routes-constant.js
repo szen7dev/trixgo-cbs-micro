@@ -48,6 +48,7 @@ const CF_ROUTINGS_ITEM = {
     // ================================CONTACT==========================================//
     CONTACT_REGISTER                           : `${BASE_ROUTE}${CONTACT}/register`,
     CONTACTS                                   : `${BASE_ROUTE}${CONTACT}`,
+    CONTACT_GET_ID_BY_PHONE   				   : `${BASE_ROUTE}${CONTACT}/get-id-by-phone`,
     CONTACTS_PRODUCT_GET_LIST_BY_PROPERTY      : `${BASE_ROUTE}${CONTACT}/get-list-by-property`,
     CONTACTS_GET_LIST_BY_FILTER                : `${BASE_ROUTE}${CONTACT}/filter-human`,
     CONTACTS_GET_LIST_OF_SYSTEM                : `${BASE_ROUTE}${CONTACT}/contact-of-system`,
