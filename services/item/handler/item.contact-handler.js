@@ -187,6 +187,33 @@ module.exports = {
     },
 
     /**
+     * Author: HiepNH
+     * Func: Lấy ID theo số điện thoại
+     * Date: 26/3/2025
+     */
+    getIdByPhone: {
+        params: {
+            phone: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { optionSeller, phone } = ctx.params;
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }
+
+                const infoUser = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, ctx });
+                return infoUser;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
 	 * Code:  Depv
 	 * Name Danh sách contact
 	 */
