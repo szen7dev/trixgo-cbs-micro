@@ -1,7 +1,8 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
+const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code')
+const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
@@ -205,7 +206,7 @@ module.exports = {
                     companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
                 }
 
-                const infoUser = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, ctx });
+                const infoUser = await ITEM__CONTACT_MODEL.getIdByPhone({ phone, companyID });
                 return infoUser;
             } catch (error) {
                 return { error: true, message: error.message };
