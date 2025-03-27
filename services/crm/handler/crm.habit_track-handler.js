@@ -2,7 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
-const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
+const { OPTION_SELLERS, OPTION_COMMON_HABITS }  = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
@@ -49,7 +49,7 @@ module.exports = {
     /**
      * Name: Update
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 25/3/2025
      */
     update: {
         params: {
@@ -73,20 +73,33 @@ module.exports = {
         }
     },
 
+    /**
+     * Name: updateMany
+     * Author: HiepNH
+     * Code: 27/3/2025
+     */
     updateMany: {
         params: {
-
+            contactID             : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { tracks } = ctx.params;
+                let { optionSeller, date, contactID, tracks } = ctx.params;
 
                 // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.updateMany({ companyID: company._id, userID, tracks });
+                let companyID, commonHabitID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                    commonHabitID = OPTION_COMMON_HABITS[Number(optionSeller) - 1].habit
+                }else{
+                    companyID = company?._id
+                }
+
+                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.updateMany({ companyID, userID, commonHabitID, date, contactID, tracks });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -145,9 +158,10 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
 
-                let companyID
+                let companyID, commonHabitID
                 if(optionSeller){
                     companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                    commonHabitID = OPTION_COMMON_HABITS[Number(optionSeller) - 1].habit
                 }else{
                     companyID = company?._id
                 }
@@ -159,7 +173,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getList({
-                        companyID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates
+                        companyID, commonHabitID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates
                     })
                 }
 

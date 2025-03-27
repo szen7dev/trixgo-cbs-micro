@@ -44,6 +44,8 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     insert({ userID, companyID, habitID, contactID, status, date, name, note, duration }) {
+        // console.log('==========================================')
+        // console.log({ userID, companyID, habitID, contactID, status, date, name, note, duration })
         return new Promise(async resolve => {
             try {
                 let infoHabit = await CRM_HABIT_COLL.findById(habitID)
@@ -98,6 +100,7 @@ class Model extends BaseModel {
                     if (!isNaN(duration)) {
                         dataInsert.duration = Number(duration)
                     }
+                    // console.log({dataInsert})
     
                     let infoAfterInsert = await this.insertData(dataInsert)
                     if(!infoAfterInsert)
@@ -120,6 +123,8 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ trackID, userID, status, name, note, duration, imagesID }){
+        // console.log('==========================================')
+        // console.log({ trackID, userID, status, name, note, duration, imagesID })
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -148,6 +153,7 @@ class Model extends BaseModel {
                 if (!isNaN(duration)) {
                     dataUpdate.duration = Number(duration)
                 }
+                // console.log({dataUpdate})
 
                 let infoAfterUpdate = await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
@@ -165,15 +171,49 @@ class Model extends BaseModel {
         })
     }
 
-    updateMany({ companyID, userID, tracks }){
+    /**
+     * Name: updateMany
+     * Author: HiepNH
+     * Code: 27/3/2025
+     */
+    updateMany({ companyID, userID, commonHabitID, date, contactID, tracks }){
         const that = this
         return new Promise(async (resolve) => {
             try {
                 if(tracks && tracks.length){
+                    let commonHabitTrackID
+
+                    // Tạo Track cho Parent trước: nếu chưa tồn tại
+                    const formattedDate = new Date(date);
+                    let condition = {
+                        habit: commonHabitID,
+                        date: formattedDate,
+                        contact: contactID
+                    }
+                    // console.log(condition)
+                    
+                    let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
+                    if(!infoTrack){
+                        let infocommonHabitTrack = await that.insert({ userID, companyID, habitID: commonHabitID, contactID, date, name: 'HABIT TỔNG HỢP' })
+                        if(infocommonHabitTrack){
+                                commonHabitTrackID = infocommonHabitTrack.data._id
+                        }
+                    }else{
+                        commonHabitTrackID = infoTrack._id
+                    }
+                    // console.log({commonHabitTrackID})
+
+                    // Cập nhật cho Habit thành phần
+                    let checkStatusAll = 0
                     for(const item of tracks){
+                        if(Number(item.status) === 1){
+                            checkStatusAll++
+                        }
+
                         // Cập nhật
                         if(item.trackID && checkObjectIDs(item.trackID)){
-                            await that.update({
+                            // console.log('1111111111111111')
+                            let info1 = await that.update({
                                 userID,
                                 trackID: item.trackID, 
                                 status: item.status, 
@@ -181,22 +221,35 @@ class Model extends BaseModel {
                                 note: item.note, 
                                 duration: item.duration,
                             })
+                            // console.log(info1)
                         }
 
                         // Tạo mới
                         else{
-                            await that.insert({
+                            // console.log('2222222222222222222')
+                            let info1 = await that.insert({
                                 companyID,
                                 userID,
                                 habitID: item.habitID,
-                                contactID: item.contactID, 
-                                date: item.date, 
+                                contactID, 
+                                date, 
                                 name: item.name, 
                                 note: item.note, 
                                 duration: item.duration,
                                 status: item.status, 
                             })
+                            // console.log(info1)
                         }
+                    }
+                    // console.log({checkStatusAll})
+
+                    // Cập nhật trạng thái Thực hiện Habit cha: Hoàn thành
+                    if(checkStatusAll == 0){
+                        await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(commonHabitTrackID, {
+                            userUpdate: userID,
+                            modifyAt: Date.now(),
+                            status: 2,
+                        }, { new: true })
                     }
                 }
 
@@ -246,7 +299,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, habitID, contactID, status, date, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, commonHabitID, habitID, contactID, status, date, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -255,7 +308,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = { };
+                let conditionObj = { company: companyID };
                 let nextCursor	= null;
                 let sortBy      = null;
                 let keys	 = ['createAt__1', '_id__1'];
@@ -275,11 +328,13 @@ class Model extends BaseModel {
                 if(checkObjectIDs(habitID)){
                     conditionObj.habit = habitID
                 }else{
-                    if(checkObjectIDs(contactID)){
-                        conditionObj.contact = contactID
-                    }else{
-                        conditionObj.company = companyID
+                    if(checkObjectIDs(commonHabitID)){
+                        conditionObj.habit = commonHabitID
                     }
+                }
+                
+                if(checkObjectIDs(contactID)){
+                    conditionObj.contact = contactID
                 }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
@@ -304,7 +359,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 

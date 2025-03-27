@@ -26,7 +26,7 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit_track", {
         type: Number,
         default: 1
     },
-    //________Trạng thái (1-Active/Hoàn thành|2-Hủy/Khởi tạo)
+    //________Trạng thái (1-Khởi tạo|2-Hoàn thành)
     status: {
         type: Number,
         default: 1
