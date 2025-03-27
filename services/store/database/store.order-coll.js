@@ -123,6 +123,16 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     date: { type: Date, default: Date.now },
     //_________Tới ngày
     toDate: { type: Date, default: Date.now },
+    //_________Thời gian dự kiến bắt giao hàng (start) // ETA = Estimated Time of Arrival
+    deliveryStartETA: { type: Date },
+    //_________Thời gian dự kiến kết thúc giao hàng (start) // ETA = Estimated Time of Arrival
+    deliveryEndETA: { type: Date },
+    //_________Thời gian xử lý đơn hàng
+    processingTime: { type: Date },
+    //_________Thời gian bắt đầu giao hàng
+    deliveryStartTime: { type: Date },
+    //_________Thời gian nhận hàng
+    deliveredTime: { type: Date },
     /**
      * Khách biết tên hay vãng lai
      * 1-Biết tên

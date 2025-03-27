@@ -104,6 +104,14 @@ exports.OPTION_SELLERS = [
     { value: 5, company: '6046c63a2c1dc33996dd9762' }, // TMĐT ECOM
 ]
 
+exports.OPTION_COMMON_HABITS = [
+    { value: 1, habit: '67df509fdcede10012f790c5' }, // Kiểm thử
+    { value: 2, habit: '67df509fdcede10012f790c5' }, // Winggo
+    { value: 3, habit: '67df509fdcede10012f790c5' }, // EL2
+    { value: 4, habit: '67df509fdcede10012f790c5' }, // Việt Nguyên Clinic
+    { value: 5, habit: '67df509fdcede10012f790c5' }, // TMĐT ECOM
+]
+
 exports.ITEM_ACCOUNTS = [
     { 
         name: 111, description: 'Tiền mặt',
