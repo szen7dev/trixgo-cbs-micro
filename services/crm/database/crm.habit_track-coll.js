@@ -26,7 +26,7 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit_track", {
         type: Number,
         default: 1
     },
-    //________Trạng thái (1-Active/Hoàn thành|2-Hủy/Khởi tạo)
+    //________Trạng thái (1-Khởi tạo|2-Hoàn thành)
     status: {
         type: Number,
         default: 1
@@ -35,6 +35,8 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit_track", {
     date: { type: Date, default: Date.now },
     //_________Thời lượng (số phút, số gói,...)
     duration: { type: Number, default: 0 },
+    //_________% hoàn thành (max = 100)
+    percentage: { type: Number, default: 0, max: 100 },
     //________Nội dung
     name: String,
     namecv: String,
