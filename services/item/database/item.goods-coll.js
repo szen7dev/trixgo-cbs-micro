@@ -125,6 +125,12 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     rating: { type: Number, default: 0 },
     //_________Số lượng đánh giá
     numberOfRating: { type: Number, default: 0 },
+    //_________Số lượng đánh giá 1*
+    numberOfRating1: { type: Number, default: 0 },
+    numberOfRating2: { type: Number, default: 0 },
+    numberOfRating3: { type: Number, default: 0 },
+    numberOfRating4: { type: Number, default: 0 },
+    numberOfRating5: { type: Number, default: 0 },
     //_________Số lượng comment
     amountComment: { type: Number, default: 0 },
     //_________Giảm giá

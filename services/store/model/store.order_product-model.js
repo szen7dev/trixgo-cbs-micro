@@ -226,7 +226,7 @@ class Model extends BaseModel {
                         },
                     ])
                     if(listData && listData.length){
-                        dataUpdate.amount = Number(listData[0].amount),
+                        dataUpdate.amount = Number(listData[0].amount)
                         dataUpdate.history = `${info?.history} | ${new Date()}, U_${userID}, Thành tiền: ${Number(listData[0].amount)}`
                     }
     

@@ -131,7 +131,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { 
-                    commentID, mediaID, goodsID, parentID, limit, lastestID, select, populates, isLoadAll
+                    commentID, mediaID, goodsID, parentID, rating, limit, lastestID, select, populates
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -143,7 +143,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA__COMMENT_MODEL.getList({
-                        mediaID, goodsID, parentID, limit, lastestID, select, populates, authorID, isLoadAll
+                        mediaID, goodsID, parentID, rating, limit, lastestID, select, populates
                     });
                 }
 
