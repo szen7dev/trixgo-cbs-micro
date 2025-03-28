@@ -21,6 +21,11 @@ module.exports  = DATABASE_MIDDLEWARE("media_tag", {
         type: Number,
         default: 1
     },
+    //_________Bài viết thuộc Tag
+    posts: [{
+        type: Schema.Types.ObjectId,
+        ref: "media"
+    }],
     //_________Tên
     name: String,
     //_________Slug/URL
