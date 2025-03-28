@@ -100,11 +100,13 @@ class Model extends BaseModel {
                         userUpdate: userID,
                         modifyAt: new Date()
                     }
-    
+                    
+                    // Tổng hợp các đánh giá sản phẩm
                     let listData = await MEDIA__COMMENT_COLL.aggregate([
                         {
                             $match: {
                                 goods: ObjectID(goodsID),
+                                type: 2,
                             }
                         },
                         {
@@ -288,7 +290,7 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment media
 	 */
-    getList({ mediaID, goodsID, parentID, limit = 5, lastestID, select, populates, rating }) { 
+    getList({ mediaID, goodsID, status, type, rating, parentID, limit = 5, lastestID, select, populates }) { 
         return new Promise(async (resolve) => {
             try {
                 let conditionObj = { };
@@ -325,6 +327,14 @@ class Model extends BaseModel {
                     conditionObj.parent = parentID
                 }else{
                     conditionObj.parent = { $exists: false }
+                }
+
+                if (!isNaN(status) && Number(status) > 0) {
+                    conditionObj.status = Number(status);
+                }
+
+                if (!isNaN(type) && Number(type) > 0) {
+                    conditionObj.type = Number(type);
                 }
 
                 if (!isNaN(rating) && Number(rating) > 0) {
