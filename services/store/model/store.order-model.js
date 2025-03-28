@@ -213,7 +213,7 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
             }
 
             // Trừ tích điểm
-            if (!isNaN(credit) && Number(credit) >= 0) {
+            if (!isNaN(credit) && Number(credit) > 0) {
                 
                 let creditRound = 0
                 // Fix việc bị hack FE
