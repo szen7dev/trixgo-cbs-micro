@@ -1,7 +1,8 @@
 /**
  * TOOLS
  */
-const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code.js');
+const { renderStatusCodeAndResponse } = require('../../../tools/utils/status_code.js')
+const { OPTION_SELLERS }              = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
@@ -24,7 +25,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { name, note, slug, expired } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -54,7 +55,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { tagID, type, status, name, note, slug, expired, thumbnailID, imagesID } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
@@ -114,11 +115,18 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { tagID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { optionSeller, tagID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
 
                 let resultAfterCallHandler;
                 if (tagID) {
@@ -126,7 +134,7 @@ module.exports = {
                         tagID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await MEDIA_TAG_MODEL.getList({ companyID: company._id, keyword, limit, lastestID, select, populates, sortKey });
+                    resultAfterCallHandler = await MEDIA_TAG_MODEL.getList({ companyID, keyword, limit, lastestID, select, populates, sortKey });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
