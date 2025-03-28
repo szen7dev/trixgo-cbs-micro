@@ -197,6 +197,14 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
             // Giảm giá trực tiếp theo đơn hàng/theo sản phẩm
             if(!isNaN(salesoff)){
                 amount = Number(amount) - Number(salesoff)
+
+                if (Number(amount) <= Number(salesoff)) {
+                    dataInsert.salesoff = Number(amount)
+                    amount = 0
+                } else {
+                    dataInsert.salesoff = Number(salesoff)
+                    amount = Number(amount) - Number(salesoff)
+                }
             }
 
             // Trừ tích điểm
