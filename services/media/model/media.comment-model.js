@@ -1,6 +1,8 @@
 "use strict";
 
 const BaseModel                         = require('../../../tools/db/base_model');
+const ObjectID                          = require('mongoose').Types.ObjectId;
+
 const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 }      = require('../../../tools/cursor_base/playground/index');
 const { CF_DOMAIN_SERVICES }            = require('../../gateway/helper/domain.constant');
@@ -94,20 +96,75 @@ class Model extends BaseModel {
                 }
 
                 if(checkObjectIDs(goodsID)) {
-                    if (!isNaN(rating)) {
-                        await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, {
-                            $inc: {
-                                numberOfRating: 1,
-                                amountComment: 1,
-                            }
-                        })
-                    }else{
-                        await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, {
-                            $inc: {
-                                amountComment: 1
-                            }
-                        })
+                    let dataUpdate = {
+                        userUpdate: userID,
+                        modifyAt: new Date()
                     }
+    
+                    let listData = await MEDIA__COMMENT_COLL.aggregate([
+                        {
+                            $match: {
+                                goods: ObjectID(goodsID),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: "$rating",
+                                total: { $sum: 1 },
+                            }
+                        },
+                    ])
+                    
+                    let numberOfRating=0, rating=0, numberOfRating1=0, numberOfRating2=0, numberOfRating3=0, numberOfRating4=0, numberOfRating5=0
+                    for (const item of listData) {
+                        switch (item._id) {
+                          case 1:
+                            numberOfRating1 = item.total;
+                            break;
+                          case 2:
+                            numberOfRating2 = item.total;
+                            break;
+                          case 3:
+                            numberOfRating3 = item.total;
+                            break;
+                          case 4:
+                            numberOfRating4 = item.total;
+                            break;
+                          case 5:
+                            numberOfRating5 = item.total;
+                            break;
+                        }
+                    }
+                    numberOfRating = Number(numberOfRating1 + numberOfRating2 + numberOfRating3 + numberOfRating4 + numberOfRating5)
+
+                    rating = Number(Number(numberOfRating1 * 1) + Number(numberOfRating2 * 2) + Number(numberOfRating3 * 3) + Number(numberOfRating4 * 4) + Number(numberOfRating5 * 5))/numberOfRating
+
+                    dataUpdate.numberOfRating1 = Number(numberOfRating1)
+                    dataUpdate.numberOfRating2 = Number(numberOfRating2)
+                    dataUpdate.numberOfRating3 = Number(numberOfRating3)
+                    dataUpdate.numberOfRating4 = Number(numberOfRating4)
+                    dataUpdate.numberOfRating5 = Number(numberOfRating5)
+
+                    dataUpdate.numberOfRating = Number(numberOfRating)
+                    dataUpdate.rating = Number(rating).toFixed(2)
+
+                    // Cập nhật số lượng comment
+                    await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, {
+                        $inc: {
+                            amountComment: 1
+                        }
+                    })
+
+                    // Cập nhật rating
+                    await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, {
+                        rating,
+                        numberOfRating,
+                        numberOfRating1,
+                        numberOfRating2,
+                        numberOfRating3,
+                        numberOfRating4,
+                        numberOfRating5,
+                    })
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
@@ -231,13 +288,19 @@ class Model extends BaseModel {
 	 * Dev: MinhVH
 	 * Func: List comment media
 	 */
-    getList({ mediaID, goodsID, parentID, limit = 5, lastestID, select, populates, authorID, isLoadAll }) { 
+    getList({ mediaID, goodsID, parentID, limit = 5, lastestID, select, populates, rating }) { 
         return new Promise(async (resolve) => {
             try {
                 let conditionObj = { };
                 let nextCursor	= null;
                 let sortBy      = null;
                 let keys = ['createAt__-1', '_id__-1']
+
+                if(isNaN(limit) || +limit > 20) {
+					limit = 20;
+				} else{
+					limit = +limit;
+				}
 
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
@@ -257,26 +320,18 @@ class Model extends BaseModel {
                 if(checkObjectIDs(goodsID)) {
                     conditionObj.goods = goodsID
                 }
+
                 if(checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID
                 }else{
                     conditionObj.parent = { $exists: false }
                 }
 
-                if(isNaN(limit) || +limit > 20) {
-					limit = 20;
-				} else{
-					limit = +limit;
-				}
-                
-                if(isLoadAll) {
-                    let listComments = await MEDIA__COMMENT_COLL
-                        .find({})
-                        .select('author')
-                        .lean(); 
-
-                    return resolve({ error: false, data: listComments, status: 200 });
+                if (!isNaN(rating) && Number(rating) > 0) {
+                    conditionObj.rating = Number(rating);
                 }
+
+                // console.log(conditionObj)
 
 				let conditionObjOrg = { ...conditionObj }
                 
