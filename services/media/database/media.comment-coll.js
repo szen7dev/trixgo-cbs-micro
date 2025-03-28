@@ -16,6 +16,8 @@ module.exports  = DATABASE_MIDDLEWARE("media_comment", {
     },
     /**
      * Phân loại
+     * 1-Comment
+     * 2-Đánh giá
      */
     type: {
         type: Number,
