@@ -174,6 +174,11 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
                 userCreate: userID,
             }
 
+            const oneDay = 24 * 60 * 60 * 1000; // số mili giây trong 1 ngày
+            const now = new Date();
+            dataInsert.deliveryStartETA = new Date(now.getTime() + oneDay);
+            dataInsert.deliveryEndETA = new Date(now.getTime() + oneDay * 3);
+
             if (checkObjectIDs(fundaID)) {
                 dataInsert.funda = fundaID;
             }else{
@@ -443,7 +448,7 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
  * Author: Hiepnh
  * Date: 9/4/2022
  */
-update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, members, admins, outin, type, status, isAddSignature, forward, ctx }) {
+update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, outin, type, status, isAddSignature, forward, deliveryStartETA, deliveryEndETA, ctx }) {
     return new Promise(async (resolve) => {
         try {
             const infoOrder = await STORE_ORDER_COLL.findById(orderID)
@@ -510,7 +515,6 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
             if (date) {
                 dataUpdate.date = date;
             }
-
             if (toDate) {
                 dataUpdate.toDate = toDate;
             }
@@ -542,6 +546,22 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
 
             if (status && !isNaN(status) && Number(status) > 0) {
                 dataUpdate.status = status;
+
+                if(Number(status) === 2){
+                    dataUpdate.processingTime = new Date()
+                }
+                if(Number(status) === 3){
+                    dataUpdate.deliveryStartTime = new Date()
+                }
+                if(Number(status) === 5){
+                    dataUpdate.deliveredTime = new Date()
+                }
+            }
+            if (deliveryStartETA) {
+                dataUpdate.deliveryStartETA = deliveryStartETA;
+            }
+            if (deliveryEndETA) {
+                dataUpdate.deliveryEndETA = deliveryEndETA;
             }
 
             if ([0,1].includes(Number(forward))) {
