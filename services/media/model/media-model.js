@@ -1,6 +1,7 @@
 "use strict";
 
 const BaseModel                                 = require('../../../tools/db/base_model');
+const ObjectID                          		= require('mongoose').Types.ObjectId;
 const { checkObjectIDs, IsJsonString } 			= require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 				= require('../../../tools/cursor_base/playground/index');
 const stringUtils					    		= require('../../../tools/utils/string_utils');
@@ -222,6 +223,9 @@ class Model extends BaseModel {
 
 						if (!info) return resolve({ error: true, message: 'cannot_get' })
 
+						// Cập nhật thêm số lượt xem bài viết
+						await MEDIA_COLL.findByIdAndUpdate(info._id, {$inc: { amountView: 1 }}, { new: true })
+
 						return resolve({ error: false, data: info })
 					}else{
 						return resolve({ error: true, message: 'cannot_get' })
@@ -235,6 +239,9 @@ class Model extends BaseModel {
 
 					if (!info) return resolve({ error: true, message: 'cannot_get' })
 
+					// Cập nhật thêm số lượt xem bài viết
+					await MEDIA_COLL.findByIdAndUpdate(mediaID, {$inc: { amountView: 1 }}, { new: true })
+
 					return resolve({ error: false, data: info })
 				}
 			} catch (error) {
@@ -243,7 +250,12 @@ class Model extends BaseModel {
 		})
 	}
 
-	getList({ companyID, categoryID, menuSlug, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+    /**
+     * Name: getList
+     * Author: HiepNH
+     * Code: 29/3/2025
+     */
+	getList({ option, companyID, categoryID, menuSlug, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
 		return new Promise(async (resolve) => {
 			try {
 				let sortBy;
@@ -277,7 +289,12 @@ class Model extends BaseModel {
 				if(menuSlug){
 					let infoMenu = await MEDIA__MENU_COLL.findOne({ company: companyID, slug: menuSlug})
 					if(infoMenu){
-						conditionObj.category = infoMenu._id;
+						if(!option){
+							conditionObj.category = infoMenu._id;
+						}else{
+							let listSubMenu = await MEDIA__MENU_COLL.find({ parent: infoMenu._id })
+							conditionObj.category = {$in: listSubMenu.map(item=>item._id)}
+						}
 					}else{
 						conditionObj.category = null
 					}
@@ -348,6 +365,52 @@ class Model extends BaseModel {
 				});
 			} catch (error) {
 				return resolve({ error: true, message: error.message, status: 500 });
+			}
+		})
+	}
+
+    /**
+     * Name: getListByProperty
+     * Author: HiepNH
+     * Code: 29/3/2025
+     */
+	getListByProperty({ option, companyID, menuSlug }){
+		return new Promise(async resolve => {
+			try {
+				let infoMenu = await MEDIA__MENU_COLL.findOne({
+					company: ObjectID(companyID),
+					slug: menuSlug
+				})
+
+				if(infoMenu){
+					let conditionObj = {
+						company: ObjectID(companyID),
+						category: infoMenu._id,
+					}
+	
+					let listData = await MEDIA_COLL.aggregate([
+						{
+							$match: conditionObj
+						},
+						{
+							$group: {
+								_id: { category: '$category' },
+								amount: { $sum: 1 },
+							}
+						},
+						{
+							$sort: {
+								"_id.category": 1
+							}
+						}
+					])
+	
+					return resolve({ error: false, data: listData })
+				}else{
+					return resolve({ error: true, message: 'cannot_get' })
+				}
+			} catch (error) {
+				return resolve({ error: true, message: error.message });
 			}
 		})
 	}
