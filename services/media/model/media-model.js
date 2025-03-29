@@ -383,27 +383,52 @@ class Model extends BaseModel {
 				})
 
 				if(infoMenu){
+					let listSubMenu = await MEDIA__MENU_COLL.find({ parent: infoMenu._id })
 					let conditionObj = {
 						company: ObjectID(companyID),
-						category: infoMenu._id,
+						category: {$in: listSubMenu.map(item=>item._id)}
 					}
 	
 					let listData = await MEDIA_COLL.aggregate([
 						{
 							$match: conditionObj
 						},
+
 						{
+							$sort: { createdAt: -1 } // Sắp xếp mới nhất trước
+						  },
+						  {
 							$group: {
-								_id: { category: '$category' },
-								amount: { $sum: 1 },
+							  _id: "$category",
+							  posts: { $push: 
+								{
+									title: "$title",
+									slug: "$slug",
+									thumbnail: "$thumbnail",
+								  }
+							   } // Gom các bài viết theo chuyên mục
 							}
-						},
-						{
-							$sort: {
-								"_id.category": 1
+						  },
+						  {
+							$project: {
+							  _id: 0,
+							  category: "$_id",
+							  posts: { $slice: ["$posts", 5] } // Lấy 5 bài viết đầu tiên của mỗi chuyên mục
 							}
-						}
+						  }
 					])
+
+					await MEDIA__MENU_COLL.populate(listData, {
+						path: 'category',
+						select: 'name slug',
+						model: 'media_menu'
+					})
+
+					await MEDIA__MENU_COLL.populate(listData, {
+						path: 'posts.thumbnail',
+						select: 'path',
+						model: 'file'
+					})
 	
 					return resolve({ error: false, data: listData })
 				}else{
