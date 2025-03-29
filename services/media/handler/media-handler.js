@@ -159,7 +159,7 @@ module.exports = {
         async handler(ctx) {
             try {
 				await this.validateEntity(ctx.params);
-                // let { ipAddr } = ctx.meta;
+
 				let { _id: authorID } = ctx.meta.infoUser;
                 let { mediaID } = ctx.params;
 

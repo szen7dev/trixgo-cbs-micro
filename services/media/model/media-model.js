@@ -1,33 +1,13 @@
 "use strict";
 
-/**
- * EXTERNAL PACKAGE
- */
-// const PromisePool								= require('@supercharge/promise-pool');
-// const ObjectID                          		= require('mongoose').Types.ObjectId;
-
-/**
- * CONSTANTS
- */
-const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
-// const { CF_ACTIONS_FILE } 						= require('../../file/helper/file.actions-constant');
-// const { CF_ACTIONS_ITEM }               		= require('../../item/helper/item.actions-constant');
-// const { MEDIA_TYPES }							= require('../helper/media.keys-constant');
-// const { APP_KEYS, LANGUAGE_KEYS, KEY_ERROR }	= require('../../../tools/keys');
-// const { ENV_DEVICE_WEB_CBS } 					= require('../../notification/helper/notification.keys-constant');
-
-/**
- * TOOLS
- */
 const BaseModel                                 = require('../../../tools/db/base_model');
-const { checkObjectIDs, IsJsonString } = require('../../../tools/utils/utils');
+const { checkObjectIDs, IsJsonString } 			= require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 				= require('../../../tools/cursor_base/playground/index');
 const stringUtils					    		= require('../../../tools/utils/string_utils');
 
-/**
- * COLLECTIONS
- */
+const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
+
 const MEDIA__MENU_COLL					        = require('../database/media.menu-coll');
 const MEDIA_COLL					        	= require('../database/media-coll');
 const MEDIA_TAG_COLL					       	= require('../database/media.tag-coll');
@@ -298,6 +278,8 @@ class Model extends BaseModel {
 					let infoMenu = await MEDIA__MENU_COLL.findOne({ company: companyID, slug: menuSlug})
 					if(infoMenu){
 						conditionObj.category = infoMenu._id;
+					}else{
+						conditionObj.category = null
 					}
 				}
 
@@ -314,6 +296,7 @@ class Model extends BaseModel {
 					conditionObj.title = RegExp(keyword, 'i');
 				}
 				// console.log(conditionObj)
+
 				let conditionObjOrg = { ...conditionObj };
 
 				// PHÂN TRANG KIỂU MỚI
