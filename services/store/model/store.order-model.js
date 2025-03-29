@@ -23,9 +23,6 @@ const { CF_ACTIONS_ANALYSIS }  = require('../../analysis/helper/analysis.actions
 const { CF_ACTIONS_ZALO } = require("../../zalo_oa/helper/zalo.actions");
 const { CF_ACTIONS_ITEM } 		                = require('../../item/helper/item.actions-constant');
 
-/**s
- * import inter-coll, exter-coll
- */
 const ITEM__FUNDA_COLL = require("../../item/database/item.funda-coll");
 const ITEM__CONTACT_COLL = require("../../item/database/item.contact-coll");
 const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
@@ -34,11 +31,6 @@ const ITEM__AREA_COLL = require("../../item/database/item.area-coll");
 const STORE_ORDER_COLL = require("../database/store.order-coll");
 const STORE_ORDER_PRODUCT_COLL = require('../database/store.order_product-coll');
 const STORE_VOUCHER_COLL       = require('../database/store.voucher-coll');
-
-// const XlsxPopulate = require("xlsx-populate");
-// const fs = require("fs");
-// const path = require("path");
-// const { uploadFileS3 } = require("../../../tools/s3");
 
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 const STORE_ORDER_PRODUCT_MODEL         = require('../model/store.order_product-model.js').MODEL
@@ -172,6 +164,7 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
                 sign: `C${Number(numberOfOrder + 1)}`,
                 total: Number(total),
                 userCreate: userID,
+                status: 1,
             }
 
             const oneDay = 24 * 60 * 60 * 1000; // số mili giây trong 1 ngày

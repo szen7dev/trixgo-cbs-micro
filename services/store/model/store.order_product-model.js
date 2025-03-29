@@ -399,7 +399,6 @@ class Model extends BaseModel {
      * Code:
      */
     getInfo({ orderProductID, select, populates={} }) {
-        // console.log(populates)
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(orderProductID))

@@ -55,7 +55,7 @@ module.exports = {
 		[CF_ACTIONS_MEDIA.UPDATE_MEDIA] 		            			: MEDIA_HANDLER.update,
 		[CF_ACTIONS_MEDIA.DELETE_MEDIA] 		            			: MEDIA_HANDLER.delete,
 		[CF_ACTIONS_MEDIA.MEDIA_GET_INFO_AND_GET_LIST] 					: MEDIA_HANDLER.getInfoAndGetList,
-		[CF_ACTIONS_MEDIA.UPDATE_VIEW_MEDIA] 		            		: MEDIA_HANDLER.updateView,
+		[CF_ACTIONS_MEDIA.MEDIA_GET_LIST_BY_PROPERTY]					: MEDIA_HANDLER.getListByProperty,
 
 		// ================================  MEDIA COMMENT  ================================
 		[CF_ACTIONS_MEDIA.INSERT_COMMENT_MEDIA]   						: MEDIA__COMMENT_HANDLER.insert,
