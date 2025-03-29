@@ -2363,7 +2363,6 @@ class Model extends BaseModel {
     }
 
     downloadExcelFile(data) {
-        // console.log('Bạn vừa tải data về hệ thống')
         return new Promise(resolve => {
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/store_inventory_report.xlsx')))
                 .then(async workbook => {
