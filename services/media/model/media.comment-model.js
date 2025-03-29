@@ -119,7 +119,7 @@ class Model extends BaseModel {
                     
                     let numberOfRating=0, rating=0, numberOfRating1=0, numberOfRating2=0, numberOfRating3=0, numberOfRating4=0, numberOfRating5=0
                     for (const item of listData) {
-                        switch (item._id) {
+                        switch (Number(item._id)) {
                           case 1:
                             numberOfRating1 = item.total;
                             break;
@@ -158,15 +158,7 @@ class Model extends BaseModel {
                     })
 
                     // Cập nhật rating
-                    await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, {
-                        rating,
-                        numberOfRating,
-                        numberOfRating1,
-                        numberOfRating2,
-                        numberOfRating3,
-                        numberOfRating4,
-                        numberOfRating5,
-                    })
+                    await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, dataUpdate, { new: true })
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
