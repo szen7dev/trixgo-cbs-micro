@@ -404,6 +404,7 @@ class Model extends BaseModel {
 								{
 									title: "$title",
 									slug: "$slug",
+									description: "$description",
 									thumbnail: "$thumbnail",
 								  }
 							   } // Gom các bài viết theo chuyên mục
