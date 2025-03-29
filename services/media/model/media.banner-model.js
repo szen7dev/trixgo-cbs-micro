@@ -142,29 +142,6 @@ class Model extends BaseModel {
       })
   }
 
-    /**
-   * Name: Remove 
-   * Author: HiepNH
-   * Code: 16/10/2024
-   */
-  remove({ bannerID }) {
-    return new Promise(async (resolve) => {
-        try {
-            if(!checkObjectIDs(bannerID))
-                return resolve({ error: true, message: 'Mã bannerID không hợp lệ', keyError: "bannerID_invalid", status: 400 });
-
-            let infoAfterInsert = await MEDIA_BANNER_COLL.findByIdAndDelete(bannerID);
-            if(!infoAfterInsert)
-                return resolve({ error: true, message: "can't_delete", status: 403 });
-
-            return resolve({ error: false, data: infoAfterInsert, status: 200 });
-        } catch (error) {
-            return resolve({ error: true, message: error.message, status: 500 });
-        }
-    })
-}
-
-
   /**
    * Name: Get info 
    * Author: HiepNH
@@ -205,7 +182,7 @@ class Model extends BaseModel {
    * Author: HiepNH
    * Code: 16/10/2024
    */
-  getList({ type, companyID, keyword, limit, lastestID, select, populates, sortKey }) {
+  getList({ type, status, companyID, keyword, limit, lastestID, select, populates, sortKey }) {
       return new Promise(async (resolve) => {
           try {
               let sortBy;
@@ -240,6 +217,10 @@ class Model extends BaseModel {
               if (!isNaN(type)) {
                   conditionObj.type = Number(type)
               }
+
+              if (!isNaN(status)) {
+                conditionObj.status = Number(status)
+            }
 
             //   console.log(conditionObj)
 
