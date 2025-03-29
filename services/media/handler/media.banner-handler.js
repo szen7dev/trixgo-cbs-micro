@@ -26,7 +26,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { optionSeller, type, name, note, slug, expired, thumbnailID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -65,7 +65,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { bannerID, type, name, note, slug, expired, thumbnailID, status, imagesID } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
@@ -106,7 +106,7 @@ module.exports = {
     },
 
     /**
-     * Name: Get info and Get list
+     * Name: getInfoAndGetList
      * Author: Hiepnh
      * Date: 9/4/2022
      */
@@ -125,9 +125,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, type, bannerID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
+                let { optionSeller, type, status, bannerID, keyword, limit, lastestID, populates, select, sortKey } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -144,7 +144,7 @@ module.exports = {
                         bannerID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await MEDIA_BANNER_MODEL.getList({ type, companyID, keyword, limit, lastestID, select, populates, sortKey });
+                    resultAfterCallHandler = await MEDIA_BANNER_MODEL.getList({ type, status, companyID, keyword, limit, lastestID, select, populates, sortKey });
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
