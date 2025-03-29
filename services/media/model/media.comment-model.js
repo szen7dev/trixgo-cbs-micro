@@ -30,6 +30,7 @@ class Model extends BaseModel {
      * Func: Create comment media
      */
     insert({ companyID, userID, type, status, rating, mediaID, goodsID, parentID, content, files, images }) { 
+        // console.log({ companyID, userID, type, status, rating, mediaID, goodsID, parentID, content, files, images })
         return new Promise(async (resolve) => {
             try {
                 let dataInsert = {  
@@ -116,6 +117,8 @@ class Model extends BaseModel {
                             }
                         },
                     ])
+                    // console.log('11111111111111111111111111')
+                    // console.log(listData)
                     
                     let numberOfRating=0, rating=0, numberOfRating1=0, numberOfRating2=0, numberOfRating3=0, numberOfRating4=0, numberOfRating5=0
                     for (const item of listData) {
@@ -139,7 +142,13 @@ class Model extends BaseModel {
                     }
                     numberOfRating = Number(numberOfRating1 + numberOfRating2 + numberOfRating3 + numberOfRating4 + numberOfRating5)
 
-                    rating = Number(Number(numberOfRating1 * 1) + Number(numberOfRating2 * 2) + Number(numberOfRating3 * 3) + Number(numberOfRating4 * 4) + Number(numberOfRating5 * 5))/numberOfRating
+                    if(numberOfRating != 0){
+                        rating = Number(Number(numberOfRating1 * 1) + Number(numberOfRating2 * 2) + Number(numberOfRating3 * 3) + Number(numberOfRating4 * 4) + Number(numberOfRating5 * 5))/numberOfRating
+                    }
+
+                    // console.log('2222222222222222222222')
+                    // console.log({numberOfRating})
+                    // console.log({rating})
 
                     dataUpdate.numberOfRating1 = Number(numberOfRating1)
                     dataUpdate.numberOfRating2 = Number(numberOfRating2)
@@ -149,6 +158,9 @@ class Model extends BaseModel {
 
                     dataUpdate.numberOfRating = Number(numberOfRating)
                     dataUpdate.rating = Number(rating).toFixed(2)
+
+                    // console.log('333333333333333333')
+                    // console.log(dataUpdate)
 
                     // Cập nhật số lượng comment
                     await ITEM__GOODS_COLL.findByIdAndUpdate(goodsID, {
