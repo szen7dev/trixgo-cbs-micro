@@ -6,25 +6,13 @@ const XlsxPopulate                      = require('xlsx-populate')
 const fs                                = require('fs')
 const path                              = require('path')
 const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
-
-/**
- * DOMAIN AND ACTIONS
- */
-// const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
-
-/**
- * TOOLS
- */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const {
   checkObjectIDs,
-  IsJsonString,
-  validateParamsObjectID
+  IsJsonString
 }  = require('../../../tools/utils/utils.js');
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
 const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
-
 
 /**
  * COLLECTIONS
@@ -32,13 +20,6 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 // const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_SURVEY_COLL                   = require('../database/crm.survey-coll')
-
-// let dataTF = {
-//     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
-//     menuID: "623f1ecae998e94feda0cd70", //
-//     type: 1,
-//     action: 1,
-// }
 
 class Model extends BaseModel {
 

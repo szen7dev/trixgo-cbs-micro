@@ -192,24 +192,32 @@ module.exports = {
     getListByProperty: {
         auth: "required",
         params: {
+            optionSeller        : { type: "string" },
             option              : { type: "string", optional: true  },
-            companyID           : { type: "string", optional: true  },
-            projectID           : { type: "string", optional: true  },
             year                : { type: "string", optional: true  },
             month               : { type: "string", optional: true  },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, year, companyID, projectID, assigneeID, month } = ctx.params;
+                let { optionSeller, option, year, month, contactID } = ctx.params;
+                
+                // console.log(ctx.params)
+
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID, commonHabitID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                    commonHabitID = OPTION_COMMON_HABITS[Number(optionSeller) - 1].habit
+                }else{
+                    companyID = company?._id
                 }
 
+                // console.log({commonHabitID})
+
                 let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getListByProperty({
-                        option, year, companyID, projectID, userID, assigneeID, month, ctx
+                        option, companyID, userID, year, month, contactID, habitID: commonHabitID
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
