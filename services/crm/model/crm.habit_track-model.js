@@ -5,6 +5,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const XlsxPopulate                      = require('xlsx-populate')
 const fs                                = require('fs')
 const path                              = require('path')
+const moment                            = require('moment');
 const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
 
 /**
@@ -311,7 +312,7 @@ class Model extends BaseModel {
                 let conditionObj = { company: companyID };
                 let nextCursor	= null;
                 let sortBy      = null;
-                let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -419,613 +420,115 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
+    getListByProperty({ option, companyID, userID, year, month, contactID, habitID, startDate, endDate }){
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                let yearFilter
-                let currentYear = new Date().getFullYear()
-                if(year && !isNaN(year)){
-                    yearFilter = Number(year)
-                }else{
-                    yearFilter = Number(currentYear)
-                }
-
-                // Tổng hợp Lương của công ty theo tháng
+                // Tổng hợp theo Tuần
                 if(!option){
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null },
-                        project: { $exists: true, $ne: null },
-                    }
-
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        // B1: Lọc theo contact và habit
                         {
-                            $match: conditionObj
+                          $match: {
+                            company: ObjectID(companyID),
+                            contact: ObjectID(contactID),
+                            habit: ObjectID(habitID)
+                          }
+                        },
+                         // B2: Thêm trường year và isoWeek
+                        {
+                          $addFields: {
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            week : {$isoWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                          }
+                        },
+                         // B3: Gom lại theo tuần
+                        {
+                          $group: {
+                            _id: {
+                              year: "$year",
+                              week: "$week"
+                            },
+                            earliestDate: { $min: "$date" },
+                            totalDays: { $sum: 1 },
+                            completedDays: {
+                              $sum: { $cond: [{ $eq: ["$status", 2] }, 1, 0] }
+                            },
+                            anyDate: { $first: "$date" } // lấy đại 1 ngày bất kỳ trong tuần để tính start/end
+                          }
                         },
                         {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                // subAllowance1: 1,
-                                // subAllowance2: 1,
-                                // subAllowance3: 1,
-                                // subAllowance4: 1,
-                                // subAllowance5: 1,
-                                // subAllowance6: 1,
-                                // subAllowance7: 1,
-                                // subAllowance8: 1,
-                                // subAllowance9: 1,
-                                // subAllowance10: 1,
-                                // subAllowance11: 1,
-                                // subAllowance12: 1,
-                                // subAllowance13: 1,
-                                // subAllowance14: 1,
-                                // subAllowance15: 1,
-                                // subAllowance16: 1,
-                                // subAllowance17: 1,
-                                // subAllowance18: 1,
-                                // subAllowance19: 1,
-                                // subAllowance20: 1,
-                                // subAllowance21: 1,
-                                // subAllowance22: 1,
+                            $addFields: {
+                              startDate: {
+                                $dateFromParts: {
+                                  isoWeekYear: "$_id.year",
+                                  isoWeek: "$_id.week",
+                                  isoDayOfWeek: 1 // Thứ 2
+                                }
+                              },
+                              endDate: {
+                                $dateFromParts: {
+                                  isoWeekYear: "$_id.year",
+                                  isoWeek: "$_id.week",
+                                  isoDayOfWeek: 7 // Chủ nhật
+                                }
+                              }
                             }
-                        },
+                          },
+                         // B4: Sắp xếp theo thời gian để đánh số tuần
                         {
-                            $match: {
-                                year: Number(yearFilter)
+                          $project: {
+                            _id: 0,
+                            year: "$_id.year",
+                            week: "$_id.week",
+                            earliestDate: 1,
+                            startDate: 1,
+                            endDate: 1,
+                            totalDays: 1,
+                            completedDays: 1,
+                            percentage: {
+                              $cond: [
+                                { $eq: ["$totalDays", 0] },
+                                0,
+                                { $round: [{ $multiply: [{ $divide: ["$completedDays", "$totalDays"] }, 100] }, 0] }
+                              ]
                             }
+                          }
                         },
-                        {
-                            $group: {
-                                _id: { month: '$month' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                        {
-                            $sort: {
-                                "_id.month": 1
-                            }
-                        }
-                    ])
+                        { $sort: { year: 1, week: 1 } }
+                      ])
 
                     return resolve({ error: false, data: listData })
                 }
 
-                // Bảng lương của assigneeID theo tháng
+                // Tổng hợp theo Ngày
                 else if(option == 1){
-
-                    let conditionObj = {
-                        human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }
-                    }
-
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         {
-                            $match: conditionObj
+                          $match: {
+                            company: ObjectID(companyID),
+                            contact: ObjectID(contactID),
+                            habit: ObjectID(habitID),
+                            date: { 
+                                $gte: moment(startDate).toDate(),
+                                $lte: moment(endDate).toDate() 
+                            }
+                          }
                         },
                         {
                             $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
+                              date: 1,
+                              dayOfWeek : {$dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                              status: 1,
                             }
                         },
-                        {
-                            $match: {
-                                year: Number(yearFilter)
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { month: '$month' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                    ])
-                    // console.log(listData)
+                        { 
+                            $sort: { dayOfWeek: 1 } 
+                        }
+                      ])
 
                     return resolve({ error: false, data: listData })
                 }
 
-                // Bảng lương của assigneeID 1 tháng
-                else if(option == 2){
-
-                    let conditionObj = {
-                        human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }
-                    }
-
-                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                salary: { $sum:"$salary" },
-                                onLeaveSalary: { $sum:"$onLeaveSalary" },
-                                overtimeSalary: { $sum:"$overtimeSalary" },
-                                revenueBonus: { $sum:"$revenueBonus" },
-                                reward: { $sum:"$reward" },
-                                mealAllowance: { $sum:"$mealAllowance" },
-                                punishment: { $sum:"$punishment" },
-                                insurance: { $sum:"$insurance" },
-                                pitax: { $sum:"$pitax" },
-                                union: { $sum:"$union" },
-                                share: { $sum:"$share" },
-                                other: { $sum:"$other" },
-                                advance: { $sum:"$advance" },
-                                paid: { $sum:"$paid" },
-                                remaining: { $sum:"$remaining" },
-                                subAllowance1: { $sum:"$subAllowance1" },
-                                subAllowance2: { $sum:"$subAllowance2" },
-                                subAllowance3: { $sum:"$subAllowance3" },
-                                subAllowance4: { $sum:"$subAllowance4" },
-                                subAllowance5: { $sum:"$subAllowance5" },
-                                subAllowance6: { $sum:"$subAllowance6" },
-                                subAllowance7: { $sum:"$subAllowance7" },
-                                subAllowance8: { $sum:"$subAllowance8" },
-                                subAllowance9: { $sum:"$subAllowance9" },
-                                subAllowance10: { $sum:"$subAllowance10" },
-                                subAllowance11: { $sum:"$subAllowance11" },
-                                subAllowance12: { $sum:"$subAllowance12" },
-                                subAllowance13: { $sum:"$subAllowance13" },
-                                subAllowance14: { $sum:"$subAllowance14" },
-                                subAllowance15: { $sum:"$subAllowance15" },
-                                subAllowance16: { $sum:"$subAllowance16" },
-                                subAllowance17: { $sum:"$subAllowance17" },
-                                subAllowance18: { $sum:"$subAllowance18" },
-                                subAllowance19: { $sum:"$subAllowance19" },
-                                subAllowance20: { $sum:"$subAllowance20" },
-                                subAllowance21: { $sum:"$subAllowance21" },
-                                subAllowance22: { $sum:"$subAllowance22" },
-                            }
-                        },
-                    ])
-                    // console.log(listData)
-
-                    return resolve({ error: false, data: listData })
-                }
-
-                // Gom nhóm theo Dự án/Bộ phận
-                else if(option == 3){
-                    let sortBy = { "_id.project": 1 }
-
-                    let conditionPopulate1 = {
-                        path: '_id.project',
-                        select: '_id name',
-                        model: 'department',
-                    }
-
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null },
-                    }
-
-                    let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                project: 1,
-                                position: 1,
-                                human: 1,
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { project: '$project' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                        {
-                            $sort: sortBy
-                        },
-                    ])
-
-                    if(listData1.length){
-                        await CRM_HABIT_TRACK_COLL.populate(listData1, conditionPopulate1)
-                    }
-
-                    return resolve({ error: false, data: listData1 })
-                }
-
-                // Gom nhóm theo Nhân sự trong bộ phận
-                else if(option == 4){
-                    let sortBy = { "_id.human": 1 }
-
-                    let conditionPopulate1 = {
-                        path: '_id.human',
-                        select: '_id fullname image',
-                        model: 'user',
-                    }
-
-                    let conditionObj = {
-                        project: ObjectID(projectID),
-                        parent: { $exists: true, $ne: null },
-                    }
-
-                    let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                project: 1,
-                                human: 1,
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { human: '$human' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                        {
-                            $sort: sortBy
-                        },
-                    ])
-
-                    if(listData1.length){
-                        await CRM_HABIT_TRACK_COLL.populate(listData1, conditionPopulate1)
-                    }
-
-                    return resolve({ error: false, data: listData1 })
-                }
-
-                // Gom nhóm theo Nhân sự trong 1 tháng/
-                else if(option == 5){
-                    let sortBy = { "_id.human": 1 }
-
-                    let conditionPopulate1 = {
-                        path: '_id.human',
-                        select: '_id fullname',
-                        model: 'user',
-                    }
-
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null },
-                    }
-
-                    let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                human: 1,
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { human: '$human' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                        {
-                            $sort: sortBy
-                        },
-                    ])
-
-                    if(listData1.length){
-                        await CRM_HABIT_TRACK_COLL.populate(listData1, conditionPopulate1)
-                    }
-
-                    return resolve({ error: false, data: listData1 })
-                }
-
-                // Tổng hợp toàn bộ của 1 nhân sự
-                else if(option == 6){
-
-                    let conditionObj = {
-                        human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }
-                    }
-
-                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                    ])
-                    // console.log(listData)
-
-                    return resolve({ error: false, data: listData })
-                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

@@ -212,7 +212,7 @@ module.exports = {
                     companyID = company._id
                 }
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 /**
                  * Convert dữ liệu ngày tháng để theo chuẩn chung
