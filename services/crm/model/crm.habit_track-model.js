@@ -5,6 +5,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const XlsxPopulate                      = require('xlsx-populate')
 const fs                                = require('fs')
 const path                              = require('path')
+const moment                            = require('moment');
 const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
 
 /**
@@ -419,10 +420,10 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ option, companyID, userID, year, month, contactID, habitID }){
+    getListByProperty({ option, companyID, userID, year, month, contactID, habitID, startDate, endDate }){
         return new Promise(async resolve => {
             try {
-                // Tổng hợp Lương của công ty theo tháng
+                // Tổng hợp theo Tuần
                 if(!option){
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         // B1: Lọc theo contact và habit
@@ -494,6 +495,35 @@ class Model extends BaseModel {
                           }
                         },
                         { $sort: { year: 1, week: 1 } }
+                      ])
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Tổng hợp theo Ngày
+                else if(option == 1){
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: {
+                            company: ObjectID(companyID),
+                            contact: ObjectID(contactID),
+                            habit: ObjectID(habitID),
+                            date: { 
+                                $gte: moment(startDate).toDate(),
+                                $lte: moment(endDate).toDate() 
+                            }
+                          }
+                        },
+                        {
+                            $project: {
+                              date: 1,
+                              dayOfWeek : {$dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                              status: 1,
+                            }
+                        },
+                        { 
+                            $sort: { dayOfWeek: 1 } 
+                        }
                       ])
 
                     return resolve({ error: false, data: listData })

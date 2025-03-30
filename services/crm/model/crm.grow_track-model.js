@@ -595,7 +595,7 @@ class Model extends BaseModel {
                 let conditionObj = {};
                 let nextCursor	= null;
                 let sortBy      = null;
-                let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
@@ -613,11 +613,6 @@ class Model extends BaseModel {
                     conditionObj.contact = contactID
 				}else{
                     conditionObj.company = companyID
-                }
-
-                // Bảng lương theo tháng, năm
-                if(month && year){
-                    conditionObj.$where = `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(year)}`
                 }
 
                 if(keyword){

@@ -200,7 +200,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, year, month, contactID } = ctx.params;
+                let { optionSeller, option, year, month, contactID, startDate, endDate } = ctx.params;
                 
                 // console.log(ctx.params)
 
@@ -215,9 +215,14 @@ module.exports = {
                 }
 
                 // console.log({commonHabitID})
+                // /**
+                //  * Convert dữ liệu ngày tháng để theo chuẩn chung
+                //  */
+                // fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
+                // toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getListByProperty({
-                        option, companyID, userID, year, month, contactID, habitID: commonHabitID
+                        option, companyID, userID, year, month, contactID, habitID: commonHabitID, startDate, endDate
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
