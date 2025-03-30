@@ -2,7 +2,7 @@
  * TOOLS
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code')
-const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
+const { OPTION_SELLERS, OPTION_COMMON_HABITS }  = require('../../item/helper/item.keys-constant')
 
 /**
  * MODELS
@@ -245,15 +245,18 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    option, companyID, uplineID, fundaID, voucherID, contactID, type, isBirthday, parentID, month,
-                    keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID
+                    optionSeller, option, uplineID, fundaID, voucherID, contactID, type, isBirthday, parentID, month,
+                    keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID, userCreateID
                 } = ctx.params;
 				const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
 
                 let resultAfterCallHandler;
@@ -263,7 +266,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
-                        option, companyID, userID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, keyword, limit, lastestID, select, populates, ctx
+                        option, companyID, userID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, userCreateID, keyword, limit, lastestID, select, populates, ctx
                     })
                 }
 

@@ -1151,13 +1151,9 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ option, companyID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, keyword, limit = 5, lastestID, select, populates, month }) {
+    getList({ option, companyID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, userCreateID, keyword, limit = 5, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * BA
-                 * https://www.w3resource.com/mongodb/mongodb-where-operators.php#:~:text=The%20MongoDB%20%24where%20operator%20is,referred%20as%20this%20or%20obj.
-                 */
                 if (Number(limit) > 10) {
                     limit = 10;
                 } else {
@@ -1183,17 +1179,10 @@ class Model extends BaseModel {
                 } else {
                     delete conditionObj.type
                 }
-
-                // Lấy những danh bạ có sinh nhật vào hôm nay
-                if (isBirthday == 1) {
-                    const day = (new Date()).getDate()
-                    const month = (new Date()).getMonth()
-                    conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
-                }
-
-                // Danh sách sinh nhật theo tháng
-                if (month) {
-                    conditionObj.$where = `return this.birthday && this.birthday.getMonth() === ${Number(month - 1)}`
+                
+                // Lấy theo người tạo danh bạ
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj.userCreate = userCreateID
                 }
 
                 // Lấy theo Voucher
@@ -1216,6 +1205,7 @@ class Model extends BaseModel {
                     conditionObj.funda = fundaID
                 }
 
+                // Lấy theo contact cha
                 if (parentID && checkObjectIDs(parentID)) {
                     conditionObj.parent = parentID
                 }
@@ -1227,6 +1217,18 @@ class Model extends BaseModel {
                         $lte: new Date(toDate),
                     }
                 }
+
+                // // Lấy những danh bạ có sinh nhật vào hôm nay: sử dụng dạng $gte, $lte để tăng hiệu suất
+                // if (isBirthday == 1) {
+                //     const day = (new Date()).getDate()
+                //     const month = (new Date()).getMonth()
+                //     conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
+                // }
+
+                // // Danh sách sinh nhật theo tháng: sử dụng dạng $gte, $lte để tăng hiệu suất
+                // if (month) {
+                //     conditionObj.$where = `return this.birthday && this.birthday.getMonth() === ${Number(month - 1)}`
+                // }
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
@@ -1287,9 +1289,6 @@ class Model extends BaseModel {
                 }
                 let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
                 let totalPage = Math.ceil(totalRecord / limit);
-
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 return resolve({
                     error: false, data: {

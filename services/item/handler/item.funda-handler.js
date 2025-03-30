@@ -55,7 +55,7 @@ module.exports = {
                 const { _id: userID, company } = ctx.meta.infoUser;
                 const { fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, thumbnailID, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  } = ctx.params;
 
-                    console.log(ctx.params)
+                    // console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__FUNDA_MODEL.update({ userID, fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, thumbnailID, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance  });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -90,7 +90,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { optionSeller, option, fundaID, keyword, limit, lastestID, select, populates, parentID, platform, isListParentOfListChilds, isMember } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
