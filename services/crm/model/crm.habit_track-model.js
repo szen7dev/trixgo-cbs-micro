@@ -451,9 +451,28 @@ class Model extends BaseModel {
                             totalDays: { $sum: 1 },
                             completedDays: {
                               $sum: { $cond: [{ $eq: ["$status", 2] }, 1, 0] }
-                            }
+                            },
+                            anyDate: { $first: "$date" } // lấy đại 1 ngày bất kỳ trong tuần để tính start/end
                           }
                         },
+                        {
+                            $addFields: {
+                              startDate: {
+                                $dateFromParts: {
+                                  isoWeekYear: "$_id.year",
+                                  isoWeek: "$_id.week",
+                                  isoDayOfWeek: 1 // Thứ 2
+                                }
+                              },
+                              endDate: {
+                                $dateFromParts: {
+                                  isoWeekYear: "$_id.year",
+                                  isoWeek: "$_id.week",
+                                  isoDayOfWeek: 7 // Chủ nhật
+                                }
+                              }
+                            }
+                          },
                          // B4: Sắp xếp theo thời gian để đánh số tuần
                         {
                           $project: {
@@ -461,6 +480,8 @@ class Model extends BaseModel {
                             year: "$_id.year",
                             week: "$_id.week",
                             earliestDate: 1,
+                            startDate: 1,
+                            endDate: 1,
                             totalDays: 1,
                             completedDays: 1,
                             percentage: {
