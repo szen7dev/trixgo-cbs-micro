@@ -394,6 +394,23 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 1 
     },
+    //______Điểm thành tích
+    xp: {
+        type: Number,
+        default: 0
+    },
+    //______Ngày duy trì liên tục
+    streak : {
+        type: Number,
+        default: 0
+    },
+    //______Thanh năng lượng
+    energy : {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5, // Giới hạn tối đa
+    },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
