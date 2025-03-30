@@ -505,7 +505,6 @@ class Model extends BaseModel {
      * Date: 16/2/2025
      */
     getPhoneOtp({ phone, companyID, fundaID, ctx }) {
-        // console.log({ phone, companyID, fundaID })
         return new Promise(async resolve => {
             try {
                 // Hàm kiểm tra Phone
@@ -536,6 +535,10 @@ class Model extends BaseModel {
                     // Kiểm tra tài khoản xem tồn tại hay chưa
                     const info = await AUTH__USER_COLL.findOne({ phone: strValid })
                     .select('fullname email phone contacts codeReset')
+                    .populate({
+                        path: 'contacts',
+                        select: 'company'
+                    })
                     // console.log(info)
 
                     /**
@@ -562,6 +565,11 @@ class Model extends BaseModel {
                     let hashPassword    = await hash(password, 8);
                     if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
 
+                    /**
+                     * Cần kiểm tra xem với companyID, trong user đã có contacts nào chưa, nếu có rồi thì không được thêm nữa
+                     * Hoặc xem infoContact đã có linkUser trước đó chưa
+                     */
+
                     if(info){
                         console.log("Tài khoản đã tồn tại")
                         /**
@@ -573,7 +581,7 @@ class Model extends BaseModel {
                                 linkUser: info._id
                             }, { new: true })
                             // console.log(info1)
-    
+                            
                             let info2 = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
                                 $addToSet: { contacts: infoContact._id } 
                             }, { new: true });
@@ -588,7 +596,6 @@ class Model extends BaseModel {
                                 phone: strValid, 
                                 email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
                             })
-                            
 
                             if(infoNewContact){
                                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {

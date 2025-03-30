@@ -87,7 +87,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     phone : String,
     //_________Email
     email : String,
-    //_________Giới tính(1-nam/ 2 - nữ/3-khác)
+    //_________Giới tính (1-Nam/2-Nữ/3-Khác)
     gender: { type: Number, default: 1 },
     //_________Ngày sinh
     birthday: { type: Date, default: null },
