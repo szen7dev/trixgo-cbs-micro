@@ -726,9 +726,9 @@ class Model extends BaseModel {
                             status: 200
                         })
                     }
-                }else{
+                } else{
                     return resolve({ error: true, message: "Không lấy được dữ liệu" })
-                }    
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
