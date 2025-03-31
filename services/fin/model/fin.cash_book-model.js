@@ -2329,7 +2329,6 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     importFromExcel({ option, companyID, parentID, dataImport, userID }) {
-        // console.log({option, companyID, parentID, dataImport, userID})
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(parentID))
@@ -2514,7 +2513,6 @@ class Model extends BaseModel {
     * Date: 25/7/2023
     */
     exportExcel({ option, companyID, parentID, humanID, year, month, userID, fromDate, toDate }) {
-    //    console.log({ option, companyID, parentID, humanID, year, month, userID, fromDate, toDate })
        return new Promise(async resolve => {
            try {
             let yearFilter, monthFilter
@@ -2925,7 +2923,7 @@ class Model extends BaseModel {
                         let d = new Date(item.createAt);
 
                         workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
-                        workbook.sheet("Data").row(i).cell(2).value(item?.assignee?.fullname)
+                        workbook.sheet("Data").row(i).cell(2).value(item?.assignee?.fullname).hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
                         workbook.sheet("Data").row(i).cell(3).value(item?.assignee?.department?.name)
                         workbook.sheet("Data").row(i).cell(4).value(item?.name)
                         workbook.sheet("Data").row(i).cell(5).value(item?.createAt)
@@ -2955,9 +2953,9 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(12).value(Number((a - b1) / (1000*60)))
                         }
 
-                        // workbook.sheet("Data").row(i).cell(12).value('Truy cập').hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
-
                         workbook.sheet("Data").row(i).cell(18).value(item?.note)
+
+                        // workbook.sheet("Data").row(i).cell(2).value('Truy cập').hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
 
                         i++
                     })
@@ -2968,7 +2966,7 @@ class Model extends BaseModel {
                         let b1 = (new Date(item?.startingTime)).getTime()
 
                         workbook.sheet("Data2").row(i).cell(1).value(Number(index + 1))
-                        workbook.sheet("Data2").row(i).cell(2).value(item?.assignee?.fullname)
+                        workbook.sheet("Data2").row(i).cell(2).value(item?.assignee?.fullname).hyperlink(`https://app.trixgo.com/timesheet/home/${item?.parent}`)
                         workbook.sheet("Data2").row(i).cell(3).value(item?.assignee?.department?.name)
                         workbook.sheet("Data2").row(i).cell(4).value(item?.name)
                         workbook.sheet("Data2").row(i).cell(5).value(item?.note)
