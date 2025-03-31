@@ -534,10 +534,10 @@ class Model extends BaseModel {
                 if(infoCompany){
                     // Kiểm tra tài khoản xem tồn tại hay chưa
                     const info = await AUTH__USER_COLL.findOne({ phone: strValid })
-                    .select('fullname email phone contacts codeReset')
+                    .select('fullname email phone contacts codeReset company')
                     .populate({
                         path: 'contacts',
-                        select: 'company'
+                        select: 'company linkUser phone'
                     })
                     // console.log(info)
 
@@ -565,13 +565,22 @@ class Model extends BaseModel {
                     let hashPassword    = await hash(password, 8);
                     if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
 
-                    /**
-                     * Cần kiểm tra xem với companyID, trong user đã có contacts nào chưa, nếu có rồi thì không được thêm nữa
-                     * Hoặc xem infoContact đã có linkUser trước đó chưa
-                     */
-
                     if(info){
                         console.log("Tài khoản đã tồn tại")
+                        /**
+                         * Cần kiểm tra xem với companyID, trong user đã có contacts nào chưa, nếu có rồi thì không được thêm nữa
+                         * Hoặc xem infoContact đã có linkUser trước đó chưa
+                         * Đảm bảo mỗi user chỉ có 01 contact trong 1 companyID
+                         */
+                        // console.log(info)
+                        let checkContactInUserInCompany = 0
+                        for(const item of info?.contacts){
+                            if(item.company.toString() === info.company.toString()){
+                                checkContactInUserInCompany++
+                            }
+                        }
+                        // console.log({checkContactInUserInCompany})
+
                         /**
                          * Gửi mã OTP để đăng nhập
                          */
@@ -582,10 +591,12 @@ class Model extends BaseModel {
                             }, { new: true })
                             // console.log(info1)
                             
-                            let info2 = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                                $addToSet: { contacts: infoContact._id } 
-                            }, { new: true });
-                            // console.log(info2)
+                            if(Number(checkContactInUserInCompany) === 0){
+                                let info2 = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                                    $addToSet: { contacts: infoContact._id } 
+                                }, { new: true });
+                                // console.log(info2)
+                            }
                         }else{
                             // console.log("Tạo danh bạ----------")
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
@@ -601,10 +612,12 @@ class Model extends BaseModel {
                                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
                                     linkUser: info._id
                                 }, { new: true })
-    
-                                await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                                    $addToSet: { contacts: infoNewContact.data._id } 
-                                }, { new: true })
+                                
+                                if(Number(checkContactInUserInCompany) === 0){
+                                    await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                                        $addToSet: { contacts: infoNewContact.data._id } 
+                                    }, { new: true })
+                                }
                             }
                         }
         
@@ -644,7 +657,7 @@ class Model extends BaseModel {
                             status: 200
                         })
                     }else{
-                        // console.log("Tài khoản chưa tồn tại")
+                        console.log("Tài khoản chưa tồn tại")
                         /**
                          * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
                          * Tạo danh bạ link với tài khoản
