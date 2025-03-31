@@ -19,7 +19,6 @@ module.exports = {
         params: {
             email           : { type: "string" },
             fullname        : { type: "string" },
-            //username        : { type: "string" },
             level           : { type: "string" },
             companyID       : { type: "string" },
             platform        : { type: "string" },
@@ -97,12 +96,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { email, companyID } = ctx.params;
-                // console.log(ctx.params)
 
-                const infoUser = await AUTH__USER_MODEL.getOTP({ email, companyID, ctx });
-                return infoUser;
+                const resultAfterCallHandler = await AUTH__USER_MODEL.getOTP({ email, companyID, ctx });
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                return { error: true, message: error.message };
+                return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
     },
@@ -130,7 +128,6 @@ module.exports = {
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
-                console.log({ error })
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
         }
@@ -173,7 +170,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 const { email, codeReset } = ctx.params;
 
-                console.log({ email, codeReset })
+                // console.log({ email, codeReset })
 
                 const result = await AUTH__USER_MODEL.checkOTPRecoverPassword({ email, codeReset });
                 return result;
