@@ -2114,7 +2114,7 @@ class Model extends BaseModel {
      * Date: 8/12/2022
      */
     importFromExcel({ option, companyID, dataImport, userID }) {
-        console.log({ option, companyID, dataImport, userID })
+        // console.log({ option, companyID, dataImport, userID })
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
