@@ -1559,7 +1559,6 @@ class Model extends BaseModel {
      * Code: 30/7/2023
      */
     getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate, userID, contacts, ctx }) {
-        // console.log({ companyID, option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate, userID, contacts })
         return new Promise(async (resolve) => {
             let duration = getTimeBetween(toDate, fromDate)
             try {
@@ -1806,10 +1805,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 7/9/2022
      */
-    getListAccessByContract({
-        userID, option,
-        keyword, limit = 10, lastestID, select, populates = {}, ctx }) {
-        // console.log({option,keyword,populates})
+    getListAccessByContract({ userID, option, keyword, limit = 10, lastestID, select, populates = {}, ctx }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -1929,9 +1925,6 @@ class Model extends BaseModel {
     downloadTemplateImportExcel({ companyID, userID, ctx }) {
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 let listDepartment = await ITEM__DEPARTMENT_COLL.find({ company: companyID }).select('name').limit(500)
                 let listPosition = await ITEM__POSITION_COLL.find({ company: companyID }).select('name').limit(500)
                 let listDoctype = await ITEM__DOCTYPE_COLL.find({ company: companyID }).select('name').limit(500)
@@ -1953,7 +1946,7 @@ class Model extends BaseModel {
                         }
                     })
 
-                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID }).limit(1000)
+                let listContact = await ITEM__CONTACT_COLL.find({ company: companyID, type: 1 }).limit(1000)
                     .populate({
                         path: 'funda department position field property contractType workingStatus area area1 area2 sale linkUser',
                         select: '_id name fullname parent',
