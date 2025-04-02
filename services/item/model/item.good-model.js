@@ -556,8 +556,29 @@ class Model extends BaseModel {
 
                 if(menuSlug){
 					let infoMenu = await MEDIA__MENU_COLL.findOne({ company: companyID, slug: menuSlug})
+                    .populate({
+                        path: 'childs',
+                        select: '_id name childs'
+                    })
+                    // console.log(infoMenu)
+
 					if(infoMenu){
-						conditionObj.category = infoMenu._id;
+                        let arrMenu = []
+                        arrMenu.push(infoMenu._id)
+                        if(infoMenu?.childs?.length){
+                            for(const item of infoMenu?.childs){
+                                arrMenu.push(item._id)
+                            }
+                        }
+
+                        if(infoMenu?.childs?.childs?.length){
+                            for(const item of infoMenu?.childs?.childs){
+                                arrMenu.push(item)
+                            }
+                        }
+
+						// conditionObj.category = infoMenu._id;
+						conditionObj.category = {$in: arrMenu}
 					}
 				}
 
@@ -568,7 +589,7 @@ class Model extends BaseModel {
                     const regSearch = new RegExp(keyword, 'i');
                     conditionObj.namecv = regSearch
                 }
-                console.log(conditionObj)
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj };
 				if(lastestID && checkObjectIDs(lastestID)){
