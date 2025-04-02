@@ -10,6 +10,7 @@ const CF_ROUTINGS_PAYMENT = {
 
     GET_LIST_TRANSACTION                                : `${BASE_ROUTE}${TRANSACTION}`,
     GET_LIST_TRANSACTION_BY_USER_WITH_STATUS            : `${BASE_ROUTE}${TRANSACTION}/users/:userID`,
+    GET_INFO_TRANSACTION                                : `${BASE_ROUTE}${TRANSACTION}/:transactionID`,
     UPDATE_STATUS                                       : `${BASE_ROUTE}${TRANSACTION}/:transactionID`,
 
     GET_LIST_BANKS                                      : `${BASE_ROUTE}/banks`,
