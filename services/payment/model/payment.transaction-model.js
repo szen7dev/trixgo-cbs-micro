@@ -22,9 +22,9 @@ class Model extends BaseModel {
                 locale = locale ? locale.toLowerCase() : 'vi';
                 currency = currency ? currency.toUpperCase() : 'VND';
 
-                if(!checkObjectIDs(userID)) {
-                  return resolve({ error: true, message: 'user_object_id_invalid' });
-                }
+                // if(!checkObjectIDs(userID)) {
+                //   return resolve({ error: true, message: 'user_object_id_invalid' });
+                // }
 
                 const localeAllow = ['en', 'vi'];
                 if(!localeAllow.includes(locale)) {
@@ -84,6 +84,20 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'cannot_update' });
 
                 return resolve({ error: false, message: 'update_success' });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    getTransactionById({ txId }) {
+        return new Promise(async resolve => {
+            try {
+                const transaction = await PAYMENT__TRANSACTION_COLL.findOne({ _id: txId });
+                if (!transaction)
+                    return resolve({ error: true, message: 'transaction_not_exists' });
+
+                return resolve({ error: false, data: transaction });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

@@ -28,6 +28,7 @@ module.exports = {
 	* Actions
 	*/
 	actions: {
+		[CF_ACTIONS_PAYMENT.GET_INFO_TRANSACTION] 		                : PAYMENT__TRANSACTION_HANLDER.getInfoTransaction,
 		[CF_ACTIONS_PAYMENT.GET_LIST_TRANSACTION] 		                : PAYMENT__TRANSACTION_HANLDER.getListTransactions,
 		[CF_ACTIONS_PAYMENT.GET_LIST_TRANSACTION_BY_USER_WITH_STATUS] : PAYMENT__TRANSACTION_HANLDER.getListTransactionsByUser,
 		[CF_ACTIONS_PAYMENT.GET_LIST_BANKS] 		                      : PAYMENT__TRANSACTION_HANLDER.getListBanks,
