@@ -139,14 +139,17 @@ exports.sortNeoParams = (body, secretKey) => {
       "neo_ExpiresIn",
       "neo_TokenCreate"
   ];
+//   const keys = Object.keys(body);
 
   return CREATE_PAYMENT_REQUEST_FIELDS.sort((a, b) => a.localeCompare(b))
       .map(field => {
-          // console.log(field, body[field]);
           if (body[field] !== null && body[field] !== undefined) {
-              if (field === "neo_PaymentMethod") {
+            // console.log({ field, field_type: typeof body.neo_PaymentMethod });
+
+              if (field === "neo_PaymentMethod" && typeof body.neo_PaymentMethod === "object") {
                   return body.neo_PaymentMethod.join(",")
               }
+
               return body[field];
           } else {
               return "";

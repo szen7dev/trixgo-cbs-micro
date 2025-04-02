@@ -28,6 +28,23 @@ const { nonAccentVietnamese }                     = require('../../../tools/util
 const httpRequest                                 = require('../../../tools/http');
 
 module.exports = {
+    getInfoTransaction: {
+        params: {
+            transactionID: { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { transactionID } = ctx.params;
+
+                const tx = await PAYMENT__TRANSACTION_MODEL.getTransactionById({ txId: transactionID });
+                return tx;
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
     getListTransactions: {
         params: {
             status: { type: "string", optional: true },
@@ -154,7 +171,10 @@ module.exports = {
 
                 return {
                   error: false,
-                  data: neoxResponse.data
+                  data: {
+                    ...neoxResponse.data,
+                    txId: tx._id.toString()
+                  }
                 };
             } catch (error) {
               console.error({ error })
@@ -243,12 +263,12 @@ module.exports = {
     URL_IPN: {
         params: {
             neo_MerchantTxnID: { type: "string" },
-            neo_OrderID: { type: "string" },
-            neo_SecureHash: { type: "string" },
+            neo_OrderID: { type: "string", optional: true },
+            neo_SecureHash: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
-              console.log({ URL_IPN_PARAMS: ctx.params })
+              // console.log({ URL_IPN_PARAMS: ctx.params })
                 await this.validateEntity(ctx.params);
                 const params = ctx.params;
 
@@ -257,17 +277,33 @@ module.exports = {
                   neo_ResponseMsg,
                   neo_ResponseCode,
                   neo_MerchantTxnID,
+                  neo_PaymentMethod,
                 } = ctx.params;
+
+                const tx = await PAYMENT__TRANSACTION_MODEL.getTransactionById({ txId: neo_MerchantTxnID });
+
+                // Logic for polling IPN event
+                if (!tx.error && tx.data) {
+                  const { status, statusMsg } = tx.data;
+
+                  if (status !== -2) {
+                    return { respcode: status, respmsg: statusMsg };
+                  }
+                }
 
                 delete params['neo_TransAmount'];
                 delete params['neo_ExtData'];
                 delete params['neo_SecureHash'];
 
-                const neoParamsString = sortNeoParams({ ...params }, neo_SecretKey);
-                const secureHash = crypto.createHash('sha256').update(neoParamsString).digest('hex').toUpperCase();
+                if (typeof neo_PaymentMethod === "string" && neo_PaymentMethod === "BANK_TRANSFER") {
 
-                if(neo_SecureHash !== secureHash) {
-                  return { respcode: 0, respmsg: "received" };
+                } else {
+                  const neoParamsString = sortNeoParams({ ...params }, neo_SecretKey);
+                  const secureHash = crypto.createHash('sha256').update(neoParamsString).digest('hex').toUpperCase();
+
+                  if(neo_SecureHash !== secureHash) {
+                    return { respcode: 0, respmsg: "received" };
+                  }
                 }
 
                 await PAYMENT__TRANSACTION_MODEL.updateStatus({
@@ -277,7 +313,8 @@ module.exports = {
 
                 return { respcode: 0, respmsg: "received" };
             } catch (error) {
-                return { respcode: 1, respmsg: error.message };
+              console.error({ error })
+              return { respcode: 1, respmsg: error.message };
             }
         }
     },
