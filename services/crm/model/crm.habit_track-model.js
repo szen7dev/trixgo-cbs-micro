@@ -32,6 +32,7 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
+const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 
 class Model extends BaseModel {
 
@@ -246,10 +247,20 @@ class Model extends BaseModel {
 
                     // Cập nhật trạng thái Thực hiện Habit cha: Hoàn thành
                     if(checkStatusAll == 0){
+                        // Cập nhật Habit cha
                         await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(commonHabitTrackID, {
                             userUpdate: userID,
                             modifyAt: Date.now(),
                             status: 2,
+                        }, { new: true })
+
+                        // Cập nhật vào Contact
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, {
+                            $inc: {
+                                xp: 15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+                                streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
+                                energy: 1, // Tính toán đảm bảo max 5 điểm máu
+                            }
                         }, { new: true })
                     }
                 }
