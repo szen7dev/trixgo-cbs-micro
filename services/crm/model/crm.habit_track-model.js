@@ -342,6 +342,7 @@ class Model extends BaseModel {
                     conditionObj.status = status;
                 }
 
+                // Dữ liệu theo ngày
                 if (date) {
                     const inputDate = new Date(date);
                     const nextDate = new Date(inputDate);
@@ -351,7 +352,7 @@ class Model extends BaseModel {
                       $gte: inputDate,
                       $lt: nextDate,
                     };
-                  }
+                }
 
                 if(keyword){
                     keyword = stringUtils.removeAccents(keyword)

@@ -587,7 +587,8 @@ class Model extends BaseModel {
                         if(infoContact){
                             // link user với contact
                             let info1 = await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
-                                linkUser: info._id
+                                linkUser: info._id,
+                                userCreate: info._id
                             }, { new: true })
                             // console.log(info1)
                             
@@ -610,7 +611,8 @@ class Model extends BaseModel {
 
                             if(infoNewContact){
                                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
-                                    linkUser: info._id
+                                    linkUser: info._id,
+                                    userCreate: info._id
                                 }, { new: true })
                                 
                                 if(Number(checkContactInUserInCompany) === 0){
@@ -684,7 +686,8 @@ class Model extends BaseModel {
                         if(infoContact){
                             // console.log("222222222222222")
                             await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
-                                linkUser: infoUserAfterInsert._id
+                                linkUser: infoUserAfterInsert._id,
+                                userCreate: infoUserAfterInsert._id
                             }, { new: true })
 
                             // console.log("33333333333333333333")
@@ -706,7 +709,8 @@ class Model extends BaseModel {
                             if(infoNewContact){
                                 // console.log("55555555555555555")
                                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
-                                    linkUser: infoUserAfterInsert._id
+                                    linkUser: infoUserAfterInsert._id,
+                                    userCreate: infoUserAfterInsert._id
                                 }, { new: true })
                                 
                                 // console.log("66666666666666")
