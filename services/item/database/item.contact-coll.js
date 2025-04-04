@@ -189,7 +189,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     //_________Số ngày được nghỉ phép tối đa trong năm
     numberOnLeave: { type: Number, default: 12 },
     //_________Số ngày được nghỉ phép phát sinh: người thân mất, việc hiếu, hỉ
-    numberOnLeavePlus: { type: Number },
+    numberOnLeavePlus: { type: Number, default: 0 },
     //_________Số người phụ thuộc
     nods: { type: Number, default: 0 },
     //_________Ngày thay đổi lương gần nhất
