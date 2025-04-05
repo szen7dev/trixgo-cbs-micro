@@ -117,8 +117,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 
                 const { ipAddr, infoUser } = ctx.meta;
-                const { orderID, orderDescription, amount, currency, locale, callbackURL, userID } = ctx.params;
+                const { orderID, orderDescription, currency, locale, callbackURL, userID } = ctx.params;
                 let authorID = "";
+                const amount = 10_000;
                 // const orderID = dateFormat(new Date(), 'HHmmss');
 
                 if(!infoUser) {
@@ -268,7 +269,7 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-              // console.log({ URL_IPN_PARAMS: ctx.params })
+              console.log({ URL_IPN_PARAMS: ctx.params })
                 await this.validateEntity(ctx.params);
                 const params = ctx.params;
 
