@@ -1,3 +1,5 @@
+const uuidv4                            = require('uuid').v4;
+
 const httpRequest                       = require('../../../tools/http');
 const { convertObjectToQueryParams }    = require('../../../tools/utils/string_utils');
 
@@ -52,7 +54,7 @@ class Model extends BaseModel {
                 if (!orderProducts.length) return resolve({ error: true, message: `Order ${orderId} has no products` });
 
                 const { area1, area2, area3 } = storeOrder;
-                const payload = Object.create({
+                const payload = {
                     products: orderProducts.map(item => ({
                         name: item.name,
                         weight: item.weight,
@@ -77,13 +79,13 @@ class Model extends BaseModel {
                         "hamlet": "Khác",
                         "is_freeship": "1",
                         "pick_money": storeOrder.shippingFee || 0,
-                        "note": storeOrder.note,
+                        "note": storeOrder.note?.length > 120 ? storeOrder.note.slice(0, 120) : storeOrder.note,
                         "value": storeOrder.amount,
-                        "transport": "fly",
+                        // "transport": "fly",
                         "pick_option": "cod" // Đơn hàng xfast yêu cầu bắt buộc pick_option là COD
                     }
-                });
-                console.log({ payload })
+                };
+                // console.log({ payload, p: payload.products })
 
                 const response = await httpRequest.post(
                     `${GHTK_OPEN_API_URL}/services/shipment/order`, payload, {
@@ -94,18 +96,18 @@ class Model extends BaseModel {
                         }
                     }
                 );
-                console.log({ response })
 
                 if(response.status !== 200) {
                     return resolve({
                         error: true,
                         message: "Can't request to GHTK API",
                         statusMessage: response.statusText,
+                        status: response.status,
                     });
                 }
 
                 const { success, order, message, warning_message } = response.data;
-                console.log({ ...response.data })
+                // console.log({ ...response.data })
 
                 if (!success) {
                     return resolve({
@@ -113,6 +115,7 @@ class Model extends BaseModel {
                         message,
                         warning_message,
                         statusMessage: response.statusText,
+                        status: 400,
                     });
                 }
 
@@ -173,7 +176,7 @@ class Model extends BaseModel {
                 })
                 if (shipment.error) return resolve(shipment);
 
-                await GHTK_ORDER_COLL.create({
+                const orderCreated = await GHTK_ORDER_COLL.create({
                     shipmentCoreId: shipment.data?._id,
                     partnerId: partner_id,
                     label,
@@ -194,10 +197,10 @@ class Model extends BaseModel {
                     isXfast: is_xfast,
                 })
 
-                return resolve({ error: false, message: "OK", data: order })
+                return resolve({ error: false, message: "OK", data: orderCreated })
             } catch(error) {
                 console.error(error)
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }

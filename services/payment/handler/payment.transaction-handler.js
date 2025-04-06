@@ -117,9 +117,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 
                 const { ipAddr, infoUser } = ctx.meta;
-                const { orderID, orderDescription, currency, locale, callbackURL, userID } = ctx.params;
+                const { orderID, orderDescription, currency, locale, amount, callbackURL, userID } = ctx.params;
                 let authorID = "";
-                const amount = 10_000;
                 // const orderID = dateFormat(new Date(), 'HHmmss');
 
                 if(!infoUser) {
