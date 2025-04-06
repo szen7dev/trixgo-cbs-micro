@@ -31,6 +31,7 @@ const ITEM__AREA_COLL = require("../../item/database/item.area-coll");
 const STORE_ORDER_COLL = require("../database/store.order-coll");
 const STORE_ORDER_PRODUCT_COLL = require('../database/store.order_product-coll');
 const STORE_VOUCHER_COLL       = require('../database/store.voucher-coll');
+const { CF_ACTIONS_SHIPMENT } = require("../../shipment/helper/shipment.actions.js");
 
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 const STORE_ORDER_PRODUCT_MODEL         = require('../model/store.order_product-model.js').MODEL
@@ -585,12 +586,20 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
             if(dataAddToset){
                 dataUpdate.$addToSet = dataAddToset;
             }
-            // console.log(dataUpdate)
 
-            let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
+            let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true }).lean();
             if (!infoAfterUpdate)
                 return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
-            // console.log(infoAfterUpdate)
+
+            // Create GHTK order
+            let shipmentOrder = null;
+            if(Number(status) === 2 && Number(infoOrder.status) !== 2){
+                shipmentOrder = await ctx.call(`${CF_DOMAIN_SERVICES.SHIPMENT}.${CF_ACTIONS_SHIPMENT.SHIPMENT_GHTK_CREATE_ORDER}`, {
+                    orderId: orderID
+                });
+
+                if (shipmentOrder.error) return resolve(shipmentOrder);
+            }
 
             /**
              * Cập nhật lại các phần tử con
@@ -617,7 +626,7 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
                         "toWarehouse" : infoAfterUpdate.toWarehouse,
                     } }
                 )
-            }else{
+            } else{
                 await STORE_ORDER_PRODUCT_COLL.updateMany(
                     { 
                         order: ObjectID(orderID),
@@ -640,7 +649,10 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
                 )
             }
 
-            return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+            return resolve({ error: false, data: {
+                ...infoAfterUpdate,
+                shipmentOrder,
+            }, status: 200 });
         } catch (error) {
             return resolve({ error: true, message: error.message, status: 500 });
         }

@@ -250,7 +250,26 @@ module.exports = {
 	// Register custom REPL commands.
 	replCommands: [],
 
-	hotReload: true,
+	hotReload: {
+		enabled: process.env.NODE_ENV !== "production",
+		patterns: [
+			"services/**/*.service.js",
+			"tools/**/*.js",
+			"moleculer.config.js"
+		],
+		ignored: [
+			"**/*.spec.js",
+			"**/*.test.js",
+			"**/node_modules/**",
+			"**/logs/**"
+		]
+	},
+
+	// Disable built-in request & emit balancer for development
+	// disableBalancer: process.env.NODE_ENV !== "production",
+
+	// Enable graceful stop
+	// gracefulStopTimeout: 10000,
 
 	// Called after broker created.
 	created(broker) {
