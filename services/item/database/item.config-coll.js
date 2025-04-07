@@ -80,6 +80,8 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
     content: String,
     //_________registration 
     registration: String,
+    //_________note
+    note: String,
     //_________QR1 (app Mobile)
     qrcode1: {
         type: Schema.Types.ObjectId,
