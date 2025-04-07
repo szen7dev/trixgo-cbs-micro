@@ -494,7 +494,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({
-        option, companyID, parentID, platform, isListParentOfListChilds, isMember,
+        option, internal, companyID, parentID, platform, isListParentOfListChilds, isMember,
         keyword, limit = 40, lastestID, select, populates= {}, userID } ) {
         return new Promise(async (resolve) => {
             try {
@@ -517,6 +517,12 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if (internal && [1, 2].includes(Number(internal))) {
+                    conditionObj.internal = internal
+                } else {
+                    delete conditionObj.internal
                 }
 
                 if(!option){
