@@ -1154,8 +1154,8 @@ class Model extends BaseModel {
     getList({ option, companyID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, userCreateID, keyword, limit = 5, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                if (Number(limit) > 10) {
-                    limit = 10;
+                if (Number(limit) > 5) {
+                    limit = 5;
                 } else {
                     limit = +Number(limit);
                 }
@@ -1313,11 +1313,11 @@ class Model extends BaseModel {
     getListByFilter({
         parentID, companyID, receiverID, types, isExportExcel = false,
         requestResponse, fromDate, toDate, marked, userID, departmentsID,
-        keyword, limit = 300, lastestID, select, populates = {}, isParent, type, genders }) {
+        keyword, limit = 5, lastestID, select, populates = {}, isParent, type, genders }) {
         return new Promise(async (resolve) => {
             try {
-                if (limit > 300) {
-                    limit = 300;
+                if (limit > 5) {
+                    limit = 5;
                 }
                 //  else {
                 //     limit = +limit;
@@ -1558,364 +1558,364 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 30/7/2023
      */
-    getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate, userID, contacts, ctx }) {
-        return new Promise(async (resolve) => {
-            let duration = getTimeBetween(toDate, fromDate)
-            try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+    // getListByProperty({ companyID, option, optionGroup, optionTime, fundasID, uplineID, year, fromDate, toDate, userID, contacts, ctx }) {
+    //     return new Promise(async (resolve) => {
+    //         let duration = getTimeBetween(toDate, fromDate)
+    //         try {
+    //             // Record Traffic
+    //             //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                let yearFilter
-                let currentYear = new Date().getFullYear()
-                if (year && !isNaN(year)) {
-                    yearFilter = Number(year)
-                } else {
-                    yearFilter = Number(currentYear)
-                }
+    //             let yearFilter
+    //             let currentYear = new Date().getFullYear()
+    //             if (year && !isNaN(year)) {
+    //                 yearFilter = Number(year)
+    //             } else {
+    //                 yearFilter = Number(currentYear)
+    //             }
 
-                if (Number(duration / 86400) > 370) {
-                    return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 370 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
-                } else {
-                    let conditionObj = {
-                        company: ObjectID(companyID)
-                    }
-                    let conditionGroup = {}, conditionProject = {}
-                    let conditionObjYear = {}, conditionPopulate = {}, sortBy = { "quantity": -1 }
+    //             if (Number(duration / 86400) > 370) {
+    //                 return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 370 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
+    //             } else {
+    //                 let conditionObj = {
+    //                     company: ObjectID(companyID)
+    //                 }
+    //                 let conditionGroup = {}, conditionProject = {}
+    //                 let conditionObjYear = {}, conditionPopulate = {}, sortBy = { "quantity": -1 }
 
-                    const validation = validateParamsObjectID({
-                        fundasID: { value: fundasID, isRequire: false },
-                    });
-                    if (validation.error) return resolve(validation);
+    //                 const validation = validateParamsObjectID({
+    //                     fundasID: { value: fundasID, isRequire: false },
+    //                 });
+    //                 if (validation.error) return resolve(validation);
 
-                    // Gom nhóm theo đơn vị cơ sở
-                    if (fundasID && fundasID.length) {
-                        let arrFun = fundasID.map(item => ObjectID(item))
-                        conditionObj.funda = { $in: arrFun }
-                    } else {
-                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({ members: { $in: [userID] } })
-                        let fundasIDIsMember = listFundaIsMember.map(item => ObjectID(item._id))
-                        if (fundasIDIsMember.length) {
-                            conditionObj.funda = { $in: fundasIDIsMember }
-                        } else {
-                            conditionObj.funda = { $in: [] }
-                        }
-                    }
+    //                 // Gom nhóm theo đơn vị cơ sở
+    //                 if (fundasID && fundasID.length) {
+    //                     let arrFun = fundasID.map(item => ObjectID(item))
+    //                     conditionObj.funda = { $in: arrFun }
+    //                 } else {
+    //                     let listFundaIsMember = await ITEM__FUNDA_COLL.find({ members: { $in: [userID] } })
+    //                     let fundasIDIsMember = listFundaIsMember.map(item => ObjectID(item._id))
+    //                     if (fundasIDIsMember.length) {
+    //                         conditionObj.funda = { $in: fundasIDIsMember }
+    //                     } else {
+    //                         conditionObj.funda = { $in: [] }
+    //                     }
+    //                 }
 
-                    conditionProject = {
-                        year: { $year: "$joinedDate" },
-                        month: { $month: "$joinedDate" },
-                        hour: { $hour: "$joinedDate" },
-                        funda: 1,
-                        sector1: 1,
-                        sector2: 1,
-                        sector3: 1,
-                        new: 1,
-                        joinedDate: 1,
-                        nestedParents: 1,
-                        level: 1,
-                    }
+    //                 conditionProject = {
+    //                     year: { $year: "$joinedDate" },
+    //                     month: { $month: "$joinedDate" },
+    //                     hour: { $hour: "$joinedDate" },
+    //                     funda: 1,
+    //                     sector1: 1,
+    //                     sector2: 1,
+    //                     sector3: 1,
+    //                     new: 1,
+    //                     joinedDate: 1,
+    //                     nestedParents: 1,
+    //                     level: 1,
+    //                 }
 
-                    // Phân loại theo thời khoảng
-                    if (fromDate && toDate) {
-                        conditionObj.joinedDate = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
-                        }
-                    }
+    //                 // Phân loại theo thời khoảng
+    //                 if (fromDate && toDate) {
+    //                     conditionObj.joinedDate = {
+    //                         $gte: new Date(fromDate),
+    //                         $lte: new Date(toDate),
+    //                     }
+    //                 }
 
-                    // Gom nhóm theo thời gian
-                    if (option && Number(option) == 1) {
-                        // Theo năm
-                        if (optionTime && Number(optionTime) == 1) {
-                            conditionGroup = {
-                                _id: { year: "$year" },
-                                quantity: { $sum: 1 },
-                            }
-                        }
+    //                 // Gom nhóm theo thời gian
+    //                 if (option && Number(option) == 1) {
+    //                     // Theo năm
+    //                     if (optionTime && Number(optionTime) == 1) {
+    //                         conditionGroup = {
+    //                             _id: { year: "$year" },
+    //                             quantity: { $sum: 1 },
+    //                         }
+    //                     }
 
-                        // Theo tháng trong năm
-                        if (optionTime && Number(optionTime) == 2) {
-                            if (!isNaN(year) && Number(year) >= 0) {
-                                conditionObjYear = {
-                                    "year": Number(year),
-                                }
-                            }
+    //                     // Theo tháng trong năm
+    //                     if (optionTime && Number(optionTime) == 2) {
+    //                         if (!isNaN(year) && Number(year) >= 0) {
+    //                             conditionObjYear = {
+    //                                 "year": Number(year),
+    //                             }
+    //                         }
 
-                            conditionGroup = {
-                                _id: { month: "$month", year: "$year" },
-                                quantity: { $sum: 1 },
-                            }
-                        }
+    //                         conditionGroup = {
+    //                             _id: { month: "$month", year: "$year" },
+    //                             quantity: { $sum: 1 },
+    //                         }
+    //                     }
 
-                        // Theo giờ trong ngày
-                        if (optionTime && Number(optionTime) == 3) {
-                            conditionGroup = {
-                                _id: { hour: "$hour" },
-                                quantity: { $sum: 1 },
-                            }
-                        }
-                    }
+    //                     // Theo giờ trong ngày
+    //                     if (optionTime && Number(optionTime) == 3) {
+    //                         conditionGroup = {
+    //                             _id: { hour: "$hour" },
+    //                             quantity: { $sum: 1 },
+    //                         }
+    //                     }
+    //                 }
 
-                    // Gom nhóm theo đơn vị cơ sở
-                    else if (option && Number(option) == 2) {
-                        conditionGroup = {
-                            _id: { funda: "$funda" },
-                            quantity: { $sum: 1 },
-                        }
+    //                 // Gom nhóm theo đơn vị cơ sở
+    //                 else if (option && Number(option) == 2) {
+    //                     conditionGroup = {
+    //                         _id: { funda: "$funda" },
+    //                         quantity: { $sum: 1 },
+    //                     }
 
-                        conditionPopulate = {
-                            path: '_id.funda',
-                            select: '_id name sign image',
-                            model: 'funda'
-                        }
-                    }
+    //                     conditionPopulate = {
+    //                         path: '_id.funda',
+    //                         select: '_id name sign image',
+    //                         model: 'funda'
+    //                     }
+    //                 }
 
-                    // Gom nhóm theo khách hàng cũ, mới, vãng lai
-                    else if (option && Number(option) == 3) {
-                        conditionGroup = {
-                            _id: { new: "$new" },
-                            quantity: { $sum: 1 },
-                        }
-                    }
+    //                 // Gom nhóm theo khách hàng cũ, mới, vãng lai
+    //                 else if (option && Number(option) == 3) {
+    //                     conditionGroup = {
+    //                         _id: { new: "$new" },
+    //                         quantity: { $sum: 1 },
+    //                     }
+    //                 }
 
-                    // Gom nhóm theo Nhân viên
-                    else if (option && Number(option) == 4) {
-                        conditionObj.funda = { $exists: true, $ne: null }
-                        conditionObj.type = 1 // 1-Nhân viên, 2-Khách hàng
-                        conditionGroup = {
-                            _id: { funda: "$funda" },
-                            quantity: { $sum: 1 },
-                        }
-                        conditionPopulate = {
-                            path: '_id.funda',
-                            select: '_id name sign image',
-                            model: 'funda'
-                        }
-                    }
+    //                 // Gom nhóm theo Nhân viên
+    //                 else if (option && Number(option) == 4) {
+    //                     conditionObj.funda = { $exists: true, $ne: null }
+    //                     conditionObj.type = 1 // 1-Nhân viên, 2-Khách hàng
+    //                     conditionGroup = {
+    //                         _id: { funda: "$funda" },
+    //                         quantity: { $sum: 1 },
+    //                     }
+    //                     conditionPopulate = {
+    //                         path: '_id.funda',
+    //                         select: '_id name sign image',
+    //                         model: 'funda'
+    //                     }
+    //                 }
 
-                    // Gom nhóm theo Sinh nhật
-                    else if (option && Number(option) == 5) {
-                        conditionObj.birthday = { $exists: true, $ne: null }
-                        conditionGroup = {
-                            _id: { month: "$month" },
-                            quantity: { $sum: 1 }
-                        }
-                        delete conditionObj.funda
+    //                 // Gom nhóm theo Sinh nhật
+    //                 else if (option && Number(option) == 5) {
+    //                     conditionObj.birthday = { $exists: true, $ne: null }
+    //                     conditionGroup = {
+    //                         _id: { month: "$month" },
+    //                         quantity: { $sum: 1 }
+    //                     }
+    //                     delete conditionObj.funda
 
-                        conditionProject = {
-                            month: { $month: "$birthday" },
-                            funda: 1,
-                            birthday: 1
-                        }
-                        sortBy = { "_id.month": 1 }
-                    }
+    //                     conditionProject = {
+    //                         month: { $month: "$birthday" },
+    //                         funda: 1,
+    //                         birthday: 1
+    //                     }
+    //                     sortBy = { "_id.month": 1 }
+    //                 }
 
-                    // Gom nhóm theo Tuyến dưới
-                    else if (option && Number(option) == 6) {
+    //                 // Gom nhóm theo Tuyến dưới
+    //                 else if (option && Number(option) == 6) {
 
-                        // Theo user đang truy cập
-                        if (optionGroup && optionGroup == 1 && contacts && contacts.length) {
-                            let listContacts = contacts.map(item => ObjectID(item._id))
+    //                     // Theo user đang truy cập
+    //                     if (optionGroup && optionGroup == 1 && contacts && contacts.length) {
+    //                         let listContacts = contacts.map(item => ObjectID(item._id))
 
-                            conditionObj = { nestedParents: { $in: listContacts } }
-                            // conditionObj = { nestedParents: {$in:  [listContacts[0]]} }
-                        }
+    //                         conditionObj = { nestedParents: { $in: listContacts } }
+    //                         // conditionObj = { nestedParents: {$in:  [listContacts[0]]} }
+    //                     }
 
-                        if (optionGroup && optionGroup == 2) {
-                            conditionObj = { nestedParents: { $in: [ObjectID(uplineID)] } }
-                        }
+    //                     if (optionGroup && optionGroup == 2) {
+    //                         conditionObj = { nestedParents: { $in: [ObjectID(uplineID)] } }
+    //                     }
 
-                        conditionGroup = {
-                            _id: {},
-                            quantity: { $sum: 1 }
-                        }
-                    }
+    //                     conditionGroup = {
+    //                         _id: {},
+    //                         quantity: { $sum: 1 }
+    //                     }
+    //                 }
 
-                    // Gom nhóm theo Level Affiliate
-                    else if (option && Number(option) == 7) {
-                        conditionObj.dataSource = { $exists: true, $ne: null }
+    //                 // Gom nhóm theo Level Affiliate
+    //                 else if (option && Number(option) == 7) {
+    //                     conditionObj.dataSource = { $exists: true, $ne: null }
 
-                        conditionGroup = {
-                            _id: { level: "$level" },
-                            quantity: { $sum: 1 },
-                        }
-                        delete conditionObj.funda;
+    //                     conditionGroup = {
+    //                         _id: { level: "$level" },
+    //                         quantity: { $sum: 1 },
+    //                     }
+    //                     delete conditionObj.funda;
 
-                        sortBy = { "_id.level": 1 }
-                    }
+    //                     sortBy = { "_id.level": 1 }
+    //                 }
 
-                    // Gom nhóm theo Affiliate theo tháng: đã phát triển thành công
-                    else if (option && Number(option) == 8) {
-                        conditionObj.dataSource = { $exists: true, $ne: null }
-                        conditionObj.parent = { $exists: true, $ne: null }
+    //                 // Gom nhóm theo Affiliate theo tháng: đã phát triển thành công
+    //                 else if (option && Number(option) == 8) {
+    //                     conditionObj.dataSource = { $exists: true, $ne: null }
+    //                     conditionObj.parent = { $exists: true, $ne: null }
 
-                        conditionObjYear = {
-                            "year": Number(yearFilter),
-                        }
+    //                     conditionObjYear = {
+    //                         "year": Number(yearFilter),
+    //                     }
 
-                        conditionGroup = {
-                            _id: { month: "$month" },
-                            quantity: { $sum: 1 },
-                        }
+    //                     conditionGroup = {
+    //                         _id: { month: "$month" },
+    //                         quantity: { $sum: 1 },
+    //                     }
 
-                        delete conditionObj.funda;
+    //                     delete conditionObj.funda;
 
-                        // sortBy = {"_id.level": 1}
-                    }
+    //                     // sortBy = {"_id.level": 1}
+    //                 }
 
-                    // console.log(conditionObj)
-                    // console.log(conditionPopulate)
-                    // console.log(conditionObjYear)
-                    // console.log(conditionGroup)
-                    // console.log(conditionProject)
+    //                 // console.log(conditionObj)
+    //                 // console.log(conditionPopulate)
+    //                 // console.log(conditionObjYear)
+    //                 // console.log(conditionGroup)
+    //                 // console.log(conditionProject)
 
-                    // Danh sách đang triển khai
-                    let listData = await ITEM__CONTACT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: conditionProject
-                        },
-                        {
-                            $match: conditionObjYear
-                        },
-                        {
-                            $group: conditionGroup
-                        },
-                        {
-                            $sort: sortBy
-                        }
-                    ])
+    //                 // Danh sách đang triển khai
+    //                 let listData = await ITEM__CONTACT_COLL.aggregate([
+    //                     {
+    //                         $match: conditionObj
+    //                     },
+    //                     {
+    //                         $project: conditionProject
+    //                     },
+    //                     {
+    //                         $match: conditionObjYear
+    //                     },
+    //                     {
+    //                         $group: conditionGroup
+    //                     },
+    //                     {
+    //                         $sort: sortBy
+    //                     }
+    //                 ])
 
-                    if (!isNaN(option) && [2, 4].includes(Number(option))) {
-                        await ITEM__CONTACT_COLL.populate(listData, conditionPopulate)
-                    }
+    //                 if (!isNaN(option) && [2, 4].includes(Number(option))) {
+    //                     await ITEM__CONTACT_COLL.populate(listData, conditionPopulate)
+    //                 }
 
-                    return resolve({ error: false, data: listData })
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 })
-            }
-        })
-    }
+    //                 return resolve({ error: false, data: listData })
+    //             }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 })
+    //         }
+    //     })
+    // }
 
     /**
      * Name  : Danh bạ (bên mua, bên bán) mà user được quyền truy cập theo hợp đồng
      * Author: HiepNH
      * Code  : 7/9/2022
      */
-    getListAccessByContract({ userID, option, keyword, limit = 10, lastestID, select, populates = {}, ctx }) {
-        return new Promise(async (resolve) => {
-            try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+    // getListAccessByContract({ userID, option, keyword, limit = 10, lastestID, select, populates = {}, ctx }) {
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             // Record Traffic
+    //             //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                if (limit > 20) {
-                    limit = 20
-                } else {
-                    limit = +limit
-                }
+    //             if (limit > 20) {
+    //                 limit = 20
+    //             } else {
+    //                 limit = +limit
+    //             }
 
-                // Danh sách hợp đồng mà user là members
-                let listContractAccess = await ITEM__CONTRACT_COLL.find({ members: { $in: [userID] } }).select('name sign buyerInfo sellerInfo')
-                // console.log(listContractAccess)
+    //             // Danh sách hợp đồng mà user là members
+    //             let listContractAccess = await ITEM__CONTRACT_COLL.find({ members: { $in: [userID] } }).select('name sign buyerInfo sellerInfo')
+    //             // console.log(listContractAccess)
 
-                /**
-                 * DECALARTION VARIABLE
-                 */
-                let conditionObj = {};
-                let keys = ['createAt__-1', '_id__-1'];
-                let sortBy;
+    //             /**
+    //              * DECALARTION VARIABLE
+    //              */
+    //             let conditionObj = {};
+    //             let keys = ['createAt__-1', '_id__-1'];
+    //             let sortBy;
 
-                // POPULATE
-                if (populates && typeof populates === 'string') {
-                    if (!IsJsonString(populates))
-                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+    //             // POPULATE
+    //             if (populates && typeof populates === 'string') {
+    //                 if (!IsJsonString(populates))
+    //                     return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
 
-                    populates = JSON.parse(populates);
-                } else {
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
+    //                 populates = JSON.parse(populates);
+    //             } else {
+    //                 populates = {
+    //                     path: "",
+    //                     select: ""
+    //                 }
+    //             }
 
-                if (option && option == 1) {
-                    // console.log('===========Bên bán================')
-                    conditionObj._id = { $in: listContractAccess.map(item => item.sellerInfo) }
-                }
+    //             if (option && option == 1) {
+    //                 // console.log('===========Bên bán================')
+    //                 conditionObj._id = { $in: listContractAccess.map(item => item.sellerInfo) }
+    //             }
 
-                if (option && option == 2) {
-                    // console.log('===========Bên mua================')
-                    conditionObj._id = { $in: listContractAccess.map(item => item.buyerInfo) }
-                }
+    //             if (option && option == 2) {
+    //                 // console.log('===========Bên mua================')
+    //                 conditionObj._id = { $in: listContractAccess.map(item => item.buyerInfo) }
+    //             }
 
-                if (keyword) {
-                    keyword = stringUtils.removeAccents(keyword)
-                    keyword = keyword.split(" ");
-                    keyword = '.*' + keyword.join(".*") + '.*';
-                    let regSearch = new RegExp(keyword, 'i');
+    //             if (keyword) {
+    //                 keyword = stringUtils.removeAccents(keyword)
+    //                 keyword = keyword.split(" ");
+    //                 keyword = '.*' + keyword.join(".*") + '.*';
+    //                 let regSearch = new RegExp(keyword, 'i');
 
-                    conditionObj.namecv = regSearch
-                }
-                // console.log(conditionObj)
+    //                 conditionObj.namecv = regSearch
+    //             }
+    //             // console.log(conditionObj)
 
-                let conditionObjOrg = { ...conditionObj };
+    //             let conditionObjOrg = { ...conditionObj };
 
-                // PHÂN TRANG KIỂU MỚI
-                if (lastestID && checkObjectIDs(lastestID)) {
-                    let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
-                    if (!infoData)
-                        return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
+    //             // PHÂN TRANG KIỂU MỚI
+    //             if (lastestID && checkObjectIDs(lastestID)) {
+    //                 let infoData = await ITEM__CONTACT_COLL.findById(lastestID);
+    //                 if (!infoData)
+    //                     return resolve({ error: true, message: "Can't get info lastestID", status: 400 });
 
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-                    if (!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+    //                 let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+    //                 if (!dataPagingAndSort || dataPagingAndSort.error)
+    //                     return resolve({ error: true, message: "Can't get range pagination", status: 400 });
 
-                    conditionObj = dataPagingAndSort?.data?.find;
-                    sortBy = dataPagingAndSort?.data?.sort;
-                } else {
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-                    sortBy = dataPagingAndSort?.data?.sort;
-                }
+    //                 conditionObj = dataPagingAndSort?.data?.find;
+    //                 sortBy = dataPagingAndSort?.data?.sort;
+    //             } else {
+    //                 let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+    //                 sortBy = dataPagingAndSort?.data?.sort;
+    //             }
 
-                let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
-                    .limit(+limit + 1)
-                    .sort(sortBy)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
+    //             let infoDataAfterGet = await ITEM__CONTACT_COLL.find(conditionObj)
+    //                 .limit(+limit + 1)
+    //                 .sort(sortBy)
+    //                 .select(select)
+    //                 .populate(populates)
+    //                 .lean();
 
-                if (!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
+    //             if (!infoDataAfterGet)
+    //                 return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor = null;
-                if (infoDataAfterGet && infoDataAfterGet.length) {
-                    if (infoDataAfterGet.length > limit) {
-                        nextCursor = infoDataAfterGet[limit - 1]._id;
-                        infoDataAfterGet.length = limit;
-                    }
-                }
+    //             let nextCursor = null;
+    //             if (infoDataAfterGet && infoDataAfterGet.length) {
+    //                 if (infoDataAfterGet.length > limit) {
+    //                     nextCursor = infoDataAfterGet[limit - 1]._id;
+    //                     infoDataAfterGet.length = limit;
+    //                 }
+    //             }
 
-                let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
-                let totalPage = Math.ceil(totalRecord / limit);
+    //             let totalRecord = await ITEM__CONTACT_COLL.count(conditionObjOrg);
+    //             let totalPage = Math.ceil(totalRecord / limit);
 
-                return resolve({
-                    error: false, data: {
-                        listRecords: infoDataAfterGet,
-                        limit: +limit,
-                        totalRecord,
-                        totalPage,
-                        nextCursor
-                    }, status: 200
-                });
+    //             return resolve({
+    //                 error: false, data: {
+    //                     listRecords: infoDataAfterGet,
+    //                     limit: +limit,
+    //                     totalRecord,
+    //                     totalPage,
+    //                     nextCursor
+    //                 }, status: 200
+    //             });
 
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message, status: 500 });
+    //         }
+    //     })
+    // }
 
     /**
      * Dev: HiepNH
