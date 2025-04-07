@@ -1,0 +1,19 @@
+{
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules",
+    "logs",
+    "*.log"
+  ],
+  "verbose": true,
+  "watch": [
+    "services/",
+    "tools/",
+    "moleculer.config.js"
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "ext": "js,json"
+}
