@@ -20,6 +20,8 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
      * Tên/mô tả
      */
     name: String,
+    //_________Trạng thái (1-Hoạt động|2-Hủy)
+    status: { type: Number, default: 1 },
     /**
      * Phân loại cấu hình
      * Mỗi type ứng với 1 companyID thì chỉ có 1 mẩu tin duy nhất

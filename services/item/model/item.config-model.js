@@ -34,7 +34,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    insert({ companyID, userID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee }) {
+    insert({ companyID, userID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -110,6 +110,10 @@ class Model extends BaseModel {
                     dataInsert.shopee = shopee
                 }
 
+                if (!isNaN(status)) {
+                    dataInsert.status = Number(status)
+                }
+
                 if (!isNaN(type)) {
                     dataInsert.type = Number(type)
                 }
@@ -140,7 +144,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    update({ userID, configID, name, type, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration }){
+    update({ userID, configID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration }){
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(configID) )
@@ -233,6 +237,10 @@ class Model extends BaseModel {
 
                 if(registration && registration != ""){
                     dataUpdate.registration = registration
+                }
+
+                if (!isNaN(status)) {
+                    dataUpdate.status = Number(status)
                 }
 
                 if (!isNaN(type)) {
