@@ -2,10 +2,21 @@ module.exports = {
   apps: [
     {
       name: "CBS_MICRO_STAGING",
-      script: "./node_modules/.bin/moleculer-runner --repl --hot services/**/*.service.js",
-      //max_memory_restart: "400M", // cho mỗi process
+      script: "./node_modules/.bin/moleculer-runner",
+      args: "--repl --hot services/**/*.service.js",
+      // max_memory_restart: "400M", // cho mỗi process
       log_date_format : "YYYY-MM-DD HH:mm Z",
-      ignore_watch: ["node_modules"],
+      watch: [
+        "services",
+        "tools",
+        "moleculer.config.js"
+      ],
+      ignore_watch: [
+        "node_modules",
+        "logs",
+        "*.log",
+        "*.json"
+      ],
       watch_options: {
         followSymlinks: false,
       },

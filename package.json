@@ -4,6 +4,7 @@
   "description": "My Moleculer-based microservices project",
   "scripts": {
     "dev": "moleculer-runner -r --hot ./services/**/*.service.js",
+    "dev:watch": "nodemon --watch services --watch tools --watch moleculer.config.js --exec \"npm run dev\"",
     "start": "moleculer-runner services/**/*.service.js",
     "ngrok": "node ./tools/https/ngrok.js",
     "cli": "moleculer connect NATS",
@@ -91,6 +92,7 @@
     "socket.io-client": "^2.4.0",
     "socket.io-redis": "^5.1.1",
     "uuid": "^8.3.2",
+    "winston": "^3.17.0",
     "xlsx-populate": "^1.21.0",
     "zip-dir": "^2.0.0"
   },
