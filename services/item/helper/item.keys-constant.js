@@ -97,18 +97,18 @@ exports.DOCUMENT_STATUS = [
 ]
 
 exports.OPTION_SELLERS = [
-    { value: 1, company: '5e047dc05e30dce72849a4a4' }, // Kiểm thử
+    { value: 1, company: '6046bee4b55525368b11c6d5' }, // Lamin
     { value: 2, company: '6046bedeb55525368b11c5c3' }, // Winggo
     { value: 3, company: '6046c4d32c1dc33996dd5bab' }, // EL2
-    { value: 4, company: '6046c6e92c1dc33996ddc089' }, // Việt Nguyên Clinic
+    { value: 4, company: '5e047dc05e30dce72849a4a4' }, // Kiểm thử
     { value: 5, company: '6046c63a2c1dc33996dd9762' }, // TMĐT ECOM
 ]
 
 exports.OPTION_COMMON_HABITS = [
-    { value: 1, habit: '67df509fdcede10012f790c5' }, // Kiểm thử
+    { value: 1, habit: '67f362f4dba06a0012faf280' }, // Kiểm thử
     { value: 2, habit: '67df509fdcede10012f790c5' }, // Winggo
     { value: 3, habit: '67df509fdcede10012f790c5' }, // EL2
-    { value: 4, habit: '67df509fdcede10012f790c5' }, // Việt Nguyên Clinic
+    { value: 4, habit: '67df509fdcede10012f790c5' }, // Kiểm thử
     { value: 5, habit: '67df509fdcede10012f790c5' }, // TMĐT ECOM
 ]
 
