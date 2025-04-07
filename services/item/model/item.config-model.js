@@ -34,7 +34,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    insert({ companyID, userID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee }) {
+    insert({ companyID, userID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -110,6 +110,30 @@ class Model extends BaseModel {
                     dataInsert.shopee = shopee
                 }
 
+                if(address && address != ""){
+                    dataInsert.address = address
+                }
+
+                if(phone && phone != ""){
+                    dataInsert.phone = phone
+                }
+
+                if(email && email != ""){
+                    dataInsert.email = email
+                }
+
+                if(content && content != ""){
+                    dataInsert.content = content
+                }
+
+                if(registration && registration != ""){
+                    dataInsert.registration = registration
+                }
+
+                if(note && note != ""){
+                    dataInsert.note = note
+                }
+
                 if (!isNaN(status)) {
                     dataInsert.status = Number(status)
                 }
@@ -144,7 +168,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    update({ userID, configID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration }){
+    update({ userID, configID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note }){
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(configID) )
@@ -237,6 +261,10 @@ class Model extends BaseModel {
 
                 if(registration && registration != ""){
                     dataUpdate.registration = registration
+                }
+
+                if(note && note != ""){
+                    dataUpdate.note = note
                 }
 
                 if (!isNaN(status)) {
