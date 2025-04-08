@@ -25,7 +25,9 @@ const { CF_ACTIONS_FACEBOOK }	= require('../facebook/helper/facebook.actions');
 const { CF_ACTIONS_PAYMENT } 	= require('../payment/helper/payment.actions-constant');
 const { CF_ACTIONS_ITEM } 		= require('../item/helper/item.actions-constant');
 const { CF_ACTIONS_FNB } 		= require('../fnb/helper/fnb.actions-constant');
-const { CF_ACTIONS_CRM } 		= require('../crm/helper/crm.actions-constant');
+const { CF_ACTIONS_SHIPMENT } = require('../shipment/helper/shipment.actions');
+const { CF_ROUTINGS_SHIPMENT } = require('../shipment/helper/shipment.routes');
+// const { CF_ACTIONS_CRM } 		= require('../crm/helper/crm.actions-constant');
 
 module.exports = {
 	path: 'api',
@@ -136,6 +138,12 @@ module.exports = {
 
 		[`POST ${CF_ROUTINGS_FNB.ORDERS_KY_SU_HIEP}`] :
 		[`${CF_DOMAIN_SERVICES.FNB}.${CF_ACTIONS_FNB.ORDER_KY_SU_HIEP}`],
+
+		/**
+		 * GHTK API
+		 */
+		[`POST ${CF_ROUTINGS_SHIPMENT.SHIPMENT_WEBHOOK}`] :
+		[`${CF_DOMAIN_SERVICES.SHIPMENT}.${CF_ACTIONS_SHIPMENT.SHIPMENT_GHTK_WEBHOOK}`],
 
 		// //---------------------------🏁 BEGIN SERVICE CRM 🏁---------------------------//
 
