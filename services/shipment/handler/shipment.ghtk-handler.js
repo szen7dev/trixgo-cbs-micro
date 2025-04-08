@@ -74,7 +74,7 @@ module.exports = {
                 console.log({ GHTK_WEBHOOK_PARAMS: params })
 
                 const resultAfterCallHandler = await SHIPMENT_MODEL.handleWebhook(params);
-                return resultAfterCallHandler;
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }

@@ -302,7 +302,7 @@ class Model extends BaseModel {
     handleWebhook({ ...params }) {
         return new Promise(async resolve => {
             try {
-                resolve({ error: false, message: 'OK' });
+                resolve({ error: false, message: 'OK', status: 200 });
             } catch(error) {
                 resolve({ error: true, message: error.message });
             }
