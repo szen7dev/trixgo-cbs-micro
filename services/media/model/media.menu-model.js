@@ -160,12 +160,9 @@ class Model extends BaseModel {
    * Author: Hiepnh
    * Date: 9/4/2022
    */
-  getInfo({ menuID, select, populates = {} }) {
+  getInfo({ companyID, menuID, slug, select, populates = {} }) {
       return new Promise(async resolve => {
           try {
-              if (!checkObjectIDs(menuID))
-                  return resolve({ error: true, message: 'param_invalid' });
-
               if (populates && typeof populates === 'string') {
                   if (!IsJsonString(populates))
                       return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -177,13 +174,31 @@ class Model extends BaseModel {
                   }
               }
 
-              let info = await MEDIA_MENU_COLL.findById(menuID)
-                  .select(select)
-                  .populate(populates)
+              if (!checkObjectIDs(menuID)){
+                if(slug && slug != ''){
+                    let info = await MEDIA_MENU_COLL
+                    .findOne({ company: companyID, slug: slug.trim() })
+                    .select(select)
+                    .populate(populates)
+                    .lean();
 
-              if (!info) return resolve({ error: true, message: 'cannot_get' });
+                    if (!info) return resolve({ error: true, message: 'cannot_get_info' })
 
-              return resolve({ error: false, data: info });
+                    return resolve({ error: false, data: info })
+                }else{
+                    return resolve({ error: true, message: 'cannot_get_info' })
+                }
+            }else{
+                    let info = await MEDIA_MENU_COLL
+                    .findById(menuID)
+                    .select(select)
+                    .populate(populates)
+
+                    if(!info)
+                        return resolve({ error: true, message: "cannot_get_info", status: 403 });
+
+                    return resolve({ error: false, data: info, status: 200 });
+            }
           } catch (error) {
               return resolve({ error: true, message: error.message });
           }
