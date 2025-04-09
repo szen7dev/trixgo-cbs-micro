@@ -438,7 +438,6 @@ class Model extends BaseModel {
 						.select(select)
 						.populate(populates)
 						.lean();
-                        // console.log(info)
 
 						if (!info) return resolve({ error: true, message: 'cannot_get_info' })
 
@@ -451,7 +450,6 @@ class Model extends BaseModel {
                     .findById(goodsID)
                     .select(select)
                     .populate(populates)
-                    // console.log(info)
 
                     if(!info)
                         return resolve({ error: true, message: "cannot_get_info", status: 403 });
@@ -558,7 +556,11 @@ class Model extends BaseModel {
 					let infoMenu = await MEDIA__MENU_COLL.findOne({ company: companyID, slug: menuSlug})
                     .populate({
                         path: 'childs',
-                        select: '_id name childs'
+                        select: '_id name childs',
+                        populate: {
+                            path: 'childs',
+                            select: '_id name',
+                        }
                     })
                     // console.log(infoMenu)
 
@@ -567,13 +569,14 @@ class Model extends BaseModel {
                         arrMenu.push(infoMenu._id)
                         if(infoMenu?.childs?.length){
                             for(const item of infoMenu?.childs){
+                                // console.log(item)
                                 arrMenu.push(item._id)
-                            }
-                        }
 
-                        if(infoMenu?.childs?.childs?.length){
-                            for(const item of infoMenu?.childs?.childs){
-                                arrMenu.push(item)
+                                if(item?.childs?.length){
+                                    for(const subitem of item?.childs){
+                                        arrMenu.push(subitem._id)
+                                    }
+                                }
                             }
                         }
 
