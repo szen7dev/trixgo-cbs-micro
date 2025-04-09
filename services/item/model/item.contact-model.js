@@ -1154,8 +1154,8 @@ class Model extends BaseModel {
     getList({ option, companyID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, userCreateID, keyword, limit = 5, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                if (Number(limit) > 5) {
-                    limit = 5;
+                if (Number(limit) > 10) {
+                    limit = 10;
                 } else {
                     limit = +Number(limit);
                 }
@@ -1174,7 +1174,7 @@ class Model extends BaseModel {
                 }
 
                 // Theo phân loại
-                if (type && [1, 2].includes(Number(type))) {
+                if (type && [1, 2, 3].includes(Number(type))) {
                     conditionObj.type = type
                 } else {
                     delete conditionObj.type
@@ -1200,10 +1200,10 @@ class Model extends BaseModel {
                     } 
                 }
 
-                // Lấy nhân sự theo đơn vị cơ sở
-                if (fundaID && checkObjectIDs(fundaID)) {
-                    conditionObj.funda = fundaID
-                }
+                // // Lấy nhân sự theo đơn vị cơ sở
+                // if (fundaID && checkObjectIDs(fundaID)) {
+                //     conditionObj.funda = fundaID
+                // }
 
                 // Lấy theo contact cha
                 if (parentID && checkObjectIDs(parentID)) {
@@ -1250,6 +1250,8 @@ class Model extends BaseModel {
 
                     conditionObj.namecv = regSearch
                 }
+
+                // console.log(conditionObj)
 
                 let conditionObjOrg = {
                     ...conditionObj
