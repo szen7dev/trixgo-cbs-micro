@@ -719,7 +719,6 @@ updateValue({
  * Date: 9/4/2022
  */
 getInfo({ orderID, select, populates = '{"path":"assignee project userCreate userUpdate members admins files signatures","select":"_id fullname bizfullname name sign image path nameOrg author createAt size","populate":{"path":"author","select":"_id fullname email phone image signature"}}' }) {
-// console.log({orderID, select, populates})
     return new Promise(async resolve => {
         try {
             if (!checkObjectIDs(orderID))
@@ -754,15 +753,15 @@ getInfo({ orderID, select, populates = '{"path":"assignee project userCreate use
  * Author: Hiepnh
  * Date: 9/4/2022
  */
-getList({ option, status, arrType, outin, type, userID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, keyword, limit = 50, lastestID, select, populates, sortKey, fromDate, toDate }) {
+getList({ option, status, arrType, outin, type, userID, companyID, projectID, packageID, toPackageID, warehouseID, accountID, customerID, goodsID, assetsID, userCreateID, keyword, limit = 30, lastestID, select, populates, sortKey, fromDate, toDate }) {
     return new Promise(async (resolve) => {
         try {
             let sortBy;
             let conditionObj = {};
             let keys = ['createAt__-1', '_id__-1'];
 
-            if (limit > 50) {
-                limit = 50
+            if (limit > 30) {
+                limit = 30
             } else {
                 limit = +limit;
             }
