@@ -45,9 +45,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, habitID, contactID, status, date, name, note, duration }) {
-        // console.log('==========================================')
-        // console.log({ userID, companyID, habitID, contactID, status, date, name, note, duration })
+    insert({ userID, companyID, habitID, contactID, status, date, name, note, duration, percentage }) {
         return new Promise(async resolve => {
             try {
                 let infoHabit = await CRM_HABIT_COLL.findById(habitID)
@@ -98,6 +96,10 @@ class Model extends BaseModel {
                     if (!isNaN(status)) {
                         dataInsert.status = Number(status)
                     }
+
+                    if (!isNaN(percentage)) {
+                        dataInsert.percentage = Number(percentage)
+                    }
         
                     if (!isNaN(duration)) {
                         dataInsert.duration = Number(duration)
@@ -124,9 +126,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, status, name, note, duration, imagesID }){
-        // console.log('==========================================')
-        // console.log({ trackID, userID, status, name, note, duration, imagesID })
+    update({ trackID, userID, status, name, note, duration, percentage, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -142,6 +142,10 @@ class Model extends BaseModel {
 
                 if (!isNaN(status)) {
                     dataUpdate.status = Number(status)
+                }
+
+                if (!isNaN(percentage)) {
+                    dataUpdate.percentage = Number(percentage)
                 }
 
                 if(name && name != ""){
@@ -208,8 +212,12 @@ class Model extends BaseModel {
                     // Cập nhật cho Habit thành phần
                     let checkStatusAll = 0
                     for(const item of tracks){
+                        let percentage = 0
+                        
                         if(Number(item.status) === 1){
                             checkStatusAll++
+                        }else{
+                            percentage = 100
                         }
 
                         // Cập nhật
@@ -222,6 +230,7 @@ class Model extends BaseModel {
                                 name: item.name, 
                                 note: item.note, 
                                 duration: item.duration,
+                                percentage: percentage,
                             })
                             // console.log(info1)
                         }
@@ -252,6 +261,7 @@ class Model extends BaseModel {
                             userUpdate: userID,
                             modifyAt: Date.now(),
                             status: 2,
+                            percentage: 100,
                         }, { new: true })
 
                         // Cập nhật vào Contact
