@@ -125,10 +125,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, trackID, contactID, month, year, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, trackID, contactID, phone, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -143,7 +143,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.getList({
-                        companyID, contactID, month, year, keyword, limit, lastestID, select, populates
+                        companyID, contactID, phone, keyword, limit, lastestID, select, populates
                     })
                 }
 
