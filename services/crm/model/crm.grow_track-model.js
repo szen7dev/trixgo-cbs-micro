@@ -31,6 +31,7 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
  */
 // const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
+const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
 
 // let dataTF = {
@@ -77,6 +78,8 @@ class Model extends BaseModel {
                     userCreate: userID,
                 }
 
+                let convertStr = ''
+
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     dataInsert.status = status;
                 }
@@ -93,15 +96,21 @@ class Model extends BaseModel {
                     dataInsert.weight = weight;
                 }
 
-                if(checkObjectIDs(contactID)){
-                    dataInsert.contact = contactID;
-                }
-
                 if(birthday && birthday != ""){
                     dataInsert.birthday = birthday;
                 }
 
-                let convertStr = ''
+                if(checkObjectIDs(contactID)){
+                    dataInsert.contact = contactID;
+
+                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
+
+                    if(infoContact){
+                        dataInsert.phone = infoContact?.phone;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
+                    }
+                }
+
                 if(name && name != ""){
                     dataInsert.name = name;
                     convertStr = stringUtils.removeAccents(name)
@@ -583,7 +592,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, contactID, month, year, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, contactID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -613,6 +622,10 @@ class Model extends BaseModel {
                     conditionObj.contact = contactID
 				}else{
                     conditionObj.company = companyID
+                }
+
+                if(phone && phone != ""){
+                    conditionObj.phone = phone
                 }
 
                 if(keyword){

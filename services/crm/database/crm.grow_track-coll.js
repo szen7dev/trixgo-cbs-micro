@@ -28,10 +28,12 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
     },
     //_______Ngày sinh
     birthday: { type: Date, default: Date.now },
-    //_________Giới tính(1-nam/ 2 - nữ/3-khác)
+    //_________Giới tính (1-nam/ 2 - nữ/3-khác)
     gender: { type: Number, default: 1 },
-    //_________Chiều cao (cm)
+    //_________Chiều cao đo (cm)
     height: { type: Number, default: 0 },
+    //_________Chiều cao mong muốn
+    desiredHeight: { type: Number, default: 0 },
     //_________Cân nặng (kg)
     weight: { type: Number, default: 0 },
     //________Nội dung
