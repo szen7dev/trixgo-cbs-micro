@@ -153,7 +153,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, trackID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, option, trackID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
@@ -173,7 +173,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getList({
-                        companyID, commonHabitID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates
+                        option, companyID, commonHabitID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates
                     })
                 }
 

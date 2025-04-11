@@ -321,7 +321,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, commonHabitID, habitID, contactID, status, date, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ option, companyID, commonHabitID, habitID, contactID, status, date, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -350,8 +350,15 @@ class Model extends BaseModel {
                 if(checkObjectIDs(habitID)){
                     conditionObj.habit = habitID
                 }else{
-                    if(checkObjectIDs(commonHabitID)){
-                        conditionObj.habit = commonHabitID
+                    if(!option){
+                        if(checkObjectIDs(commonHabitID)){
+                            conditionObj.habit = commonHabitID
+                        }
+                    }else{
+                        let listSubHabit = await CRM_HABIT_COLL.find({parent: commonHabitID})
+                        if(listSubHabit && listSubHabit.length){
+                            conditionObj.habit = {$in: listSubHabit.map(item=>item._id)}
+                        }
                     }
                 }
                 
