@@ -226,7 +226,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, thumbnailID, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired }){
+	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, thumbnailID, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, removeImageID }){
         return new Promise(async resolve => {
             try {
 				let info = await ITEM__GOODS_COLL.findById(goodsID)
@@ -252,7 +252,7 @@ class Model extends BaseModel {
 
                 // Tác giả (áp dụng cho Khóa học)
                 if(authorID && checkObjectIDs(authorID)){
-                    userUpdate.author = authorID
+                    dataUpdate.author = authorID
                 }
 
                 if(categoryID && checkObjectIDs(categoryID)){
@@ -267,9 +267,17 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = {
                         images: imagesID,
                     }
-    
+
                     if(!checkObjectIDs(thumbnailID)){
                         dataUpdate.thumbnail = imagesID[0];
+                    }
+                }
+
+                if(removeImageID && removeImageID.length) {
+                    dataUpdate.$pull = {
+                        images: {
+                            $in: removeImageID
+                        }
                     }
                 }
 
