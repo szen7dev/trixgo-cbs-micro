@@ -757,11 +757,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { option, projectID, taskID } = ctx.params;
+                const { option, projectID, taskID, fromDate, toDate } = ctx.params;
+
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.downloadTemplateImportExcel({
-                    option, companyID: company._id, projectID, taskID, userID
+                    option, companyID: company._id, projectID, taskID, userID, fromDate, toDate
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
