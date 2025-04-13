@@ -5093,8 +5093,7 @@ class Model extends BaseModel {
      * Func: Download template import excel
      * Date: 15/09/2022
      */
-    downloadTemplateImportExcel({ option, companyID, projectID, taskID,  userID }) {
-        // console.log({ option, companyID, projectID, taskID, userID })
+    downloadTemplateImportExcel({ option, companyID, projectID, taskID,  userID, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
                 // Mẫu Import excel
@@ -5195,7 +5194,14 @@ class Model extends BaseModel {
 
                 // Báo cáo điểm danh
                 else if(option == 3){
-                    let listData = await PCM_COMMENT_COLL.find({ companyOfAuthor: companyID, subType: 16 })
+                    let listData = await PCM_COMMENT_COLL.find({ 
+                        companyOfAuthor: companyID, 
+                        subType: 16,
+                        createAt: {
+                            $gte: moment( new Date(fromDate)).toDate(),
+                            $lte: moment( new Date(toDate)).toDate(),
+                        }
+                    })
                     // let listData = await PCM_COMMENT_COLL.find({ project: projectID, subType: 16 })
                     .select('content author createAt task')
                     .populate({
