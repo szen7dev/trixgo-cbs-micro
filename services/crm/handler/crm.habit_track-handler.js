@@ -99,6 +99,8 @@ module.exports = {
                     companyID = company?._id
                 }
 
+                // console.log({commonHabitID})
+
                 let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.updateMany({ companyID, userID, commonHabitID, date, contactID, tracks });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

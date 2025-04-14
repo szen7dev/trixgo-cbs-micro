@@ -67,7 +67,6 @@ class Model extends BaseModel {
                 }
                 
                 let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
-
                 if(!infoTrack){
                     let dataInsert = {
                         userCreate: userID, 
@@ -183,6 +182,7 @@ class Model extends BaseModel {
      * Code: 27/3/2025
      */
     updateMany({ companyID, userID, commonHabitID, date, contactID, tracks }){
+        // console.log({companyID, userID, commonHabitID, date, contactID, tracks})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -198,16 +198,21 @@ class Model extends BaseModel {
                     }
                     // console.log(condition)
                     
+                    // Tạo track cho Habit cha
                     let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
+                    // console.log(infoTrack)
                     if(!infoTrack){
                         let infocommonHabitTrack = await that.insert({ userID, companyID, habitID: commonHabitID, contactID, date, name: 'HABIT TỔNG HỢP' })
                         if(infocommonHabitTrack){
-                                commonHabitTrackID = infocommonHabitTrack.data._id
+                            console.log('Habit track cha chưa tồn tại')
+                            commonHabitTrackID = infocommonHabitTrack.data._id
                         }
                     }else{
+                        console.log('Habit track cha đã tồn tại')
                         commonHabitTrackID = infoTrack._id
                     }
                     // console.log({commonHabitTrackID})
+                    // console.log('=======================')
 
                     // Cập nhật cho Habit thành phần
                     let checkStatusAll = 0
@@ -273,9 +278,11 @@ class Model extends BaseModel {
                             }
                         }, { new: true })
                     }
-                }
 
-                return resolve({ error: false, message: 'Cập nhật thành công' });
+                    return resolve({ error: false, message: 'Cập nhật thành công' });
+                }else{
+                    return resolve({ error: true, message: "Không cập nhật được dữ liệu", status: 403 });
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
