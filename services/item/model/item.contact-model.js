@@ -79,8 +79,10 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours
+    insert({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours
     }) {
+        // console.log({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours
+        // })
         return new Promise(async resolve => {
             try {
                 /**
@@ -89,8 +91,8 @@ class Model extends BaseModel {
                  * 2-Khi mua hàng lần 2 trở đi => Khách hàng cũ => Đơn hàng cũ
                  * 3-Concat name, note, description -> namecv
                  */
-                if (!name || !phone || !checkObjectIDs(fundaID) || !checkObjectIDs(authorID))
-                    return resolve({ error: true, message: 'name|phone|fundaID|authorID_param_not_valid' })
+                if (!name || !phone || !checkObjectIDs(authorID))
+                    return resolve({ error: true, message: 'name|phone|authorID_param_not_valid' })
 
                 //___________Quyền truy cập ứng dụng Nhân sự
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -106,7 +108,7 @@ class Model extends BaseModel {
                 if (Number(checkPhone) < 10)
                     return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
 
-                let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
                 if (!infoFunda)
                     return resolve({ error: true, message: 'can_not_get_funda_info' })
 
@@ -134,9 +136,11 @@ class Model extends BaseModel {
                 }
                 // return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
 
+                let fundaID = infoFunda._id
+
                 let dataInsert = {
                     userCreate: authorID,
-                    company: infoFunda.company,
+                    company: companyID,
                     funda: fundaID,
                     type: (!isNaN(type) && Number(type) > 0) ? Number(type) : 2, // Khách hàng
                     name,

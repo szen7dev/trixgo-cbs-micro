@@ -18,9 +18,10 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
+            name             : { type: "string" },
+            fundaID          : { type: "string", optional: true },
             parent           : { type: "string", optional: true },
             type             : { type: "string", optional: true },
-            name             : { type: "string" },
             description      : { type: "string", optional: true },
             note             : { type: "string", optional: true },
             sign             : { type: "string", optional: true },
@@ -69,20 +70,33 @@ module.exports = {
             nonResident      : { type: "string", optional: true },
             referrerID       : { type: "string", optional: true },
             saleID           : { type: "string", optional: true },
-            fundaID          : { type: "string" }
+            
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource, annualWorkingHours, authorID } = ctx.params;
-        				const user = ctx.meta.infoUser;
-                let userID = user?._id;
+                let { optionSeller, option, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource, annualWorkingHours, authorID } = ctx.params;
 
-                if (!userID) {
-                  userID = authorID;
+                // console.log(ctx.params)
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
+        		
+                // const user = ctx.meta.infoUser;
+                // let userID = user?._id;
 
-                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({
+                // if (!userID) {
+                //   userID = authorID;
+                // }
+
+                let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({ companyID,
                 option, authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email,
                   department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
                   insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2,
