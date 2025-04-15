@@ -204,11 +204,11 @@ class Model extends BaseModel {
                     if(!infoTrack){
                         let infocommonHabitTrack = await that.insert({ userID, companyID, habitID: commonHabitID, contactID, date, name: 'HABIT TỔNG HỢP' })
                         if(infocommonHabitTrack){
-                            console.log('Habit track cha chưa tồn tại')
+                            // console.log('Habit track cha chưa tồn tại')
                             commonHabitTrackID = infocommonHabitTrack.data._id
                         }
                     }else{
-                        console.log('Habit track cha đã tồn tại')
+                        // console.log('Habit track cha đã tồn tại')
                         commonHabitTrackID = infoTrack._id
                     }
                     // console.log({commonHabitTrackID})
@@ -276,6 +276,14 @@ class Model extends BaseModel {
                                 streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 energy: 1, // Tính toán đảm bảo max 5 điểm máu
                             }
+                        }, { new: true })
+                    }else{
+                        // Cập nhật Habit cha
+                        await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(commonHabitTrackID, {
+                            userUpdate: userID,
+                            modifyAt: Date.now(),
+                            status: 1,
+                            percentage: Number(checkStatusAll/tracks.length).toFixed(0),
                         }, { new: true })
                     }
 
@@ -530,7 +538,7 @@ class Model extends BaseModel {
                             }
                           }
                         },
-                        { $sort: { year: 1, week: 1 } }
+                        // { $sort: { year: 1, week: 1 } }
                       ])
 
                     return resolve({ error: false, data: listData })
@@ -555,11 +563,12 @@ class Model extends BaseModel {
                               date: 1,
                               dayOfWeek : {$dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                               status: 1,
+                              percentage: 1,
                             }
                         },
-                        { 
-                            $sort: { dayOfWeek: 1 } 
-                        }
+                        // { 
+                        //     $sort: { dayOfWeek: 1 } 
+                        // }
                       ])
 
                     return resolve({ error: false, data: listData })
