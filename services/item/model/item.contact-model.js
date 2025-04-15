@@ -641,7 +641,9 @@ class Model extends BaseModel {
                     convertStr = convertStr + " " + stringUtils.removeAccents(bankAccount)
                 }
 
-                dataUpdate.namecv = convertStr
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
+                }
 
                 if (status) {
                     dataUpdate.status = status;
