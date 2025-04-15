@@ -183,8 +183,9 @@ class Model extends BaseModel {
                 if (bankAccount && bankAccount != "") {
                     convertStr = convertStr + " " + stringUtils.removeAccents(bankAccount)
                 }
-
-                dataInsert.namecv = convertStr
+                if(convertStr != ""){
+                    dataInsert.namecv = convertStr
+                }
 
                 // Người giới thiệu
                 if (referrerID && checkObjectIDs(referrerID)) {
@@ -641,7 +642,9 @@ class Model extends BaseModel {
                     convertStr = convertStr + " " + stringUtils.removeAccents(bankAccount)
                 }
 
-                dataUpdate.namecv = convertStr
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
+                }
 
                 if (status) {
                     dataUpdate.status = status;
