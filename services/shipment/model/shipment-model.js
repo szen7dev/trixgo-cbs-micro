@@ -23,6 +23,17 @@ class Model extends BaseModel {
       }
     });
   }
+
+  updateShipmentStatus({ shipmentId, status, statusDetails }) {
+    return new Promise(async resolve => {
+      try {
+        const shipment = await SHIPMENT_CORE_COLL.findByIdAndUpdate(shipmentId, { status, statusDetails }, { new: true });
+        return resolve({ error: false, data: shipment });
+      } catch (error) {
+        return resolve({ error: true, message: error.message });
+      }
+    });
+  }
 }
 
 exports.MODEL = new Model;

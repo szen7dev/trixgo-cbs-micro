@@ -601,6 +601,7 @@ class Model extends BaseModel {
                         }else{
                             // console.log("Tạo danh bạ----------")
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
+                                companyID,
                                 authorID, 
                                 fundaID,
                                 type: 2, 
@@ -697,6 +698,7 @@ class Model extends BaseModel {
                         }else{
                             // console.log("44444444444444444")
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
+                                companyID,
                                 authorID, 
                                 fundaID,
                                 type: 2, 
