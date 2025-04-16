@@ -61,6 +61,9 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
+                if (!checkObjectIDs(companyID))
+                    return resolve({error: true, message: "companyID invalid", keyError: KEY_ERROR.PARAMS_INVALID});
+
                 if(!parentID){
                     if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
                         return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID});
