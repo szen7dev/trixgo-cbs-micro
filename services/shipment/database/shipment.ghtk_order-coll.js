@@ -41,5 +41,10 @@ module.exports = DATABASE_MIDDLEWARE("shipment_ghtk_order", {
     deliverWorkShift: String,
     pkgDraftId: String,
     isXfast: Boolean,
-    status: String
+    status: String,
+    lastWebhookUpdate: Date,
+    reasonCode: String,
+    reason: String,
+    actionTime: Date,
+    weight: Number,
 });
