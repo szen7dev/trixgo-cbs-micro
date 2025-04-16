@@ -98,7 +98,7 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         default : 1
     },
     //_________Ngày chứng từ
-    dateInvoice: { type: Date, default: Date.now }, 
+    dateInvoice: { type: Date, default: Date.now },
     //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
     forward: { type: Number, default: 0 },
     //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)

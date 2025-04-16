@@ -40,6 +40,7 @@ module.exports = DATABASE_MIDDLEWARE("shipment_core", {
 
   // Detailed status message
   statusMessage: String,
+  statusDetails: Schema.Types.Mixed,
 
   // Status history for tracking changes
   statusHistory: [
