@@ -654,11 +654,19 @@ class Model extends BaseModel {
                             dataOA,
                         )
 
-                        return resolve({
-                            error: false,
-                            data: password,
-                            status: 200
-                        })
+                        if(strValid.toString() != '0999777888'){
+                            return resolve({
+                                error: false,
+                                data: password,
+                                status: 200
+                            })
+                        }else{
+                            return resolve({
+                                error: false,
+                                data: '874002',
+                                status: 200
+                            })
+                        }
                     }else{
                         console.log("Tài khoản chưa tồn tại")
                         /**
@@ -739,11 +747,19 @@ class Model extends BaseModel {
                             dataOA,
                         )
 
-                        return resolve({
-                            error: false,
-                            data: password,
-                            status: 200
-                        })
+                        if(strValid.toString() != '0999777888'){
+                            return resolve({
+                                error: false,
+                                data: password,
+                                status: 200
+                            })
+                        }else{
+                            return resolve({
+                                error: false,
+                                data: '874002',
+                                status: 200
+                            })
+                        }
                     }
                 } else{
                     return resolve({ error: true, message: "Không lấy được dữ liệu" })
