@@ -50,10 +50,15 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
      */
     secretKey: String,
     /**
-     * tokenKey
+     * key
      * ...
      */
     key: String,
+    /**
+     * tokenKey
+     * ...
+     */
+    tokenKey: String,
     //_________Điện thoại
     hotline1: String,
     //_________Điện thoại
