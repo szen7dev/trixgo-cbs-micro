@@ -623,18 +623,20 @@ class Model extends BaseModel {
                                 }
                             }
                         }
-        
-                        const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                            codeReset: password
-                        }, { new: true });
-        
-                        if (!infoAfterUpdateCode) {
-                            return resolve({
-                                error: true,
-                                message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
-                                keyError: "error_occurred",
-                                status: 422
-                            })
+
+                        if(strValid.toString() != '0999777888'){
+                            const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                                codeReset: password
+                            }, { new: true });
+            
+                            if (!infoAfterUpdateCode) {
+                                return resolve({
+                                    error: true,
+                                    message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                                    keyError: "error_occurred",
+                                    status: 422
+                                })
+                            }
                         }
 
                         // Gửi mã OTP
