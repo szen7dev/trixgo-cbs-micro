@@ -508,7 +508,7 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Hàm kiểm tra Phone
-                const strValid = phone.toLowerCase().trim();      
+                const strValid = phone.toLowerCase().trim();
                 function isValidVietnamPhoneNumber(str) {
                     const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
                     return phoneRegex.test(str);
@@ -547,7 +547,7 @@ class Model extends BaseModel {
                      * - Nếu có thì kiểm tra để link với user
                      */
                     let infoContact = await ITEM__CONTACT_COLL.findOne({
-                        company: companyID, 
+                        company: companyID,
                         $or: [
                             {  email: strValid },
                             {  phone: strValid },
@@ -591,34 +591,34 @@ class Model extends BaseModel {
                                 userCreate: info._id
                             }, { new: true })
                             // console.log(info1)
-                            
+
                             if(Number(checkContactInUserInCompany) === 0){
                                 let info2 = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                                    $addToSet: { contacts: infoContact._id } 
+                                    $addToSet: { contacts: infoContact._id }
                                 }, { new: true });
                                 // console.log(info2)
                             }
-                        }else{
+                        } else{
                             // console.log("Tạo danh bạ----------")
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 companyID,
-                                authorID, 
+                                authorID,
                                 fundaID,
-                                type: 2, 
+                                type: 2,
                                 name: `fullname ${strValid}-${infoCompany.sign}`,
-                                phone: strValid, 
+                                phone: strValid,
                                 email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
                             })
 
-                            if(infoNewContact){
-                                await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
+                            if(!infoNewContact.error && infoNewContact.data){
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data?._id, {
                                     linkUser: info._id,
                                     userCreate: info._id
                                 }, { new: true })
-                                
+
                                 if(Number(checkContactInUserInCompany) === 0){
                                     await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
-                                        $addToSet: { contacts: infoNewContact.data._id } 
+                                        $addToSet: { contacts: infoNewContact.data?._id }
                                     }, { new: true })
                                 }
                             }
@@ -628,7 +628,7 @@ class Model extends BaseModel {
                             const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
                                 codeReset: password
                             }, { new: true });
-            
+
                             if (!infoAfterUpdateCode) {
                                 return resolve({
                                     error: true,
@@ -689,7 +689,7 @@ class Model extends BaseModel {
                         let infoUserAfterInsert = await this.insertData(dataInsert)
                         // console.log("111111111111111111")
                         // console.log(infoUserAfterInsert)
-                        
+
                         if (!infoUserAfterInsert)
                             return resolve({ error: true, message: 'cannot_insert_data' })
 
@@ -709,25 +709,25 @@ class Model extends BaseModel {
                             // console.log("44444444444444444")
                             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                                 companyID,
-                                authorID, 
+                                authorID,
                                 fundaID,
-                                type: 2, 
+                                type: 2,
                                 name: `fullname ${strValid}-${infoCompany.sign}`,
-                                phone: strValid, 
+                                phone: strValid,
                                 email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
                             })
                             // console.log(infoNewContact)
 
-                            if(infoNewContact){
+                            if(!infoNewContact.error && infoNewContact.data){
                                 // console.log("55555555555555555")
-                                await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data._id, {
+                                await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data?._id, {
                                     linkUser: infoUserAfterInsert._id,
                                     userCreate: infoUserAfterInsert._id
                                 }, { new: true })
-                                
+
                                 // console.log("66666666666666")
                                 await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
-                                    $addToSet: { contacts: infoNewContact.data._id } 
+                                    $addToSet: { contacts: infoNewContact.data._id }
                                 }, { new: true })
                             }
                         }
