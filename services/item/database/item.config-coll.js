@@ -28,7 +28,7 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
      * 1-ZNS (Zalo)
      * 2-Facebook
      * 3-Contact công ty
-     * 
+     *
      */
     type: { type: Number, default: 1 },
     /**
@@ -59,6 +59,7 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
      * ...
      */
     tokenKey: String,
+    refreshToken: String,
     //_________Điện thoại
     hotline1: String,
     //_________Điện thoại
@@ -83,7 +84,7 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
     email: String,
     //_________content
     content: String,
-    //_________registration 
+    //_________registration
     registration: String,
     //_________note
     note: String,

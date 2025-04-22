@@ -89,8 +89,11 @@ class Model extends BaseModel {
                  * Cache refresh token in 60 days
                  * and token is 24h
                  */
-                await cacher.set(`ZALO:oa:token:${appId}`, access_token, 24 * 60 * 60);
-                await cacher.set(`ZALO:oa:refresh_token:${appId}`, refresh_token, 24 * 60 * 60 * 60);
+                await ITEM__CONFIG_COLL.updateOne({ channel: appId }, { tokenKey: access_token, refreshToken: refresh_token });
+                await Promise.allSettled([
+                    cacher.set(`ZALO:oa:token:${appId}`, access_token, 24 * 60 * 60),
+                    cacher.set(`ZALO:oa:refresh_token:${appId}`, refresh_token, 24 * 60 * 60 * 60),
+                ])
 
                 await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REFRESH_TOKEN_ZALO_OA}`, {
                   appId
@@ -137,8 +140,11 @@ class Model extends BaseModel {
                      * Cache refresh token in 60 days
                      * and token is 24h
                      */
-                    await cacher.set(`ZALO:oa:token:${appId}`, access_token, 24 * 60 * 60);
-                    await cacher.set(`ZALO:oa:refresh_token:${appId}`, refresh_token, 24 * 60 * 60 * 60);
+                    await ITEM__CONFIG_COLL.updateOne({ channel: appId }, { tokenKey: access_token, refreshToken: refresh_token });
+                    await Promise.allSettled([
+                        cacher.set(`ZALO:oa:token:${appId}`, access_token, 24 * 60 * 60),
+                        cacher.set(`ZALO:oa:refresh_token:${appId}`, refresh_token, 24 * 60 * 60 * 60),
+                    ])
                 }
 
                 resolve(response.data);
@@ -151,9 +157,14 @@ class Model extends BaseModel {
     sendMessage({ text, appId, userId, cacher }) {
         return new Promise(async resolve => {
             try {
-                const token = await cacher.get(`ZALO:oa:token:${appId}`);
-                if(!token) {
-                    return resolve({ error: true, message: 'Token is required' });
+                // const token = await cacher.get(`ZALO:oa:token:${appId}`);
+                // if(!token) {
+                //     return resolve({ error: true, message: 'Token is required' });
+                // }
+
+                const config = await ITEM__CONFIG_COLL.findOne({ channel: appId }).lean();
+                if (!config) {
+                  return resolve({ error: true, message: 'Config not found' });
                 }
 
                 const response = await httpRequest.post(`${ZALO_OPEN_API_URL}/v2.0/oa/message`, {
@@ -165,7 +176,7 @@ class Model extends BaseModel {
          					},
                 }, {
                   headers: {
-        						access_token: token,
+        						access_token: config.tokenKey,
         						'Content-type': 'application/json',
          					},
                 });
@@ -183,9 +194,14 @@ class Model extends BaseModel {
     sendMessageZNS({ phone, templateData, templateId = 257162, appId, cacher }) {
         return new Promise(async resolve => {
             try {
-                const token = await cacher.get(`ZALO:oa:token:${appId}`);
-                if(!token) {
-                    return resolve({ error: true, message: 'Token is required' });
+                // const token = await cacher.get(`ZALO:oa:token:${appId}`);
+                // if(!token) {
+                //     return resolve({ error: true, message: 'Token is required' });
+                // }
+
+                const config = await ITEM__CONFIG_COLL.findOne({ channel: appId }).lean();
+                if (!config) {
+                  return resolve({ error: true, message: 'Config not found' });
                 }
 
                 if(!phone || !templateData) {
@@ -207,7 +223,7 @@ class Model extends BaseModel {
                     template_data: templateData,
                 }, {
                     headers: {
-						access_token: token,
+						access_token: config.tokenKey,
 						'Content-type': 'application/json',
 					},
                 });
