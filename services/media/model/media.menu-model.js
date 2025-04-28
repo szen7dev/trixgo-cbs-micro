@@ -1,8 +1,6 @@
 "use strict";
 
 const BaseModel = require("../../../tools/db/base_model");
-const ObjectID = require("mongoose").Types.ObjectId;
-const moment = require("moment");
 const { KEY_ERROR } = require("../../../tools/keys");
 const stringUtils				    = require('../../../tools/utils/string_utils');
 const {
@@ -78,7 +76,7 @@ class Model extends BaseModel {
   }
 
   /**
-   * Name: Update 
+   * Name: Update
    * Author: Hiepnh
    * Date: 9/4/2022
    */
@@ -104,13 +102,14 @@ class Model extends BaseModel {
                         $ne: menuID
                     }
                     });
+
                 if(checkName)
                     return resolve({ error: true, message: "name_existed" })
             }
 
-            let dataUpdate = { 
-                userUpdate: userID, 
-                modifyAt: new Date() 
+            let dataUpdate = {
+                userUpdate: userID,
+                modifyAt: new Date()
             }
 
             if(imagesID && imagesID.length) {
@@ -156,7 +155,7 @@ class Model extends BaseModel {
   }
 
   /**
-   * Name: Get info 
+   * Name: Get info
    * Author: Hiepnh
    * Date: 9/4/2022
    */
