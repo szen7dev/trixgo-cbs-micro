@@ -49,25 +49,23 @@ module.exports = {
      * Date: 9/4/2022
      */
     update: {
-        auth: "required",
+        // auth: "required",
         params: {
             menuID  : { type: "string" },
             name: { type: "string", optional: true },
             slug: { type: "string", optional: true },
-            order: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const { menuID, name, slug, order, type, status, thumbnailID, imagesID } = ctx.params;
-                
-                // console.log(ctx.params)
 
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await MEDIA_MENU_MODEL.update({ userID, menuID, name, slug, order, type, status, thumbnailID, imagesID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
+                console.error(error)
                 return { error: true, message: error.message };
             }
         }

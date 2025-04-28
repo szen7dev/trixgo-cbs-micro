@@ -14,13 +14,11 @@ const { CF_DOMAIN_SERVICES } = require('./helper/domain.constant');
 const { CF_ACTIONS_GATEWAY } = require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } = require('../auth/helper/auth.actions-constant');
 const GATEWAY__HANDLER = require('./handler/gateway.handler');
-const LoggingAndExceptionHandler = require('../../tools/middlewares/logging.exception.middleware');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.GATEWAY,
 	mixins: [
 		ApiGateway,
-		LoggingAndExceptionHandler // Add the middleware here
 	],
 	settings: {
 		// Exposed port
@@ -89,14 +87,15 @@ module.exports = {
 		},
 
 		// Add global error handler
-		onError(req, res, err) {
-			// Let the middleware handle the error
-			res.status(err.code || 500).json({
-				error: true,
-				message: err.message,
-				timestamp: new Date().toISOString()
-			});
-		}
+		// onError(req, res, err) {
+		// 	console.log({ req, res, err })
+		// 	// Let the middleware handle the error
+		// 	res.status(err.code || 500).json({
+		// 		error: true,
+		// 		message: err.message,
+		// 		timestamp: new Date().toISOString()
+		// 	});
+		// }
 	},
 
 	dependencies: [
@@ -156,6 +155,7 @@ module.exports = {
 
 			try {
 				let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token });
+				console.log({ checkAuthorization })
 
 				if (checkAuthorization.error) {
 					return Promise.reject(checkAuthorization.message);
