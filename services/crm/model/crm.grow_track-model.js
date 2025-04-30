@@ -68,7 +68,7 @@ class Model extends BaseModel {
                     if(!isValidVietnamPhoneNumber(strValid))
                         return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
                 }else{
-                    if(!checkObjectIDs(contactID) || !name || !birthday)
+                    if(!checkObjectIDs(contactID) || !name || !birthday || !height || !weight)
                         return resolve({ error: true, message: "Danh bạ không hợp lệ. Hãy vui lòng thử lại" })
                 }
 
@@ -327,6 +327,70 @@ class Model extends BaseModel {
 
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
+
+                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, gender;
+                if(infoAterGet.gender == 1){
+                    gender = "Male";
+                }else{
+                    gender = "Female";
+                }
+
+                function getMonthDifference(date1, date2) {
+                    const d1 = new Date(date1);
+                    const d2 = new Date(date2);
+                  
+                    let months = (d2.getFullYear() - d1.getFullYear()) * 12;
+                    months += d2.getMonth() - d1.getMonth();
+                  
+                    // Nếu ngày của date2 nhỏ hơn ngày của date1 => chưa đủ 1 tháng
+                    if (d2.getDate() < d1.getDate()) {
+                      months -= 1;
+                    }
+                  
+                    return months;
+                }
+
+                function calculateZScore(X, L, M, S) {
+                    if (L === 0) {
+                      return Math.log(X / M) / S;
+                    } else {
+                      return (Math.pow(X / M, L) - 1) / (L * S);
+                    }
+                }
+
+                let ageInMonths = getMonthDifference(date1, date2);
+                // console.log({gender})
+                // console.log({ageInMonths})
+
+
+                // 🔧 Đường dẫn tới file cdc_grow.xlsx
+                const filePath = path.join(__dirname, '../../../files/templates/excels/cdc_grow.xlsx');
+
+                // Đọc file
+                XlsxPopulate.fromFileAsync(filePath)
+                .then(workbook => {
+                    // const gender = "Female"; // Hoặc "Male"
+                    // const ageInMonths = 20;
+
+                    const sheet = workbook.sheet(gender);
+                    const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
+
+                    // Lặp qua từng dòng để tìm Agemos >= ageInMonths
+                    for (let i = 2; i <= lastRow; i++) {
+                        const agemos = sheet.cell(`B${i}`).value();
+                        if (agemos >= ageInMonths) {
+                            const L = sheet.cell(`C${i}`).value();
+                            const M = sheet.cell(`D${i}`).value();
+                            const S = sheet.cell(`E${i}`).value();
+
+                            const z = calculateZScore(X, L, M, S);
+                            console.log("Z-score:", z.toFixed(6));
+
+                            console.log(`Tuổi: ${agemos} tháng -> L=${L}, M=${M}, S=${S}`);
+                            return { agemos, L, M, S };
+                        }
+                    }  
+                });
 
                  /**
                  * TÍNH TOÁN KẾT QUẢ TRẢ VỀ BIỂU ĐỒ ĐO CAO
