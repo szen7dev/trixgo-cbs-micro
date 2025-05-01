@@ -328,6 +328,8 @@ class Model extends BaseModel {
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
 
+                let ageHeightNow = [], ageHeightP3 = [], ageHeightP5 = [], ageHeightP10 = [], ageHeightP25 = [], ageHeightP50 = [], ageHeightP75 = [], ageHeightP90 = [], ageHeightP95 = [], ageHeightP97 = []
+
                 let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, gender;
                 if(infoAterGet.gender == 1){
                     gender = "Male";
@@ -335,6 +337,7 @@ class Model extends BaseModel {
                     gender = "Female";
                 }
 
+                // Hàm tính tháng
                 function getMonthDifference(date1, date2) {
                     const d1 = new Date(date1);
                     const d2 = new Date(date2);
@@ -350,6 +353,7 @@ class Model extends BaseModel {
                     return months;
                 }
 
+                // Hàm tính Zscore theo X, L, M, S
                 function calculateZScore(X, L, M, S) {
                     if (L === 0) {
                       return Math.log(X / M) / S;
@@ -358,9 +362,16 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Hàm tính chiều cao theo Z, L, M, S
+                function calculateHeightFromZ(Z, L, M, S) {
+                    if (L === 0) {
+                        return M * Math.exp(S * Z);
+                    } else {
+                        return M * Math.pow(1 + L * S * Z, 1 / L);
+                    }
+                }
+
                 let ageInMonths = getMonthDifference(date1, date2);
-                // console.log({gender})
-                // console.log({ageInMonths})
 
 
                 // 🔧 Đường dẫn tới file cdc_grow.xlsx
@@ -369,282 +380,195 @@ class Model extends BaseModel {
                 // Đọc file
                 XlsxPopulate.fromFileAsync(filePath)
                 .then(workbook => {
-                    // const gender = "Female"; // Hoặc "Male"
-                    // const ageInMonths = 20;
-
                     const sheet = workbook.sheet(gender);
                     const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
 
+                    let startAgemos, L, M, S, Z, startAge, endAge=20 // Tuổi
+
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
                     for (let i = 2; i <= lastRow; i++) {
-                        const agemos = sheet.cell(`B${i}`).value();
-                        if (agemos >= ageInMonths) {
-                            const L = sheet.cell(`C${i}`).value();
-                            const M = sheet.cell(`D${i}`).value();
-                            const S = sheet.cell(`E${i}`).value();
+                        const agemosCheck = sheet.cell(`B${i}`).value();
 
-                            const z = calculateZScore(X, L, M, S);
-                            console.log("Z-score:", z.toFixed(6));
+                        if (agemosCheck >= ageInMonths) {
+                            startAgemos = agemosCheck
 
-                            console.log(`Tuổi: ${agemos} tháng -> L=${L}, M=${M}, S=${S}`);
-                            return { agemos, L, M, S };
+                            L = sheet.cell(`C${i}`).value();
+                            M = sheet.cell(`D${i}`).value();
+                            S = sheet.cell(`E${i}`).value();
+                            Z = calculateZScore(X, L, M, S);
+
+                            startAge = Math.ceil(agemosCheck / 12);
+
+                            // Lấy các giá trị của điểm bắt đầu
+                            ageHeightNow.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                // agemos: agemosCheck,
+                                // L,
+                                // M,
+                                // S,
+                                height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
+                            })
+
+                            ageHeightP3.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`F${i}`).value()).toFixed(2)
+                            })
+
+                            ageHeightP5.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`G${i}`).value()).toFixed(2)
+                            })
+
+                            ageHeightP10.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`H${i}`).value()).toFixed(2)
+                            })
+
+                            ageHeightP25.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`I${i}`).value()).toFixed(2)
+                            })
+
+                            ageHeightP50.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`J${i}`).value()).toFixed(2)
+                            })
+
+                            ageHeightP75.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`K${i}`).value()).toFixed(2)
+                            })
+
+                            ageHeightP90.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`L${i}`).value()).toFixed(2)
+                            })
+
+                            ageHeightP95.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`M${i}`).value()).toFixed(2)
+                            })
+
+                            ageHeightP97.push({
+                                age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                height: Number(sheet.cell(`N${i}`).value()).toFixed(2)
+                            })
+
+                            // console.log("Z-score:", Z.toFixed(6));
+                            // console.log(`Tuổi: ${startAgemos} tháng -> L=${L}, M=${M}, S=${S}`);
+
+                            // ✅ Ngắt vòng lặp sau khi tìm thấy
+                            break;
                         }
                     }  
-                });
+        
+                    // Lấy các giá trị ứng với từng độ tuổi
+                    for (let age = startAge; age <= endAge; age++) {
+                        let targetAgemos
 
-                 /**
-                 * TÍNH TOÁN KẾT QUẢ TRẢ VỀ BIỂU ĐỒ ĐO CAO
-                 */
-                 let ageHeightNow = [
-                    {age: 1, height: 90},
-                    {age: 2, height: 91},
-                    {age: 3, height: 93},
-                    {age: 4, height: 94},
-                    {age: 5, height: 95},
-                    {age: 6, height: 96},
-                    {age: 7, height: 97},
-                    {age: 8, height: 98},
-                    {age: 9, height: 99},
-                    {age: 10, height: 100},
-                    {age: 11, height: 101},
-                    {age: 12, height: 102},
-                    {age: 13, height: 103},
-                    {age: 14, height: 104},
-                    {age: 15, height: 105},
-                    {age: 16, height: 106},
-                    {age: 17, height: 107},
-                    {age: 18, height: 108},
-                    {age: 19, height: 109},
-                    {age: 20, height: 110},
-                ]
+                        if(age < 20){
+                            targetAgemos = +(age * 12 + 0.5).toFixed(1); // ví dụ 8 tuổi -> 96.5 tháng
+                        }else{
+                            targetAgemos = 240
+                        }
+                
+                        let found = false;
 
-                let ageHeightP3 = [
-                    { age: 1, height: 91 },
-                    { age: 2, height: 92 },
-                    { age: 3, height: 93 },
-                    { age: 4, height: 94 },
-                    { age: 5, height: 95 },
-                    { age: 6, height: 96 },
-                    { age: 7, height: 97 },
-                    { age: 8, height: 98 },
-                    { age: 9, height: 99 },
-                    { age: 10, height: 100 },
-                    { age: 11, height: 101 },
-                    { age: 12, height: 102 },
-                    { age: 13, height: 103 },
-                    { age: 14, height: 104 },
-                    { age: 15, height: 105 },
-                    { age: 16, height: 106 },
-                    { age: 17, height: 107 },
-                    { age: 18, height: 108 },
-                    { age: 19, height: 109 },
-                    { age: 20, height: 110 }
-                  ]
-                  
-                  let ageHeightP5 = [
-                    { age: 1, height: 92 },
-                    { age: 2, height: 93 },
-                    { age: 3, height: 94 },
-                    { age: 4, height: 95 },
-                    { age: 5, height: 96 },
-                    { age: 6, height: 97 },
-                    { age: 7, height: 98 },
-                    { age: 8, height: 99 },
-                    { age: 9, height: 100 },
-                    { age: 10, height: 101 },
-                    { age: 11, height: 102 },
-                    { age: 12, height: 103 },
-                    { age: 13, height: 104 },
-                    { age: 14, height: 105 },
-                    { age: 15, height: 106 },
-                    { age: 16, height: 107 },
-                    { age: 17, height: 108 },
-                    { age: 18, height: 109 },
-                    { age: 19, height: 110 },
-                    { age: 20, height: 111 }
-                  ]
-                  
-                  let ageHeightP10 = [
-                    { age: 1, height: 93 },
-                    { age: 2, height: 94 },
-                    { age: 3, height: 95 },
-                    { age: 4, height: 96 },
-                    { age: 5, height: 97 },
-                    { age: 6, height: 98 },
-                    { age: 7, height: 99 },
-                    { age: 8, height: 100 },
-                    { age: 9, height: 101 },
-                    { age: 10, height: 102 },
-                    { age: 11, height: 103 },
-                    { age: 12, height: 104 },
-                    { age: 13, height: 105 },
-                    { age: 14, height: 106 },
-                    { age: 15, height: 107 },
-                    { age: 16, height: 108 },
-                    { age: 17, height: 109 },
-                    { age: 18, height: 110 },
-                    { age: 19, height: 111 },
-                    { age: 20, height: 112 }
-                  ]
-                  
-                  let ageHeightP25 = [
-                    { age: 1, height: 94 },
-                    { age: 2, height: 95 },
-                    { age: 3, height: 96 },
-                    { age: 4, height: 97 },
-                    { age: 5, height: 98 },
-                    { age: 6, height: 99 },
-                    { age: 7, height: 100 },
-                    { age: 8, height: 101 },
-                    { age: 9, height: 102 },
-                    { age: 10, height: 103 },
-                    { age: 11, height: 104 },
-                    { age: 12, height: 105 },
-                    { age: 13, height: 106 },
-                    { age: 14, height: 107 },
-                    { age: 15, height: 108 },
-                    { age: 16, height: 109 },
-                    { age: 17, height: 110 },
-                    { age: 18, height: 111 },
-                    { age: 19, height: 112 },
-                    { age: 20, height: 113 }
-                  ]
-                  
-                  let ageHeightP50 = [
-                    { age: 1, height: 95 },
-                    { age: 2, height: 96 },
-                    { age: 3, height: 97 },
-                    { age: 4, height: 98 },
-                    { age: 5, height: 99 },
-                    { age: 6, height: 100 },
-                    { age: 7, height: 101 },
-                    { age: 8, height: 102 },
-                    { age: 9, height: 103 },
-                    { age: 10, height: 104 },
-                    { age: 11, height: 105 },
-                    { age: 12, height: 106 },
-                    { age: 13, height: 107 },
-                    { age: 14, height: 108 },
-                    { age: 15, height: 109 },
-                    { age: 16, height: 110 },
-                    { age: 17, height: 111 },
-                    { age: 18, height: 112 },
-                    { age: 19, height: 113 },
-                    { age: 20, height: 114 }
-                  ]
-                  
-                  let ageHeightP75 = [
-                    { age: 1, height: 96 },
-                    { age: 2, height: 97 },
-                    { age: 3, height: 98 },
-                    { age: 4, height: 99 },
-                    { age: 5, height: 100 },
-                    { age: 6, height: 101 },
-                    { age: 7, height: 102 },
-                    { age: 8, height: 103 },
-                    { age: 9, height: 104 },
-                    { age: 10, height: 105 },
-                    { age: 11, height: 106 },
-                    { age: 12, height: 107 },
-                    { age: 13, height: 108 },
-                    { age: 14, height: 109 },
-                    { age: 15, height: 110 },
-                    { age: 16, height: 111 },
-                    { age: 17, height: 112 },
-                    { age: 18, height: 113 },
-                    { age: 19, height: 114 },
-                    { age: 20, height: 115 }
-                  ]
-                  
-                  let ageHeightP90 = [
-                    { age: 1, height: 97 },
-                    { age: 2, height: 98 },
-                    { age: 3, height: 99 },
-                    { age: 4, height: 100 },
-                    { age: 5, height: 101 },
-                    { age: 6, height: 102 },
-                    { age: 7, height: 103 },
-                    { age: 8, height: 104 },
-                    { age: 9, height: 105 },
-                    { age: 10, height: 106 },
-                    { age: 11, height: 107 },
-                    { age: 12, height: 108 },
-                    { age: 13, height: 109 },
-                    { age: 14, height: 110 },
-                    { age: 15, height: 111 },
-                    { age: 16, height: 112 },
-                    { age: 17, height: 113 },
-                    { age: 18, height: 114 },
-                    { age: 19, height: 115 },
-                    { age: 20, height: 116 }
-                  ]
-                  
-                  let ageHeightP95 = [
-                    { age: 1, height: 98 },
-                    { age: 2, height: 99 },
-                    { age: 3, height: 100 },
-                    { age: 4, height: 101 },
-                    { age: 5, height: 102 },
-                    { age: 6, height: 103 },
-                    { age: 7, height: 104 },
-                    { age: 8, height: 105 },
-                    { age: 9, height: 106 },
-                    { age: 10, height: 107 },
-                    { age: 11, height: 108 },
-                    { age: 12, height: 109 },
-                    { age: 13, height: 110 },
-                    { age: 14, height: 111 },
-                    { age: 15, height: 112 },
-                    { age: 16, height: 113 },
-                    { age: 17, height: 114 },
-                    { age: 18, height: 115 },
-                    { age: 19, height: 116 },
-                    { age: 20, height: 117 }
-                  ]
-                  
-                  let ageHeightP97 = [
-                    { age: 1, height: 99 },
-                    { age: 2, height: 100 },
-                    { age: 3, height: 101 },
-                    { age: 4, height: 102 },
-                    { age: 5, height: 103 },
-                    { age: 6, height: 104 },
-                    { age: 7, height: 105 },
-                    { age: 8, height: 106 },
-                    { age: 9, height: 107 },
-                    { age: 10, height: 108 },
-                    { age: 11, height: 109 },
-                    { age: 12, height: 110 },
-                    { age: 13, height: 111 },
-                    { age: 14, height: 112 },
-                    { age: 15, height: 113 },
-                    { age: 16, height: 114 },
-                    { age: 17, height: 115 },
-                    { age: 18, height: 116 },
-                    { age: 19, height: 117 },
-                    { age: 20, height: 118 }
-                  ]                  
+                        for (let i = 2; i <= lastRow; i++) {
+                            const agemos = sheet.cell(`B${i}`).value();
 
-                return resolve({ error: false, 
-                    data: infoAterGet, 
-                    growTrack: {
-                        ageHeightNow, 
-                        ageHeightP3,
-                        ageHeightP5,
-                        ageHeightP10,
-                        ageHeightP25,
-                        ageHeightP50,
-                        ageHeightP75,
-                        ageHeightP90,
-                        ageHeightP95,
-                        ageHeightP97,
-                        hdfs: -1, // Height Deviation from Standard
-                        whoHS: 105,
-                        wdfs: 2, // Weight Deviation from Standard
-                        whoWS: 28,
-                    },
-                    status: 200 
-                })
+                            if (agemos >= targetAgemos) {
+                                const L = sheet.cell(`C${i}`).value();
+                                const M = sheet.cell(`D${i}`).value();
+                                const S = sheet.cell(`E${i}`).value();
+                
+                                ageHeightNow.push({
+                                    age,
+                                    // agemos,
+                                    // L,
+                                    // M,
+                                    // S,
+                                    height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
+                                });
+
+                                ageHeightP3.push({
+                                    age,
+                                    height: Number(sheet.cell(`F${i}`).value()).toFixed(2)
+                                })
+    
+                                ageHeightP5.push({
+                                    age,
+                                    height: Number(sheet.cell(`G${i}`).value()).toFixed(2)
+                                })
+    
+                                ageHeightP10.push({
+                                    age,
+                                    height: Number(sheet.cell(`H${i}`).value()).toFixed(2)
+                                })
+    
+                                ageHeightP25.push({
+                                    age,
+                                    height: Number(sheet.cell(`I${i}`).value()).toFixed(2)
+                                })
+    
+                                ageHeightP50.push({
+                                    age,
+                                    height: Number(sheet.cell(`J${i}`).value()).toFixed(2)
+                                })
+    
+                                ageHeightP75.push({
+                                    age,
+                                    height: Number(sheet.cell(`K${i}`).value()).toFixed(2)
+                                })
+    
+                                ageHeightP90.push({
+                                    age,
+                                    height: Number(sheet.cell(`L${i}`).value()).toFixed(2)
+                                })
+    
+                                ageHeightP95.push({
+                                    age,
+                                    height: Number(sheet.cell(`M${i}`).value()).toFixed(2)
+                                })
+    
+                                ageHeightP97.push({
+                                    age,
+                                    height: Number(sheet.cell(`N${i}`).value()).toFixed(2)
+                                })
+
+                                found = true;
+
+                                break;
+                            }
+                        }
+                
+                        if (!found) {
+                            console.warn(`Không tìm thấy dòng phù hợp cho tuổi ${age} (Agemos ~ ${targetAgemos})`);
+                        }
+                    }
+                    // console.log(ageHeightNow)
+
+                    return resolve({ error: false, 
+                        data: infoAterGet,
+                        growTrack: {
+                            ageHeightNow, 
+                            ageHeightP3,
+                            ageHeightP5,
+                            ageHeightP10,
+                            ageHeightP25,
+                            ageHeightP50,
+                            ageHeightP75,
+                            ageHeightP90,
+                            ageHeightP95,
+                            ageHeightP97,
+                            hdfs: -1, // Height Deviation from Standard
+                            whoHS: 105,
+                            wdfs: 2, // Weight Deviation from Standard
+                            whoWS: 28,
+                        },
+                        status: 200 
+                    })
+                })      
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
