@@ -330,11 +330,15 @@ class Model extends BaseModel {
 
                 let ageHeightNow = [], ageHeightP3 = [], ageHeightP5 = [], ageHeightP10 = [], ageHeightP25 = [], ageHeightP50 = [], ageHeightP75 = [], ageHeightP90 = [], ageHeightP95 = [], ageHeightP97 = []
 
-                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, gender;
+                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, gender, genderHWho, genderWWho;
                 if(infoAterGet.gender == 1){
                     gender = "Male";
+                    genderHWho = "MaleHWho";
+                    genderWWho = "MaleWWho";
                 }else{
                     gender = "Female";
+                    genderHWho = "FemaleHWho";
+                    genderWWho = "FemaleWWho";
                 }
 
                 // Hàm tính tháng
@@ -381,18 +385,23 @@ class Model extends BaseModel {
                 }
 
                 let ageInMonths = getMonthDifference(date1, date2);
+                // console.log({ageInMonths})
 
-
-                // 🔧 Đường dẫn tới file cdc_grow.xlsx
+                // Đường dẫn tới file cdc_grow.xlsx
                 const filePath = path.join(__dirname, '../../../files/templates/excels/cdc_grow.xlsx');
 
                 // Đọc file
                 XlsxPopulate.fromFileAsync(filePath)
                 .then(workbook => {
                     const sheet = workbook.sheet(gender);
+                    const sheet1 = workbook.sheet(genderHWho);
+                    // const sheet2 = workbook.sheet(genderWWho);
                     const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
+                    const lastRow1 = sheet1.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
+                    // const lastRow2 = sheet2.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
 
                     let startAgemos, L, M, S, Z, P, startAge, endAge = 20 // Tuổi
+                    let hdfs, whoHS
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
                     for (let i = 2; i <= lastRow; i++) {
@@ -555,6 +564,21 @@ class Model extends BaseModel {
                     }
                     // console.log(ageHeightNow)
 
+                    // Kiểm tra cao so với chuẩn WHO
+                    for (let i = 2; i <= lastRow; i++) {
+                        const agemosCheck = sheet1.cell(`A${i}`).value();
+
+                        if (agemosCheck >= ageInMonths) {
+                            whoHS = sheet1.cell(`K${i}`).value();
+
+                            hdfs = X - whoHS
+
+                            // ✅ Ngắt vòng lặp sau khi tìm thấy
+                            break;
+                        }
+                    }  
+                    // console.log({X, whoHS, hdfs})
+
                     return resolve({ error: false, 
                         data: infoAterGet,
                         Z,
@@ -570,8 +594,8 @@ class Model extends BaseModel {
                             ageHeightP90,
                             ageHeightP95,
                             ageHeightP97,
-                            hdfs: -1, // Height Deviation from Standard
-                            whoHS: 105,
+                            hdfs, // Height Deviation from Standard
+                            whoHS,
                             wdfs: 2, // Weight Deviation from Standard
                             whoWS: 28,
                         },
