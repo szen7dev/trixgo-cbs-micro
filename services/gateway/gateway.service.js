@@ -155,7 +155,7 @@ module.exports = {
 
 			try {
 				let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token });
-				console.log({ checkAuthorization })
+				// console.log({ checkAuthorization })
 
 				if (checkAuthorization.error) {
 					return Promise.reject(checkAuthorization.message);
