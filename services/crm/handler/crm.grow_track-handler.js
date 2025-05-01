@@ -30,7 +30,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID } = ctx.params;
+                let { optionSeller, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, filesID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -42,7 +42,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID })
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, filesID })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -63,13 +63,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID } = ctx.params;
+                let { trackID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID } = ctx.params;
 
                 // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID });
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

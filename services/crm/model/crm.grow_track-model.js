@@ -52,7 +52,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok }) {
+    insert({ userID, companyID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok }) {
         return new Promise(async resolve => {
             try {
                 if(phone){
@@ -98,6 +98,10 @@ class Model extends BaseModel {
 
                 if(birthday && birthday != ""){
                     dataInsert.birthday = birthday;
+                }
+
+                if(date && date != ""){
+                    dataInsert.date = date;
                 }
 
                 if(checkObjectIDs(contactID)){
@@ -149,7 +153,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID }){
+    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -189,6 +193,10 @@ class Model extends BaseModel {
 
                 if(birthday && birthday != ""){
                     dataUpdate.birthday = birthday;
+                }
+
+                if(date && date != ""){
+                    dataUpdate.date = date;
                 }
 
                 let convertStr = ''
@@ -330,7 +338,7 @@ class Model extends BaseModel {
 
                 let ageHeightNow = [], ageHeightP3 = [], ageHeightP5 = [], ageHeightP10 = [], ageHeightP25 = [], ageHeightP50 = [], ageHeightP75 = [], ageHeightP90 = [], ageHeightP95 = [], ageHeightP97 = []
 
-                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, gender, genderHWho, genderWWho;
+                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, W = infoAterGet.weight, gender, genderHWho, genderWWho;
                 if(infoAterGet.gender == 1){
                     gender = "Male";
                     genderHWho = "MaleHWho";
@@ -341,7 +349,7 @@ class Model extends BaseModel {
                     genderWWho = "FemaleWWho";
                 }
 
-                // Hàm tính tháng
+                // Hàm tính số tháng tuổi của trẻ
                 function getMonthDifference(date1, date2) {
                     const d1 = new Date(date1);
                     const d2 = new Date(date2);
@@ -357,7 +365,9 @@ class Model extends BaseModel {
                     return months;
                 }
 
-                // Hàm tính Zscore theo X, L, M, S
+                let ageInMonths = getMonthDifference(date1, date2)
+
+                // Hàm tính Zscore theo: X, L, M, S
                 function calculateZScore(X, L, M, S) {
                     if (L === 0) {
                       return Math.log(X / M) / S;
@@ -366,7 +376,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Hàm tính chiều cao theo Z, L, M, S
+                // Hàm tính chiều cao theo: Z, L, M, S
                 function calculateHeightFromZ(Z, L, M, S) {
                     if (L === 0) {
                         return M * Math.exp(S * Z);
@@ -384,8 +394,26 @@ class Model extends BaseModel {
                     return prob * 100;
                 }
 
-                let ageInMonths = getMonthDifference(date1, date2);
-                // console.log({ageInMonths})
+                // Hàm tính chuẩn theo WHO
+                function evaluateHeightW({H, SD2neg, SD1neg, SD1, SD2}) {
+                    let conclusion = '';
+                
+                    if (H < SD2neg) {
+                        conclusion = 'Dưới chuẩn cấp độ 2';
+                    } else if (H >= SD2neg && H < SD1neg) {
+                        conclusion = 'Dưới chuẩn cấp độ 1';
+                    } else if (H >= SD1neg && H <= SD1) {
+                        conclusion = 'Đạt chuẩn';
+                    } else if (H > SD1 && H <= SD2) {
+                        conclusion = 'Trên chuẩn cấp độ 1';
+                    } else if (H > SD2) {
+                        conclusion = 'Trên chuẩn cấp độ 2';
+                    } else {
+                        conclusion = 'Không xác định'; // fallback an toàn
+                    }
+                
+                    return conclusion;
+                }
 
                 // Đường dẫn tới file cdc_grow.xlsx
                 const filePath = path.join(__dirname, '../../../files/templates/excels/cdc_grow.xlsx');
@@ -395,26 +423,24 @@ class Model extends BaseModel {
                 .then(workbook => {
                     const sheet = workbook.sheet(gender);
                     const sheet1 = workbook.sheet(genderHWho);
-                    // const sheet2 = workbook.sheet(genderWWho);
+                    const sheet2 = workbook.sheet(genderWWho);
                     const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
                     const lastRow1 = sheet1.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
-                    // const lastRow2 = sheet2.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
+                    const lastRow2 = sheet2.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
 
-                    let startAgemos, L, M, S, Z, P, startAge, endAge = 20 // Tuổi
-                    let hdfs, whoHS
+                    let L, M, S, Z, P, startAge, endAge = 20, hdfs, whoHS, wdfs, whoWS
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
                     for (let i = 2; i <= lastRow; i++) {
                         const agemosCheck = sheet.cell(`B${i}`).value();
 
                         if (agemosCheck >= ageInMonths) {
-                            startAgemos = agemosCheck
 
                             L = sheet.cell(`C${i}`).value();
                             M = sheet.cell(`D${i}`).value();
                             S = sheet.cell(`E${i}`).value();
                             Z = calculateZScore(X, L, M, S);
-                            P = getPercentileFromZ(Z);
+                            P = Number(getPercentileFromZ(Z).toFixed(2));
 
                             startAge = Math.ceil(agemosCheck / 12);
 
@@ -485,7 +511,7 @@ class Model extends BaseModel {
                         if(age < 20){
                             targetAgemos = +(age * 12 + 0.5).toFixed(1); // ví dụ 8 tuổi -> 96.5 tháng
                         }else{
-                            targetAgemos = 240
+                            targetAgemos = 240 // Tuổi 20 chỉ có dữ liệu với 240 tháng
                         }
                 
                         let found = false;
@@ -562,27 +588,62 @@ class Model extends BaseModel {
                             console.warn(`Không tìm thấy dòng phù hợp cho tuổi ${age} (Agemos ~ ${targetAgemos})`);
                         }
                     }
-                    // console.log(ageHeightNow)
 
                     // Kiểm tra cao so với chuẩn WHO
-                    for (let i = 2; i <= lastRow; i++) {
+                    let noticeH = ''
+                    for (let i = 2; i <= lastRow1; i++) {
                         const agemosCheck = sheet1.cell(`A${i}`).value();
 
                         if (agemosCheck >= ageInMonths) {
                             whoHS = sheet1.cell(`K${i}`).value();
 
-                            hdfs = X - whoHS
+                            let SD2neg = sheet1.cell(`I${i}`).value();
+                            let SD1neg = sheet1.cell(`J${i}`).value();
+                            let SD1 = sheet1.cell(`L${i}`).value();
+                            let SD2 = sheet1.cell(`M${i}`).value();
+
+                            noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD1, SD2})
+
+                            hdfs = Number(Number(X - whoHS).toFixed(2))
 
                             // ✅ Ngắt vòng lặp sau khi tìm thấy
                             break;
                         }
-                    }  
-                    // console.log({X, whoHS, hdfs})
+                    }
+
+                    // Kiểm tra cân nặng so với chuẩn WHO, BMI
+                    let noticeW = ''
+                    for (let i = 2; i <= lastRow2; i++) {
+                        const agemosCheck = sheet2.cell(`A${i}`).value();
+
+                        if (agemosCheck >= ageInMonths) {
+                            whoWS = sheet2.cell(`I${i}`).value();
+
+                            let SD2neg = sheet2.cell(`G${i}`).value();
+                            let SD1neg = sheet2.cell(`H${i}`).value();
+                            let SD1 = sheet2.cell(`J${i}`).value();
+                            let SD2 = sheet2.cell(`K${i}`).value();
+
+                            noticeW =  evaluateHeightW({H: W, SD2neg, SD1neg, SD1, SD2})
+
+                            wdfs = Number(Number(W - whoWS).toFixed(2))
+
+                            // ✅ Ngắt vòng lặp sau khi tìm thấy
+                            break;
+                        }
+                    }
 
                     return resolve({ error: false, 
                         data: infoAterGet,
+                        ageInMonths,
                         Z,
                         P,
+                        hdfs,
+                        whoHS,
+                        noticeH,
+                        wdfs,
+                        whoWS,
+                        noticeW,
                         growTrack: {
                             ageHeightNow, 
                             ageHeightP3,
@@ -594,10 +655,10 @@ class Model extends BaseModel {
                             ageHeightP90,
                             ageHeightP95,
                             ageHeightP97,
-                            hdfs, // Height Deviation from Standard
+                            hdfs,
                             whoHS,
-                            wdfs: 2, // Weight Deviation from Standard
-                            whoWS: 28,
+                            wdfs,
+                            whoWS,
                         },
                         status: 200 
                     })
