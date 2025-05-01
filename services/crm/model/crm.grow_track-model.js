@@ -371,6 +371,15 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Hàm tính P theo Z
+                function getPercentileFromZ(z) {
+                    const t = 1 / (1 + 0.2316419 * Math.abs(z));
+                    const d = 0.3989423 * Math.exp(-z * z / 2);
+                    let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+                    prob = z > 0 ? 1 - prob : prob;
+                    return prob * 100;
+                }
+
                 let ageInMonths = getMonthDifference(date1, date2);
 
 
@@ -383,7 +392,7 @@ class Model extends BaseModel {
                     const sheet = workbook.sheet(gender);
                     const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
 
-                    let startAgemos, L, M, S, Z, startAge, endAge=20 // Tuổi
+                    let startAgemos, L, M, S, Z, P, startAge, endAge = 20 // Tuổi
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
                     for (let i = 2; i <= lastRow; i++) {
@@ -396,6 +405,7 @@ class Model extends BaseModel {
                             M = sheet.cell(`D${i}`).value();
                             S = sheet.cell(`E${i}`).value();
                             Z = calculateZScore(X, L, M, S);
+                            P = getPercentileFromZ(Z);
 
                             startAge = Math.ceil(agemosCheck / 12);
 
@@ -453,9 +463,6 @@ class Model extends BaseModel {
                                 age: Number(Number(agemosCheck / 12).toFixed(2)),
                                 height: Number(sheet.cell(`N${i}`).value()).toFixed(2)
                             })
-
-                            // console.log("Z-score:", Z.toFixed(6));
-                            // console.log(`Tuổi: ${startAgemos} tháng -> L=${L}, M=${M}, S=${S}`);
 
                             // ✅ Ngắt vòng lặp sau khi tìm thấy
                             break;
@@ -550,6 +557,8 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, 
                         data: infoAterGet,
+                        Z,
+                        P,
                         growTrack: {
                             ageHeightNow, 
                             ageHeightP3,
