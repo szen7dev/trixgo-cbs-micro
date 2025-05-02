@@ -818,6 +818,7 @@ class Model extends BaseModel {
                         wdfs,
                         whoWS,
                         noticeW,
+                        predictedAdultHeight: Number(Number(ageHeightNow[ageHeightNow.length - 1].height)),
                         growTrack: {
                             ageHeightNow, 
                             ageHeightP3,
