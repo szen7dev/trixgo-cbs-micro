@@ -34,6 +34,10 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
     gender: { type: Number, default: 1 },
     //_________Chiều cao đo (cm)
     height: { type: Number, default: 0 },
+    //_________Đường phân vị
+    percentile: { type: Number, default: 0 },
+    //_________Chiều cao dự toán khi trưởng thành (cm)
+    predictedAdultHeight: { type: Number, default: 0 },
     //_________Chiều cao mong muốn
     desiredHeight: { type: Number, default: 0 },
     //_________Cân nặng (kg)
