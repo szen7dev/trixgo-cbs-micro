@@ -415,6 +415,26 @@ class Model extends BaseModel {
                     return conclusion;
                 }
 
+                function evaluateWBmi({H, SD2neg, SD1neg, SD1, SD2}) {
+                    let conclusion = '';
+                
+                    if (H < SD2neg) {
+                        conclusion = 'Dưới chuẩn BMI cấp độ 2';
+                    } else if (H >= SD2neg && H < SD1neg) {
+                        conclusion = 'Dưới chuẩn BMI cấp độ 1';
+                    } else if (H >= SD1neg && H <= SD1) {
+                        conclusion = 'Đạt chuẩn BMI';
+                    } else if (H > SD1 && H <= SD2) {
+                        conclusion = 'Trên chuẩn BMI cấp độ 1';
+                    } else if (H > SD2) {
+                        conclusion = 'Trên chuẩn BMI cấp độ 2';
+                    } else {
+                        conclusion = 'Không xác định'; // fallback an toàn
+                    }
+                
+                    return conclusion;
+                }
+
                 // Đường dẫn tới file cdc_grow.xlsx
                 const filePath = path.join(__dirname, '../../../files/templates/excels/cdc_grow.xlsx');
 
@@ -613,23 +633,51 @@ class Model extends BaseModel {
 
                     // Kiểm tra cân nặng so với chuẩn WHO, BMI
                     let noticeW = ''
-                    for (let i = 2; i <= lastRow2; i++) {
-                        const agemosCheck = sheet2.cell(`A${i}`).value();
+                    // Dưới 10 tuổi theo WHO
+                    if(ageInMonths <= 120){
+                        for (let i = 2; i <= 122; i++) {
+                            const agemosCheck = sheet2.cell(`A${i}`).value();
+    
+                            if (agemosCheck >= ageInMonths) {
+                                whoWS = sheet2.cell(`I${i}`).value();
+    
+                                let SD2neg = sheet2.cell(`G${i}`).value();
+                                let SD1neg = sheet2.cell(`H${i}`).value();
+                                let SD1 = sheet2.cell(`J${i}`).value();
+                                let SD2 = sheet2.cell(`K${i}`).value();
+    
+                                noticeW =  evaluateHeightW({H: W, SD2neg, SD1neg, SD1, SD2})
+    
+                                wdfs = Number(Number(W - whoWS).toFixed(2))
+    
+                                // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                break;
+                            }
+                        }
+                    }
 
-                        if (agemosCheck >= ageInMonths) {
-                            whoWS = sheet2.cell(`I${i}`).value();
+                    // Trên 10 tuổi theo BMI: cân nặng (kg)/Bình phương chiều cao (m)
+                    else{
+                        for (let i = 123; i <= lastRow2; i++) {
+                            const agemosCheck = sheet2.cell(`A${i}`).value();
+    
+                            if (agemosCheck >= ageInMonths) {
+                                whoWS = sheet2.cell(`I${i}`).value();
 
-                            let SD2neg = sheet2.cell(`G${i}`).value();
-                            let SD1neg = sheet2.cell(`H${i}`).value();
-                            let SD1 = sheet2.cell(`J${i}`).value();
-                            let SD2 = sheet2.cell(`K${i}`).value();
-
-                            noticeW =  evaluateHeightW({H: W, SD2neg, SD1neg, SD1, SD2})
-
-                            wdfs = Number(Number(W - whoWS).toFixed(2))
-
-                            // ✅ Ngắt vòng lặp sau khi tìm thấy
-                            break;
+                                let BIM = W*10000/(X * X)
+    
+                                let SD2neg = sheet2.cell(`G${i}`).value();
+                                let SD1neg = sheet2.cell(`H${i}`).value();
+                                let SD1 = sheet2.cell(`J${i}`).value();
+                                let SD2 = sheet2.cell(`K${i}`).value();
+    
+                                noticeW =  evaluateWBmi({H: BIM, SD2neg, SD1neg, SD1, SD2})
+    
+                                wdfs = Number(Number(W - whoWS).toFixed(2))
+    
+                                // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                break;
+                            }
                         }
                     }
 
