@@ -26,10 +26,23 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
         type: Number,
         default: 1
     },
-    //_______Ngày sinh
-    birthday: { type: Date, default: Date.now },
     //_______Ngày đo
     date: { type: Date, default: Date.now },
+    //________Họ và tên bố mẹ
+    parentName: String,
+    //________Điện thoại (bố mẹ)
+    phone: String,
+    //________Email (bố mẹ)
+    email: String,
+    //_________Chiều cao bố (cm)
+    fatherHeight: { type: Number, default: 0 },
+    //_________Chiều cao mẹ (cm)
+    motherHeight: { type: Number, default: 0 },
+    /**
+     * CON
+     */
+    //_______Ngày sinh
+    birthday: { type: Date, default: Date.now },
     //_________Giới tính (1-nam/ 2 - nữ/3-khác)
     gender: { type: Number, default: 1 },
     //_________Chiều cao đo (cm)
@@ -45,8 +58,8 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
     //________Nội dung
     name: String,
     namecv: String,
-    //________Điện thoại liên hệ
-    phone: String,
+    //________Lịch sinh hoạt
+    routine: String,
     //________Ghi chú
     note: String,
     /**

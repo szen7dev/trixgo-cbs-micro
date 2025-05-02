@@ -52,7 +52,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok }) {
+    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine }) {
         return new Promise(async resolve => {
             try {
                 if(phone){
@@ -96,6 +96,18 @@ class Model extends BaseModel {
                     dataInsert.weight = weight;
                 }
 
+                if(!isNaN(fatherHeight)){
+                    dataInsert.fatherHeight = fatherHeight;
+                }
+
+                if(!isNaN(motherHeight)){
+                    dataInsert.motherHeight = motherHeight;
+                }
+
+                if(!isNaN(desiredHeight)){
+                    dataInsert.desiredHeight = desiredHeight;
+                }
+
                 if(birthday && birthday != ""){
                     dataInsert.birthday = birthday;
                 }
@@ -123,6 +135,13 @@ class Model extends BaseModel {
                     dataInsert.phone = phone;
                     convertStr = convertStr + " " + stringUtils.removeAccents(phone)
                 }
+                if(email && email != ""){
+                    dataInsert.email = email;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(email)
+                }
+                if(routine && routine != ""){
+                    dataInsert.routine = routine;
+                }
                 if(note && note != ""){
                     dataInsert.note = note;
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
@@ -135,6 +154,11 @@ class Model extends BaseModel {
                     dataInsert.tiktok = tiktok;
                     convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
                 }
+                if(parentName && parentName != ""){
+                    dataInsert.parentName = parentName;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(parentName)
+                }
+                
                 dataInsert.namecv = convertStr
 
                 let infoAfterInsert = await this.insertData(dataInsert)
