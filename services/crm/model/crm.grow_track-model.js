@@ -141,6 +141,108 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
+                /**
+                 * TÍNH TOÁN ĐƯỜNG PHÂN VỊ
+                 */
+                let ageHeightNow = []
+                let date1 = infoAfterInsert.birthday, date2 = infoAfterInsert.date, X = infoAfterInsert.height, genderName;
+                if(infoAfterInsert.gender == 1){
+                    genderName = "Male";
+                }else{
+                    genderName = "Female";
+                }
+
+                // Hàm tính số tháng tuổi của trẻ
+                function getMonthDifference(date1, date2) {
+                    const d1 = new Date(date1);
+                    const d2 = new Date(date2);
+                  
+                    let months = (d2.getFullYear() - d1.getFullYear()) * 12;
+                    months += d2.getMonth() - d1.getMonth();
+                  
+                    // Nếu ngày của date2 nhỏ hơn ngày của date1 => chưa đủ 1 tháng
+                    if (d2.getDate() < d1.getDate()) {
+                      months -= 1;
+                    }
+                  
+                    return months;
+                }
+
+                let ageInMonths = getMonthDifference(date1, date2)
+
+                // Hàm tính Zscore theo: X, L, M, S
+                function calculateZScore(X, L, M, S) {
+                    if (L === 0) {
+                      return Math.log(X / M) / S;
+                    } else {
+                      return (Math.pow(X / M, L) - 1) / (L * S);
+                    }
+                }
+
+                // Hàm tính chiều cao theo: Z, L, M, S
+                function calculateHeightFromZ(Z, L, M, S) {
+                    if (L === 0) {
+                        return M * Math.exp(S * Z);
+                    } else {
+                        return M * Math.pow(1 + L * S * Z, 1 / L);
+                    }
+                }
+
+                // Hàm tính P theo Z
+                function getPercentileFromZ(z) {
+                    const t = 1 / (1 + 0.2316419 * Math.abs(z));
+                    const d = 0.3989423 * Math.exp(-z * z / 2);
+                    let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+                    prob = z > 0 ? 1 - prob : prob;
+                    return prob * 100;
+                }
+
+                let L, M, S, Z, P, endAge = 20
+
+                // Đường dẫn tới file cdc_grow.xlsx
+                const filePath = path.join(__dirname, '../../../files/templates/excels/cdc_grow.xlsx')
+
+                // Đọc file
+                XlsxPopulate.fromFileAsync(filePath)
+                .then(async (workbook) => {
+                    const sheet = workbook.sheet(genderName);
+                    const lastRow = sheet.usedRange().endCell().rowNumber();
+
+                    // Lặp qua từng dòng để tìm Agemos >= ageInMonths
+                    for (let i = 2; i <= lastRow; i++) {
+                        const agemosCheck = sheet.cell(`B${i}`).value();
+
+                        if (agemosCheck >= ageInMonths) {
+
+                            L = sheet.cell(`C${i}`).value();
+                            M = sheet.cell(`D${i}`).value();
+                            S = sheet.cell(`E${i}`).value();
+                            Z = calculateZScore(X, L, M, S);
+                            P = Number(getPercentileFromZ(Z).toFixed(2));
+
+                            // ✅ Ngắt vòng lặp sau khi tìm thấy
+                            break;
+                        }
+                    }
+        
+                    // Lấy các giá trị ứng với từng độ tuổi
+                    for (let age = endAge; age <= endAge; age++) {
+                        const L = sheet.cell(`C243`).value();
+                        const M = sheet.cell(`D243`).value();
+                        const S = sheet.cell(`E243`).value();
+        
+                        ageHeightNow.push({
+                            age,
+                            height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
+                        })
+                    }    
+
+                    await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                        percentile: P,
+                        predictedAdultHeight: Number(ageHeightNow[0].height)
+                    }, { new: true })
+                })   
+
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -338,6 +440,8 @@ class Model extends BaseModel {
 
                 let ageHeightNow = [], ageHeightP3 = [], ageHeightP5 = [], ageHeightP10 = [], ageHeightP25 = [], ageHeightP50 = [], ageHeightP75 = [], ageHeightP90 = [], ageHeightP95 = [], ageHeightP97 = []
 
+                let L, M, S, Z, P, startAge, endAge = 20, hdfs, whoHS, wdfs, whoWS
+
                 let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, W = infoAterGet.weight, gender, genderHWho, genderWWho;
                 if(infoAterGet.gender == 1){
                     gender = "Male";
@@ -415,6 +519,26 @@ class Model extends BaseModel {
                     return conclusion;
                 }
 
+                function evaluateWBmi({H, SD2neg, SD1neg, SD1, SD2}) {
+                    let conclusion = '';
+                
+                    if (H < SD2neg) {
+                        conclusion = 'Dưới chuẩn BMI cấp độ 2';
+                    } else if (H >= SD2neg && H < SD1neg) {
+                        conclusion = 'Dưới chuẩn BMI cấp độ 1';
+                    } else if (H >= SD1neg && H <= SD1) {
+                        conclusion = 'Đạt chuẩn BMI';
+                    } else if (H > SD1 && H <= SD2) {
+                        conclusion = 'Trên chuẩn BMI cấp độ 1';
+                    } else if (H > SD2) {
+                        conclusion = 'Trên chuẩn BMI cấp độ 2';
+                    } else {
+                        conclusion = 'Không xác định'; // fallback an toàn
+                    }
+                
+                    return conclusion;
+                }
+
                 // Đường dẫn tới file cdc_grow.xlsx
                 const filePath = path.join(__dirname, '../../../files/templates/excels/cdc_grow.xlsx');
 
@@ -427,8 +551,6 @@ class Model extends BaseModel {
                     const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
                     const lastRow1 = sheet1.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
                     const lastRow2 = sheet2.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
-
-                    let L, M, S, Z, P, startAge, endAge = 20, hdfs, whoHS, wdfs, whoWS
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
                     for (let i = 2; i <= lastRow; i++) {
@@ -613,23 +735,51 @@ class Model extends BaseModel {
 
                     // Kiểm tra cân nặng so với chuẩn WHO, BMI
                     let noticeW = ''
-                    for (let i = 2; i <= lastRow2; i++) {
-                        const agemosCheck = sheet2.cell(`A${i}`).value();
+                    // Dưới 10 tuổi theo WHO
+                    if(ageInMonths <= 120){
+                        for (let i = 2; i <= 122; i++) {
+                            const agemosCheck = sheet2.cell(`A${i}`).value();
+    
+                            if (agemosCheck >= ageInMonths) {
+                                whoWS = sheet2.cell(`I${i}`).value();
+    
+                                let SD2neg = sheet2.cell(`G${i}`).value();
+                                let SD1neg = sheet2.cell(`H${i}`).value();
+                                let SD1 = sheet2.cell(`J${i}`).value();
+                                let SD2 = sheet2.cell(`K${i}`).value();
+    
+                                noticeW =  evaluateHeightW({H: W, SD2neg, SD1neg, SD1, SD2})
+    
+                                wdfs = Number(Number(W - whoWS).toFixed(2))
+    
+                                // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                break;
+                            }
+                        }
+                    }
 
-                        if (agemosCheck >= ageInMonths) {
-                            whoWS = sheet2.cell(`I${i}`).value();
+                    // Trên 10 tuổi theo BMI: cân nặng (kg)/Bình phương chiều cao (m)
+                    else{
+                        for (let i = 123; i <= lastRow2; i++) {
+                            const agemosCheck = sheet2.cell(`A${i}`).value();
+    
+                            if (agemosCheck >= ageInMonths) {
+                                whoWS = sheet2.cell(`I${i}`).value();
 
-                            let SD2neg = sheet2.cell(`G${i}`).value();
-                            let SD1neg = sheet2.cell(`H${i}`).value();
-                            let SD1 = sheet2.cell(`J${i}`).value();
-                            let SD2 = sheet2.cell(`K${i}`).value();
-
-                            noticeW =  evaluateHeightW({H: W, SD2neg, SD1neg, SD1, SD2})
-
-                            wdfs = Number(Number(W - whoWS).toFixed(2))
-
-                            // ✅ Ngắt vòng lặp sau khi tìm thấy
-                            break;
+                                let BIM = W*10000/(X * X)
+    
+                                let SD2neg = sheet2.cell(`G${i}`).value();
+                                let SD1neg = sheet2.cell(`H${i}`).value();
+                                let SD1 = sheet2.cell(`J${i}`).value();
+                                let SD2 = sheet2.cell(`K${i}`).value();
+    
+                                noticeW =  evaluateWBmi({H: BIM, SD2neg, SD1neg, SD1, SD2})
+    
+                                wdfs = Number(Number(W - whoWS).toFixed(2))
+    
+                                // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                break;
+                            }
                         }
                     }
 
