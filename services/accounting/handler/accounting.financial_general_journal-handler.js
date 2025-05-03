@@ -333,7 +333,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
-                let { companyID, filterParams, type, voucherID } = ctx.params;
+                let { companyID, filterParams, type, voucherID, fromDate, toDate } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -342,7 +342,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.exportExcelByFilter({
-                    userID, companyID, filterParams, type, voucherID, ctx
+                    userID, companyID, filterParams, type, voucherID, fromDate, toDate, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
