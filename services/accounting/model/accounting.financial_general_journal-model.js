@@ -3498,7 +3498,7 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(3).value(Number(item?._id?.year));
                             workbook.sheet("Data").row(i).cell(4).value(Number(item?._id?.month));
                             workbook.sheet("Data").row(i).cell(5).value(Number(item?.quantity));
-                            workbook.sheet("Data").row(i).cell(4).value(Number(item?._id?.type));
+                            workbook.sheet("Data").row(i).cell(6).value(Number(item?._id?.type));
     
                             i++
                         })
