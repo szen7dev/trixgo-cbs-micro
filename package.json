@@ -101,5 +101,6 @@
     "node": ">= 10.x.x"
   },
   "main": ".eslintrc.js",
-  "license": "ISC"
+  "license": "ISC",
+  "packageManager": "yarn@1.22.22"
 }
