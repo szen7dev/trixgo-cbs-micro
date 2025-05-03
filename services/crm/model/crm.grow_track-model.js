@@ -547,15 +547,15 @@ class Model extends BaseModel {
                     let conclusion = '';
                 
                     if (H < SD2neg) {
-                        conclusion = 'Dưới chuẩn BMI cấp độ 2';
+                        conclusion = 'Gầy theo chuẩn BMI';
                     } else if (H >= SD2neg && H < SD1neg) {
-                        conclusion = 'Dưới chuẩn BMI cấp độ 1';
+                        conclusion = 'Thiếu cân theo chuẩn BMI';
                     } else if (H >= SD1neg && H <= SD1) {
-                        conclusion = 'Đạt chuẩn BMI';
-                    } else if (H > SD1 && H <= SD2) {
-                        conclusion = 'Trên chuẩn BMI cấp độ 1';
+                        conclusion = 'Bình thường theo chuẩn BMI';
+                    } else if (H > SD1) {
+                        conclusion = 'Thừa cân theo chuẩn BMI';
                     } else if (H > SD2) {
-                        conclusion = 'Trên chuẩn BMI cấp độ 2';
+                        conclusion = 'Béo phí theo chuẩn BMI';
                     } else {
                         conclusion = 'Không xác định'; // fallback an toàn
                     }
