@@ -1563,13 +1563,12 @@ class Model extends BaseModel {
 	 * Date: 03/03/2022
 	 */
     insert({ email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse, userID }) {
-        // console.log({ email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse, userID })
         return new Promise(async resolve => {
             try {
-                if(!email || !fullname) {
+                if(!email || !fullname || !phone) {
                     return resolve({
                         error: true,
-                        message: "Tham số email và fullname không hợp lệ",
+                        message: "Tham số email|phone|fullname không hợp lệ",
                         keyError: "params_email_or_fullname_invalid",
                         status: 400
                     })
@@ -1656,6 +1655,47 @@ class Model extends BaseModel {
                     })
                 }
                 delete infoUserAfterInsert.password;
+
+                // Tạo và link với danh bạ
+                let infoContact = await ITEM__CONTACT_COLL.findOne({
+                    company: companyID,
+                    email: email
+                })
+
+                if(infoContact){
+                    // link user với contact
+                    await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
+                        linkUser: infoUserAfterInsert._id,
+                        userCreate: infoUserAfterInsert._id
+                    }, { new: true })
+
+                    await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                        $addToSet: { contacts: infoContact._id }
+                    }, { new: true })
+
+                } else{
+                    let infoNewContact = await ITEM__CONTACT_MODEL.insert({
+                        companyID,
+                        authorID: userID,
+                        type: 1,
+                        name: fullname,
+                        phone: phone,
+                        email: email,
+                        department: departmentID, 
+                        position: positionID
+                    })
+
+                    if(!infoNewContact.error && infoNewContact.data){
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data?._id, {
+                            linkUser: infoUserAfterInsert._id,
+                            userCreate: infoUserAfterInsert._id
+                        }, { new: true })
+
+                        await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                            $addToSet: { contacts: infoNewContact.data?._id }
+                        }, { new: true })
+                    }
+                }
 
                 // Thông báo email tới người dùng
                 const mailContent = templateInfoAccount(fullname, password);
