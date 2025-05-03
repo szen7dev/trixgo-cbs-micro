@@ -36,6 +36,7 @@ const FINANCIAL_VOUCHER_COLL                            = require('../database/a
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
 const { notebooks } = require('googleapis/build/src/apis/notebooks');
+const { type } = require('os');
 
 /**
  * MODELS
@@ -3157,13 +3158,58 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcelByFilter({ userID, companyID, type, filterParams, voucherID, ctx }) {
-        // console.log({ userID, companyID, type, filterParams, voucherID })
+    getListByAuthor({ companyID, fromDate, toDate, userID }) {
+        console.log({ companyID, fromDate, toDate, userID })
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                            date: {
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate(),
+                            }
+                        }
+                    },
+                    {
+                        $project : {
+                            year : {$year : { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            month : {$month : { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            date : 1,
+                            userCreate : 1,
+                            type : 1,
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { userCreate: "$userCreate", year: "$year", month: "$month", type: "$type" },
+                            quantity: { $sum: 1 },
+                        }
+                    },
+                ])
+                
+                let conditionPopulate = {
+                    path: '_id.userCreate',
+                    select: '_id fullname',
+                    model: 'user'
+                }
 
+                await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData, conditionPopulate)
+
+                // console.log(listData)
+
+                return resolve({ error: false, data: listData })
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    exportExcelByFilter({ userID, companyID, type, filterParams, voucherID, fromDate, toDate, ctx }) {
+        return new Promise(async resolve => {
+            try {
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
                     appID: "61e049aefdebf77b072d1b12", 
                     userID
@@ -3213,6 +3259,12 @@ class Model extends BaseModel {
                         });
                         break;
                         
+                    case 4:
+                        resultGetList = await this.getListByAuthor({
+                            companyID, fromDate, toDate, userID
+                        });
+                        break;
+                        
                     default:
                         resultGetList = await this.getListByFilter({
                             ...filterParams,
@@ -3224,32 +3276,36 @@ class Model extends BaseModel {
                         break;
                 }
                 // console.log({resultGetList})
-
-                if(!resultGetList.error) {
-                    conditionObj = resultGetList.data;
+                if(type != 4){
+                    if(!resultGetList.error) {
+                        conditionObj = resultGetList.data;
+                    }
+    
+                    let keys	     = ['date__1', '_id__1'];
+                    let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
+                    let sortBy            = dataPagingAndSort?.data?.sort;
+                    const listData = await FINANCIAL_GENERAL_JOURNAL_COLL
+                        .find(conditionObj)
+                        .populate(JSON.parse(populates))
+                        .sort(sortBy)
+                        .limit(10000)
+                        .lean()
+    
+                    if(!listData) {
+                        return resolve({
+                            error: true,
+                            message: 'Không tìm thấy dữ liệu',
+                            keyError: 'data_not_exists',
+                            status: 400
+                        });
+                    }
+    
+                    const result = await this.downloadExcelFile({ userID, infoAppUser, data: listData, type, voucherID })
+                    return resolve(result);
+                }else{
+                    const result = await this.downloadExcelFile({ userID, infoAppUser, data: resultGetList.data, type })
+                    return resolve(result);
                 }
-
-                let keys	     = ['date__1', '_id__1'];
-                let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
-                let sortBy            = dataPagingAndSort?.data?.sort;
-                const listData = await FINANCIAL_GENERAL_JOURNAL_COLL
-                    .find(conditionObj)
-                    .populate(JSON.parse(populates))
-                    .sort(sortBy)
-                    .limit(10000)
-                    .lean()
-
-                if(!listData) {
-                    return resolve({
-                        error: true,
-                        message: 'Không tìm thấy dữ liệu',
-                        keyError: 'data_not_exists',
-                        status: 400
-                    });
-                }
-
-                const result = await this.downloadExcelFile({ userID, infoAppUser, data: listData, type, voucherID })
-                return resolve(result);
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -3270,7 +3326,9 @@ class Model extends BaseModel {
                 if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0){
                     template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
                 }
-            }
+            }else if(type == 4){
+                template = '../../../files/templates/excels/accounting_journal_report.xlsx'
+            }            
 
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
                 .then(async workbook => {
@@ -3407,7 +3465,8 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i + 2).cell(3).value('NGƯỜI NHẬN').style({
                                 bold: true,
                             })
-                        }else{
+                        }
+                        else{
                             const range = workbook.sheet('Data').range(`A15:E${data.length + 14}`);
 
                             range.style({
@@ -3428,6 +3487,23 @@ class Model extends BaseModel {
                                 bold: true,
                             })
                         }  
+                    }
+
+                    else if(type == 4){
+
+                        var i = 3
+                        data?.forEach((item, index) => {
+                            workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Data").row(i).cell(2).value(item?._id?.userCreate?.fullname);
+                            workbook.sheet("Data").row(i).cell(3).value(Number(item?._id?.year));
+                            workbook.sheet("Data").row(i).cell(4).value(Number(item?._id?.month));
+                            workbook.sheet("Data").row(i).cell(5).value(Number(item?.quantity));
+                            workbook.sheet("Data").row(i).cell(4).value(Number(item?._id?.type));
+    
+                            i++
+                        })
+                        
+                       
                     }
 
                     const now = new Date();
