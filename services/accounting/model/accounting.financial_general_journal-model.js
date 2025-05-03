@@ -3159,7 +3159,6 @@ class Model extends BaseModel {
     }
 
     getListByAuthor({ companyID, fromDate, toDate, userID }) {
-        console.log({ companyID, fromDate, toDate, userID })
         return new Promise(async resolve => {
             try {
                 let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
@@ -3187,6 +3186,12 @@ class Model extends BaseModel {
                             quantity: { $sum: 1 },
                         }
                     },
+                    {
+                        $sort: {
+                            "_id.year": 1,
+                            "_id.month": 1,
+                        }
+                    }
                 ])
                 
                 let conditionPopulate = {
