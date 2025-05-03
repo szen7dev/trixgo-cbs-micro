@@ -81,8 +81,6 @@ class Model extends BaseModel {
      */
     insert({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours
     }) {
-        // console.log({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours
-        // })
         return new Promise(async resolve => {
             try {
                 /**
