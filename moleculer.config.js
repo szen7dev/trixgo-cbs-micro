@@ -1,6 +1,7 @@
 "use strict";
 
 const { REDIS_SEPERATOR } = require('./tools/cache/cf_redis');
+const NewRelicMiddleware = require('./tools/newrelic/newrelic.middleware');
 
 /**
  * Moleculer ServiceBroker configuration file
@@ -245,6 +246,7 @@ module.exports = {
 	// middlewares: [],
 	middlewares: [
 		// require("./routing/role/_mid.check"),
+		NewRelicMiddleware,
 	],
 
 	// Register custom REPL commands.
@@ -273,7 +275,10 @@ module.exports = {
 
 	// Called after broker created.
 	created(broker) {
-
+		// Initialize New Relic if needed
+		if (process.env.NEW_RELIC_LICENSE_KEY) {
+			broker.logger.info("New Relic APM initialized");
+		}
 	},
 
 	// Called after broker started.
