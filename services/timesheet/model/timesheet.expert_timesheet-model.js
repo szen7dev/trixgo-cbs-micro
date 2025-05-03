@@ -414,6 +414,9 @@ class Model extends BaseModel {
                     dataUpdate.unitprice = unitprice2
                     dataUpdate.amount = amount
 
+                    let infoUser = await USER_COLL.findById(userID)
+                    dataUpdate.history = `${infoTimeSheet.history} | Cập nhật: ${infoUser.fullname} - ${moment(new Date()).format('DD/MM/YYYY HH:mm')}, Khối lượng: ${hours2}, Đơn giá: ${unitprice2}, Thành tiền: ${amount} |`
+
                     if(Number(subtype) != Number(infoTimeSheet.subtype)){
                         
                         dataUpdate.subtype = subtype;

@@ -107,72 +107,62 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     startingTime: Date,
     //_______Ngày hoàn thành
     date: { type: Date, default: Date.now },
-
     //________Số giờ hoàn thành
     hours: {
         type: Number,
         default: 0 
     },
-
     //________Đơn giá
     unitprice: {
         type: Number,
         default: 0
     },
-
     //________Thành tiền
     amount: {
         type: Number,
         default: 0
     },
-
     //________Trạng thái (1-Active|2-Khóa)
     status: {
         type: Number,
         default: 1
     },
-
     //_________Người phê duyệt
     approver:{
         type: Schema.Types.ObjectId,
         ref: "user"
     },
-    
     //_________Thời điểm phê duyệt
     timeApproved: { type: Date, default: null },
-
     //________Link với biểu khối lượng công việc
     task: {
         type: Schema.Types.ObjectId,
         ref : "pcm_plan_task"
     },
-
     //________Link với biểu khối lượng công việc
     budget: {
         type: Schema.Types.ObjectId,
         ref : "budget"
     },
-
     //________Link với biểu khối lượng công việc
     budgetItem: {
         type: Schema.Types.ObjectId,
         ref : "budget_item"
     },
-
     //________Link với biểu khối lượng công việc
     budgetGroup: {
         type: Schema.Types.ObjectId,
         ref : "budget_group"
     },
-
     //________Link với biểu khối lượng công việc
     budgetWork: {
         type: Schema.Types.ObjectId,
         ref : "budget_work"
     },
-
     //________Ghi chú
     note: String,
+    //________Ghi dữ liệu lịch sử
+    history: String,
     //_________File/ảnh đính kèm
     files: [{
         type: Schema.Types.ObjectId,

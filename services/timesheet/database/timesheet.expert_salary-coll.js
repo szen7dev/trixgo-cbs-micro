@@ -319,6 +319,8 @@ module.exports  = DATABASE_MIDDLEWARE("expert_salary", {
     },
     //________Ghi chú
     note: String,
+    //________Ghi dữ liệu lịch sử
+    history: String,
     //_________File/ảnh đính kèm
     files: [{
         type: Schema.Types.ObjectId,
