@@ -24,7 +24,7 @@ module.exports = {
         "NODE_ENV": "production",
         "NEW_RELIC_NO_CONFIG_FILE": true
       },
-      "node_args": ["--max_old_space_size=23552", "--max-semi-space-size=128"]
-      }
-    ],
+      "node_args": ["--max_old_space_size=23552", "--max-semi-space-size=128", "-r", "newrelic"]
+    }
+  ],
 };
