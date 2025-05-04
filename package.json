@@ -80,6 +80,7 @@
     "mongoose-simple-random": "0.4.1",
     "morgan": "^1.10.0",
     "nats": "^1.4.12",
+    "newrelic": "^12.18.2",
     "node-cron": "^2.0.3",
     "nodemailer": "^6.7.2",
     "path": "^0.12.7",
@@ -100,5 +101,6 @@
     "node": ">= 10.x.x"
   },
   "main": ".eslintrc.js",
-  "license": "ISC"
+  "license": "ISC",
+  "packageManager": "yarn@1.22.22"
 }
