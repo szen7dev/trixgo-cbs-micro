@@ -830,10 +830,6 @@ class Model extends BaseModel {
                             ageHeightP90,
                             ageHeightP95,
                             ageHeightP97,
-                            hdfs,
-                            whoHS,
-                            wdfs,
-                            whoWS,
                         },
                         status: 200 
                     })
