@@ -534,16 +534,20 @@ class Model extends BaseModel {
                     if(checkObjectIDs(workID)){
                         // console.log('11111111111111111111111111111111111')
                         // Cập nhật với Công việc cũ
-                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
-                        // console.log(infoBudget2)
+                        if(infoTimeSheet.budgetWork){
+                            // console.log('Cập nhật với Công việc cũ')
+                            let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoTimeSheet.budgetWork, userID})
+                            // console.log(infoBudget2)
+                        }
     
                         // Cập nhật với Công việc mới
+                        // console.log('Cập nhật với Công việc mới')
                         let infoBudget = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID, userID})
                         // console.log(infoBudget)
                     }else{
                         // console.log('222222222222222222')
                         // Cập nhật với Công việc cũ: áp dụng cho thay đổi Khối lượng, đơn giá
-                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 2, workID: infoAfterUpdate.budgetWork, userID})
                         // console.log(infoBudget2)
                     }
                 }
