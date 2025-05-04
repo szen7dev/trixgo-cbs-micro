@@ -43,7 +43,6 @@ class Model extends BaseModel {
      * Date  : 10/4/2022 
      */
     insert({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, forecastQuantity, forecastUnitPrice, forecastAmount }) {
-        // console.log({ userID, groupID, plus, reasonID, name, sign, unit, description, note, type, quantity, unitPrice, vatUnitPrice, amount, forecastQuantity, forecastUnitPrice, forecastAmount })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -481,6 +480,7 @@ class Model extends BaseModel {
      * Date  : 11/1/2025
      */
     updateValueFromTimeSheetStore({ option, workID, userID }){ 
+        // console.log({ option, workID, userID })
         return new Promise(async (resolve) => {
             try {
                 let infoWork = await BUDGET__WORK_COLL.findById(workID)
