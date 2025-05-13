@@ -446,9 +446,6 @@ class Model extends BaseModel {
         companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
         certificateType, certificateName, certificateGrade, isToDate5Month,
         keyword, limit = 10, lastestID, select, populates= {}, userID, ctx }) {
-            // console.log({companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
-            //     certificateType, certificateName, certificateGrade, isToDate5Month,
-            //     keyword, limit, lastestID, select, populates, userID})
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
@@ -477,16 +474,14 @@ class Model extends BaseModel {
                 }
 
                 // Điều kiện tìm kiếm document contact
-                if(checkObjectIDs(companyID)){
+                if(checkObjectIDs(contactID)){
+                    conditionObj.contact = contactID;
+                }else{
                     conditionObj.company = companyID;
                 }
 
                 if(type){
                     conditionObj.type = type;
-                }
-
-                if(checkObjectIDs(contactID)){
-                    conditionObj.contact = contactID;
                 }
 
                 if(isDuration3Month == 1){
