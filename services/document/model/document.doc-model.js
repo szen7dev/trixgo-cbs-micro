@@ -708,9 +708,6 @@ class Model extends BaseModel {
         parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, publishID, isExportExcel = false,
         requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate = {},
         keyword, limit = 20, lastestID, select, populates= {}, isParent }) {
-            // console.log('========getListDocument========================>>>>>>>>>>>>')
-            // console.log({parentID, companyID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, publishID, isExportExcel,
-            //     requestResponse, fieldID, fromDate, toDate, marked, userID, departmentID, receivedDate, keyword, limit, isParent })
         return new Promise(async (resolve) => {
             try {
                 let conditionObj = {};
