@@ -45,6 +45,8 @@ let sub = pub.duplicate({
     auth_pass: REDIS_SEPERATOR.PWD
 })
 
+const SOCKET_PORT = 4000 || process.env.SOCKET_PORT;
+
 /**
  * socket-io service
  */
@@ -52,6 +54,7 @@ module.exports = {
     name: "socket-io",
     mixins: [ApiService, SocketIOService], // Should after moleculer-web
     settings: {
+        port: SOCKET_PORT,
         io: {
             options: {
                 adapter: redisAdapter({
@@ -168,6 +171,7 @@ module.exports = {
                 let token = socket.handshake.query.token;
                 let accessKey = socket.handshake.query.access_key;
 
+                console.log({ accessKey, token, envAccessKey: process.env.SOCKET_ACCESS_KEY })
                 if(accessKey === process.env.SOCKET_ACCESS_KEY){
                     return Promise.resolve("");
                 }
@@ -338,7 +342,7 @@ module.exports = {
         //  this.logger.info(`WWW server started on port ${this.settings.port}`);
         // });
 
-        server.listen(4000);
+        server.listen(SOCKET_PORT);
     },
 
     /**
