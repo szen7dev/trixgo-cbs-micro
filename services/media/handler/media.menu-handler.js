@@ -54,6 +54,7 @@ module.exports = {
             menuID  : { type: "string" },
             name: { type: "string", optional: true },
             slug: { type: "string", optional: true },
+            // order: { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
