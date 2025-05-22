@@ -15,6 +15,16 @@ const { CF_ACTIONS_GATEWAY } = require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } = require('../auth/helper/auth.actions-constant');
 const GATEWAY__HANDLER = require('./handler/gateway.handler');
 
+// const v8 = require('node:v8');
+// const { heap_size_limit } = v8.getHeapStatistics();
+
+// setInterval(() => {
+// 	const heapSizeInGB = heap_size_limit / (1024 * 1024 * 1024);
+
+// 	console.log(`${heapSizeInGB} GB`);
+// 	console.log(process.memoryUsage())
+// }, 10_000);
+
 module.exports = {
 	name: CF_DOMAIN_SERVICES.GATEWAY,
 	mixins: [
@@ -88,13 +98,7 @@ module.exports = {
 
 		// Add global error handler
 		// onError(req, res, err) {
-		// 	console.log({ req, res, err })
-		// 	// Let the middleware handle the error
-		// 	res.status(err.code || 500).json({
-		// 		error: true,
-		// 		message: err.message,
-		// 		timestamp: new Date().toISOString()
-		// 	});
+		// 	console.log({ err })
 		// }
 	},
 
