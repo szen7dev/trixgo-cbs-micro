@@ -648,8 +648,8 @@ class Model extends BaseModel {
                             templateData: {
                                 otp: password,
                             },
-                            templateId: "382295", // Bắn OTP
-                            appId: "3185213136011361427", // Zalo OA Trixgo // 3635730122237388112 - Lamin
+                            templateId: "430244", // Bắn OTP
+                            appId: "3635730122237388112", // Zalo OA Trixgo // 3635730122237388112 - Lamin
                         }
                         await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
@@ -741,8 +741,8 @@ class Model extends BaseModel {
                             templateData: {
                                 otp: password,
                             },
-                            templateId: "382295", // Bắn OTP
-                            appId: "3185213136011361427", // Zalo OA Trixgo
+                            templateId: "430244", // Bắn OTP
+                            appId: "3635730122237388112", // Zalo OA Trixgo // 3635730122237388112 - Lamin
                         }
                         await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
