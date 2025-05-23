@@ -191,7 +191,7 @@ class Model extends BaseModel {
         })
     }
 
-    sendMessageZNS({ phone, templateData, templateId = 257162, appId, cacher }) {
+    sendMessageZNS({ phone, templateData, templateId, appId }) {
         return new Promise(async resolve => {
             try {
                 // const token = await cacher.get(`ZALO:oa:token:${appId}`);
@@ -200,6 +200,7 @@ class Model extends BaseModel {
                 // }
 
                 const config = await ITEM__CONFIG_COLL.findOne({ channel: appId }).lean();
+                console.log({ phone, templateData, templateId, appId, config })
                 if (!config) {
                   return resolve({ error: true, message: 'Config not found' });
                 }
@@ -227,12 +228,14 @@ class Model extends BaseModel {
 						'Content-type': 'application/json',
 					},
                 });
+                console.log({ response })
                 if(response.status !== 200 || response.statusText !== 'OK') {
                     return resolve({ error: true, message: "Can't request to zalo zns" });
                 }
 
                 resolve(response.data);
             } catch(error) {
+                console.error({ 'sendMessageZNS_ERROR': error})
                 resolve({ error: true, message: error.message });
             }
         })
