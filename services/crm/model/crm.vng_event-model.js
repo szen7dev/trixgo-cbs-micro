@@ -333,11 +333,15 @@ class Model extends BaseModel {
                         },
                         {
                             $group: {
-                                _id: { income: "$income", expense: "$expense"  },
+                                _id: {  },
+                                income: { $sum: "$income" },
+                                expense: { $sum: "$expense" },
                             }
                         },
                     ])
                 }
+
+                console.log(listData)
 
                 return resolve({ error: false, data: listData })
             } catch (error) {
