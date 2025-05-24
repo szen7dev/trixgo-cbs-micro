@@ -24,7 +24,7 @@ const {
 }  = require('../../../tools/utils/utils.js');
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
 const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
-
+const { KEY_ERROR } = require("../../../tools/keys");
 
 /**
  * COLLECTIONS
@@ -33,7 +33,7 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
 const CRM__VNG_FUND_COLL                = require('../database/crm.vng_fund-coll')
-
+const CRM__VNG_EVENT_COLL               = require('../database/crm.vng_event-coll')
 
 class Model extends BaseModel {
 
@@ -49,17 +49,17 @@ class Model extends BaseModel {
     insert({ userID, companyID, type, date, name, eventID, address, amount, note, imagesID, status }) {
         return new Promise(async resolve => {
             try {
+                if (!checkObjectIDs(eventID) || !name)
+                    return resolve({error: true, message: "eventID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
+
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     company: companyID,
                     userCreate: userID,
+                    event: eventID,
                 }
 
                 let convertStr = ''
-
-                if (checkObjectIDs(eventID)) {
-                    dataInsert.event = eventID;
-                }
 
                 if(!isNaN(type) && [1,2].includes(Number(type))){
                     dataInsert.type = type;
@@ -97,6 +97,38 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
+
+                let listData = await CRM__VNG_FUND_COLL.aggregate([
+                    {
+                        $match: {
+                            event: ObjectID(eventID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { type: "$type",  },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+
+                if(listData && listData.length){
+                    let income = 0, expense = 0
+                    for(const item of listData){
+                        if(item._id.type == 1){
+                            income = Number(item.amount)
+                        }else{
+                            expense = Number(item.amount)
+                        }
+                    }
+
+                    await CRM__VNG_EVENT_COLL.findByIdAndUpdate(eventID, {
+                        userUpdate: userID,
+                        modifyAt: Date.now(),
+                        income, 
+                        expense
+                    }, { new: true })
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
