@@ -46,7 +46,7 @@ module.exports = {
 		DbService(CRM_HABIT_COLL),
 		DbService(CRM_HABIT_TRACK_COLL),
 		DbService(CRM_VNG_FUND_COLL),
-		DbService(CRM_VNG_FUND_COLL),
+		DbService(CRM_VNG_EVENT_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
     ],
 
