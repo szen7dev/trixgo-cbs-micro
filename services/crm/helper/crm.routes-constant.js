@@ -37,6 +37,11 @@ const CF_ROUTINGS_CRM = {
     CRM_COMBO_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}/combo/get-list-by-property`,
     CRM_COMBO_EXPORT_EXCEL                      : `${BASE_ROUTE}/combo/export-excel`,
     CRM_COMBO_BEST_SELLER                       : `${BASE_ROUTE}/combo/best-seller`,
+
+    // ==================== CRM_VNG_FUND ======================== //
+    CRM_VNG_FUND                                : `${BASE_ROUTE}/vng_fund`,
+    CRM_VNG_FUND_GET_LIST_BY_PROPERTY           : `${BASE_ROUTE}/vng_fund/get-list-by-property`,
+    CRM_VNG_FUND_EXPORT_EXCEL                   : `${BASE_ROUTE}/vng_fund/export-excel`,
 }
 
 exports.CF_ROUTINGS_CRM = CF_ROUTINGS_CRM;

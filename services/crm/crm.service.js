@@ -19,6 +19,7 @@ const CRM_SEARCH_KEYWORD_HANDLER		= require('./handler/crm.search_keyword-handle
 const CRM_COMBO_HANDLER					= require('./handler/crm.combo-handler');
 const CRM_HABIT_HANDLER					= require('./handler/crm.habit-handler');
 const CRM_HABIT_TRACK_HANDLER			= require('./handler/crm.habit_track-handler');
+const CRM_VNG_FUND_HANDLER				= require('./handler/crm.vng_fund-handler');
 
 /**
  * COLLECTIONS
@@ -30,6 +31,7 @@ const CRM_SEARCH_KEYWORD_COLL 			= require('./database/crm.search_keyword-coll')
 const CRM_COMBO_COLL 					= require('./database/crm.combo-coll');
 const CRM_HABIT_COLL 					= require('./database/crm.habit-coll');
 const CRM_HABIT_TRACK_COLL 				= require('./database/crm.habit_track-coll');
+const CRM_VNG_FUND_COLL 				= require('./database/crm.vng_fund-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CRM,
@@ -41,6 +43,7 @@ module.exports = {
 		DbService(CRM_COMBO_COLL),
 		DbService(CRM_HABIT_COLL),
 		DbService(CRM_HABIT_TRACK_COLL),
+		DbService(CRM_VNG_FUND_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
     ],
 
@@ -119,6 +122,14 @@ module.exports = {
 		[CF_ACTIONS_CRM.CRM_COMBO_GET_LIST_BY_PROPERTY] : CRM_COMBO_HANDLER.getListByProperty,
 		[CF_ACTIONS_CRM.CRM_COMBO_EXPORT_EXCEL] : CRM_COMBO_HANDLER.exportExcel,
 		[CF_ACTIONS_CRM.CRM_COMBO_BEST_SELLER] : CRM_COMBO_HANDLER.bestSeller,
+
+		// ==================== CRM_VNG_FUND ======================== //
+		[CF_ACTIONS_CRM.CRM_VNG_FUND_INSERT] : CRM_VNG_FUND_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_VNG_FUND_UPDATE] : CRM_VNG_FUND_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_VNG_FUND_REMOVE] : CRM_VNG_FUND_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_VNG_FUND_GET_INFO_AND_GET_LIST] : CRM_VNG_FUND_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_VNG_FUND_GET_LIST_BY_PROPERTY] : CRM_VNG_FUND_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_VNG_FUND_EXPORT_EXCEL] : CRM_VNG_FUND_HANDLER.exportExcel,
 	},
 
 	/**

@@ -159,7 +159,9 @@ class Model extends BaseModel {
                     convertStr = convertStr + " " + stringUtils.removeAccents(parentName)
                 }
                 
-                dataInsert.namecv = convertStr
+                if(convertStr != ""){
+                    dataInsert.namecv = convertStr
+                }
 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
@@ -346,7 +348,10 @@ class Model extends BaseModel {
                     dataUpdate.tiktok = tiktok;
                     convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
                 }
-                dataUpdate.namecv = convertStr
+
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
+                }
 
                 let infoAfterUpdate = await CRM__GROW_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) {
