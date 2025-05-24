@@ -19,8 +19,6 @@ const {
     ZALO_ZNS_OPEN_API_URL,
     ZALO_OPEN_API_URL,
     ZALO_OA_OAUTH_URL,
-    ZALO_OA_APP_ID,
-    ZALO_OA_APP_SECRET,
     ZALO_OA_REDIRECT_URI
 } = process.env;
 
