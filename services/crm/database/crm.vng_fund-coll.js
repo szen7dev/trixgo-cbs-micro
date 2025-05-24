@@ -24,7 +24,10 @@ module.exports  = DATABASE_MIDDLEWARE("crm_vng_fund", {
     name: String,
     namecv: String,
     //________Sự kiện
-    event: String,
+    event: {
+        type: Schema.Types.ObjectId,
+        ref : "crm_vng_event"
+    },
     //________Địa chỉ
     address: String,
     //______Thành tiền

@@ -46,7 +46,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, type, date, name, event, address, amount, note, imagesID, status }) {
+    insert({ userID, companyID, type, date, name, eventID, address, amount, note, imagesID, status }) {
         return new Promise(async resolve => {
             try {
                 //__________Khai báo và validate dữ liệu
@@ -56,6 +56,10 @@ class Model extends BaseModel {
                 }
 
                 let convertStr = ''
+
+                if (checkObjectIDs(eventID)) {
+                    dataInsert.event = eventID;
+                }
 
                 if(!isNaN(type) && [1,2].includes(Number(type))){
                     dataInsert.type = type;
@@ -80,10 +84,6 @@ class Model extends BaseModel {
                 if(name && name != ""){
                     dataInsert.name = name;
                     convertStr = stringUtils.removeAccents(name)
-                }
-                if(event && event != ""){
-                    dataInsert.event = event;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(event)
                 }
                 if(note && note != ""){
                     dataInsert.note = note;
@@ -110,7 +110,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ userID, fundID, type, date, name, event, address, amount, note, status, imagesID }){
+    update({ userID, fundID, type, date, name, eventID, address, amount, note, status, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -122,6 +122,10 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = {
                         images: imagesID,
                     }
+                }
+
+                if (checkObjectIDs(eventID)) {
+                    dataInsert.event = eventID;
                 }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
@@ -144,10 +148,6 @@ class Model extends BaseModel {
                 if(name && name != ""){
                     dataUpdate.name = name;
                     convertStr = stringUtils.removeAccents(name)
-                }
-                if(event && event != ""){
-                    dataUpdate.event = event;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(event)
                 }
                 if(note && note != ""){
                     dataUpdate.note = note;
@@ -215,7 +215,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, type, status, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -239,6 +239,14 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(!isNaN(type) && [1,2].includes(Number(type))){
+                    conditionObj.type = type;
+                }
+
+                if(!isNaN(status) && [1,2].includes(Number(status))){
+                    conditionObj.status = status;
                 }
 
                 if(keyword){
@@ -321,6 +329,39 @@ class Model extends BaseModel {
                 }else{
                     yearFilter = Number(currentYear)
                 }
+
+                let listData 
+                if(!option){
+                    listData = await CRM__VNG_FUND_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { type: "$type" },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                }else{
+                    listData = await CRM__VNG_FUND_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { type: "$type",  },
+                                amount: { $sum: "$amount" },
+                            }
+                        },
+                    ])
+                }
+
+                return resolve({ error: false, data: listData })
 
             } catch (error) {
                 return resolve({ error: true, message: error.message });

@@ -19,19 +19,12 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            // phone               : { type: "string" },
-            // name                : { type: "string", optional: true },
-            // contactID           : { type: "string", optional: true },
-            // birthday            : { type: "string", optional: true },
-            // note                : { type: "string", optional: true },
-            // gender              : { type: "string", optional: true },
-            // height              : { type: "string", optional: true },
-            // weight              : { type: "string", optional: true },
+   
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, type, date, name, event, address, amount, note, imagesID, status } = ctx.params;
+                let { optionSeller, type, date, name, eventID, address, amount, note, imagesID, status } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -43,7 +36,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM__VNG_FUND_MODEL.insert({ userID, companyID, type, date, name, event, address, amount, note, imagesID, status })
+                let resultAfterCallHandler = await CRM__VNG_FUND_MODEL.insert({ userID, companyID, type, date, name, eventID, address, amount, note, imagesID, status })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -65,13 +58,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundID, type, date, name, event, address, amount, note, status, imagesID } = ctx.params;
+                let { fundID, type, date, name, eventID, address, amount, note, status, imagesID } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM__VNG_FUND_MODEL.update({ userID, fundID, type, date, name, event, address, amount, note, status, imagesID });
+                let resultAfterCallHandler = await CRM__VNG_FUND_MODEL.update({ userID, fundID, type, date, name, eventID, address, amount, note, status, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -126,7 +119,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, fundID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, fundID, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
@@ -144,7 +137,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM__VNG_FUND_MODEL.getList({
-                        companyID, keyword, limit, lastestID, select, populates
+                        companyID, type, status, keyword, limit, lastestID, select, populates
                     })
                 }
 
@@ -171,11 +164,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, year, companyID, month } = ctx.params;
+                let { optionSeller, option, year, month } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
 
                 let resultAfterCallHandler = await CRM__VNG_FUND_MODEL.getListByProperty({
