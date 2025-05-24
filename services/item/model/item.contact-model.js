@@ -1156,7 +1156,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ option, companyID, uplineID, contacts, isBirthday, fundaID, voucherID, parentID, type, fromDate, toDate, month, userCreateID, keyword, limit = 5, lastestID, select, populates }) {
+    getList({ option, companyID, uplineID, contacts, voucherID, parentID, type, fromDate, toDate, userCreateID, keyword, limit = 5, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if (Number(limit) > 10) {
@@ -1190,6 +1190,11 @@ class Model extends BaseModel {
                     conditionObj.userCreate = userCreateID
                 }
 
+                // Lấy theo contact cha
+                if (parentID && checkObjectIDs(parentID)) {
+                    conditionObj.parent = parentID
+                }
+
                 // Lấy theo Voucher
                 if (checkObjectIDs(voucherID)) {
                     if(!option){
@@ -1205,16 +1210,6 @@ class Model extends BaseModel {
                     } 
                 }
 
-                // // Lấy nhân sự theo đơn vị cơ sở
-                // if (fundaID && checkObjectIDs(fundaID)) {
-                //     conditionObj.funda = fundaID
-                // }
-
-                // Lấy theo contact cha
-                if (parentID && checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
-                }
-
                 // Phân loại theo thời khoảng
                 if (isValidDate(fromDate) && isValidDate(toDate)) {
                     conditionObj.joinedDate = {
@@ -1223,7 +1218,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                // // Lấy những danh bạ có sinh nhật vào hôm nay: sử dụng dạng $gte, $lte để tăng hiệu suất
+                // // Lấy những danh bạ có sinh nhật vào hôm nay: sử dụng dạng $gte, $lte để tăng hiệu suất*** Không sử dụng return
                 // if (isBirthday == 1) {
                 //     const day = (new Date()).getDate()
                 //     const month = (new Date()).getMonth()
