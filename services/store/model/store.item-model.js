@@ -20,7 +20,8 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
  */
 const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll');
 const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll'); 
-const STORE_ITEM_COLL                    = require('../database/store.item-coll');
+const STORE_LOT_COLL                    = require('../database/store.lot-coll');
+const STORE_ITEM_COLL                   = require('../database/store.item-coll');
 
 /**
  * import inter-model, exter-model
@@ -40,24 +41,34 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 25/5/2025
      */
-    insert({ userID, companyID, date, expired, name, sign, note }) {
+    insert({ userID, companyID, lotID, goodsID, name, sign, note, status }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(companyID) || !name || !sign || !expired )
-                    return resolve({ error: true, message: 'companyID|name|expired invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                if(!checkObjectIDs(lotID) || !name || !sign )
+                    return resolve({ error: true, message: 'lotID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                 let infoVoucher = await STORE_ITEM_COLL.findOne({ company: companyID, sign: sign.replace(/\s/g, "") })
                 if(infoVoucher)
                     return resolve({ error: true, message: 'Mã hiệu đã tồn tại' })
 
+                let infoLot = await STORE_LOT_COLL.findById(lotID)
+                if(infoLot)
+                    return resolve({ error: true, message: 'Lô không tồn tại' })
+
                 let dataInsert = { 
                     userCreate: userID,
                     company: companyID,
-                    expired
+                    lot: lotID,
+                    date: infoLot.date,
+                    expired: infoLot.expired,
                 }
 
-                if(date && date != ""){
-                    dataInsert.date = date
+                if (checkObjectIDs(goodsID)) {
+                    dataInsert.goods = goodsID;
+                }
+
+                if (!isNaN(status) && Number(status) >= 1) {
+                    dataInsert.status = Number(status)
                 }
 
                 let convertStr = ''
@@ -93,16 +104,16 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    update({ userID, lotID, date, expired, name, sign, note }) {
+    update({ userID, itemID, name, sign, note, status }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(lotID))
-                    return resolve({ error: true, message: 'lotID__invalid', keyError: KEY_ERROR.PARAMS_INVALID })
+                if(!checkObjectIDs(itemID))
+                    return resolve({ error: true, message: 'itemID__invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                 let convertStr = ''
                 if(sign && sign != ""){
                     let infoVoucher = await STORE_ITEM_COLL.findOne({ 
-                        _id: { $ne: lotID },
+                        _id: { $ne: itemID },
                         company: companyID, 
                         sign: sign.replace(/\s/g, "")
                     })
@@ -117,15 +128,6 @@ class Model extends BaseModel {
                     userUpdate: userID, 
                     modifyAt: new Date() 
                 }
-
-                if(date && date != ""){
-                    dataUpdate.date = date
-                }
-
-                if(expired && expired != ""){
-                    dataUpdate.expired = expired
-                }
-
                 
                 if(name && name != ""){
                     dataUpdate.name = name;
@@ -139,7 +141,11 @@ class Model extends BaseModel {
                     dataUpdate.namecv = convertStr
                 }
 
-                let infoAfterUpdate = await STORE_ITEM_COLL.findByIdAndUpdate(lotID, dataUpdate, { new: true });
+                if (!isNaN(status) && Number(status) >= 1) {
+                    dataUpdate.status = Number(status)
+                }
+
+                let infoAfterUpdate = await STORE_ITEM_COLL.findByIdAndUpdate(itemID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
 
@@ -155,7 +161,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getInfo({ lotID, select, populates={} }) {
+    getInfo({ itemID, select, populates={} }) {
         return new Promise(async resolve => {
             try {
                 if(populates && typeof populates === 'string'){
@@ -170,7 +176,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await STORE_ITEM_COLL.findById(lotID)
+                let infoAterGet = await STORE_ITEM_COLL.findById(itemID)
                 .select(select)
                 .populate(populates)
 
@@ -284,7 +290,6 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     downloadTemplateExcel({ option, companyID, userID }) {
-        // console.log({ option, companyID, userID })
         return new Promise(async resolve => {
             try {
                 /**

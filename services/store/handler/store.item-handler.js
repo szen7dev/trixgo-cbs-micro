@@ -26,7 +26,7 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, date, expired, name, sign, note } = ctx.params;
+                let { optionSeller, lotID, goodsID, name, sign, note, status } = ctx.params;
 
                 // console.log(ctx.params)
                 const { _id: userID, company } = ctx.meta.infoUser;
@@ -39,7 +39,7 @@
                 }
 
                 let resultAfterCallHandler = await STORE_ITEM_MODEL.insert({
-                    userID, companyID, date, expired, name, sign, note
+                     userID, companyID, lotID, goodsID, name, sign, note, status
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -57,7 +57,7 @@
      update: {
          auth: "required",
          params: {
-            lotID           : { type: "string" },
+            itemID           : { type: "string" },
             name                : { type: "string", optional: true  },
             sign                : { type: "string", optional: true  },
             note                : { type: "string", optional: true },
@@ -65,13 +65,13 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { lotID, date, name, sign, note } = ctx.params;
+                let { itemID, name, sign, note } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await STORE_ITEM_MODEL.update({
-                    userID, lotID, date, expired, name, sign, note
+                    userID, itemID, name, sign, note, status
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -89,16 +89,16 @@
      remove: {
          auth: "required",
          params: {
-            lotID   : { type: "string" }
+            itemID   : { type: "string" }
          },
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let {  lotID } = ctx.params;
+                let {  itemID } = ctx.params;
                 // console.log(ctx.params)
 
                 let resultAfterCallHandler = await STORE_ITEM_MODEL.remove({
-                    lotID
+                    itemID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -116,7 +116,7 @@
      getInfoAndGetList: {
          auth: "required",
          params: {
-            lotID       : { type: "string", optional: true },
+            itemID       : { type: "string", optional: true },
             sign        : { type: "string", optional: true },
             customerID  : { type: "string", optional: true },
             template    : { type: "string", optional: true },
@@ -133,7 +133,7 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { lotID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { itemID, keyword, limit, lastestID, select, populates } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -147,9 +147,9 @@
                 }
 
                 let resultAfterCallHandler
-                if(lotID){
+                if(itemID){
                     resultAfterCallHandler = await STORE_ITEM_MODEL.getInfo({
-                    lotID, select, populates,
+                    itemID, select, populates,
                     })
                 }else{
                     resultAfterCallHandler = await STORE_ITEM_MODEL.getList({

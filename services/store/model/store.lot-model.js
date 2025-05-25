@@ -284,7 +284,6 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     downloadTemplateExcel({ option, companyID, userID }) {
-        // console.log({ option, companyID, userID })
         return new Promise(async resolve => {
             try {
                 /**

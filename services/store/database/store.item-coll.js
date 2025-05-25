@@ -21,6 +21,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_item", {
         type: Schema.Types.ObjectId,
         ref : "store_lot"
     },
+    //_________Link sản phẩm
+    goods: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
+    },
     //_________Ngày
     date: { type: Date, default: Date.now },
     //_________Thời hạn
