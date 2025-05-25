@@ -59,8 +59,6 @@ class Model extends BaseModel {
                     event: eventID,
                 }
 
-                let convertStr = ''
-
                 if(!isNaN(type) && [1,2].includes(Number(type))){
                     dataInsert.type = type;
                 }
@@ -81,6 +79,7 @@ class Model extends BaseModel {
                     dataInsert.address = address;
                 }
 
+                let convertStr = ''
                 if(name && name != ""){
                     dataInsert.name = name;
                     convertStr = stringUtils.removeAccents(name)
@@ -89,7 +88,6 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
-
                 if(convertStr != ""){
                     dataInsert.namecv = convertStr
                 }
@@ -185,7 +183,6 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
-
                 if(convertStr != ""){
                     dataUpdate.namecv = convertStr
                 }
@@ -234,7 +231,7 @@ class Model extends BaseModel {
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", status: 403 })
 
-                return resolve({ error: false, data: infoAterGet,status: 200 })
+                return resolve({ error: false, data: infoAterGet, status: 200 })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -351,9 +348,6 @@ class Model extends BaseModel {
     getListByProperty({ userID, option, year, month, companyID }){
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 let yearFilter
                 let currentYear = new Date().getFullYear()
                 if(year && !isNaN(year)){
