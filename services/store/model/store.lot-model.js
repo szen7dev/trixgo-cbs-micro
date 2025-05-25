@@ -21,6 +21,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll');
 const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll'); 
 const STORE_LOT_COLL                    = require('../database/store.lot-coll');
+const STORE_ITEM_COLL                   = require('../database/store.item-coll');
 
 /**
  * import inter-model, exter-model
@@ -125,7 +126,6 @@ class Model extends BaseModel {
                 if(expired && expired != ""){
                     dataUpdate.expired = expired
                 }
-
                 
                 if(name && name != ""){
                     dataUpdate.name = name;
@@ -142,6 +142,17 @@ class Model extends BaseModel {
                 let infoAfterUpdate = await STORE_LOT_COLL.findByIdAndUpdate(lotID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
                     return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+
+                // Cập nhật item
+                await STORE_ITEM_COLL.updateMany(
+                    { 
+                        lot: lotID,
+                    },
+                    { $set: { 
+                        "date" : date,
+                        "expired" : expired,
+                    } }
+                );
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
