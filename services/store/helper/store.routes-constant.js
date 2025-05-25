@@ -2,6 +2,8 @@ const BASE_ROUTE            = '/store';
 const ORDER                 = '/orders';
 const ORDER_PRODUCT         = '/order_products';
 const VOUCHER               = '/vouchers';
+const LOT                   = '/lots';
+const ITEM                  = '/items';
 
 const CF_ROUTINGS_STORE = {
     ORIGIN_APP: BASE_ROUTE,
@@ -29,6 +31,18 @@ const CF_ROUTINGS_STORE = {
     VOUCHER_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}${VOUCHER}/download-template-excel`,
     VOUCHER_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}${VOUCHER}/import-from-excel`,
     VOUCHER_EXPORT_EXCEL                    : `${BASE_ROUTE}${VOUCHER}/export-excel`,
+
+    //================================STORE_LOT=======================================//
+    LOT                                     : `${BASE_ROUTE}${LOT}`,
+    LOT_DOWNLOAD_TEMPLATE_EXCEL             : `${BASE_ROUTE}${LOT}/download-template-excel`,
+    LOT_IMPORT_FROM_EXCEL                   : `${BASE_ROUTE}${LOT}/import-from-excel`,
+    LOT_EXPORT_EXCEL                        : `${BASE_ROUTE}${LOT}/export-excel`,
+
+    //================================STORE_ITEM=======================================//
+    ITEM                                    : `${BASE_ROUTE}${ITEM}`,
+    ITEM_DOWNLOAD_TEMPLATE_EXCEL            : `${BASE_ROUTE}${ITEM}/download-template-excel`,
+    ITEM_IMPORT_FROM_EXCEL                  : `${BASE_ROUTE}${ITEM}/import-from-excel`,
+    ITEM_EXPORT_EXCEL                       : `${BASE_ROUTE}${ITEM}/export-excel`,
 }
 
 exports.CF_ROUTINGS_STORE = CF_ROUTINGS_STORE;

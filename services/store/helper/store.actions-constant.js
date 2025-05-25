@@ -3,6 +3,8 @@ const BASE_ACTIONS               = 'ACT_STORE';
 const ORDER                      = 'ORDER';
 const ORDER_PRODUCT              = 'ORDER_PRODUCT';
 const VOUCHER                    = 'VOUCHER';
+const LOT                        = 'LOT';
+const ITEM                       = 'ITEM';
 
 const CF_ACTIONS_STORE= {
 
@@ -44,6 +46,28 @@ const CF_ACTIONS_STORE= {
    VOUCHER_DOWNLOAD_TEMPLATE_EXCEL                 : `${BASE_ACTIONS}_${VOUCHER}_DOWNLOAD_TEMPLATE_EXCEL`,
    VOUCHER_IMPORT_FROM_EXCEL                       : `${BASE_ACTIONS}_${VOUCHER}_IMPORT_FROM_EXCEL`,
    VOUCHER_EXPORT_EXCEL                            : `${BASE_ACTIONS}_${VOUCHER}_EXPORT_EXCEL`,
+
+   /**
+   * LOT
+   */
+   LOT_INSERT                                    : `${BASE_ACTIONS}_${LOT}_INSERT`,
+   LOT_UPDATE                                    : `${BASE_ACTIONS}_${LOT}_UPDATE`,
+   LOT_REMOVE                                    : `${BASE_ACTIONS}_${LOT}_REMOVE`,
+   LOT_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${LOT}_GET_INFO_AND_GET_LIST`,
+   LOT_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${LOT}_DOWNLOAD_TEMPLATE_EXCEL`,
+   LOT_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${LOT}_IMPORT_FROM_EXCEL`,
+   LOT_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${LOT}_EXPORT_EXCEL`,
+
+   /**
+   * ITEM
+   */
+   ITEM_INSERT                                    : `${BASE_ACTIONS}_${ITEM}_INSERT`,
+   ITEM_UPDATE                                    : `${BASE_ACTIONS}_${ITEM}_UPDATE`,
+   ITEM_REMOVE                                    : `${BASE_ACTIONS}_${ITEM}_REMOVE`,
+   ITEM_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${ITEM}_GET_INFO_AND_GET_LIST`,
+   ITEM_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${ITEM}_DOWNLOAD_TEMPLATE_EXCEL`,
+   ITEM_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${ITEM}_IMPORT_FROM_EXCEL`,
+   ITEM_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${ITEM}_EXPORT_EXCEL`,
 }
 
 exports.CF_ACTIONS_STORE = CF_ACTIONS_STORE
