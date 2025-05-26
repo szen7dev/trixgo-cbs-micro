@@ -39,6 +39,14 @@ module.exports  = DATABASE_MIDDLEWARE("store_item", {
     note: String,
     //_________Trạng thái kích hoạt: 1 chưa, 2 kích hoạt
     status: { type: Number, default: 1 },
+    //_________Ngày kích hoạt
+    activationDate: Date,
+    //_________Họ và tên khách
+    customerName: String,
+    //_________Số điện thoại khách
+    customerPhone: String,
+    //_________Giá mua
+    amount: { type: Number, default: 0 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
