@@ -18,7 +18,6 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 /**s
  * import inter-coll, exter-coll
  */
-const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll');
 const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll'); 
 const STORE_LOT_COLL                    = require('../database/store.lot-coll');
 const STORE_ITEM_COLL                   = require('../database/store.item-coll');
@@ -52,7 +51,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'Mã hiệu đã tồn tại' })
 
                 let infoLot = await STORE_LOT_COLL.findById(lotID)
-                if(infoLot)
+                if(!infoLot)
                     return resolve({ error: true, message: 'Lô không tồn tại' })
 
                 let dataInsert = { 
