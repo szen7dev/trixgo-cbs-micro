@@ -1,3 +1,15 @@
+@PRODUCTION_URL=https://api.trixgo.com/api
+@LOCAL_URL=http://localhost:3003/api
+
+POST {{PRODUCTION_URL}}/crm/vng_event?optionSeller=18date=2025-03-15&name=Thăm khám Nậm Nhùn Lai Châu&alddress-Huyện Nậm Nhùn thuộc tỉnh Lai Châu
+Content-Type: application/json
+
+{
+    "phone": "84828912491"
+}
+
+###
+
 POST https://business.openapi.zalo.me/message/template
 Content-Type: application/json
 
@@ -12,7 +24,7 @@ Content-Type: application/json
 
 ####
 
-POST http://localhost:3003/api/auth/users/get-phone-otp
+POST {{PRODUCTION_URL}}/auth/users/get-phone-otp
 Content-Type: application/json
 
 {

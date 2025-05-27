@@ -198,6 +198,7 @@ class Model extends BaseModel {
                 // }
 
                 const config = await ITEM__CONFIG_COLL.findOne({ channel: appId }).lean();
+                console.info({ phone, templateData, templateId, appId, config })
                 console.log({ phone, templateData, templateId, appId, config })
                 if (!config) {
                   return resolve({ error: true, message: 'Config not found' });
@@ -226,7 +227,8 @@ class Model extends BaseModel {
 						'Content-type': 'application/json',
 					},
                 });
-                console.log({ response })
+                console.info({ response_status: response?.status, response_data: response?.data });
+                console.log({ response_status: response?.status, response_data: response?.data });
                 if(response.status !== 200 || response.statusText !== 'OK') {
                     return resolve({ error: true, message: "Can't request to zalo zns" });
                 }
