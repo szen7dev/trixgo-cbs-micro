@@ -1365,10 +1365,10 @@ class Model extends BaseModel {
                 
                 // Ví dụ sử dụng hàm
                 const priceLevels = [
-                    { quantity: 99, price: 150 }, // 100 cốc đầu x 100
-                    { quantity: 401, price: 250 }, // 200 cốc tiếp theo x 200
-                    { quantity: 500, price: 300 }, // 200 cốc tiếp theo x 200
-                    { quantity: 50000, price: 350 }, // 200 cốc tiếp theo x 200
+                    { quantity: 99, price: 300 }, // 100 cốc đầu x 100
+                    { quantity: 401, price: 500 }, // 200 cốc tiếp theo x 200
+                    { quantity: 500, price: 600 }, // 200 cốc tiếp theo x 200
+                    { quantity: 50000, price: 700 }, // 200 cốc tiếp theo x 200
                 ];
 
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
