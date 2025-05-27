@@ -238,13 +238,12 @@ class Model extends BaseModel {
         })
     }
 
-
     /**
      * Name  : Danh sách expert timesheet
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, type, status, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, eventID, type, status, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -253,7 +252,7 @@ class Model extends BaseModel {
                     limit = +Number(limit);
                 }
 
-                let conditionObj = {company: companyID};
+                let conditionObj = {};
                 let nextCursor	= null;
                 let sortBy      = null;
                 let keys	 = ['createAt__-1', '_id__-1'];
@@ -268,6 +267,12 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(!checkObjectIDs(eventID)){
+                    conditionObj.event = eventID;
+                }else{
+                    conditionObj.company = companyID;
                 }
 
                 if(!isNaN(type) && [1,2].includes(Number(type))){

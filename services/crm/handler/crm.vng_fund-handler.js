@@ -107,7 +107,7 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            fundID          : { type: "string", optional: true },
+            eventID          : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -119,7 +119,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, fundID, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, eventID, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
@@ -130,16 +130,9 @@ module.exports = {
                 }else{
                     companyID = company?._id
                 }
-                let resultAfterCallHandler;
-                if(fundID){
-                    resultAfterCallHandler = await CRM__VNG_FUND_MODEL.getInfo({
-                        fundID, userID, select, populates
-                    });
-                } else {
-                    resultAfterCallHandler = await CRM__VNG_FUND_MODEL.getList({
-                        companyID, type, status, keyword, limit, lastestID, select, populates
-                    })
-                }
+                let resultAfterCallHandler = await CRM__VNG_FUND_MODEL.getList({
+                    companyID, eventID, type, status, keyword, limit, lastestID, select, populates
+                })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
