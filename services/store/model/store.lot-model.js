@@ -151,7 +151,7 @@ class Model extends BaseModel {
                         "date" : date,
                         "expired" : expired,
                     } }
-                );
+                )
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
