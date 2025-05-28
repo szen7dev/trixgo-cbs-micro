@@ -19,6 +19,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
  * import inter-coll, exter-coll
  */
 const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll'); 
+const ITEM__AREA_COLL            	    = require('../../item/database/item.area-coll'); 
 const STORE_LOT_COLL                    = require('../database/store.lot-coll');
 const STORE_ITEM_COLL                   = require('../database/store.item-coll');
 
@@ -43,7 +44,7 @@ class Model extends BaseModel {
     insert({ userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(lotID) || !checkObjectIDs(goodsID) || !name || !sign )
+                if(!checkObjectIDs(lotID) || !checkObjectIDs(goodsID) || !customerName || !customerPhone || !sign || !amount )
                     return resolve({ error: true, message: 'lotID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                 let infoVoucher = await STORE_ITEM_COLL.findOne({ company: companyID, sign: sign.replace(/\s/g, "") })
@@ -95,19 +96,29 @@ class Model extends BaseModel {
                 if(customerPhone != ""){
                     dataInsert.customerPhone = customerPhone
                     convertStr = convertStr + " " + stringUtils.removeAccents(customerPhone)
-
                     dataInsert.activationDate = new Date() 
                 }
                 if(customerName != ""){
                     dataInsert.customerName = customerName
                     convertStr = convertStr + " " + stringUtils.removeAccents(customerName)
-
                 }
 
-                if (checkObjectIDs(area1)) {
-                    dataInsert.area1 = area1
-                    dataInsert.area2 = area2
-                    dataInsert.area3 = area3
+                if (checkObjectIDs(area3)) {
+                    let infoArea = await ITEM__AREA_COLL.findById(area3)
+                    .populate({
+                        path: 'parent',
+                        select: 'name parent',
+                        // populate: {
+                        //     path: 'parent',
+                        //     select: 'name parent',
+                        // }
+                    })
+
+                    if(infoArea){
+                        dataInsert.area1 = infoArea?.parent?.parent
+                        dataInsert.area2 = infoArea?.parent?._id
+                        dataInsert.area3 = area3
+                    }
                 }
 
                 if (!isNaN(amount)) {
@@ -117,6 +128,35 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })       
+
+                // Cập nhật vào lô
+                if (!isNaN(status) && Number(status) === 2) {
+                    // Tính số sản phẩm của lô đã kích hoạt điện tử
+                    let listData = await STORE_ITEM_COLL.aggregate([
+                        {
+                            $match: {
+                                lot: ObjectID(lotID),
+                                status: 2,
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { },
+                                amount: { $sum: 1 },
+                            }
+                        },
+                    ])
+
+                    if(listData && listData.length){
+                        let info = await STORE_LOT_COLL.findByIdAndUpdate(lotID, {
+                            userUpdate: userID, 
+                            modifyAt: new Date(),
+                            activatedQuantity: listData[0].amount,
+                        }, { new: true })
+
+                        // console.log(info)
+                    }                    
+                }
 
                 return resolve({ error: false, data: infoAfterInsert })
             } catch (error) {
