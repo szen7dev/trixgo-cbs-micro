@@ -68,8 +68,13 @@ class Model extends BaseModel {
                     if(!isValidVietnamPhoneNumber(strValid))
                         return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
                 }else{
-                    if(!checkObjectIDs(contactID) || !name || !birthday || !height || !weight)
-                        return resolve({ error: true, message: "Danh bạ không hợp lệ. Hãy vui lòng thử lại" })
+                    if(checkObjectIDs(contactID)){
+                        if(!height || !weight)
+                            return resolve({ error: true, message: "Ngày sinh, chiều cao, cân nặng không hợp lệ" })
+                    }else{
+                        if(!name || !birthday || !height || !weight)
+                        return resolve({ error: true, message: "Tên, ngày sinh, chiều cao, cân nặng không hợp lệ" })
+                    }
                 }
 
                 //__________Khai báo và validate dữ liệu
