@@ -122,7 +122,7 @@ module.exports = {
                 let { optionSeller, eventID, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
