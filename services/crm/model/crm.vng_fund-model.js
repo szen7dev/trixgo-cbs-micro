@@ -49,7 +49,7 @@ class Model extends BaseModel {
     insert({ userID, companyID, type, date, name, eventID, address, amount, note, imagesID, status }) {
         return new Promise(async resolve => {
             try {
-                if (!checkObjectIDs(eventID) || !name)
+                if (!checkObjectIDs(eventID))
                     return resolve({error: true, message: "eventID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
 
                 //__________Khai báo và validate dữ liệu
