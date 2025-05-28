@@ -122,7 +122,7 @@ module.exports = {
                 let { optionSeller, eventID, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -195,7 +195,7 @@ module.exports = {
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let { option, year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await CRM__VNG_FUND_MODEL.exportExcel({
                     companyID: company._id, option, year, month, userID

@@ -40,10 +40,10 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 25/5/2025
      */
-    insert({ userID, companyID, lotID, goodsID, name, sign, note, status }) {
+    insert({ userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType }) {
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(lotID) || !name || !sign )
+                if(!checkObjectIDs(lotID) || !checkObjectIDs(goodsID) || !name || !sign )
                     return resolve({ error: true, message: 'lotID|name invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
                 let infoVoucher = await STORE_ITEM_COLL.findOne({ company: companyID, sign: sign.replace(/\s/g, "") })
@@ -58,16 +58,21 @@ class Model extends BaseModel {
                     userCreate: userID,
                     company: companyID,
                     lot: lotID,
+                    goods: goodsID,
                     date: infoLot.date,
                     expired: infoLot.expired,
                 }
 
-                if (checkObjectIDs(goodsID)) {
-                    dataInsert.goods = goodsID;
-                }
-
                 if (!isNaN(status) && Number(status) >= 1) {
                     dataInsert.status = Number(status)
+                }
+
+                if (!isNaN(channelType) && Number(channelType) >= 1) {
+                    dataInsert.channelType = Number(channelType)
+                }
+
+                if (!isNaN(reasonType) && Number(reasonType) >= 1) {
+                    dataInsert.reasonType = Number(reasonType)
                 }
 
                 let convertStr = ''
@@ -87,6 +92,28 @@ class Model extends BaseModel {
                     dataInsert.namecv = convertStr
                 }
 
+                if(customerPhone != ""){
+                    dataInsert.customerPhone = customerPhone
+                    convertStr = convertStr + " " + stringUtils.removeAccents(customerPhone)
+
+                    dataInsert.activationDate = new Date() 
+                }
+                if(customerName != ""){
+                    dataInsert.customerName = customerName
+                    convertStr = convertStr + " " + stringUtils.removeAccents(customerName)
+
+                }
+
+                if (checkObjectIDs(area1)) {
+                    dataInsert.area1 = area1
+                    dataInsert.area2 = area2
+                    dataInsert.area3 = area3
+                }
+
+                if (!isNaN(amount)) {
+                    dataInsert.amount = Number(amount)
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })       
@@ -95,7 +122,7 @@ class Model extends BaseModel {
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
-        });
+        })
     }
 
     /**
@@ -103,7 +130,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    update({ userID, itemID, name, sign, note, status, activationDate, customerName, customerPhone, amount }) {
+    update({ userID, itemID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3 }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(itemID))
@@ -144,9 +171,40 @@ class Model extends BaseModel {
                     dataUpdate.status = Number(status)
                 }
 
+                if(customerPhone != ""){
+                    dataUpdate.customerPhone = customerPhone
+                    dataUpdate.activationDate = new Date() 
+                }
+                if(customerName != ""){
+                    dataUpdate.customerName = customerName
+                }
+                if (checkObjectIDs(area1)) {
+                    dataUpdate.area1 = area1
+                    dataUpdate.area2 = area2
+                    dataUpdate.area3 = area3
+                }
+
+                if (!isNaN(amount)) {
+                    dataUpdate.amount = Number(amount)
+                }
+
                 let infoAfterUpdate = await STORE_ITEM_COLL.findByIdAndUpdate(itemID, dataUpdate, { new: true });
                 if (!infoAfterUpdate)
-                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED });
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                let listData = await STORE_ITEM_COLL.aggregate([
+                    {
+                        $match: {
+                            company: ObjectID(companyID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { type: "$type" },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
@@ -160,7 +218,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    getInfo({ itemID, select, populates={} }) {
+    getInfo({ companyID, itemID, sign, select, populates={} }) {
         return new Promise(async resolve => {
             try {
                 if(populates && typeof populates === 'string'){
@@ -175,14 +233,30 @@ class Model extends BaseModel {
                     }
                 }
 
-                let infoAterGet = await STORE_ITEM_COLL.findById(itemID)
-                .select(select)
-                .populate(populates)
+                if (!checkObjectIDs(itemID)){
+                    if(sign && sign != ''){
+                        let info = await STORE_ITEM_COLL
+                        .findOne({ company: companyID, sign: sign.trim() })
+                        .select(select)
+                        .populate(populates)
+                        .lean();
+                        // console.log(info)
 
-                if(!infoAterGet)
-                    return resolve({ error: true, message: "can't_get_info", status: 403 })
+                        if (!info) return resolve({ error: true, message: 'cannot_get' })
+                        return resolve({ error: false, data: info })
+                    }else{
+                        return resolve({ error: true, message: 'cannot_get' })
+                    }
+                }else{
+                    let info = await STORE_ITEM_COLL
+                    .findById(itemID)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
 
-                return resolve({ error: false, data: infoAterGet, status: 200 })
+                    if (!info) return resolve({ error: true, message: 'cannot_get' })
+                    return resolve({ error: false, data: info })
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }

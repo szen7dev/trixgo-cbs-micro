@@ -26,7 +26,7 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, lotID, goodsID, name, sign, note, status } = ctx.params;
+                let { optionSeller, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType } = ctx.params;
 
                 // console.log(ctx.params)
                 const { _id: userID, company } = ctx.meta.infoUser;
@@ -39,7 +39,7 @@
                 }
 
                 let resultAfterCallHandler = await STORE_ITEM_MODEL.insert({
-                     userID, companyID, lotID, goodsID, name, sign, note, status
+                     userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -65,13 +65,13 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { itemID, name, sign, note, status, activationDate, customerName, customerPhone, amount } = ctx.params;
+                let { itemID, name, sign, note, status, activationDate, customerName, customerPhone, amount, area1, area2, area3  } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await STORE_ITEM_MODEL.update({
-                    userID, itemID, name, sign, note, status, activationDate, customerName, customerPhone, amount
+                    userID, itemID, name, sign, note, status, activationDate, customerName, customerPhone, amount, area1, area2, area3 
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -133,7 +133,7 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { itemID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, itemID, sign, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -147,9 +147,9 @@
                 }
 
                 let resultAfterCallHandler
-                if(itemID){
+                if(itemID || sign){
                     resultAfterCallHandler = await STORE_ITEM_MODEL.getInfo({
-                    itemID, select, populates,
+                        companyID, itemID, sign, select, populates,
                     })
                 }else{
                     resultAfterCallHandler = await STORE_ITEM_MODEL.getList({
