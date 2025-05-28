@@ -19,6 +19,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
  * import inter-coll, exter-coll
  */
 const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll'); 
+const ITEM__AREA_COLL            	    = require('../../item/database/item.area-coll'); 
 const STORE_LOT_COLL                    = require('../database/store.lot-coll');
 const STORE_ITEM_COLL                   = require('../database/store.item-coll');
 
@@ -103,9 +104,21 @@ class Model extends BaseModel {
                 }
 
                 if (checkObjectIDs(area3)) {
-                    dataInsert.area1 = area1
-                    dataInsert.area2 = area2
-                    dataInsert.area3 = area3
+                    let infoArea = await ITEM__AREA_COLL.findById(area3)
+                    .populate({
+                        path: 'parent',
+                        select: 'name parent',
+                        // populate: {
+                        //     path: 'parent',
+                        //     select: 'name parent',
+                        // }
+                    })
+
+                    if(infoArea){
+                        dataInsert.area1 = infoArea?.parent?.parent
+                        dataInsert.area2 = infoArea?.parent?._id
+                        dataInsert.area3 = area3
+                    }
                 }
 
                 if (!isNaN(amount)) {
