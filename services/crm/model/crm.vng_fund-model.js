@@ -244,6 +244,7 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({ companyID, eventID, type, status, keyword, limit = 10, lastestID, select, populates= {} }) {
+        // console.log({companyID, eventID, type, status, keyword})
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -269,7 +270,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!checkObjectIDs(eventID)){
+                if(checkObjectIDs(eventID)){
                     conditionObj.event = eventID;
                 }else{
                     conditionObj.company = companyID;
