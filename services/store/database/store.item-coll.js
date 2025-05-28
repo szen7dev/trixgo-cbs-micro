@@ -47,6 +47,28 @@ module.exports  = DATABASE_MIDDLEWARE("store_item", {
     customerPhone: String,
     //_________Giá mua
     amount: { type: Number, default: 0 },
+    //_________Tỉnh
+    area1: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Huyện
+    area2: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    //_________Xã
+    area3: {
+        type: Schema.Types.ObjectId,
+        ref : "area"
+    },
+    /**
+     * Các phân loại
+     */
+    //_________Kênh bán hàng: 1-TikTok, 2-Shopee, 3-Facebook, 4-Website, 5-Nhà thuốc
+    channelType: { type: Number, default: 1 },
+    //_________Lý do khách mua hàng: 1-Giải pháp/sản phẩm tốt, 2-Dịch vụ tốt, 3-Bạn bè giới thiệu
+    reasonType: { type: Number, default: 1 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */

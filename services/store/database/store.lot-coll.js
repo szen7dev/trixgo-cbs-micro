@@ -33,9 +33,13 @@ module.exports  = DATABASE_MIDDLEWARE("store_lot", {
     //_________Ghi chú
     note: String,
     //_________Số lượng sản phẩm
-    total: { type: Number, default: 0 },
+    totalQuantity: { type: Number, default: 0 },
+    //_________Số lượng đã kích hoạt
+    activatedQuantity : { type: Number, default: 0 },
+    //_________Số lượng đã bán
+    soldQuantity : { type: Number, default: 0 },
     //_________Số lượng còn lại
-    remaining : { type: Number, default: 0 },
+    remainingQuantity : { type: Number, default: 0 },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
      */
