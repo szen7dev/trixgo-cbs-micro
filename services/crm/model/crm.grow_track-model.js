@@ -119,11 +119,26 @@ class Model extends BaseModel {
                 if(checkObjectIDs(contactID)){
                     dataInsert.contact = contactID;
 
-                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
+                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).populate({
+                        path: 'parent',
+                        select: 'phone name'
+                    })
 
                     if(infoContact){
-                        dataInsert.phone = infoContact?.phone;
-                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
+                        dataInsert.name = infoContact?.name;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
+
+                        if(infoContact.phone){
+                            dataInsert.phone = infoContact?.phone;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
+                        }else{
+                            dataInsert.phone = infoContact?.parent?.phone;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.parent?.phone)
+                        }
+
+                        dataInsert.birthday = infoContact?.birthday;
+                        dataInsert.gender = infoContact?.gender;
+                        dataInsert.parentName = infoContact?.parent?.name;
                     }
                 }
 
