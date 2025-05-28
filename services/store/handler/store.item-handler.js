@@ -65,13 +65,13 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { itemID, name, sign, note } = ctx.params;
+                let { itemID, name, sign, note, status, activationDate, customerName, customerPhone, amount } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await STORE_ITEM_MODEL.update({
-                    userID, itemID, name, sign, note, status
+                    userID, itemID, name, sign, note, status, activationDate, customerName, customerPhone, amount
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
