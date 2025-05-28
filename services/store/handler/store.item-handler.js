@@ -16,38 +16,43 @@
      * Author: HiepNH
      * Date: 21/3/2023
      */
-     insert: {
-         auth: "required",
-         params: {
-            name                : { type: "string" },
+    insert: {
+        auth: "required",
+        params: {
+            lotID               : { type: "string" },
+            goodsID             : { type: "string" },
             sign                : { type: "string" },
-            note                : { type: "string", optional: true },
-         },
-         async handler(ctx) {
-             try {
-                await this.validateEntity(ctx.params);
-                let { optionSeller, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType } = ctx.params;
+            customerName        : { type: "string" },
+            customerPhone       : { type: "string" },
+            // area1               : { type: "string" },
+            // area2               : { type: "string" },
+            // area3               : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+            await this.validateEntity(ctx.params);
+            let { optionSeller, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType } = ctx.params;
 
-                // console.log(ctx.params)
-                const { _id: userID, company } = ctx.meta.infoUser;
+            // console.log(ctx.params)
+            const { _id: userID, company } = ctx.meta.infoUser;
 
-                let companyID
-                if(optionSeller){
-                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
-                }else{
-                    companyID = company?._id
-                }
+            let companyID
+            if(optionSeller){
+                companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+            }else{
+                companyID = company?._id
+            }
 
-                let resultAfterCallHandler = await STORE_ITEM_MODEL.insert({
-                     userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType
-                });
+            let resultAfterCallHandler = await STORE_ITEM_MODEL.insert({
+                    userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType
+            });
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-             } catch (error) {
-                 return { error:  true, message: error.message };
-             }
-         }
-     },
+            return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
 
     /**
      * Name: Update
