@@ -31,7 +31,7 @@
         async handler(ctx) {
             try {
             await this.validateEntity(ctx.params);
-            let { optionSeller, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType } = ctx.params;
+            let { optionSeller, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area3, channelID, reasonID } = ctx.params;
 
             // console.log(ctx.params)
             const { _id: userID, company } = ctx.meta.infoUser;
@@ -44,7 +44,7 @@
             }
 
             let resultAfterCallHandler = await STORE_ITEM_MODEL.insert({
-                    userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType
+                    userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area3, channelID, reasonID
             });
 
             return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
