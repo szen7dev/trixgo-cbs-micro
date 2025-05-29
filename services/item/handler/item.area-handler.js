@@ -80,7 +80,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { areaID, level, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { areaID, parentID, level, keyword, limit, lastestID, select, populates } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
                 let resultAfterCallHandler;
@@ -90,7 +90,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__AREA_MODEL.getList({
-                        companyID: company._id, level, keyword, select, limit, lastestID, populates
+                        companyID: company._id, parentID, level, keyword, select, limit, lastestID, populates
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
