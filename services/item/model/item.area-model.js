@@ -146,7 +146,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ keyword, limit = 10, lastestID, select, populates= {} }) { 
+    getList({ level, keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -155,9 +155,9 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                let sortBy;
-                // let conditionObj = { level: 3 };
                 let conditionObj = { };
+                let sortBy;
+                let nextCursor	= null;
                 let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
@@ -169,6 +169,10 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(level){
+                    conditionObj.level = Number(level)
                 }
                
                 if(keyword){
@@ -205,7 +209,6 @@ class Model extends BaseModel {
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Can't get data", status: 403 });
 
-                let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
                         nextCursor = infoDataAfterGet[limit - 1]._id;
