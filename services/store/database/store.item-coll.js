@@ -30,12 +30,12 @@ module.exports  = DATABASE_MIDDLEWARE("store_item", {
      * Các phân loại
      */
     //_________Kênh bán hàng: 1-TikTok, 2-Shopee, 3-Facebook, 4-Website, 5-Nhà thuốc
-    channelType: {
+    channel: {
         type: Schema.Types.ObjectId,
         ref: "doctype",
     },
     //_________Lý do khách mua hàng: 1-Giải pháp/sản phẩm tốt, 2-Dịch vụ tốt, 3-Bạn bè giới thiệu
-    reasonType: {
+    reason: {
         type: Schema.Types.ObjectId,
         ref: "doctype",
     },
