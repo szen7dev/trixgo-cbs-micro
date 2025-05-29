@@ -2017,7 +2017,6 @@ class Model extends BaseModel {
      * Date: 4/2/2023
      */
     exportExcel({ companyID, option, year, month, filterParams, email, userID }) {
-        // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
                 if(FNB_ACC.taichinh.includes(email.toString())){

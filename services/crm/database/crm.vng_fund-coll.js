@@ -10,9 +10,9 @@ module.exports  = DATABASE_MIDDLEWARE("crm_vng_fund", {
         ref : "company"
     },
     /**
-     * Phân loại
-    * 1-Thu tiền vào
-     *2-Chi tiền ra
+     * Phân loại vào ra
+     * 1-Chi tiền ra
+     * 2-Thu tiền vào
      */
     type: {
         type: Number,
