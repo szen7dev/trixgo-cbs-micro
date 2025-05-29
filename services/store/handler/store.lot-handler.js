@@ -65,7 +65,7 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { lotID, date, name, sign, note } = ctx.params;
+                let { lotID, date, expired, name, sign, note } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
