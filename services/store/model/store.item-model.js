@@ -41,7 +41,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 25/5/2025
      */
-    insert({ userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area1, area2, area3, channelType, reasonType }) {
+    insert({ userID, companyID, lotID, goodsID, name, sign, note, status, customerName, customerPhone, amount, area3, channelType, reasonType }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(lotID) || !checkObjectIDs(goodsID) || !customerName || !customerPhone || !sign || !amount )
@@ -68,12 +68,12 @@ class Model extends BaseModel {
                     dataInsert.status = Number(status)
                 }
 
-                if (!isNaN(channelType) && Number(channelType) >= 1) {
-                    dataInsert.channelType = Number(channelType)
+                if (checkObjectIDs(channelType)) {
+                    dataInsert.channelType = channelType
                 }
 
-                if (!isNaN(reasonType) && Number(reasonType) >= 1) {
-                    dataInsert.reasonType = Number(reasonType)
+                if (checkObjectIDs(reasonType)) {
+                    dataInsert.reasonType = reasonType
                 }
 
                 let convertStr = ''
