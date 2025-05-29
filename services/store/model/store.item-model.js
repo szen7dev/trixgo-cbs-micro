@@ -318,6 +318,7 @@ class Model extends BaseModel {
                 }
 
                 let conditionObj = {company: companyID};
+                let nextCursor	= null;
                 let sortBy;
                 let keys	 = ['createAt__-1', '_id__-1'];
 

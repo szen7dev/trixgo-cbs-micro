@@ -210,6 +210,7 @@ class Model extends BaseModel {
 
                 let conditionObj = {company: companyID};
                 let sortBy;
+                let nextCursor	= null;
                 let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(populates && typeof populates === 'string'){
