@@ -108,10 +108,6 @@ class Model extends BaseModel {
                     .populate({
                         path: 'parent',
                         select: 'name parent',
-                        // populate: {
-                        //     path: 'parent',
-                        //     select: 'name parent',
-                        // }
                     })
 
                     if(infoArea){
@@ -176,6 +172,11 @@ class Model extends BaseModel {
                 if(!checkObjectIDs(itemID))
                     return resolve({ error: true, message: 'itemID__invalid', keyError: KEY_ERROR.PARAMS_INVALID })
 
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                }
+
                 let convertStr = ''
                 if(sign && sign != ""){
                     let infoVoucher = await STORE_ITEM_COLL.findOne({ 
@@ -188,11 +189,6 @@ class Model extends BaseModel {
 
                     dataUpdate.sign = sign.replace(/\s/g, "")
                     convertStr = convertStr + " " + stringUtils.removeAccents(sign)
-                }
-
-                let dataUpdate = { 
-                    userUpdate: userID, 
-                    modifyAt: new Date() 
                 }
                 
                 if(name && name != ""){
