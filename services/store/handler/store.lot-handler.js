@@ -133,7 +133,7 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { lotID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, lotID, keyword, limit, lastestID, select, populates } = ctx.params;
 
                 // console.log(ctx.params)
 
