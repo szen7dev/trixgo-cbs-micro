@@ -146,7 +146,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ level, keyword, limit = 10, lastestID, select, populates= {} }) { 
+    getList({ parentID, level, keyword, limit = 10, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -169,6 +169,10 @@ class Model extends BaseModel {
                         path: "",
                         select: ""
                     }
+                }
+
+                if(parentID && checkObjectIDs(parentID)){
+                    conditionObj.parent = parentID
                 }
 
                 if(level){
