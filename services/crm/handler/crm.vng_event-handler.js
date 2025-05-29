@@ -131,6 +131,7 @@ module.exports = {
                 }else{
                     companyID = company?._id
                 }
+                
                 let resultAfterCallHandler;
                 if(eventID){
                     resultAfterCallHandler = await CRM__VNG_EVENT_MODEL.getInfo({
