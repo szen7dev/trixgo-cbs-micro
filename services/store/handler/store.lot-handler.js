@@ -153,7 +153,7 @@
                     })
                 }else{
                     resultAfterCallHandler = await STORE_LOT_MODEL.getList({
-                        companyID, status, keyword, limit, lastestID, select, populates
+                        companyID, keyword, limit, lastestID, select, populates
                     })
                 }
 
