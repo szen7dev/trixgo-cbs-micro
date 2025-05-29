@@ -65,13 +65,20 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { lotID, date, expired, name, sign, note } = ctx.params;
+                let { optionSeller, lotID, date, expired, name, sign, note } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company._id
+                }
+
                 let resultAfterCallHandler = await STORE_LOT_MODEL.update({
-                    userID, lotID, date, expired, name, sign, note
+                    companyID, userID, lotID, date, expired, name, sign, note
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -149,7 +156,7 @@
                 let resultAfterCallHandler
                 if(lotID){
                     resultAfterCallHandler = await STORE_LOT_MODEL.getInfo({
-                    lotID, select, populates,
+                        lotID, select, populates,
                     })
                 }else{
                     resultAfterCallHandler = await STORE_LOT_MODEL.getList({
