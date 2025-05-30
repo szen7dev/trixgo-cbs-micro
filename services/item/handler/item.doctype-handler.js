@@ -134,9 +134,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, doctypeID, projectID, parentID, type, keyword, limit, lastestID, select, populates, isShowParentAndChild } = ctx.params;
+                let { optionSeller, doctypeID, projectID, parentID, type, keyword, limit, lastestID, select, populates } = ctx.params;
         		
-                 const { _id: userID, company } = ctx.meta.infoUser;
+                 const { _id: userID, company } = ctx.meta.infoUser
                 // console.log(ctx.params)
 
                 let companyID
@@ -153,7 +153,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.getList({
-                        companyID, projectID, parentID, lastestID, userID, type, keyword, limit, select, populates, isShowParentAndChild
+                        companyID, projectID, parentID, lastestID, userID, type, keyword, limit, select, populates
                     });
                 }
 
