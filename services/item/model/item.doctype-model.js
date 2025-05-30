@@ -252,7 +252,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, projectID, parentID, type, keyword, limit = 10, lastestID, select, populates, isShowParentAndChild }) {
+    getList({ companyID, projectID, parentID, type, keyword, limit = 10, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(isNaN(limit) || +limit > 20) {
