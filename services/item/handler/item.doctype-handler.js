@@ -3,7 +3,7 @@
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code');
 const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
-ß
+
 /**
  * MODELS
  */
@@ -38,7 +38,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.insert({
                     type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel, grade
@@ -71,7 +71,7 @@ module.exports = {
 				const { _id: userID } = ctx.meta.infoUser;
                 const { doctypeID, name, description, sign, unit, amount, alert, salesChannel, grade, linkItemID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.update({
                     doctypeID, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID
