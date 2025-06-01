@@ -119,7 +119,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, fundID, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, fundID, eventID, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
@@ -138,7 +138,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM__VNG_FUND_MODEL.getList({
-                        companyID, type, status, keyword, limit, lastestID, select, populates
+                        companyID, eventID, type, status, keyword, limit, lastestID, select, populates
                     })
                 }
 
