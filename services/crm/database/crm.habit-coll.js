@@ -24,7 +24,16 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
-    //________Phân loại
+    //_________Phân nhóm habit
+    habitCate: {
+        type: Schema.Types.ObjectId,
+        ref : "crm_habit"
+    },
+    /**
+     * Phân loại
+     * 1-Có/không
+     * 2-Số phút thực hiện hàng ngày
+     */
     type: {
         type: Number,
         default: 1
@@ -34,19 +43,23 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         type: Number,
         default: 1
     },
-    //_________Số ngày thử thách
-    challenge: { type: Number, default: 0 },
-    //________Thời lượng yêu cầu hàng ngày (số phút, số gói,...)
+    //________Thời lượng yêu cầu hàng ngày (số phút)
     duration: { type: Number, default: 0 },
+    //_________Số ngày thử thách
+    dayOfChallenge: { type: Number, default: 0 },
     //________Nội dung
     name: String,
     namecv: String,
-    //_______Ngày bắt đầu
-    date: { type: Date, default: Date.now },
+    //_______Giờ bắt đầu thực hiện hàng ngày (để push thông báo)
+    startTime: Date,
+    //_______Ngày hoàn thành
+    finishDate: Date,
     //_________Streak days 
     streakDays : { type: Number, default: 0 },
     //________Ghi chú
     note: String,
+    //________Màu nền
+    color: String,
     //_________Hình ảnh
     images: [{
         type: Schema.Types.ObjectId,

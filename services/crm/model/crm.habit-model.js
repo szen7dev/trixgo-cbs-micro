@@ -44,7 +44,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, parentID, type, status, challenge, duration, contactID, name, note, date }) {
+    insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate }) {
         return new Promise(async resolve => {
             try {
                 let dataInsert = {
@@ -66,6 +66,10 @@ class Model extends BaseModel {
                     if(!name)
                         return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
                 }
+                
+                if(checkObjectIDs(habitCateID)){
+                    dataInsert.habitCate = habitCateID
+                }
 
                 if(checkObjectIDs(parentID)){
                     dataInsert.parent = parentID
@@ -83,8 +87,8 @@ class Model extends BaseModel {
                     dataInsert.type = Number(type)
                 }
 
-                if (!isNaN(challenge)) {
-                    dataInsert.challenge = Number(challenge)
+                if (!isNaN(dayOfChallenge)) {
+                    dataInsert.dayOfChallenge = Number(dayOfChallenge)
                 }
 
                 if (!isNaN(duration)) {
@@ -99,8 +103,12 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                if(date && date != ""){
-                    dataInsert.date = date;
+                if(startTime && startTime != ""){
+                    dataInsert.startTime = startTime;
+                }
+
+                if(finishDate && finishDate != ""){
+                    dataInsert.finishDate = finishDate;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert)
@@ -119,7 +127,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ userID, habitID, type, status, challenge, duration, name, note, date, imagesID }){
+    update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -135,10 +143,6 @@ class Model extends BaseModel {
 
                 if (!isNaN(status)) {
                     dataUpdate.status = Number(status)
-                }
-    
-                if (!isNaN(type)) {
-                    dataUpdate.type = Number(type)
                 }
 
                 if (!isNaN(challenge)) {
@@ -156,9 +160,17 @@ class Model extends BaseModel {
                 if(note && note != ""){
                     dataUpdate.note = note;
                 }
+                
+                if(startTime && startTime != ""){
+                    dataUpdate.startTime = startTime;
+                }
 
-                if(date && date != ""){
-                    dataUpdate.date = date;
+                if(dayOfChallenge && dayOfChallenge != ""){
+                    dataUpdate.dayOfChallenge = dayOfChallenge;
+                }
+
+                if(finishDate && finishDate != ""){
+                    dataUpdate.finishDate = finishDate;
                 }
 
                 let infoAfterUpdate = await CRM_HABIT_COLL.findByIdAndUpdate(habitID, dataUpdate, { new: true })

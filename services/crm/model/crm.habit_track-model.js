@@ -74,6 +74,7 @@ class Model extends BaseModel {
                         habit: habitID,
                         type: infoHabit.type,
                         contact: infoHabit.contact,
+                        habitCate: infoHabit.habitCate,
                     }
 
                     if(checkObjectIDs(contactID)){
