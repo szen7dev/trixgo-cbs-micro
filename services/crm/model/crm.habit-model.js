@@ -44,7 +44,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color }) {
+    insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType }) {
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -77,6 +77,10 @@ class Model extends BaseModel {
     
                 if (!isNaN(type)) {
                     dataInsert.type = Number(type)
+                }
+
+                if (!isNaN(resultType)) {
+                    dataInsert.resultType = Number(resultType)
                 }
 
                 if (!isNaN(dayOfChallenge)) {
@@ -123,7 +127,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, imagesID }){
+    update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -171,6 +175,10 @@ class Model extends BaseModel {
 
                 if(color && color != ""){
                     dataUpdate.color = color;
+                }
+
+                if (!isNaN(resultType)) {
+                    dataUpdate.resultType = Number(resultType)
                 }
 
                 let infoAfterUpdate = await CRM_HABIT_COLL.findByIdAndUpdate(habitID, dataUpdate, { new: true })
