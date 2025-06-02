@@ -24,7 +24,7 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
-    //________Trạng thái (1-Active|2-Hủy)
+    //________Phân loại
     type: {
         type: Number,
         default: 1

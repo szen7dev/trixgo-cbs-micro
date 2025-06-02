@@ -10,36 +10,20 @@ const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
 /**
  * DOMAIN AND ACTIONS
  */
-// const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
-// const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const {
-  checkObjectIDs,
-  IsJsonString,
-  validateParamsObjectID
-}  = require('../../../tools/utils/utils.js');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
+const { checkObjectIDs, IsJsonString}   = require('../../../tools/utils/utils.js')
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
-const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
-
 
 /**
  * COLLECTIONS
  */
-// const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
-
-// let dataTF = {
-//     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
-//     menuID: "623f1ecae998e94feda0cd70", //
-//     type: 1,
-//     action: 1,
-// }
 
 class Model extends BaseModel {
 
@@ -58,13 +42,12 @@ class Model extends BaseModel {
                 if(phone){
                     // Hàm kiểm tra Phone
                     const strValid = phone.toLowerCase().trim();
-                    // console.log(strValid)
 
                     function isValidVietnamPhoneNumber(str) {
                         const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
                         return phoneRegex.test(str);
                     }
-                    // console.log(isValidVietnamPhoneNumber(strValid))
+
                     if(!isValidVietnamPhoneNumber(strValid))
                         return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
                 }else{
