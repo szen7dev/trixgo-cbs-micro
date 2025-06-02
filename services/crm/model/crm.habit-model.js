@@ -47,24 +47,16 @@ class Model extends BaseModel {
     insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color }) {
         return new Promise(async resolve => {
             try {
+                if(!name)
+                    return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
+
                 let dataInsert = {
                     userCreate: userID, 
                     company: companyID,
                 }
 
-                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                    appID: "61e049f6fdebf77b072d1b16", 
-                    userID
-                })
-
-                if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 1){
-                    if(!name || !checkObjectIDs(contactID))
-                        return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name|contactID invalid" })
-                    
+                if(checkObjectIDs(contactID)){
                     dataInsert.contact = contactID
-                }else{
-                    if(!name)
-                        return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
                 }
                 
                 if(checkObjectIDs(habitCateID)){
