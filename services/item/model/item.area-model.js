@@ -146,11 +146,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  : 
      */
-    getList({ parentID, level, keyword, limit = 10, lastestID, select, populates= {} }) { 
+    getList({ parentID, level, keyword, limit = 100, lastestID, select, populates= {} }) { 
         return new Promise(async (resolve) => {
             try {
-                if(limit > 20){
-                    limit = 20
+                if(limit > 100){
+                    limit = 100
                 }else{
                     limit = +limit;
                 }
