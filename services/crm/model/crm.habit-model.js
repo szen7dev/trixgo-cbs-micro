@@ -228,7 +228,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, option, contactID, status, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, option, contactID, status, userCreateID, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -265,6 +265,10 @@ class Model extends BaseModel {
                     conditionObj.parent = { $exists: true, $ne: null }
                 }
 
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj.userCreate = userCreateID
+                }
+                
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     conditionObj.status = status;
                 }
