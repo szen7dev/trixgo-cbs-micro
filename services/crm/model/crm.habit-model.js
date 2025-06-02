@@ -44,7 +44,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate }) {
+    insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color }) {
         return new Promise(async resolve => {
             try {
                 let dataInsert = {
@@ -111,6 +111,10 @@ class Model extends BaseModel {
                     dataInsert.finishDate = finishDate;
                 }
 
+                if(color && color != ""){
+                    dataInsert.color = color;
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
@@ -127,7 +131,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, imagesID }){
+    update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -171,6 +175,10 @@ class Model extends BaseModel {
 
                 if(finishDate && finishDate != ""){
                     dataUpdate.finishDate = finishDate;
+                }
+
+                if(color && color != ""){
+                    dataUpdate.color = color;
                 }
 
                 let infoAfterUpdate = await CRM_HABIT_COLL.findByIdAndUpdate(habitID, dataUpdate, { new: true })

@@ -25,7 +25,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate } = ctx.params;
+                let { optionSeller, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -37,7 +37,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate })
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -58,13 +58,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, imagesID } = ctx.params;
+                let { habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, imagesID } = ctx.params;
 
                 // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, imagesID });
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
