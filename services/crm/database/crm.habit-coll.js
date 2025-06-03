@@ -38,14 +38,24 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         type: Number,
         default: 1
     },
-    //________Trạng thái (1-Active|2-Hủy)
+    //________Trạng thái (1-Khởi tạo|2-Hoàn thành)
     status: {
         type: Number,
         default: 1
     },
+    /**
+     * Phân loại hoàn thành
+     * 1-Tối thiểu
+     * 2-Tối ưu
+     * 3-Tối thượng
+     */
+    resultType: {
+        type: Number,
+        default: 2
+    },
     //________Thời lượng yêu cầu hàng ngày (số phút)
     duration: { type: Number, default: 0 },
-    //_________Số ngày thử thách
+    //_________Số ngày thử thách (streakTarget)
     dayOfChallenge: { type: Number, default: 0 },
     //________Nội dung
     name: String,
@@ -54,8 +64,12 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
     startTime: Date,
     //_______Ngày hoàn thành
     finishDate: Date,
-    //_________Streak days 
-    streakDays : { type: Number, default: 0 },
+    //_________currentStreak
+    currentStreak : { type: Number, default: 0 },
+    //_________maxStreak
+    maxStreak : { type: Number, default: 0 },
+    //_________% hoàn thành (max = 100)
+    percentage: { type: Number, default: 0, max: 100 },
     //________Ghi chú
     note: String,
     //________Màu nền

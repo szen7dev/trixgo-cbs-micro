@@ -17,14 +17,9 @@ const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
 /**
  * TOOLS
  */
-const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
-const {
-  checkObjectIDs,
-  IsJsonString,
-}  = require('../../../tools/utils/utils.js');
+const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils.js')
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
-const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
-
 
 /**
  * COLLECTIONS
