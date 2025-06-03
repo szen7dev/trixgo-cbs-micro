@@ -76,6 +76,13 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         ref: "store_order"
     },
     /**
+     * Lô hàng
+     */
+    lot: {
+        type: Schema.Types.ObjectId,
+        ref: "store_lot"
+    },
+    /**
      * Phân loại vào ra
      * 1-Bán ra/Xuất kho/Thu tiền vào
      * 2-Mua vào/Nhập kho/Chi tiền ra
@@ -214,27 +221,36 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default: 1
     },
-    /**
-     * Nhân viên chốt sale/kinh doanh***
-     * Người chăm sóc Affiliate
-     * Người live stream
-     * Người quảng cáo
-     * ....
-     */
-    sale: {
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    },
-    //_________Affiliate mang lại doanh số***
-    affiliate: {
-        type: Schema.Types.ObjectId,
-        ref : "contact"
-    },
     //_________Người giới thiệu
     referrer: {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     }, 
+    //_________Lead Sale
+    salesLeader: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
+    //_________Sale (Nhân viên kinh doanh)
+    sales: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
+    //_________Seller (Nhà bán hàng)
+    seller: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
+    //_________Người làm Affiliate (Nhân viên kinh doanh)
+    affiliate: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
+    //_________Chăm sóc khách hàng
+    customerCare: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
     /**
      * Phương thức thanh toán
      * 1-Tiền mặt

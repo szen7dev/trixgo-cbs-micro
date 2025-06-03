@@ -47,16 +47,18 @@ class Model extends BaseModel {
  * Author: HiepNH
  * Code: 8/9/2024
  */
-insert({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID }) {
+insert({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID }) {
 return new Promise(async (resolve) => {
     try {
-        if([2,3,4,5,6].includes(Number(type))){
-            if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
-                return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-        }else{
-            if (!checkObjectIDs(projectID) ||!checkObjectIDs(customerID) ||!name)
-                return resolve({error: true, message: "projectID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-        }
+        // if([2,3,4,5,6].includes(Number(type))){
+        //     if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
+        //         return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
+        // }else{
+        //     if (!checkObjectIDs(projectID) ||!checkObjectIDs(customerID) ||!name)
+        //         return resolve({error: true, message: "projectID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
+        // }
+        if (!checkObjectIDs(customerID) ||!name)
+            return resolve({error: true, message: "customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
 
         let dataInsert = { 
             company: companyID,
@@ -95,6 +97,28 @@ return new Promise(async (resolve) => {
         }
         if (checkObjectIDs(linkID)) {
             dataInsert.link = linkID;
+        }
+
+        if (checkObjectIDs(lotID)) {
+            dataInsert.lot = lotID;
+        }
+        if (checkObjectIDs(referrerID)) {
+            dataInsert.referrer = referrerID;
+        }
+        if (checkObjectIDs(salesLeaderID)) {
+            dataInsert.salesLeader = salesLeaderID;
+        }
+        if (checkObjectIDs(salesID)) {
+            dataInsert.sales = salesID;
+        }
+        if (checkObjectIDs(sellerID)) {
+            dataInsert.seller = sellerID;
+        }
+        if (checkObjectIDs(affiliateID)) {
+            dataInsert.affiliate = affiliateID;
+        }
+        if (checkObjectIDs(customerCareID)) {
+            dataInsert.customerCare = customerCareID;
         }
 
         if (!isNaN(outin) && Number(outin) >= 1) {
@@ -442,7 +466,7 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
  * Author: Hiepnh
  * Date: 9/4/2022
  */
-update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, outin, type, status, isAddSignature, forward, deliveryStartETA, deliveryEndETA, ctx }) {
+update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, outin, type, status, isAddSignature, forward, deliveryStartETA, deliveryEndETA, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, ctx }) {
     return new Promise(async (resolve) => {
         try {
             const infoOrder = await STORE_ORDER_COLL.findById(orderID)
@@ -504,6 +528,28 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
             }
             if (checkObjectIDs(linkID)) {
                 dataUpdate.link = linkID;
+            }
+
+            if (checkObjectIDs(lotID)) {
+                dataUpdate.lot = lotID;
+            }
+            if (checkObjectIDs(referrerID)) {
+                dataUpdate.referrer = referrerID;
+            }
+            if (checkObjectIDs(salesLeaderID)) {
+                dataUpdate.salesLeader = salesLeaderID;
+            }
+            if (checkObjectIDs(salesID)) {
+                dataUpdate.sales = salesID;
+            }
+            if (checkObjectIDs(sellerID)) {
+                dataUpdate.seller = sellerID;
+            }
+            if (checkObjectIDs(affiliateID)) {
+                dataUpdate.affiliate = affiliateID;
+            }
+            if (checkObjectIDs(customerCareID)) {
+                dataUpdate.customerCare = customerCareID;
             }
 
             if (date) {
