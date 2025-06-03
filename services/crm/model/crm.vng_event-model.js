@@ -132,18 +132,14 @@ class Model extends BaseModel {
                     dataUpdate.date = date;
                 }
 
-                if(address && address != ""){
-                    dataUpdate.address = address;
-                }
-
                 let convertStr = ''
                 if(name && name != ""){
                     dataUpdate.name = name;
                     convertStr = stringUtils.removeAccents(name)
                 }
-                if(event && event != ""){
-                    dataUpdate.event = event;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(event)
+                if(address && address != ""){
+                    dataUpdate.address = address;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(address)
                 }
                 if(note && note != ""){
                     dataUpdate.note = note;
