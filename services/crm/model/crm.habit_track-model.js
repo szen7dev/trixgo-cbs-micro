@@ -40,7 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, habitID, contactID, status, date, name, note, duration, percentage }) {
+    insert({ userID, companyID, habitID, contactID, status, date, name, note, duration, resultType, percentage }) {
         return new Promise(async resolve => {
             try {
                 let infoHabit = await CRM_HABIT_COLL.findById(habitID)
@@ -99,6 +99,10 @@ class Model extends BaseModel {
                     if (!isNaN(duration)) {
                         dataInsert.duration = Number(duration)
                     }
+
+                    if (!isNaN(resultType)) {
+                        dataInsert.resultType = Number(resultType)
+                    }
                     // console.log({dataInsert})
     
                     let infoAfterInsert = await this.insertData(dataInsert)
@@ -121,7 +125,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, status, name, note, duration, percentage, imagesID }){
+    update({ trackID, userID, status, name, note, duration, resultType, percentage, imagesID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -154,6 +158,10 @@ class Model extends BaseModel {
                 if (!isNaN(duration)) {
                     dataUpdate.duration = Number(duration)
                 }
+
+                if (!isNaN(resultType)) {
+                    dataUpdate.resultType = Number(resultType)
+                }                
                 // console.log({dataUpdate})
 
                 let infoAfterUpdate = await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(trackID, dataUpdate, { new: true })

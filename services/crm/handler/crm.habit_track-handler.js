@@ -37,7 +37,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.insert({ userID, companyID, habitID, contactID, status, date, name, note, duration })
+                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.insert({ userID, companyID, habitID, contactID, status, date, name, note, duration, resultType })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -64,7 +64,7 @@ module.exports = {
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.update({ userID, trackID, userID, status, name, note, duration, imagesID });
+                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.update({ userID, trackID, userID, status, name, note, duration, resultType, imagesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
