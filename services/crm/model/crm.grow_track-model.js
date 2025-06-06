@@ -25,6 +25,7 @@ const AUTH__USER_COLL                   = require('../../auth/database/auth.user
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
 
+const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
 class Model extends BaseModel {
 
     constructor() {
@@ -853,7 +854,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, contactID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, userID, contactID, phone, userCreateID, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -887,6 +888,15 @@ class Model extends BaseModel {
 
                 if(phone && phone != ""){
                     conditionObj.phone = phone
+                }else{
+                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e049f6fdebf77b072d1b16",
+                        userID
+                    })
+
+                    if(getInfoUserApp.error || Number(getInfoUserApp.data.level) == 1){
+                       conditionObj.userCreate = userID
+                    }
                 }
 
                 if(keyword){
