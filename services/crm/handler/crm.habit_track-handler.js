@@ -235,6 +235,33 @@ module.exports = {
     },
 
     /**
+     * Code:  HiepNH
+     * Name Download Template Excel
+     * Date: 9/12/2022
+     */
+    importExcel: {
+        auth: 'required',
+        params: {
+            dataImport: { type: 'string' }
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { dataImport, option } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+                console.log(dataImport)
+
+                const resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.importFromExcel({
+                    companyID: company._id, userID, dataImport, option, ctx
+                })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Name: Download Template Excel
      * Author: HiepNH
      * Code: 25/11/2024
