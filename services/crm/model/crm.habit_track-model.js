@@ -564,6 +564,7 @@ class Model extends BaseModel {
                         },
                         {
                             $project: {
+                              _id: 1,
                               date: 1,
                               dayOfWeek : {$dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
                               status: 1,
