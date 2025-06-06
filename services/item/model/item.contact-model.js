@@ -131,15 +131,17 @@ class Model extends BaseModel {
                     conditionObj.$or.push({ phone: phone.replace(/\s/g, "") })
                 }
 
+                // console.log(conditionObj)
+
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
-                if(infoContact){
+                // if(infoContact){
+                //     return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
+                // }
+                if (conditionObj.$or && conditionObj.$or.length > 0 && infoContact) {
+                    // return resolve({ error: false, data: infoContact });
                     return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
                 }
-                // if (conditionObj.$or && conditionObj.$or.length > 0 && infoContact) {
-                //     return resolve({ error: false, data: infoContact });
-                // }
                 
-
                 let fundaID = infoFunda._id
 
                 let dataInsert = {
