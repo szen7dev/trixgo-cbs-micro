@@ -1580,6 +1580,56 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: importFromExcel
+     * Code: HiepNH
+     * Date: 8/12/2022
+     */
+    importFromExcel({ companyID, dataImport, userID }) {
+        const that = this
+        return new Promise(async resolve => {
+            try {
+                const dataImportJSON = JSON.parse(dataImport);
+                let index = 0;
+                let errorNumber = 0;
+
+                // console.log(dataImportJSON)
+
+                for (const data of dataImportJSON) {
+                    // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
+                    if (index > 0 && index < 51) {
+                        let prepareData = {
+                            userID, 
+                            companyID, 
+                            name: data?.__EMPTY,
+                            gender: data?.__EMPTY_6,
+                            birthday: data?.__EMPTY_7, 
+                            height: data?.__EMPTY_3, 
+                            weight: data?.__EMPTY_4,
+                            
+                        }
+                        // console.log(prepareData);
+
+                        let infoAfterInsert = await that.insert(prepareData);
+                        if (infoAfterInsert.error) {
+                            errorNumber++;
+                        }
+                    }
+
+                    index++;
+                }
+
+                if (errorNumber != 0)
+                    return resolve({ error: true, message: "Import failed" });
+
+                return resolve({ error: false, message: "Import successfull" });
+            } catch (error) {
+                console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+    
+    /**
      * Dev: HiepNH
      * Name: Download Template Excel
      * Date: 25/11/2024
