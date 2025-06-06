@@ -689,9 +689,9 @@ class Model extends BaseModel {
     // }
 
     exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
-        // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
+                // Danh sách sản phẩm
                 if(Number(option) == 1){
                     if(FNB_ACC.taichinh.includes(email.toString())){
                         let conditionObj = { company: companyID }
@@ -936,7 +936,7 @@ class Model extends BaseModel {
     
                             const now = new Date();
                             const filePath = '../../../files/temporary_uploads/';
-                            const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
+                            const fileName = `DanhSachSanPham_${now.getTime()}.xlsx`;
                             const pathWriteFile = path.resolve(__dirname, filePath, fileName);
     
                             await workbook.toFileAsync(pathWriteFile);
@@ -950,8 +950,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Tải định mức Sản phẩm
-                if(Number(option) == 2){
+                // Định mức Sản phẩm
+                else if(Number(option) == 2){
                     if(FNB_ACC.taichinh.includes(email.toString())){
                         let conditionObj = { company: ObjectID(companyID), status: 5 }
     
@@ -1071,8 +1071,8 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Tải định mức Topping
-                if(Number(option) == 3){
+                // Định mức Topping
+                else if(Number(option) == 3){
                     if(FNB_ACC.taichinh.includes(email.toString())){
                         let conditionObj = { company: ObjectID(companyID), status: 5 }
     
@@ -1189,6 +1189,142 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Danh sách sản phẩm kèm mã đơn hàng
+                else if(Number(option) == 4){
+                    let conditionObj = { company: companyID }
+    
+                    let obj = JSON.parse(filterParams);
+
+                    let fundasID = obj.fundasID
+                    let shiftTypes = obj.shiftTypes
+                    let fromDate = obj.fromDate
+                    let toDate = obj.toDate
+                    let keyword = obj.keyword
+                    let salesChannels = obj.salesChannels
+                    let statuss = obj.statuss
+                    let isMistake = obj.isMistake
+                    let isDiscount = obj.isDiscount
+                    let isSalesoff = obj.isSalesoff
+                    let isCredit = obj.isCredit
+                    let isOffer = obj.isOffer
+                    let isNonResident = obj.isNonResident
+                    let isCustomerType = obj.isCustomerType
+
+                    if(fundasID && fundasID.length ){
+                        let arrFun = fundasID.map(item=>ObjectID(item))
+
+                        if(arrFun.length) {
+                            conditionObj.funda = { $in: arrFun };
+                        }
+                    }else{
+                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                        if(fundasIDIsMember.length) {
+                            conditionObj.funda = { $in: fundasIDIsMember };
+                        }else{
+                            conditionObj.funda = { $in: [] }
+                        }
+                    }
+
+                    shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
+                    salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
+                    statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
+
+                    // Phân loại khác
+                    if(isMistake && isMistake == 1){
+                        conditionObj.numberOfMistakes = { $gt: 0 }
+                    }
+
+                    if(isNonResident && isNonResident == 1){
+                        conditionObj.nonResident = 2
+                    }
+
+                    if(isDiscount && isDiscount == 1){
+                        conditionObj.discount = { $gt: 0 }
+                    }
+
+                    if(isSalesoff && isSalesoff == 1){
+                        conditionObj.salesoff = { $gt: 0 }
+                    }
+
+                    if(isCredit && isCredit == 1){
+                        conditionObj.credit = { $gt: 0 }
+                    }
+
+                    if(isOffer && isOffer == 1){
+                        conditionObj.offer = { $gt: 0 }
+                    }
+
+                    if(isCustomerType && isCustomerType == 1){
+                        conditionObj.customerType = 1
+                    }
+                    if(isCustomerType && isCustomerType == 2){
+                        conditionObj.customerType = 2
+                    }
+                    // console.log(conditionObj)
+
+                    // Phân loại theo thời khoảng
+                    if(fromDate && toDate){
+                        conditionObj.createAt = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
+                    }
+
+                    if(keyword){
+                        keyword = keyword.split(" ");
+                        keyword = '.*' + keyword.join(".*") + '.*';
+                        const regSearch = new RegExp(keyword, 'i');
+
+                        conditionObj.$or = [
+                            { name: regSearch },
+                            { sign: regSearch },
+                        ]
+                    }
+                    // console.log(conditionObj)
+
+                    let listData  = await FNB_ORDER_COLL.find(conditionObj).select('_id')
+                    .limit(2000)
+                    .sort({createAt: -1})
+                    // console.log(listData)
+
+                    let listData2 = await FNB_ORDER_PRODUCT_COLL.find({order: {$in: listData.map(item => ObjectID(item._id))}})
+                    .populate({
+                        path: 'order product',
+                        select: 'name sign date unit quantity unitPrice amount'
+                    })
+                    .select('order product')
+
+                    // Modify the workbook.
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order_product.xlsx')))
+                    .then(async workbook => {
+                        var i = 2;
+                        listData2?.forEach((item, index) => {
+                            workbook.sheet("Order").row(i).cell(1).value(item?.order?.date);
+                            workbook.sheet("Order").row(i).cell(2).value(item?.order?.name);
+                            workbook.sheet("Order").row(i).cell(3).value(item?.order?.sign);
+                            workbook.sheet("Order").row(i).cell(4).value(Number(item?.order?.amount));
+                            workbook.sheet("Order").row(i).cell(5).value(item?.product?.name);
+                            workbook.sheet("Order").row(i).cell(6).value(item?.product?.unit);
+                            workbook.sheet("Order").row(i).cell(7).value(Number(item?.product?.quantity));
+                            workbook.sheet("Order").row(i).cell(8).value(Number(item?.product?.unitPrice));
+                            workbook.sheet("Order").row(i).cell(9).value(Number(item?.product?.amount));
+
+                            i++
+                        })
+                       
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `order_product_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    })
+                }
             } catch (error) {
                 // console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
