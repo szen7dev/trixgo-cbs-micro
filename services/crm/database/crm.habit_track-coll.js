@@ -31,6 +31,16 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit_track", {
         type: Number,
         default: 1
     },
+    /**
+     * Phân loại hoàn thành
+     * 1-Tối thiểu
+     * 2-Tối ưu
+     * 3-Tối thượng
+     */
+    resultType: {
+        type: Number,
+        default: 2
+    },
     //_________Ngày thực hiện
     date: { type: Date, default: Date.now },
     //_________Thời lượng (số phút, số gói,...)
