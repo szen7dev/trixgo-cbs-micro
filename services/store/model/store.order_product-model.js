@@ -630,7 +630,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 2/9/2024
      */
-    getListByProperty({ companyID, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate }) {
+    getListByProperty({ companyID, option, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -638,10 +638,9 @@ class Model extends BaseModel {
                  * 1. Ban đầu query tổng tất cả dữ liệu
                  * 2. Sau bổ sung các phiếu đầu kỳ/kết chuyển số dư
                  */
-                let conditionObj = {}, conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
-                let conditionGroup = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
-                let conditionMatch = {}, conditionMatchO = {}, conditionMatchOF = {}, conditionMatchFT = {}, conditionMatchIn = {}
-                let listDataO, listDataOF, listDataFT, listDataIn
+                let conditionGroup = {}, conditionDebitObj = {}, conditionCreditObj = {}, conditionProject = {}
+                let conditionMatchO = {}, conditionMatchOF = {}, conditionMatchFT = {}
+                let listDataO, listDataOF, listDataFT
 
                 /**
                  * Lấy năm của ngày đầu kỳ
@@ -667,13 +666,13 @@ class Model extends BaseModel {
 
                 conditionDebitObj = {
                     company: ObjectID(companyID),
-                    status: 5, // Hoàn thành
+                    status: {$in: [1,2,3,5]}, // Không gồm phiếu Hủy
                     outin: 2,
                 }
 
                 conditionCreditObj = {
                     company: ObjectID(companyID),
-                    status: 5, // Hoàn thành
+                    status: {$in: [1,2,3,5]}, // Không gồm phiếu Hủy
                     outin: 1,
                 }
 
