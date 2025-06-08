@@ -25,9 +25,9 @@ const stringUtils					    = require('../../../tools/utils/string_utils.js')
  * COLLECTIONS
  */
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
+const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
-const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 
 class Model extends BaseModel {
 
@@ -215,7 +215,8 @@ class Model extends BaseModel {
                         status, 
                         resultType, 
                         percentage,
-                        duration: infoHabit.duration
+                        duration: infoHabit.duration,
+                        habitCate: infoHabit.habitCate
                     }
 
                     let infoAfterInsert = await this.insertData(dataInsert)

@@ -9,6 +9,11 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit_track", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Phân nhóm habit
+    habitCate: {
+        type: Schema.Types.ObjectId,
+        ref : "crm_habit"
+    },
     //_________Mã khách
     contact: {
         type: Schema.Types.ObjectId,

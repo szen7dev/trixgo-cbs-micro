@@ -3,6 +3,7 @@
  */
 const { renderStatusCodeAndResponse }           = require('../../../tools/utils/status_code')
 const { OPTION_SELLERS }                        = require('../../item/helper/item.keys-constant')
+const moment = require('moment');
 
 /**
  * MODELS
@@ -118,9 +119,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, habitID, contactID, status, userCreateID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, optionTrack, option, habitID, contactID, status, userCreateID, startDate, endDate, date, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
+                
                 // console.log(ctx.params)
 
                 let companyID
@@ -136,9 +138,19 @@ module.exports = {
                         habitID, userID, select, populates
                     });
                 } else {
-                    resultAfterCallHandler = await CRM_HABIT_MODEL.getList({
-                        companyID, option, contactID, status, userCreateID, keyword, limit, lastestID, select, populates
-                    })
+                    if(!optionTrack){
+                        resultAfterCallHandler = await CRM_HABIT_MODEL.getList({
+                            companyID, option, contactID, status, userCreateID, keyword, limit, lastestID, select, populates
+                        })
+                    }else{
+                        startDate   = moment(startDate).startOf('day').format();// <=== fix ISODate here
+                        endDate     = moment(endDate).endOf('day').format();// <=== fix ISODate here
+                        date        = moment(date).endOf('day').format();// <=== fix ISODate here
+
+                        resultAfterCallHandler = await CRM_HABIT_MODEL.getListWithTrack({
+                            companyID, option, contactID, status, userCreateID, startDate, endDate, date, keyword, limit, lastestID, select, populates
+                        })
+                    }
                 }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

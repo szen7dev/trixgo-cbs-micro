@@ -6,6 +6,7 @@ const XlsxPopulate                      = require('xlsx-populate')
 const fs                                = require('fs')
 const path                              = require('path')
 const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
+const moment                            = require('moment');
 
 /**
  * DOMAIN AND ACTIONS
@@ -30,8 +31,7 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
  */
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
-
-const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
+const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
 
 class Model extends BaseModel {
 
@@ -328,6 +328,161 @@ class Model extends BaseModel {
 
                 let totalRecord = await CRM_HABIT_COLL.count(conditionObjOrg);
                 let totalPage   = Math.ceil(totalRecord/limit);
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: +limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+    
+    getListWithTrack({ companyID, option, contactID, status, userCreateID, startDate, endDate, date, keyword, limit = 10, lastestID, select, populates= {} }) {
+        return new Promise(async (resolve) => {
+            try {
+                if(Number(limit) > 50){
+                    limit = 50;
+                } else{
+                    limit = +Number(limit);
+                }
+
+                let conditionObj = { company: companyID };
+                let nextCursor	= null;
+                let sortBy      = null;
+                let keys	 = ['createAt__1', '_id__1'];
+
+                if(populates && typeof populates === 'string'){
+					if(!IsJsonString(populates))
+						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+					populates = JSON.parse(populates);
+				}else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                // if(!option){
+                //     if(checkObjectIDs(contactID)){
+                //         conditionObj.contact = contactID
+                //     }else{
+                //         conditionObj.company = companyID
+                //     }
+                // }else{
+                //     conditionObj.company = companyID
+                //     conditionObj.parent = { $exists: true, $ne: null }
+                // }
+
+                if (checkObjectIDs(userCreateID)) {
+                    conditionObj.userCreate = userCreateID
+                }                                          
+                
+                // if(!isNaN(status) && [1,2].includes(Number(status))){
+                //     conditionObj.status = status;
+                // }
+
+                // if(keyword){
+                //     keyword = stringUtils.removeAccents(keyword)
+                //     keyword = keyword.split(" ");
+                //     keyword = '.*' + keyword.join(".*") + '.*';
+                //     const regSearch = new RegExp(keyword, 'i');
+                //     conditionObj.namecv = regSearch
+                // }
+                // console.log(conditionObj)
+
+                let conditionObjOrg = { ...conditionObj }
+
+				if(lastestID && checkObjectIDs(lastestID)){
+					let infoData = await CRM_HABIT_COLL.findById(lastestID);
+					if(!infoData)
+						return resolve({ error: true, message: "Can't get info lastest", status: 400 });
+
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+
+					if(!dataPagingAndSort || dataPagingAndSort.error)
+						return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+
+                    conditionObj = dataPagingAndSort.data.find;
+					sortBy       = dataPagingAndSort.data.sort;
+				}else{
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+					sortBy        = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await CRM_HABIT_COLL.find(conditionObj)
+                    .select(select)
+                    .limit(+limit+1)
+                    .sort(sortBy)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+
+                let totalRecord = await CRM_HABIT_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit);
+
+                let objTrack = {
+                    habit: {$in: infoDataAfterGet.map(item => item._id)}
+                }
+
+                if(startDate != "" && endDate != ""){
+                    // console.log('=========================')
+                    objTrack.date = { 
+                        $gte: moment(startDate).toDate(),
+                        $lte: moment(endDate).toDate() 
+                    }
+                }  
+                
+                // if(date != ""){
+                //     console.log('=========================')
+                //     objTrack.date = { 
+                //         $gte: moment(date).toDate(),
+                //         $lte: moment(date).toDate() 
+                //     }
+                // }  
+
+                let listTrack = await CRM_HABIT_TRACK_COLL.find(objTrack).select('habit status date resultType')
+                // console.log(listTrack)
+
+                // Tạo Map chỉ lấy bản ghi đầu tiên theo habit._id
+                const trackMap = {};
+                listTrack.forEach(track => {
+                const habitId = track.habit.toString()
+                    if (!trackMap[habitId]) {
+                        trackMap[habitId] = {
+                            status: track.status,
+                            resultType: track.resultType,
+                            date: track.date
+                        }
+                    }
+                })
+
+                // Gắn vào từng habit item
+                infoDataAfterGet = infoDataAfterGet.map(item => {
+                    const track = trackMap[item._id.toString()] || {};
+                    return {
+                        ...item,
+                        status: track.status || null,
+                        resultType: track.resultType || null,
+                        date: track.date || null
+                    }
+                })
+                // console.log(infoDataAfterGet)
 
                 return resolve({ error: false, data: {
                     listRecords: infoDataAfterGet,
