@@ -47,7 +47,7 @@ class Model extends BaseModel {
     insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType }) {
         return new Promise(async resolve => {
             try {
-                if(!name)
+                if(!name || !checkObjectIDs(contactID))
                     return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
 
                 let dataInsert = {

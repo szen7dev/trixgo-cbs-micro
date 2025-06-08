@@ -28,19 +28,16 @@ class Model extends BaseModel {
     insert({ appID, companyID, users, userID }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
                 let infoAppCompany = await AUTH__APP_COMPANY_COLL.findOne({ app: appID, company: companyID });
                 if(!infoAppCompany)
                     return resolve({ error: true, message: "App của công ty không tồn tại", keyError: "app_company_not_exist", status: 200 });
 
                 let { app, company, maxCount, endTime } = infoAppCompany;
-                // Lấy số lương user hiện tại của app và company
+                
+                // Lấy số lượng user hiện tại của app và company
                 let amountAppUser = await AUTH__APP_USER_COLL.count({ app, company });
 
-                // Tính số lương app user có thể cho phép để thêm
+                // Tính số lượng app user có thể cho phép để thêm
                 let amountAppUserAccess = (maxCount - amountAppUser);
 
                 // Số lượng user mà dưới client gửi lên

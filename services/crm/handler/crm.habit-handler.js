@@ -19,7 +19,7 @@ module.exports = {
     insert: {
         params: {
             name                : { type: "string" },
-            contactID           : { type: "string", optional: true },
+            contactID           : { type: "string" },
             note                : { type: "string", optional: true },
         },
         async handler(ctx) {

@@ -854,7 +854,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, userID, contactID, phone, userCreateID, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, userID, contactID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){

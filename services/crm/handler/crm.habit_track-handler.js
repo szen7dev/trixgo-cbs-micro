@@ -17,6 +17,7 @@ module.exports = {
      * Code: 22/11/2023
      */
     insert: {
+        auth: "required",
         params: {
             habitID             : { type: "string" },
             date                : { type: "string" },
@@ -52,19 +53,30 @@ module.exports = {
      * Code: 25/3/2025
      */
     update: {
+        auth: "required",
         params: {
-            trackID             : { type: "string" },
+            // trackID             : { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { trackID, status, name, note, duration, imagesID } = ctx.params;
+                let { optionSeller, habitID, trackID, date, status, name, note, duration, resultType, percentage, imagesID } = ctx.params;
 
                 // console.log(ctx.params)
 
-				const { _id: userID, company } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.update({ userID, trackID, userID, status, name, note, duration, resultType, imagesID });
+                let companyID, resultAfterCallHandler
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                    commonHabitID = OPTION_COMMON_HABITS[Number(optionSeller) - 1].habit
+
+                    resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.updateByDay({ companyID, userID, habitID, date, status, resultType, percentage })
+                }else{
+                    companyID = company?._id
+
+                    resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.update({ userID, trackID, status, name, note, duration, resultType, imagesID })
+                }
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -79,6 +91,7 @@ module.exports = {
      * Code: 27/3/2025
      */
     updateMany: {
+        auth: "required",
         params: {
             contactID             : { type: "string" },
         },
@@ -116,6 +129,7 @@ module.exports = {
      * Code: 22/3/2024
      */
     remove: {
+        auth: "required",
         params: {
             arraysRemove : { type: "array", optional: true },
         },
@@ -142,6 +156,7 @@ module.exports = {
      * Code: 22/11/2023
      */
     getInfoAndGetList: {
+        auth: "required",
         params: {
             trackID       : { type: "string", optional: true },
 
@@ -224,8 +239,8 @@ module.exports = {
                 // toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getListByProperty({
-                        option, companyID, userID, year, month, contactID, habitID: commonHabitID, startDate, endDate
-                    });
+                    option, companyID, userID, year, month, contactID, habitID: commonHabitID, startDate, endDate
+                })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

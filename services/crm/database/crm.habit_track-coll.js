@@ -21,6 +21,8 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit_track", {
     },
     /**
      * Phân loại
+     * 1-Có/không
+     * 2-Số phút thực hiện hàng ngày
      */
     type: {
         type: Number,
