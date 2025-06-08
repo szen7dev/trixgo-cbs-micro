@@ -25,9 +25,9 @@ const stringUtils					    = require('../../../tools/utils/string_utils.js')
  * COLLECTIONS
  */
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
+const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
-const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 
 class Model extends BaseModel {
 
@@ -174,6 +174,86 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Name: Update
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
+    updateByDay({ companyID, userID, habitID, date, status, resultType, percentage }){
+        return new Promise(async (resolve) => {
+            try {
+                let infoHabit = await CRM_HABIT_COLL.findById(habitID)
+                if(!infoHabit)
+                    return resolve({ error: true, message: "Habit không hợp lệ", keyError: "Request params name invalid" })
+
+                const formattedDate = new Date(date);
+                let condition = {
+                    habit: habitID,
+                    contact: infoHabit.contact,
+                    date: formattedDate,
+                }
+
+                let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
+                // console.log(infoTrack)
+
+                // Tạo mới
+                if(!infoTrack){
+                    // console.log('Chưa tồn tại mẩu tin==============')
+
+                    let dataInsert = {
+                        userCreate: userID, 
+                        company: companyID,
+                        habit: habitID,
+                        contact: infoHabit.contact,
+                        date: formattedDate,
+                        status, 
+                        resultType, 
+                        percentage,
+                        duration: infoHabit.duration,
+                        habitCate: infoHabit.habitCate
+                    }
+
+                    let infoAfterInsert = await this.insertData(dataInsert)
+                    // console.log(infoAfterInsert)
+
+                    if(!infoAfterInsert)
+                        return resolve({ error: true, message: "cannot_insert" })
+
+                    return resolve({ error: false, data: infoAfterInsert })
+                }
+                
+                // Cập nhật
+                else{
+                    // console.log('Đã tồn tại mẩu tin==============')
+
+                    let dataUpdate = {
+                        userUpdate: userID,
+                        modifyAt: Date.now(),
+                        date: formattedDate,
+                        status, 
+                        resultType, 
+                        percentage
+                    }
+
+                    let infoAfterUpdate = await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(infoTrack._id, dataUpdate, { new: true })
+                    //  console.log(infoAfterUpdate)
+
+                    if(!infoAfterUpdate) {
+                        return resolve({
+                            error: true,
+                            message: "Cannot update",
+                            keyError: "cannot_update",
+                        })
+                    }
+
+                    return resolve({ error: false, data: infoAfterUpdate })
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
