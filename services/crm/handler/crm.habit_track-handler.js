@@ -256,18 +256,25 @@ module.exports = {
      */
     importExcel: {
         auth: 'required',
-        params: {
-            dataImport: { type: 'string' }
-        },
+        // params: {
+        //     dataImport: { type: 'string' }
+        // },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport, option } = ctx.params;
+                const { optionSeller, dataImport, option } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(dataImport)
+                // console.log(dataImport)
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
 
                 const resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.importFromExcel({
-                    companyID: company._id, userID, dataImport, option, ctx
+                    companyID: company._id, userID, dataImport, option
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -293,7 +300,7 @@ module.exports = {
 				const { _id: userID, email, company } = ctx.meta.infoUser;
 
                 let { option, year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.exportExcel({
                     companyID: company._id, option, year, month, email, userID
