@@ -117,16 +117,22 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { optionSeller, phone } = ctx.params;
+                const { optionSeller, option, phone } = ctx.params;
 
                 let companyID
                 if(optionSeller){
                     companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
                 }
 
-                const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, ctx });
+                if(!option){
+                    const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, ctx })
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }else{
+                    const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtpNew({ phone, companyID, ctx })
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
             }
