@@ -128,7 +128,7 @@ module.exports = {
                     const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, ctx })
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
                 }else{
-                    const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtp2({ phone, companyID, ctx })
+                    const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtpNew({ phone, companyID, ctx })
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
                 }
 
