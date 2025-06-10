@@ -507,6 +507,285 @@ class Model extends BaseModel {
     getPhoneOtp({ phone, companyID, fundaID, ctx }) {
         return new Promise(async resolve => {
             try {
+                return resolve({ error: true, message: "Không lấy được dữ liệu" })
+                // // Hàm kiểm tra Phone
+                // const strValid = phone.toLowerCase().trim();
+                // function isValidVietnamPhoneNumber(str) {
+                //     const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                //     return phoneRegex.test(str);
+                // }
+                // // console.log(isValidVietnamPhoneNumber(strValid))
+
+                // if(!isValidVietnamPhoneNumber(strValid))
+                //     return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
+
+                // let authorID = "6046c63b2c1dc33996dd97e7" // Trợ lý viên sàn ECOM: FIX
+
+                // if(checkObjectIDs(companyID)){
+                //     let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
+                //     if(infoFunda){
+                //         fundaID = infoFunda._id
+                //     }
+                // }else{
+                //     companyID = "6046c63a2c1dc33996dd9762" // Phân vùng set làm Sàn TMĐT (Medgo): FIX
+                //     fundaID = "670c4e1de5851300129f80c5" // Cơ sở sàn Ecom: FIX
+                // }
+
+                // let infoCompany = await COMPANY_COLL.findById(companyID)
+                // if(infoCompany){
+                //     let templateId = "430244" // Bắn OTP: Trixgo (382295), Lamin (430244)
+                //     let appId = "3635730122237388112" // Zalo OA Trixgo (3185213136011361427), Lamin (3635730122237388112)
+
+                //     // Kiểm tra tài khoản xem tồn tại hay chưa
+                //     const info = await AUTH__USER_COLL.findOne({ phone: strValid })
+                //     .select('fullname email phone contacts codeReset company')
+                //     .populate({
+                //         path: 'contacts',
+                //         select: 'company linkUser phone'
+                //     })
+                //     // console.log(info)
+
+                //     /**
+                //      * Lấy thông tin danh bạ ứng với user
+                //      * - Nếu chưa có thì tạo
+                //      * - Nếu có thì kiểm tra để link với user
+                //      */
+                //     let infoContact = await ITEM__CONTACT_COLL.findOne({
+                //         company: companyID,
+                //         $or: [
+                //             {  email: strValid },
+                //             {  phone: strValid },
+                //         ]
+                //     })
+                //     .select('_id name phone email linkUser')
+                //     // console.log({infoContact})
+
+                //     // Mã hóa password
+                //     function getRandom6Digits() {
+                //         return (crypto.randomInt(100000, 1000000)).toString();
+                //       }
+                //     // let password        = randomStringFixLengthCode(6);
+                //     let password        = getRandom6Digits()
+                //     let hashPassword    = await hash(password, 8);
+                //     if (!hashPassword) return resolve({ error: true, message: 'cannot_hash_password' })
+
+                //     if(info){
+                //         console.log("Tài khoản đã tồn tại")
+                //         /**
+                //          * Cần kiểm tra xem với companyID, trong user đã có contacts nào chưa, nếu có rồi thì không được thêm nữa
+                //          * Hoặc xem infoContact đã có linkUser trước đó chưa
+                //          * Đảm bảo mỗi user chỉ có 01 contact trong 1 companyID
+                //          */
+                //         // console.log(info)
+                //         let checkContactInUserInCompany = 0
+                //         for(const item of info?.contacts){
+                //             if(item.company.toString() === info.company.toString()){
+                //                 checkContactInUserInCompany++
+                //             }
+                //         }
+                //         // console.log({checkContactInUserInCompany})
+
+                //         /**
+                //          * Gửi mã OTP để đăng nhập
+                //          */
+                //         if(infoContact){
+                //             // link user với contact
+                //             let info1 = await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
+                //                 linkUser: info._id,
+                //                 userCreate: info._id
+                //             }, { new: true })
+                //             // console.log(info1)
+
+                //             if(Number(checkContactInUserInCompany) === 0){
+                //                 let info2 = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                //                     $addToSet: { contacts: infoContact._id }
+                //                 }, { new: true });
+                //                 // console.log(info2)
+                //             }
+                //         } else{
+                //             // console.log("Tạo danh bạ----------")
+                //             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
+                //                 companyID,
+                //                 authorID,
+                //                 fundaID,
+                //                 type: 2,
+                //                 name: `fullname ${strValid}-${infoCompany.sign}`,
+                //                 phone: strValid,
+                //                 email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
+                //             })
+
+                //             if(!infoNewContact.error && infoNewContact.data){
+                //                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data?._id, {
+                //                     linkUser: info._id,
+                //                     userCreate: info._id
+                //                 }, { new: true })
+
+                //                 if(Number(checkContactInUserInCompany) === 0){
+                //                     await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                //                         $addToSet: { contacts: infoNewContact.data?._id }
+                //                     }, { new: true })
+                //                 }
+                //             }
+                //         }
+
+                //         if(strValid.toString() != '0999777888'){
+                //             const infoAfterUpdateCode = await AUTH__USER_COLL.findByIdAndUpdate(info._id, {
+                //                 codeReset: password
+                //             }, { new: true });
+
+                //             if (!infoAfterUpdateCode) {
+                //                 return resolve({
+                //                     error: true,
+                //                     message: "Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục",
+                //                     keyError: "error_occurred",
+                //                     status: 422
+                //                 })
+                //             }
+                //         }
+
+                //         // Gửi mã OTP
+                //         // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                //         const removeFirst1 = `84${strValid.slice(1)}`;
+                //         let dataOA = {
+                //             // phone: "84985199295",
+                //             phone: `${removeFirst1}`,
+                //             templateData: {
+                //                 otp: password,
+                //             },
+                //             templateId,
+                //             appId,
+                //         }
+                //         // console.log({ dataOA_1: dataOA })
+                //         await ctx.call(
+                //             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                //             dataOA,
+                //         )
+
+                //         if(strValid.toString() != '0999777888'){
+                //             return resolve({
+                //                 error: false,
+                //                 data: password,
+                //                 status: 200
+                //             })
+                //         }else{
+                //             return resolve({
+                //                 error: false,
+                //                 data: '874002',
+                //                 status: 200
+                //             })
+                //         }
+                //     }else{
+                //         console.log("Tài khoản chưa tồn tại")
+                //         /**
+                //          * Tạo tài khoản -> Trả về mã để FE xử lý đồng ý điều khoản (đưa vào 1 trường user-coll)
+                //          * Tạo danh bạ link với tài khoản
+                //          */
+                //         let dataInsert = {
+                //             userCreate: authorID,
+                //             company: companyID,
+                //             password: hashPassword,
+                //             fullname: `fullname ${strValid}-${infoCompany.sign}`,
+                //             bizfullname: `fullname ${strValid}-${infoCompany.sign}`,
+                //             level: 1,
+                //             phone: strValid,
+                //             email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
+                //         }
+
+                //         let infoUserAfterInsert = await this.insertData(dataInsert)
+                //         // console.log("111111111111111111")
+                //         // console.log(infoUserAfterInsert)
+
+                //         if (!infoUserAfterInsert)
+                //             return resolve({ error: true, message: 'cannot_insert_data' })
+
+                //         // link user với contact
+                //         if(infoContact){
+                //             // console.log("222222222222222")
+                //             await ITEM__CONTACT_COLL.findByIdAndUpdate(infoContact._id, {
+                //                 linkUser: infoUserAfterInsert._id,
+                //                 userCreate: infoUserAfterInsert._id
+                //             }, { new: true })
+
+                //             // console.log("33333333333333333333")
+                //             await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                //                 $addToSet: { contacts: infoContact._id },
+                //             }, { new: true });
+                //         }else{
+                //             // console.log("44444444444444444")
+                //             let infoNewContact = await ITEM__CONTACT_MODEL.insert({
+                //                 companyID,
+                //                 authorID,
+                //                 fundaID,
+                //                 type: 2,
+                //                 name: `fullname ${strValid}-${infoCompany.sign}`,
+                //                 phone: strValid,
+                //                 email: `${strValid}.${infoCompany.sign.toLowerCase()}@gmail.com`
+                //             })
+                //             // console.log(infoNewContact)
+
+                //             if(!infoNewContact.error && infoNewContact.data){
+                //                 // console.log("55555555555555555")
+                //                 await ITEM__CONTACT_COLL.findByIdAndUpdate(infoNewContact.data?._id, {
+                //                     linkUser: infoUserAfterInsert._id,
+                //                     userCreate: infoUserAfterInsert._id
+                //                 }, { new: true })
+
+                //                 // console.log("66666666666666")
+                //                 await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                //                     $addToSet: { contacts: infoNewContact.data._id }
+                //                 }, { new: true })
+                //             }
+                //         }
+
+                //         // Gửi mã OTP
+                //         // console.log('===============BẮN ZNS OTP===============>>>>>>>>>>>>>>>')
+                //         const removeFirst1 = `84${strValid.slice(1)}`;
+                //         let dataOA = {
+                //             // phone: "84985199295",
+                //             phone: `${removeFirst1}`,
+                //             templateData: {
+                //                 otp: password,
+                //             },
+                //             templateId,
+                //             appId,
+                //         }
+                //         console.log({ dataOA_2: dataOA })
+                //         await ctx.call(
+                //             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+                //             dataOA,
+                //         )
+
+                //         if(strValid.toString() != '0999777888'){
+                //             return resolve({
+                //                 error: false,
+                //                 data: password,
+                //                 status: 200
+                //             })
+                //         }else{
+                //             return resolve({
+                //                 error: false,
+                //                 data: '874002',
+                //                 status: 200
+                //             })
+                //         }
+                //     }
+                // } else{
+                //     return resolve({ error: true, message: "Không lấy được dữ liệu" })
+                // }
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Author: HiepNH
+     * Func: Lấy mã OTP theo số điện thoại
+     * Date: 16/2/2025
+     */
+    getPhoneOtpNew({ phone, companyID, fundaID, ctx }) {
+        return new Promise(async resolve => {
+            try {
                 // Hàm kiểm tra Phone
                 const strValid = phone.toLowerCase().trim();
                 function isValidVietnamPhoneNumber(str) {
