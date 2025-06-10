@@ -982,6 +982,7 @@ class Model extends BaseModel {
      * Date: 8/12/2022
      */
     importFromExcel({ companyID, dataImport, userID }) {
+        // console.log({ companyID, dataImport, userID })
         const that = this
         return new Promise(async resolve => {
             try {
@@ -992,21 +993,25 @@ class Model extends BaseModel {
                 // console.log(dataImportJSON)
 
                 for (const data of dataImportJSON) {
+                    
                     // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
-                    if (index > 0 && index < 51) {
+                    if (index > 0 && index < 100) {
+                        // console.log(data);
+
                         let prepareData = {
                             userID, 
                             companyID, 
                             name: data?.__EMPTY,
-                            gender: data?.__EMPTY_6,
-                            birthday: data?.__EMPTY_7, 
                             height: data?.__EMPTY_3, 
                             weight: data?.__EMPTY_4,
-                            
+                            gender: data?.__EMPTY_5,
+                            birthday: data?.__EMPTY_6, 
                         }
                         // console.log(prepareData);
 
                         let infoAfterInsert = await that.insert(prepareData);
+                        // console.log(infoAfterInsert)
+
                         if (infoAfterInsert.error) {
                             errorNumber++;
                         }

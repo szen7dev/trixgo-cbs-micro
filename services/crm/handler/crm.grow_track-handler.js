@@ -198,18 +198,25 @@ module.exports = {
      */
     importExcel: {
         auth: 'required',
-        params: {
-            dataImport: { type: 'string' }
-        },
+        // params: {
+        //     dataImport: { type: 'string' }
+        // },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { dataImport } = ctx.params;
+                const { optionSeller, dataImport } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(dataImport)
 
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
+
                 const resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.importFromExcel({
-                    companyID: company._id, userID, dataImport
+                    companyID, userID, dataImport
                 })
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
