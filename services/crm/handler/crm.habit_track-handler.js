@@ -26,7 +26,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, habitID, contactID, status, date, name, note, duration } = ctx.params;
+                let { optionSeller, habitID, contactID, status, date, name, note, duration, resultType, percentage } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -38,7 +38,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.insert({ userID, companyID, habitID, contactID, status, date, name, note, duration, resultType })
+                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.insert({ userID, companyID, habitID, contactID, status, date, name, note, duration, resultType, percentage})
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -173,6 +173,7 @@ module.exports = {
                 let { optionSeller, option, trackID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
+                
                 // console.log(ctx.params)
 
                 let companyID, commonHabitID

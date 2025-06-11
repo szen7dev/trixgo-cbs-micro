@@ -145,10 +145,9 @@ module.exports = {
                     }else{
                         startDate   = moment(startDate).startOf('day').format();// <=== fix ISODate here
                         endDate     = moment(endDate).endOf('day').format();// <=== fix ISODate here
-                        date        = moment(date).endOf('day').format();// <=== fix ISODate here
 
                         resultAfterCallHandler = await CRM_HABIT_MODEL.getListWithTrack({
-                            companyID, option, contactID, status, userCreateID, startDate, endDate, date, keyword, limit, lastestID, select, populates
+                            companyID, contactID, userCreateID, startDate, endDate, limit, lastestID, select, populates
                         })
                     }
                 }
