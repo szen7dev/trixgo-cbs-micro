@@ -176,10 +176,9 @@ module.exports = {
                 
                 // console.log(ctx.params)
 
-                let companyID, commonHabitID
+                let companyID
                 if(optionSeller){
                     companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
-                    commonHabitID = OPTION_COMMON_HABITS[Number(optionSeller) - 1].habit
                 }else{
                     companyID = company?._id
                 }
@@ -191,7 +190,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getList({
-                        option, companyID, commonHabitID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates
+                        option, companyID, habitID, contactID, status, date, keyword, limit, lastestID, select, populates
                     })
                 }
 
@@ -218,16 +217,15 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, year, month, contactID, startDate, endDate } = ctx.params;
+                let { optionSeller, option, habitID, contactID, startDate, endDate } = ctx.params;
                 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let companyID, commonHabitID
+                let companyID
                 if(optionSeller){
                     companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
-                    commonHabitID = OPTION_COMMON_HABITS[Number(optionSeller) - 1].habit
                 }else{
                     companyID = company?._id
                 }
@@ -240,7 +238,7 @@ module.exports = {
                 // toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getListByProperty({
-                    option, companyID, userID, year, month, contactID, habitID: commonHabitID, startDate, endDate
+                    option, companyID, contactID, habitID, startDate, endDate
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
