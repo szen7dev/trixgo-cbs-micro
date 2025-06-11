@@ -448,18 +448,20 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(habitID)){
                     conditionObj.habit = habitID
-                }else{
-                    if(!option){
-                        if(checkObjectIDs(commonHabitID)){
-                            conditionObj.habit = commonHabitID
-                        }
-                    }else{
-                        let listSubHabit = await CRM_HABIT_COLL.find({parent: commonHabitID})
-                        if(listSubHabit && listSubHabit.length){
-                            conditionObj.habit = {$in: listSubHabit.map(item=>item._id)}
-                        }
-                    }
                 }
+                
+                // else{
+                //     if(!option){
+                //         if(checkObjectIDs(commonHabitID)){
+                //             conditionObj.habit = commonHabitID
+                //         }
+                //     }else{
+                //         let listSubHabit = await CRM_HABIT_COLL.find({parent: commonHabitID})
+                //         if(listSubHabit && listSubHabit.length){
+                //             conditionObj.habit = {$in: listSubHabit.map(item=>item._id)}
+                //         }
+                //     }
+                // }
                 
                 if(checkObjectIDs(contactID)){
                     conditionObj.contact = contactID
@@ -559,7 +561,7 @@ class Model extends BaseModel {
                           $match: {
                             company: ObjectID(companyID),
                             contact: ObjectID(contactID),
-                            habit: ObjectID(habitID)
+                            // habit: ObjectID(habitID)
                           }
                         },
                          // B2: Thêm trường year và isoWeek
