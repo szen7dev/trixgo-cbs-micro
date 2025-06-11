@@ -420,7 +420,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ option, companyID, commonHabitID, habitID, contactID, status, date, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ option, companyID, habitID, contactID, status, date, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -550,19 +550,28 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ option, companyID, userID, year, month, contactID, habitID, startDate, endDate }){
+    getListByProperty({ option, companyID, contactID, habitID, startDate, endDate }){
         return new Promise(async resolve => {
             try {
                 // Tổng hợp theo Tuần
                 if(!option){
+                    /**
+                     * BA:
+                     * Cần tính Percentage dựa trên số Habit mà contact đang thực hiện trong tuần * 7
+                     */
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        contact: ObjectID(contactID),
+                    }
+
+                    if(checkObjectIDs(habitID)){
+                        conditionObj.habit = habitID
+                    }
+
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         // B1: Lọc theo contact và habit
                         {
-                          $match: {
-                            company: ObjectID(companyID),
-                            contact: ObjectID(contactID),
-                            // habit: ObjectID(habitID)
-                          }
+                          $match: conditionObj
                         },
                          // B2: Thêm trường year và isoWeek
                         {
@@ -603,7 +612,7 @@ class Model extends BaseModel {
                                 }
                               }
                             }
-                          },
+                        },
                          // B4: Sắp xếp theo thời gian để đánh số tuần
                         {
                           $project: {
@@ -632,17 +641,25 @@ class Model extends BaseModel {
 
                 // Tổng hợp theo Ngày
                 else if(option == 1){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        contact: ObjectID(contactID),
+                    }
+
+                    if(checkObjectIDs(habitID)){
+                        conditionObj.habit = habitID
+                    }
+
+                    if(startDate && endDate){
+                        conditionObj.date =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         {
-                          $match: {
-                            company: ObjectID(companyID),
-                            contact: ObjectID(contactID),
-                            habit: ObjectID(habitID),
-                            date: { 
-                                $gte: moment(startDate).toDate(),
-                                $lte: moment(endDate).toDate() 
-                            }
-                          }
+                          $match: conditionObj
                         },
                         {
                             $project: {
