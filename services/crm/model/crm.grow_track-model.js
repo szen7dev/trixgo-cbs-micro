@@ -1042,12 +1042,12 @@ class Model extends BaseModel {
             // Tải mẫu Template
             if(!option){
 
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cdc_grow_track.xlsx')))
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cdc_grow_track.xlsm')))
                     .then(async workbook => {
             
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `cdc_grow_track_${now.getTime()}.xlsx`;
+                        const fileName = `cdc_grow_track_${now.getTime()}.xlsm`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName)
 
                         await workbook.toFileAsync(pathWriteFile)
