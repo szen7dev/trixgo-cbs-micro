@@ -343,7 +343,7 @@ class Model extends BaseModel {
         })
     }
     
-    getListWithTrack({ companyID, option, contactID, status, userCreateID, startDate, endDate, date, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getListWithTrack({ companyID, contactID, userCreateID, startDate, endDate, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -369,33 +369,15 @@ class Model extends BaseModel {
                     }
                 }
 
-                // if(!option){
-                //     if(checkObjectIDs(contactID)){
-                //         conditionObj.contact = contactID
-                //     }else{
-                //         conditionObj.company = companyID
-                //     }
-                // }else{
-                //     conditionObj.company = companyID
-                //     conditionObj.parent = { $exists: true, $ne: null }
-                // }
-
+                // Màn hình Habit chung (các Habit do user tạo ra)
                 if (checkObjectIDs(userCreateID)) {
                     conditionObj.userCreate = userCreateID
-                }                                          
+                }     
                 
-                // if(!isNaN(status) && [1,2].includes(Number(status))){
-                //     conditionObj.status = status;
-                // }
-
-                // if(keyword){
-                //     keyword = stringUtils.removeAccents(keyword)
-                //     keyword = keyword.split(" ");
-                //     keyword = '.*' + keyword.join(".*") + '.*';
-                //     const regSearch = new RegExp(keyword, 'i');
-                //     conditionObj.namecv = regSearch
-                // }
-                // console.log(conditionObj)
+                // Màn hình Habit của 1 contactID cụ thể
+                if(checkObjectIDs(contactID)){
+                    conditionObj.contact = contactID
+                }
 
                 let conditionObjOrg = { ...conditionObj }
 
