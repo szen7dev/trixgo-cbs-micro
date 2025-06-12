@@ -344,6 +344,7 @@ class Model extends BaseModel {
     }
     
     getListWithTrack({ companyID, contactID, userCreateID, startDate, endDate, limit = 10, lastestID, select, populates= {} }) {
+        // console.log({ companyID, contactID, userCreateID, startDate, endDate })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -422,22 +423,19 @@ class Model extends BaseModel {
                     habit: {$in: infoDataAfterGet.map(item => item._id)}
                 }
 
-                if(startDate != "" && endDate != ""){
-                    // console.log('=========================')
+                if(startDate && startDate != undefined && endDate && endDate != undefined){
+                    // console.log('=========================12343566666')
+                    startDate   = moment(startDate).startOf('day').format();// <=== fix ISODate here
+                    endDate     = moment(endDate).endOf('day').format();// <=== fix ISODate here
+
                     objTrack.date = { 
                         $gte: moment(startDate).toDate(),
                         $lte: moment(endDate).toDate() 
                     }
+                    // console.log(objTrack)
                 }  
-                
-                // if(date != ""){
-                //     console.log('=========================')
-                //     objTrack.date = { 
-                //         $gte: moment(date).toDate(),
-                //         $lte: moment(date).toDate() 
-                //     }
-                // }  
 
+                // console.log(objTrack)
                 let listTrack = await CRM_HABIT_TRACK_COLL.find(objTrack).select('habit status date resultType')
                 // console.log(listTrack)
 
