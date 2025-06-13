@@ -109,7 +109,6 @@ class Model extends BaseModel {
     userID,
     ctx,
   }) {
-    // console.log({ voucherID, fundaID, parentID, customerID, affiliateID, shiftID, date, name, appOrderSign, note, sources, salesChannel, paymentMethod, service, total, discount, salesoff, credit, offer, vatAmount, shippingFee, paid, products, userID })
     const that = this;
     return new Promise(async (resolve) => {
       try {
@@ -293,7 +292,7 @@ class Model extends BaseModel {
 
         if (
           !isNaN(salesChannel) &&
-          [1, 2, 3, 4, 5, 6, 7, 8, 9].includes(Number(salesChannel))
+          [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].includes(Number(salesChannel))
         ) {
           dataInsert.salesChannel = Number(salesChannel);
 
