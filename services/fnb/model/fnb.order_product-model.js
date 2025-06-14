@@ -1291,24 +1291,37 @@ class Model extends BaseModel {
                     let listData2 = await FNB_ORDER_PRODUCT_COLL.find({order: {$in: listData.map(item => ObjectID(item._id))}})
                     .populate({
                         path: 'order product',
-                        select: 'name sign date unit quantity unitPrice amount'
+                        // select: 'name sign date unit quantity unitPrice amount'
                     })
                     .select('order product')
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order_product.xlsx')))
                     .then(async workbook => {
-                        var i = 2;
+                       
+                        var i = 3;
                         listData2?.forEach((item, index) => {
                             workbook.sheet("Order").row(i).cell(1).value(item?.order?.date);
-                            workbook.sheet("Order").row(i).cell(2).value(item?.order?.name);
-                            workbook.sheet("Order").row(i).cell(3).value(item?.order?.sign);
-                            workbook.sheet("Order").row(i).cell(4).value(Number(item?.order?.amount));
-                            workbook.sheet("Order").row(i).cell(5).value(item?.product?.name);
-                            workbook.sheet("Order").row(i).cell(6).value(item?.product?.unit);
-                            workbook.sheet("Order").row(i).cell(7).value(Number(item?.product?.quantity));
-                            workbook.sheet("Order").row(i).cell(8).value(Number(item?.product?.unitPrice));
-                            workbook.sheet("Order").row(i).cell(9).value(Number(item?.product?.amount));
+                            workbook.sheet("Order").row(i).cell(2).value(`${FNB_SALES_CHANNEL[Number(item.order.salesChannel) - 1].text}`);
+                            workbook.sheet("Order").row(i).cell(3).value(item?.order?.name);
+                            workbook.sheet("Order").row(i).cell(4).value(item?.order?.sign);
+                            workbook.sheet("Order").row(i).cell(5).value(Number(item?.order?.amount));
+                            workbook.sheet("Order").row(i).cell(6).value(item?.product?.name);
+                            workbook.sheet("Order").row(i).cell(7).value(item?.product?.unit);
+
+                            workbook.sheet("Order").row(i).cell(8).value(Number(item?.product?.quantity));
+                            workbook.sheet("Order").row(i).cell(9).value(Number(item?.product?.unitPrice));
+                            workbook.sheet("Order").row(i).cell(10).value(Number(item?.product?.amount));
+
+                            workbook.sheet("Order").row(i).cell(11).value(Number(item?.order?.numberOfSizeM));
+                            workbook.sheet("Order").row(i).cell(12).value(Number(item?.order?.numberOfSizeL));
+                            workbook.sheet("Order").row(i).cell(13).value(`${FNB_STATUS[Number(item.order.status) - 1].text}`);
+                            workbook.sheet("Order").row(i).cell(14).value(Number(item?.order?.total));
+                            workbook.sheet("Order").row(i).cell(15).value(Number(item?.order?.discount));
+                            workbook.sheet("Order").row(i).cell(16).value(Number(item?.order?.salesoff));
+                            workbook.sheet("Order").row(i).cell(17).value(Number(item?.order?.credit));
+                            workbook.sheet("Order").row(i).cell(18).value(Number(item?.order?.offer));
+                            workbook.sheet("Order").row(i).cell(19).value(Number(item?.order?.loyaltyPoints));
 
                             i++
                         })
