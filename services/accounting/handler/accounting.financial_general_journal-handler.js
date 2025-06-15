@@ -342,7 +342,7 @@ module.exports = {
                 }
 
                 const resultAfterCallHandler = await FINANCIAL_GENERAL_JOURNAL_MODEL.exportExcelByFilter({
-                    userID, companyID, filterParams, type, voucherID, fromDate, toDate, ctx
+                    userID, email, companyID, filterParams, type, voucherID, fromDate, toDate, ctx
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
