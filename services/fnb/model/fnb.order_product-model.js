@@ -1322,6 +1322,7 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(17).value(Number(item?.order?.credit));
                             workbook.sheet("Order").row(i).cell(18).value(Number(item?.order?.offer));
                             workbook.sheet("Order").row(i).cell(19).value(Number(item?.order?.loyaltyPoints));
+                            workbook.sheet("Order").row(i).cell(20).value(Number(item?.order?.appOrderSign));
 
                             i++
                         })
