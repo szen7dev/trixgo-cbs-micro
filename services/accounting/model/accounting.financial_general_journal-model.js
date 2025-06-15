@@ -542,16 +542,11 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
-        keyword, limit = 50, lastestID, select, populates = {}, sortKey, ctx }) {
-            // console.log('==========GET LIST JOURNAL============')
-            // console.log({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate,  forward, cancel, userID, keyword, limit, lastestID, select, populates, contacts})
+        keyword, limit = 500, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                if (limit > 50) {
-                    limit = 50
+                if (limit > 500) {
+                    limit = 500
                 } else {
                     limit = +limit;
                 }
@@ -793,6 +788,137 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
+                }, status: 200 });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    getListByFilter({
+        companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
+        limit = 500, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
+        return new Promise(async (resolve) => {
+            try {
+                if (limit > 500) {
+                    limit = 500
+                } else {
+                    limit = +limit;
+                }
+
+                let conditionObj = {  };
+                let sortBy;
+                let keys = ['date__1'];
+
+               
+                if(populates && typeof populates === 'string'){
+                    if(!IsJsonString(populates))
+                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
+
+                    populates = JSON.parse(populates);
+                } else{
+                    populates = {
+                        path: "",
+                        select: ""
+                    }
+                }
+
+                if(!isNaN(forward)){
+                    conditionObj.forward = Number(forward)
+                }
+
+                if(!isNaN(cancel)){
+                    conditionObj.cancel = Number(cancel)
+                }
+
+                if (sortKey && typeof sortKey === 'string') {
+                    if (!IsJsonString(sortKey))
+                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
+
+                    keys = JSON.parse(sortKey);
+                }
+
+                if(fromDate && toDate){
+                    conditionObj.date = {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
+                if (checkObjectIDs(voucherID)) {
+                    conditionObj.voucher = voucherID
+                } else {
+                    if (checkObjectIDs(contractID)) {
+                        conditionObj.contract = contractID
+                    }else{
+                        if (checkObjectIDs(projectID)) {
+                            conditionObj.project = projectID
+                        }else{
+                            if (checkObjectIDs(fundaID)) {
+                                conditionObj.funda = fundaID
+                            }else{
+                                conditionObj.company = companyID
+                            }
+                        }
+                    }
+                }
+
+                /**
+                 * Sử dụng trong export excel document (hoặc theo bộ lọc)
+                 * Trả về điều kiện tra cứu
+                 */
+                if(isExportExcel) {
+                    // console.log(conditionObj)
+                    return resolve({ data: conditionObj, error: false });
+                }
+                // console.log(conditionObj)
+                // console.log({limit})
+
+                let conditionObjOrg = { ...conditionObj };
+
+                if(lastestID && checkObjectIDs(lastestID)){
+                    let infoData = await FINANCIAL_GENERAL_JOURNAL_COLL.findById(lastestID);
+                    if(!infoData)
+                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
+
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
+                    if(!dataPagingAndSort || dataPagingAndSort.error)
+                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
+                    conditionObj  = dataPagingAndSort.data.find;
+                    sortBy        = dataPagingAndSort.data.sort;
+                }else{
+                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
+                    sortBy                = dataPagingAndSort.data.sort;
+                }
+
+                let infoDataAfterGet = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
+                    .limit(limit+1)
+                    .sort(sortBy)
+                    .select(select)
+                    .populate(populates)
+                    .lean();
+
+                if(!infoDataAfterGet)
+                    return resolve({ error: true, message: "Can't get data", status: 403 });
+
+                let nextCursor	= null;
+                if(infoDataAfterGet && infoDataAfterGet.length){
+                    if(infoDataAfterGet.length > limit){
+                        nextCursor = infoDataAfterGet[limit - 1]?._id;
+                        infoDataAfterGet.length = limit;
+                    }
+                }
+                let totalRecord = await FINANCIAL_GENERAL_JOURNAL_COLL.count(conditionObjOrg);
+                let totalPage   = Math.ceil(totalRecord/limit)
+
+                return resolve({ error: false, data: {
+                    listRecords: infoDataAfterGet,
+                    limit: limit,
+                    totalRecord,
+                    totalPage,
+                    nextCursor,
+                    lastestID,
                 }, status: 200 });
 
             } catch (error) {
@@ -3026,137 +3152,6 @@ class Model extends BaseModel {
 			}
 		})
 	}
-
-    getListByFilter({
-        companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
-        limit = 50, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
-        return new Promise(async (resolve) => {
-            try {
-                if (limit > 50) {
-                    limit = 50
-                } else {
-                    limit = +limit;
-                }
-
-                let conditionObj = {  };
-                let sortBy;
-                let keys = ['date__1'];
-
-               
-                if(populates && typeof populates === 'string'){
-                    if(!IsJsonString(populates))
-                        return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-                    populates = JSON.parse(populates);
-                } else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-
-                if(!isNaN(forward)){
-                    conditionObj.forward = Number(forward)
-                }
-
-                if(!isNaN(cancel)){
-                    conditionObj.cancel = Number(cancel)
-                }
-
-                if (sortKey && typeof sortKey === 'string') {
-                    if (!IsJsonString(sortKey))
-                        return resolve({ error: true, message: 'Request params sortKey invalid', status: 400 });
-
-                    keys = JSON.parse(sortKey);
-                }
-
-                if(fromDate && toDate){
-                    conditionObj.date = {
-                        $gte: moment(fromDate).toDate(),
-                        $lte: moment(toDate).toDate(),
-                    }
-                }
-
-                if (checkObjectIDs(voucherID)) {
-                    conditionObj.voucher = voucherID
-                } else {
-                    if (checkObjectIDs(contractID)) {
-                        conditionObj.contract = contractID
-                    }else{
-                        if (checkObjectIDs(projectID)) {
-                            conditionObj.project = projectID
-                        }else{
-                            if (checkObjectIDs(fundaID)) {
-                                conditionObj.funda = fundaID
-                            }else{
-                                conditionObj.company = companyID
-                            }
-                        }
-                    }
-                }
-
-                /**
-                 * Sử dụng trong export excel document (hoặc theo bộ lọc)
-                 * Trả về điều kiện tra cứu
-                 */
-                if(isExportExcel) {
-                    // console.log(conditionObj)
-                    return resolve({ data: conditionObj, error: false });
-                }
-                // console.log(conditionObj)
-                // console.log({limit})
-
-                let conditionObjOrg = { ...conditionObj };
-
-                if(lastestID && checkObjectIDs(lastestID)){
-                    let infoData = await FINANCIAL_GENERAL_JOURNAL_COLL.findById(lastestID);
-                    if(!infoData)
-                        return resolve({ error: true, message: "Can't get info last message", status: 400 });
-
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: infoData, objectQuery: conditionObjOrg });
-                    if(!dataPagingAndSort || dataPagingAndSort.error)
-                        return resolve({ error: true, message: "Can't get range pagination", status: 400 });
-                    conditionObj  = dataPagingAndSort.data.find;
-                    sortBy        = dataPagingAndSort.data.sort;
-                }else{
-                    let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
-                    sortBy                = dataPagingAndSort.data.sort;
-                }
-
-                let infoDataAfterGet = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
-                    .limit(limit+1)
-                    .sort(sortBy)
-                    .select(select)
-                    .populate(populates)
-                    .lean();
-
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
-
-                let nextCursor	= null;
-                if(infoDataAfterGet && infoDataAfterGet.length){
-                    if(infoDataAfterGet.length > limit){
-                        nextCursor = infoDataAfterGet[limit - 1]?._id;
-                        infoDataAfterGet.length = limit;
-                    }
-                }
-                let totalRecord = await FINANCIAL_GENERAL_JOURNAL_COLL.count(conditionObjOrg);
-                let totalPage   = Math.ceil(totalRecord/limit)
-
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet,
-                    limit: limit,
-                    totalRecord,
-                    totalPage,
-                    nextCursor,
-                    lastestID,
-                }, status: 200 });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     getListByAuthor({ companyID, fromDate, toDate, userID }) {
         return new Promise(async resolve => {
