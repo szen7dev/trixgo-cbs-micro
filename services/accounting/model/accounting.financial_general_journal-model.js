@@ -15,7 +15,7 @@ const { uploadFileS3 }                                  = require('../../../tool
  */
  const { CF_DOMAIN_SERVICES } 	                        = require('../../gateway/helper/domain.constant');
  const { CF_ACTIONS_BUDGET } 		                    = require('../../budget/helper/budget.actions-constant');
- const { CF_ACTIONS_ANALYSIS }                          = require('../../analysis/helper/analysis.actions-constant');
+//  const { CF_ACTIONS_ANALYSIS }                          = require('../../analysis/helper/analysis.actions-constant');
 
 /**
  * TOOLS
@@ -35,8 +35,6 @@ const ITEM__CONTACT_COLL            			        = require('../../item/database/it
 const FINANCIAL_VOUCHER_COLL                            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
-const { notebooks } = require('googleapis/build/src/apis/notebooks');
-const { type } = require('os');
 
 /**
  * MODELS
@@ -44,18 +42,18 @@ const { type } = require('os');
 const ACCOUNT_MODEL                                     = require('../.../../../item/model/item.account-model').MODEL
 const AUTH__APP_USER                                    = require('../.../../../auth/model/auth.app_users').MODEL
 
-let dataTF = {
-    appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
-    menuID: "623f1f49e998e94feda0cd74", //
-    type: 1, 
-    action: 1, // Xem
-}
-let dataTF2 = {
-    appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
-    menuID: "623f1f49e998e94feda0cd74", //
-    type: 1,
-    action: 2, // Thêm
-}
+// let dataTF = {
+//     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
+//     menuID: "623f1f49e998e94feda0cd74", //
+//     type: 1, 
+//     action: 1, // Xem
+// }
+// let dataTF2 = {
+//     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
+//     menuID: "623f1f49e998e94feda0cd74", //
+//     type: 1,
+//     action: 2, // Thêm
+// }
 
 class Model extends BaseModel {
     constructor() {
@@ -3207,7 +3205,7 @@ class Model extends BaseModel {
         })
     }
 
-    exportExcelByFilter({ userID, companyID, type, filterParams, voucherID, fromDate, toDate, ctx }) {
+    exportExcelByFilter({ userID, email, companyID, type, filterParams, voucherID, fromDate, toDate, ctx }) {
         return new Promise(async resolve => {
             try {
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -3275,7 +3273,7 @@ class Model extends BaseModel {
                         });
                         break;
                 }
-                // console.log({resultGetList})
+  
                 if(type != 4){
                     if(!resultGetList.error) {
                         conditionObj = resultGetList.data;
@@ -3300,10 +3298,10 @@ class Model extends BaseModel {
                         });
                     }
     
-                    const result = await this.downloadExcelFile({ userID, infoAppUser, data: listData, type, voucherID })
+                    const result = await this.downloadExcelFile({ userID, email, infoAppUser, data: listData, type, voucherID })
                     return resolve(result);
                 }else{
-                    const result = await this.downloadExcelFile({ userID, infoAppUser, data: resultGetList.data, type })
+                    const result = await this.downloadExcelFile({ userID, email, infoAppUser, data: resultGetList.data, type })
                     return resolve(result);
                 }
             } catch (error) {
@@ -3313,7 +3311,7 @@ class Model extends BaseModel {
         })
     }
 
-    downloadExcelFile({ userID, infoAppUser, data, type, voucherID }) {
+    downloadExcelFile({ userID, email, infoAppUser, data, type, voucherID }) {
         return new Promise(resolve => {
             let template
             if(type == 1){
@@ -3324,6 +3322,12 @@ class Model extends BaseModel {
                 template = '../../../files/templates/excels/accounting_voucher_detail_2.xlsx'
 
                 if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0){
+                    template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
+                }
+
+                let arrPriceAccess = ['quangtv1993@gmail.com']
+
+                if(arrPriceAccess.includes(email.toString())){
                     template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
                 }
             }else if(type == 4){
@@ -3502,8 +3506,6 @@ class Model extends BaseModel {
     
                             i++
                         })
-                        
-                       
                     }
 
                     const now = new Date();
