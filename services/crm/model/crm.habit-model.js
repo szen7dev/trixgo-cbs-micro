@@ -340,7 +340,6 @@ class Model extends BaseModel {
     }
     
     getListWithTrack({ companyID, contactID, userCreateID, startDate, endDate, limit = 10, lastestID, select, populates= {} }) {
-        // console.log({ companyID, contactID, userCreateID, startDate, endDate })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -432,7 +431,7 @@ class Model extends BaseModel {
                 }  
 
                 // console.log(objTrack)
-                let listTrack = await CRM_HABIT_TRACK_COLL.find(objTrack).select('habit status date resultType')
+                let listTrack = await CRM_HABIT_TRACK_COLL.find(objTrack).select('habit status date resultType percentage ')
                 // console.log(listTrack)
 
                 // Tạo Map chỉ lấy bản ghi đầu tiên theo habit._id
@@ -443,7 +442,8 @@ class Model extends BaseModel {
                         trackMap[habitId] = {
                             status: track.status,
                             resultType: track.resultType,
-                            date: track.date
+                            date: track.date,
+                            percentage : track.percentage ,
                         }
                     }
                 })
@@ -455,7 +455,8 @@ class Model extends BaseModel {
                         ...item,
                         status: track.status || null,
                         resultType: track.resultType || null,
-                        date: track.date || null
+                        date: track.date || null,
+                        percentage : track.percentage  || null
                     }
                 })
                 // console.log(infoDataAfterGet)
