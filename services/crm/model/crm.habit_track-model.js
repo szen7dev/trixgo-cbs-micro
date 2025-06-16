@@ -219,6 +219,12 @@ class Model extends BaseModel {
                         habitCate: infoHabit.habitCate
                     }
 
+                    if(status == 2){
+                        dataInsert.percentage = 100
+                    }else{
+                        dataInsert.percentage = 0
+                    }
+
                     let infoAfterInsert = await this.insertData(dataInsert)
                     // console.log(infoAfterInsert)
 
@@ -239,6 +245,12 @@ class Model extends BaseModel {
                         status, 
                         resultType, 
                         percentage
+                    }
+
+                    if(status == 2){
+                        dataUpdate.percentage = 100
+                    }else{
+                        dataUpdate.percentage = 0
                     }
 
                     let infoAfterUpdate = await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(infoTrack._id, dataUpdate, { new: true })

@@ -3313,24 +3313,25 @@ class Model extends BaseModel {
 
     downloadExcelFile({ userID, email, infoAppUser, data, type, voucherID }) {
         return new Promise(resolve => {
-            let template
+            let template,  arrPriceAccess = ['quangtv1993@gmail.com']
+
             if(type == 1){
                 template = '../../../files/templates/excels/accounting_journal_export.xlsx'
-            }else if(type == 2){
+            }
+            
+            else if(type == 2){
                 template = '../../../files/templates/excels/accounting_journal_export.xlsx'
-            }else if(type == 3){
+            }
+            
+            else if(type == 3){
                 template = '../../../files/templates/excels/accounting_voucher_detail_2.xlsx'
 
-                if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0){
+                if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || arrPriceAccess.includes(email.toString())){
                     template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
                 }
-
-                let arrPriceAccess = ['quangtv1993@gmail.com']
-
-                if(arrPriceAccess.includes(email.toString())){
-                    template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
-                }
-            }else if(type == 4){
+            }
+            
+            else if(type == 4){
                 template = '../../../files/templates/excels/accounting_journal_report.xlsx'
             }            
 
@@ -3438,7 +3439,7 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity));
 
                             // Show giá với Admin ứng dụng
-                            if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0){
+                            if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || arrPriceAccess.includes(email.toString())){
                                 workbook.sheet("Data").row(i).cell(5).value(Number(item?.unitprice));
                                 workbook.sheet("Data").row(i).cell(6).value(Number(item?.amount));
                                 workbook.sheet("Data").row(i).cell(7).value(item?.note);
@@ -3449,7 +3450,7 @@ class Model extends BaseModel {
                             i++
                         })
 
-                        if(infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0){
+                        if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || arrPriceAccess.includes(email.toString())){
                             const range = workbook.sheet('Data').range(`A15:G${data.length + 14}`);
 
                             range.style({
