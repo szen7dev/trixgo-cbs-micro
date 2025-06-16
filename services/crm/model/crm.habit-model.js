@@ -144,11 +144,7 @@ class Model extends BaseModel {
                 if (!isNaN(status)) {
                     dataUpdate.status = Number(status)
                 }
-
-                if (!isNaN(challenge)) {
-                    dataUpdate.challenge = Number(challenge)
-                }
-
+                
                 if (!isNaN(duration)) {
                     dataUpdate.duration = Number(duration)
                 }
