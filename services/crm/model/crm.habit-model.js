@@ -340,7 +340,6 @@ class Model extends BaseModel {
     }
     
     getListWithTrack({ companyID, contactID, userCreateID, startDate, endDate, limit = 10, lastestID, select, populates= {} }) {
-        // console.log({ companyID, contactID, userCreateID, startDate, endDate })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){

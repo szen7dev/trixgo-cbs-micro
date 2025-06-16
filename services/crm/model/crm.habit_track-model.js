@@ -214,7 +214,6 @@ class Model extends BaseModel {
                         date: formattedDate,
                         status, 
                         resultType, 
-                        percentage,
                         duration: infoHabit.duration,
                         habitCate: infoHabit.habitCate
                     }
@@ -243,8 +242,7 @@ class Model extends BaseModel {
                         modifyAt: Date.now(),
                         date: formattedDate,
                         status, 
-                        resultType, 
-                        percentage
+                        resultType,
                     }
 
                     if(status == 2){
