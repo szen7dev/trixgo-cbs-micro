@@ -59,18 +59,18 @@ const {
   FNB_AFFILIATE_COM,
 } = require("../helper/fnb.keys-constant");
 
-let dataTF = {
-  appID: "61e04971fdebf77b072d1b0f", // FNB
-  menuID: "63af81debe33df0012ecaeca", //
-  type: 1,
-  action: 1, // Xem
-};
-let dataTF2 = {
-  appID: "61e04971fdebf77b072d1b0f", // FNB
-  menuID: "63af81debe33df0012ecaeca", //
-  type: 1,
-  action: 2, // Thêm
-};
+// let dataTF = {
+//   appID: "61e04971fdebf77b072d1b0f", // FNB
+//   menuID: "63af81debe33df0012ecaeca", //
+//   type: 1,
+//   action: 1, // Xem
+// };
+// let dataTF2 = {
+//   appID: "61e04971fdebf77b072d1b0f", // FNB
+//   menuID: "63af81debe33df0012ecaeca", //
+//   type: 1,
+//   action: 2, // Thêm
+// };
 
 class Model extends BaseModel {
   constructor() {
@@ -731,54 +731,6 @@ class Model extends BaseModel {
             numberOfSizeL: Number(totalSizeL),
           };
         }
-        if (!isNaN(salesChannel) && Number(salesChannel) === 6) {
-          dataUpdateFw.$inc = {
-            total: Number(total),
-            amount: Number(amount),
-            numberOfProducts: totalQuantity,
-            numberOfOrders: 1,
-            numberOfOrders6: 1,
-            total6: Number(total),
-            numberOfSizeM: Number(totalSizeM),
-            numberOfSizeL: Number(totalSizeL),
-          };
-        }
-        if (!isNaN(salesChannel) && Number(salesChannel) === 7) {
-          dataUpdateFw.$inc = {
-            total: Number(total),
-            amount: Number(amount),
-            numberOfProducts: totalQuantity,
-            numberOfOrders: 1,
-            numberOfOrders7: 1,
-            total7: Number(total),
-            numberOfSizeM: Number(totalSizeM),
-            numberOfSizeL: Number(totalSizeL),
-          };
-        }
-        if (!isNaN(salesChannel) && Number(salesChannel) === 8) {
-          dataUpdateFw.$inc = {
-            total: Number(total),
-            amount: Number(amount),
-            numberOfProducts: totalQuantity,
-            numberOfOrders: 1,
-            numberOfOrders8: 1,
-            total8: Number(total),
-            numberOfSizeM: Number(totalSizeM),
-            numberOfSizeL: Number(totalSizeL),
-          };
-        }
-        if (!isNaN(salesChannel) && Number(salesChannel) === 9) {
-          dataUpdateFw.$inc = {
-            total: Number(total),
-            amount: Number(amount),
-            numberOfProducts: totalQuantity,
-            numberOfOrders: 1,
-            numberOfOrders9: 1,
-            total9: Number(total),
-            numberOfSizeM: Number(totalSizeM),
-            numberOfSizeL: Number(totalSizeL),
-          };
-        }
 
         // Tiền mặt và chuyển khoản
         if (!isNaN(paymentMethod) && Number(paymentMethod) === 1) {
@@ -893,84 +845,7 @@ class Model extends BaseModel {
                   $addToSet: { achievements: customerID },
                 },
                 { new: true },
-              );
-
-              // /**
-              // * Bắn tin Zalo OA cho Người giới thiệu
-              // */
-              // const infoConfig = await ITEM__CONFIG_COLL.findOne({
-              //   company: infoFunda.company,
-              //   type: 1,
-              //   active: 1,
-              // });
-              // const { metadata: { template } } = infoConfig;
-              // if (infoConfig && template) {
-              //   const str = infoReferral.phone;
-              //   const removeFirst1 = `84${str.slice(1)}`;
-              //   let dataOA = {
-              //     phone: `${removeFirst1}`,
-              //     templateData: {
-              //       customer_name: infoReferral.name,
-              //       order_code: `C${Number(numberOfOrder + 1)}`,
-              //       price: amount,
-              //       date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-              //       note: `Bạn mới ${infoCustomer.phone}`,
-              //     },
-              //     templateId: template.referral,
-              //     appId: infoConfig.channel,
-              //   };
-              //   await ctx.call(
-              //     `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-              //     dataOA,
-              //   );
-
-              //   /**
-              //   * Bắn Zalo OA cho Người mới
-              //   */
-              //   const str2 = infoCustomer.phone;
-              //   const removeFirst2 = `84${str2.slice(1)}`;
-
-              //   let dataOA2 = {
-              //     phone: `${removeFirst2}`,
-              //     templateData: {
-              //       customer_name: infoCustomer.name,
-              //       order_code: `C${Number(numberOfOrder + 1)}`,
-              //       price: amount,
-              //       date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-              //       note: "Chi tiết xem link Winggo",
-              //     },
-              //     templateId: template.new_order,
-              //     appId: infoConfig.channel,
-              //   };
-
-              //   /**
-              //   * Bắn Zalo OA cho Công ty
-              //   */
-              //   let dataOA3 = {
-              //     phone: "84985199295",
-              //     templateData: {
-              //       customer_name: infoCustomer.name,
-              //       order_code: `C${Number(numberOfOrder + 1)}`,
-              //       price: amount,
-              //       date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-              //       note: "Khách hàng mới",
-              //     },
-              //     templateId: template.new_order,
-              //     appId: infoConfig.channel,
-              //   };
-
-              //   await Promise.all([
-              //     ctx.call(
-              //       `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-              //       dataOA2,
-              //     ),
-              //     ctx.call(
-              //       `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-              //       dataOA3,
-              //     ),
-              //   ]);
-              // }
-
+              )
             }
 
             /**
@@ -1082,68 +957,6 @@ class Model extends BaseModel {
             }
           }
         }
-
-        // /**
-        //  * QUẢN LÝ TIẾP THỊ LIÊN KẾT
-        //  * - Kinh doanh theo mạng lưới
-        //  * - Trả hoa hồng theo hệ thống
-        //  * - Lấy các cấp trên và trả hoa hồng theo cấp trên
-        //  */
-        // if (affiliateID && checkObjectIDs(affiliateID)) {
-        //   let infoAffiliate = await ITEM__CONTACT_COLL.findById(affiliateID)
-        //     .select("nestedParents name sale")
-        //     .populate({
-        //       path: "nestedParents",
-        //       select: "level name phone",
-        //     });
-        //   // console.log('===========================================')
-        //   // console.log(infoAffiliate)
-
-        //   // Xử lý trả hoa hồng cho cấp trên theo FNB_AFFILIATE_COM
-        //   let getMaxLevel = 1;
-        //   for (const item of infoAffiliate.nestedParents) {
-        //     if (item.level > getMaxLevel) {
-        //       getMaxLevel = item.level;
-        //     }
-        //   }
-        //   // console.log({getMaxLevel})
-
-        //   // Trả cho Sale
-        //   await FNB_NETWORK_COM_MODEL.insert({
-        //     userID,
-        //     companyID: infoFunda.company,
-        //     orderID: infoAfterInsert._id,
-        //     customerID,
-        //     saleID: affiliateID,
-        //     amount,
-        //     uplineID: affiliateID,
-        //     level: 0, // Người cha đứng cạnh đầu tiên => cấp 1
-        //     rate: FNB_AFFILIATE_COM[0].rate,
-        //     commission: (Number(FNB_AFFILIATE_COM[0].rate) * amount) / 100,
-        //   });
-
-        //   for (const item of infoAffiliate.nestedParents) {
-        //     let networkLevel = Number(getMaxLevel - item.level + 1);
-        //     // console.log({networkLevel})
-
-        //     let infoNetworkCom = await FNB_NETWORK_COM_MODEL.insert({
-        //       userID,
-        //       companyID: infoFunda.company,
-        //       orderID: infoAfterInsert._id,
-        //       customerID,
-        //       saleID: affiliateID,
-        //       amount,
-        //       uplineID: item._id,
-        //       level: networkLevel, // Người cha đứng cạnh đầu tiên => cấp 1
-        //       rate: FNB_AFFILIATE_COM[Number(networkLevel)].rate,
-        //       commission:
-        //         (Number(FNB_AFFILIATE_COM[Number(networkLevel)].rate) *
-        //           amount) /
-        //         100,
-        //     });
-        //     // console.log({infoNetworkCom})
-        //   }
-        // }
 
         return resolve({ error: false, data: infoAfterInsert });
       } catch (error) {
