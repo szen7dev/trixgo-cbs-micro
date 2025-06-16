@@ -575,78 +575,6 @@ class Model extends BaseModel {
                         },
                     ])
                     // console.log(listData3)
-
-                     // Công việc
-                     let listData01 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                outin: 1, // Xuất kho
-                                budgetWork: ObjectID(workID),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                impleQuantity: { $sum: "$quantity" },
-                                impleAmount: { $sum: "$amount" },
-                            }
-                        },
-                    ])
-                    // console.log(listData)
-
-                    // Nhóm công việc
-                    let listData11 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                outin: 1, // Xuất kho
-                                budgetGroup: ObjectID(infoWork.group),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                impleQuantity: { $sum: "$quantity" },
-                                impleAmount: { $sum: "$amount" },
-                            }
-                        },
-                    ])
-                    // console.log(listData1)
-
-                    // Hạng mục
-                    let listData21 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                outin: 1, // Xuất kho
-                                budgetItem: ObjectID(infoWork.item),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                impleQuantity: { $sum: "$quantity" },
-                                impleAmount: { $sum: "$amount" },
-                            }
-                        },
-                    ])
-                    // console.log(listData2)
-
-                    // Ngân sách
-                    let listData31 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                outin: 1, // Xuất kho
-                                budget: ObjectID(infoWork.budget),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                impleQuantity: { $sum: "$quantity" },
-                                impleAmount: { $sum: "$amount" },
-                            }
-                        },
-                    ])
-                    // console.log(listData3)
     
                     if(listData && listData.length){
                         impleQuantity = Number(impleQuantity) + Number(listData[0].impleQuantity)
@@ -658,18 +586,6 @@ class Model extends BaseModel {
                         impleAmount2 = Number(impleAmount2) + Number(listData2[0].impleAmount)
                         impleAmount3 = Number(impleAmount3) + Number(listData3[0].impleAmount)
                     }
-
-                    if(listData01 && listData01.length){
-                        impleQuantity = Number(impleQuantity) + Number(listData01[0].impleQuantity)
-                        impleQuantity1 = Number(impleQuantity1) + Number(listData11[0].impleQuantity)
-                        impleQuantity2 = Number(impleQuantity2) + Number(listData21[0].impleQuantity)
-
-                        impleAmount = Number(impleAmount) + Number(listData01[0].impleAmount)
-                        impleAmount1 = Number(impleAmount1) + Number(listData11[0].impleAmount)
-                        impleAmount2 = Number(impleAmount2) + Number(listData21[0].impleAmount)
-                        impleAmount3 = Number(impleAmount3) + Number(listData31[0].impleAmount)
-                    }
-
 
                     dataUpdate.impleQuantity = Number(impleQuantity)
                     dataUpdate.impleUnitPrice = Number(impleQuantity != 0 ? impleAmount/impleQuantity : 0)
@@ -782,28 +698,13 @@ class Model extends BaseModel {
                 ])
                 // console.log(listData2)
 
+                // Chi tiết ngân sách đã thực hiện
                 let listData3 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
                     company: companyID, 
                     budget: budgetID,
                     budgetWork: { $exists: true, $ne: null }
                 })
                 .select('budgetGroup budgetWork date name sign hours unitprice amount')
-                .populate({
-                    path: 'budgetGroup budgetWork',
-                    select: '_id name sign unit',
-                })
-                .sort({
-                    "date": 1
-                })
-
-                // console.log(listData3)
-
-                let listData4 = await STORE_ORDER_PRODUCT_COLL.find({
-                    company: companyID, 
-                    budget: budgetID,
-                    budgetWork: { $exists: true, $ne: null }
-                })
-                .select('budgetGroup budgetWork date name sign quantity unitPrice amount')
                 .populate({
                     path: 'budgetGroup budgetWork',
                     select: '_id name sign unit',
@@ -910,23 +811,10 @@ class Model extends BaseModel {
                     listData3.forEach((item, index) =>{
                         workbook.sheet("3.BaoCaoChiTiet").row(i).cell(1).value(item.date)
                         workbook.sheet("3.BaoCaoChiTiet").row(i).cell(2).value(item.name)
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(3).value(item?.budgetGroup.name)
+                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(3).value(item?.budgetWork?.name)
                         workbook.sheet("3.BaoCaoChiTiet").row(i).cell(4).value(item?.budgetWork?.unit)
                         workbook.sheet("3.BaoCaoChiTiet").row(i).cell(5).value(Number(item.hours))
                         workbook.sheet("3.BaoCaoChiTiet").row(i).cell(6).value(Number(item.unitprice))
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(7).value(Number(item.amount))
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(8).value(item.note)
-
-                        i++
-                    })
-
-                    listData4.forEach((item, index) =>{
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(1).value(item.date)
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(2).value(item.name)
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(3).value(item?.budgetGroup.name)
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(4).value(item?.budgetWork?.unit)
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(5).value(Number(item.quantity))
-                        workbook.sheet("3.BaoCaoChiTiet").row(i).cell(6).value(Number(item.unitPrice))
                         workbook.sheet("3.BaoCaoChiTiet").row(i).cell(7).value(Number(item.amount))
                         workbook.sheet("3.BaoCaoChiTiet").row(i).cell(8).value(item.note)
 
