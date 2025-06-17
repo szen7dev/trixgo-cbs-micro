@@ -244,6 +244,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default: 0
     },
+    numberOfOrders12: {
+        type: Number,
+        default: 0
+    },
+    numberOfOrders13: {
+        type: Number,
+        default: 0
+    },
     //______Tổng doanh số Off
     total1: {
         type: Number,
@@ -270,6 +278,14 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         default : 0
     },
     total7: {
+        type: Number,
+        default : 0
+    },
+    total12: {
+        type: Number,
+        default : 0
+    },
+    total13: {
         type: Number,
         default : 0
     },
