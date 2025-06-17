@@ -3313,7 +3313,7 @@ class Model extends BaseModel {
 
     downloadExcelFile({ userID, email, infoAppUser, data, type, voucherID }) {
         return new Promise(resolve => {
-            let template,  arrPriceAccess = ['quangtv1993@gmail.com']
+            let template,  arrPriceAccess = ['quangtv1993@gmail.com','quangtv.wg@gmail.com']
 
             if(type == 1){
                 template = '../../../files/templates/excels/accounting_journal_export.xlsx'
