@@ -2,7 +2,7 @@
  * MODELS
 */
 const NOTIFICATION__LOG_MODEL            = require('../model/notification.log-model').MODEL;
-const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant')
+// const { NOTI_TYPE_MOBILE }               = require('./notification.keys-constant')
  /*-------------------------------------
  * file định nghĩa các constant EVENT của SERVICE (EXAMPLE) emit đi
  */
