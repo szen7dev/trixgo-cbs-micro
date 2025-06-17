@@ -59,19 +59,6 @@ const {
   FNB_AFFILIATE_COM,
 } = require("../helper/fnb.keys-constant");
 
-// let dataTF = {
-//   appID: "61e04971fdebf77b072d1b0f", // FNB
-//   menuID: "63af81debe33df0012ecaeca", //
-//   type: 1,
-//   action: 1, // Xem
-// };
-// let dataTF2 = {
-//   appID: "61e04971fdebf77b072d1b0f", // FNB
-//   menuID: "63af81debe33df0012ecaeca", //
-//   type: 1,
-//   action: 2, // Thêm
-// };
-
 class Model extends BaseModel {
   constructor() {
     super(FNB_ORDER_COLL);
@@ -707,26 +694,38 @@ class Model extends BaseModel {
             numberOfSizeL: Number(totalSizeL),
           };
         }
-        if (!isNaN(salesChannel) && Number(salesChannel) === 4) {
+        if (!isNaN(salesChannel) && Number(salesChannel) === 7) {
           dataUpdateFw.$inc = {
             total: Number(total),
             amount: Number(amount),
             numberOfProducts: totalQuantity,
             numberOfOrders: 1,
-            numberOfOrders4: 1,
-            total4: Number(total),
+            numberOfOrders7: 1,
+            total7: Number(total),
             numberOfSizeM: Number(totalSizeM),
             numberOfSizeL: Number(totalSizeL),
           };
         }
-        if (!isNaN(salesChannel) && Number(salesChannel) === 5) {
+        if (!isNaN(salesChannel) && Number(salesChannel) === 12) {
           dataUpdateFw.$inc = {
             total: Number(total),
             amount: Number(amount),
             numberOfProducts: totalQuantity,
             numberOfOrders: 1,
-            numberOfOrders5: 1,
-            total5: Number(total),
+            numberOfOrders12: 1,
+            total12: Number(total),
+            numberOfSizeM: Number(totalSizeM),
+            numberOfSizeL: Number(totalSizeL),
+          };
+        }
+        if (!isNaN(salesChannel) && Number(salesChannel) === 13) {
+          dataUpdateFw.$inc = {
+            total: Number(total),
+            amount: Number(amount),
+            numberOfProducts: totalQuantity,
+            numberOfOrders: 1,
+            numberOfOrders13: 1,
+            total13: Number(total),
             numberOfSizeM: Number(totalSizeM),
             numberOfSizeL: Number(totalSizeL),
           };
@@ -2367,6 +2366,8 @@ class Model extends BaseModel {
         let numberOfOrders7 = 0;
         let numberOfOrders8 = 0;
         let numberOfOrders9 = 0;
+        let numberOfOrders12 = 0;
+        let numberOfOrders13 = 0;
         let total = 0;
         let total1 = 0;
         let total2 = 0;
@@ -2377,6 +2378,8 @@ class Model extends BaseModel {
         let total7 = 0;
         let total8 = 0;
         let total9 = 0;
+        let total12 = 0;
+        let total13 = 0;
 
         // Tổng hợp thông tin từ các đơn hàng: Đơn HOÀN THÀNH
         let listData = await FNB_ORDER_COLL.aggregate([
@@ -2418,7 +2421,7 @@ class Model extends BaseModel {
                 // console.log('==========TIỀN MẶT============')
                 cashAmount = Number(cashAmount) + Number(item.amount);
 
-                console.log({ cashAmount });
+                // console.log({ cashAmount });
               } else {
                 // console.log('==========CHUYỂN KHOẢN============')
                 transferAmount = Number(transferAmount) + Number(item.amount);
@@ -2480,6 +2483,18 @@ class Model extends BaseModel {
                   numberOfOrders9 =
                     Number(numberOfOrders9) + Number(item.quantity);
                   total9 = Number(total9) + Number(item.total);
+                }
+
+                if (item._id.salesChannel && item._id.salesChannel == 12) {
+                  numberOfOrders12 =
+                  Number(numberOfOrders12) + Number(item.quantity);
+                  total12 = Number(total12) + Number(item.total);
+                }
+
+                if (item._id.salesChannel && item._id.salesChannel == 13) {
+                  numberOfOrders13 =
+                    Number(numberOfOrders13) + Number(item.quantity);
+                  total13 = Number(total13) + Number(item.total);
                 }
               }
             }
@@ -2545,6 +2560,8 @@ class Model extends BaseModel {
         dataUpdate.numberOfOrders7 = Number(numberOfOrders7);
         dataUpdate.numberOfOrders8 = Number(numberOfOrders8);
         dataUpdate.numberOfOrders9 = Number(numberOfOrders9);
+        dataUpdate.numberOfOrders12 = Number(numberOfOrders12);
+        dataUpdate.numberOfOrders13 = Number(numberOfOrders13);
         dataUpdate.total = Number(total);
         dataUpdate.total1 = Number(total1);
         dataUpdate.total2 = Number(total2);
@@ -2555,6 +2572,8 @@ class Model extends BaseModel {
         dataUpdate.total7 = Number(total7);
         dataUpdate.total8 = Number(total8);
         dataUpdate.total9 = Number(total9);
+        dataUpdate.total12 = Number(total12);
+        dataUpdate.total13 = Number(total13);
 
         // console.log(dataUpdate)
 
@@ -2583,8 +2602,6 @@ class Model extends BaseModel {
    * Code: 24/11/2022
    */
   updateCustomer({ customerID, option, userID }) {
-    //
-    // console.log({ customerID, option, userID })
     return new Promise(async (resolve) => {
       try {
         if (!checkObjectIDs(customerID))
@@ -2674,12 +2691,7 @@ class Model extends BaseModel {
               amount: { $sum: "$amount" },
             },
           },
-        ]);
-        // console.log(listData)
-        // console.log(listData1)
-        // console.log(listData2)
-        // console.log(listData3)
-        // console.log(listData4)
+        ])
 
         /**
          * Đơn hàng đã mua
@@ -2775,11 +2787,6 @@ class Model extends BaseModel {
         if (!checkObjectIDs(orderID))
           return resolve({ error: true, message: "param_invalid" });
 
-        // // Record Traffic
-        // if(getRequestAPI.permission == 1){
-        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-        // }
-
         // populate
         if (populates && typeof populates === "string") {
           if (!IsJsonString(populates))
@@ -2857,14 +2864,8 @@ class Model extends BaseModel {
     productID,
     ctx,
   }) {
-    // console.log({ type, companyID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID })
     return new Promise(async (resolve) => {
       try {
-        // // Record Traffic
-        // if(getRequestAPI.permission == 1){
-        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-        // }
-
         if (Number(limit) > 10) {
           limit = 10;
         } else {
@@ -3166,14 +3167,8 @@ class Model extends BaseModel {
     duration,
     ctx,
   }) {
-    // console.log({ companyID, fundasID, fundas, customerID, optionFixFunda, option, optionGroup, optionStatus, optionTime, year, month, fromDate, toDate, voucherType, userID, staffID, optionStar, duration })
     return new Promise(async (resolve) => {
       try {
-        // // Record Traffic
-        // if(getRequestAPI.permission == 1){
-        //   await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-        // }
-
         let duration = getTimeBetween(toDate, fromDate);
         // console.log({duration:duration/86400})
         if (Number(duration / 86400) > 370) {

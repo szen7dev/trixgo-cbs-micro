@@ -168,11 +168,13 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      * 4-Gojek
      * 5-Baemin
      * 6-Loship
-     * 7-Bee
+     * 7-Be
      * 8-TikTok Shop
      * 9-Shopee
      * 10-Lazada
      * 11-FB Reels
+     * 12-Xanh Ngon
+     * 12-Egets
      */
     salesChannel: {
         type: Number,
