@@ -42,5 +42,18 @@ exports.TEMPLATE_NOTIFICATION = [
                 description: 'Finish this to-do item in just {3} minutes'
             }
         }
+    },
+    {
+    key: 'daily_input_reminder',
+    messages: {
+        vi: {
+        title: 'Bạn quên nhập liệu hôm nay rồi!',
+        description: 'Chỉ mất 1 phút để hoàn tất nhập liệu mỗi ngày – vào nhập ngay nhé'
+        },
+        en: {
+        title: 'You forgot to log your day!',
+        description: 'It only takes 1 minute to complete your daily input – let’s do it now!'
+        }
+    }
     }
 ]
