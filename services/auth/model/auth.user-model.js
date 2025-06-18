@@ -15,7 +15,7 @@ const { RANGE_BASE_PAGINATION, RANGE_BASE_PAGINATION_V2 } = require('../../../to
 const { checkObjectIDs, checkNumberIsValidWithRange, IsJsonString }
                                         = require('../../../tools/utils/utils');
 const {
-    PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB,
+    PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB, PLATFORM_LAMIN,
     LEVEL_USER_OWNER, LEVEL_USER_EMPLOYEE,
     STATUS_ACTIVE, STATUS_INACTIVE, STATUS_BLOCK,
 }                                       = require('../helper/auth.keys-constant');
@@ -24,13 +24,13 @@ const { JWT_SECRET_KEY }                = require('../../../tools/jwt/cf_jwt');
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_CHATTING } 		    = require('../../chatting/helper/chatting.actions-constant');
-const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
+// const { CF_ACTIONS_ANALYSIS }           = require('../../analysis/helper/analysis.actions-constant');
 const { CF_ACTIONS_ZALO }               = require("../../zalo_oa/helper/zalo.actions");
 
 const COMPANY_COLL                      = require('../../auth/database/auth.company-coll')
 const ITEM__FUNDA_COLL                  = require('../../item/database/item.funda-coll')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
-const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
+// const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../../timesheet/database/timesheet.expert_salary-coll');
 
@@ -1187,7 +1187,7 @@ class Model extends BaseModel {
                 // console.log({
                 //     userID, platform, deviceID, deviceName, registrationID, oneSignalID, isRemove, env
                 // })
-                let listPlatformValid = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB];
+                let listPlatformValid = [PLATFORM_TRIXGO, PLATFORM_WYNDIX, PLATFORM_FNB, PLATFORM_LAMIN];
 
                 if (!checkNumberIsValidWithRange({ arrValid: listPlatformValid, val: platform })) {
                     return resolve({

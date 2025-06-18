@@ -178,6 +178,7 @@ module.exports  = DATABASE_MIDDLEWARE("user", {
          *  2/ MOBILE_TEARSER   : ****
          *  3/ MOBILE_CBS       : **** (không có phần chatting, nên các event chatting của loại MOBILE_CBS sẽ không cần push đến đây)
          *  4/ MOBILE_FNB       : ****
+         *  5/ MOBILE_LAMIN     : ****
          */
         env: {
             type: Number,
