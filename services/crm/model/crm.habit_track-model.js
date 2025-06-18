@@ -571,12 +571,17 @@ class Model extends BaseModel {
                      */
                     let conditionObj = {
                         company: ObjectID(companyID),
-                        contact: ObjectID(contactID),
+                    }
+
+                    if(checkObjectIDs(contactID)){
+                        conditionObj.contact = ObjectID(contactID)
                     }
 
                     if(checkObjectIDs(habitID)){
-                        conditionObj.habit = habitID
+                        conditionObj.habit = ObjectID(habitID)
                     }
+
+                    // console.log(conditionObj)
 
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         // B1: Lọc theo contact và habit
@@ -653,11 +658,14 @@ class Model extends BaseModel {
                 else if(option == 1){
                     let conditionObj = {
                         company: ObjectID(companyID),
-                        contact: ObjectID(contactID),
+                    }
+
+                    if(checkObjectIDs(contactID)){
+                        conditionObj.contact = ObjectID(contactID)
                     }
 
                     if(checkObjectIDs(habitID)){
-                        conditionObj.habit = habitID
+                        conditionObj.habit = ObjectID(habitID)
                     }
 
                     if(startDate && endDate){
@@ -666,6 +674,8 @@ class Model extends BaseModel {
                             $lte: moment(endDate).toDate() 
                         }
                     }
+
+                    // console.log(conditionObj)
 
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         {
@@ -683,7 +693,9 @@ class Model extends BaseModel {
                         // { 
                         //     $sort: { dayOfWeek: 1 } 
                         // }
-                      ])
+                    ])
+
+                    // console.log(listData)
 
                     return resolve({ error: false, data: listData })
                 }

@@ -13,13 +13,14 @@ const {
     ENV_DEVICE_APP_TEASER,
     ENV_DEVICE_WEB_CBS,
     ENV_DEVICE_APP_FNB,
-    ENV_DEVICE_APP_FNB_AND_CBS,
+    ENV_DEVICE_APP_LAMIN,
 } = require('../helper/notification.keys-constant');
 const {
     NOTI_TYPE,
     ONESIGNAL_APP_CBS,
     ONESIGNAL_APP_TEASER,
     ONESIGNAL_APP_FNB,
+    ONESIGNAL_APP_LAMIN,
 } = require('../helper/notification.keys-constant');
 
 class Model extends BaseModel {
@@ -30,10 +31,11 @@ class Model extends BaseModel {
         this.NOT_SEEN           = 2;
         this.SEEN               = 3;
 
-        this.WEB_CBS            = 1;
-        this.MOBILE_TEARSER     = 2;
-        this.MOBILE_CBS         = 3;
-        this.MOBILE_FNB         = 4;
+        this.WEB_CBS            = ENV_DEVICE_WEB_CBS;
+        this.MOBILE_TEARSER     = ENV_DEVICE_APP_TEASER;
+        this.MOBILE_CBS         = ENV_DEVICE_APP_CBS;
+        this.MOBILE_FNB         = ENV_DEVICE_APP_FNB;
+        this.MOBILE_LAMIN       = ENV_DEVICE_APP_LAMIN;
     }
 
     /**
@@ -362,7 +364,7 @@ class Model extends BaseModel {
                     1: [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS],
                     2: [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_TEASER],
                     4: [ENV_DEVICE_APP_FNB],
-                    5: [ENV_DEVICE_APP_FNB, ENV_DEVICE_APP_CBS],
+                    5: [ENV_DEVICE_APP_FNB, ENV_DEVICE_APP_CBS, ENV_DEVICE_APP_LAMIN],
                 }
 
                 let listEnvReceiveNoti = objEnv[env];
@@ -392,19 +394,37 @@ class Model extends BaseModel {
                      */
                     const CONSTANT_CBS_APP      = [this.WEB_CBS, this.MOBILE_CBS];
                     const CONSTANT_TEASER_APP   = [this.WEB_CBS, this.MOBILE_TEARSER];
+                    const CONSTANT_LAMIN_APP    = [this.MOBILE_LAMIN];
 
-                    let _findAppIdWithEnv = envItem => CONSTANT_CBS_APP.includes(+envItem) ?
-                        ONESIGNAL_APP_CBS : (
-                            CONSTANT_TEASER_APP.includes(+envItem) ?
-                            ONESIGNAL_APP_TEASER : ONESIGNAL_APP_FNB
-                        )
+                    const ENV_MOBILES = [this.MOBILE_TEARSER, this.MOBILE_CBS, this.MOBILE_FNB, this.MOBILE_LAMIN];
+
+                    // let _findAppIdWithEnv = envItem => CONSTANT_CBS_APP.includes(+envItem) ?
+                    //     ONESIGNAL_APP_CBS : (
+                    //         CONSTANT_TEASER_APP.includes(+envItem) ?
+                    //         ONESIGNAL_APP_TEASER : ONESIGNAL_APP_FNB
+                    //     )
+
+                    const _findAppIdWithEnv = envItem => {
+                        if(CONSTANT_CBS_APP.includes(+envItem)) {
+                            return ONESIGNAL_APP_CBS;
+                        }
+
+                        if(CONSTANT_TEASER_APP.includes(+envItem)) {
+                            return ONESIGNAL_APP_TEASER;
+                        }
+
+                        if(CONSTANT_LAMIN_APP.includes(+envItem)) {
+                            return ONESIGNAL_APP_LAMIN;
+                        }
+
+                        return ONESIGNAL_APP_FNB;
+                    }
 
                     if (listRecords && Array.isArray(listRecords)) {
                         listRecords.forEach(user => {
                             let { devices } = user;
 
                             if(devices && devices.length) {
-                                const ENV_MOBILES = [this.MOBILE_TEARSER, this.MOBILE_CBS, this.MOBILE_FNB];
 
                                 listDeviceFromMobile = [
                                     ...listDeviceFromMobile,
@@ -413,21 +433,28 @@ class Model extends BaseModel {
                                      * listEnvReceiveNoti.includes(item.env): tùy vào ACTION mà sẽ push noti theo từng loại app
                                      * (item.env == this.MOBILE_TEARSER || item.env == this.MOBILE_CBS): kiểm tra rẽ nhánh theo WEB và APP theo 2 arr khác nhau
                                      */
-                                    ...devices.filter(item => item.oneSignalID && listEnvReceiveNoti.includes(item.env) && ENV_MOBILES.includes(item.env)).map(itemReturn => {
-                                        return {
+                                    ...devices
+                                        .filter(item =>
+                                            item.oneSignalID && listEnvReceiveNoti.includes(item.env) && ENV_MOBILES.includes(item.env)
+                                        )
+                                        .map(itemReturn => ({
                                             oneSignalID: itemReturn.oneSignalID,
                                             app_id: _findAppIdWithEnv(itemReturn.env),
-                                        }
-                                    })
+                                        }))
                                 ]
                                 listDeviceFromWebBrowser = [
                                     ...listDeviceFromWebBrowser,
-                                    ...devices.filter(item => item.oneSignalID  && listEnvReceiveNoti.includes(item.env) && item.env == +env && item.env == this.WEB_CBS).map(itemReturn => {
-                                        return {
+                                    ...devices
+                                        .filter(item =>
+                                            item.oneSignalID &&
+                                            listEnvReceiveNoti.includes(item.env) &&
+                                            item.env == +env &&
+                                            item.env == this.WEB_CBS
+                                        )
+                                        .map(itemReturn => ({
                                             oneSignalID: itemReturn.oneSignalID,
                                             app_id: _findAppIdWithEnv(itemReturn.env),
-                                        }
-                                    })
+                                        }))
                                 ]
                             }
                         });
@@ -438,6 +465,9 @@ class Model extends BaseModel {
                             contents: { "en": description },
                         }
 
+                        /**
+                         * PUSH NOTI (MOBILE)
+                         **/
                         if (listDeviceFromMobile && listDeviceFromMobile.length) {
                             /**
                              * chia mảng listDeviceFromMobile thành 2 nhóm để push theo app_id của (CBS và TEASER)
@@ -447,6 +477,8 @@ class Model extends BaseModel {
                             let listDeviceFromMobileWith_TEASER     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_TEASER);
 
                             let listDeviceFromMobileWith_FNB     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_FNB);
+
+                            let listDeviceFromMobileWith_LAMIN     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_LAMIN);
 
                             // =================== MOBILE PUSH (CBS) ===================
                             let dataForMobilePushCBS = {
@@ -510,14 +542,40 @@ class Model extends BaseModel {
                                 dataForMobilePushFNB.ios_badgeType = 'SetTo';
                                 dataForMobilePushFNB.ios_badgeCount = objDataForSend.amountNoti;
                             }
-                            // console.info('MOBILE PUSH (FNB)', dataForMobilePushFNB.include_player_ids);
+                            // console.info('MOBILE PUSH (FNB)');
 
                             if(dataForMobilePushFNB.include_player_ids.length) {
                                 dataForMobilePushFNB.include_player_ids = [...new Set(dataForMobilePushFNB.include_player_ids)];
                                 sendNotificationviaOneSignal(dataForMobilePushFNB);
                             }
+
+                            //  =================== MOBILE PUSH (LAMIN) ===================
+                            let dataForMobilePushLamin = {
+                                ...dataForSend,
+                                data: objDataForSend,
+                                app_id: ONESIGNAL_APP_LAMIN,
+                                ios_sound: 'teaser.wav',
+                                android_sound: 'teaser',
+                                ios_badgeType: 'Increase',
+                                ios_badgeCount: 1,
+                                priority: 'high',
+                                include_player_ids: listDeviceFromMobileWith_LAMIN.map(item => item.oneSignalID)
+                            }
+                            if(objDataForSend.amountNoti) {
+                                dataForMobilePushLamin.ios_badgeType = 'SetTo';
+                                dataForMobilePushLamin.ios_badgeCount = objDataForSend.amountNoti;
+                            }
+                            console.info('MOBILE PUSH (LAMIN)', JSON.stringify(dataForMobilePushLamin));
+
+                            if(dataForMobilePushLamin.include_player_ids.length) {
+                                dataForMobilePushLamin.include_player_ids = [...new Set(dataForMobilePushLamin.include_player_ids)];
+                                sendNotificationviaOneSignal(dataForMobilePushLamin)
+                            }
                         }
 
+                        /**
+                         * PUSH NOTI (WEB)
+                         **/
                         if (listDeviceFromWebBrowser.length) {
                             let listDeviceFromWebBrowserWith_CBS        = listDeviceFromWebBrowser.filter(item => item.app_id == ONESIGNAL_APP_CBS);
 
@@ -553,7 +611,6 @@ class Model extends BaseModel {
                             // console.log({ include_player_ids: dataForWebPushTeaser.include_player_ids })
                             sendNotificationviaOneSignal(dataForWebPushTeaser)
                         }
-
                     }
                 }
             } catch (error) {

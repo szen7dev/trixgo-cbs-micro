@@ -1,6 +1,7 @@
 exports.PLATFORM_TRIXGO = 1;
 exports.PLATFORM_WYNDIX = 2;
 exports.PLATFORM_FNB = 3;
+exports.PLATFORM_LAMIN = 4;
 
 exports.LEVEL_ADMIN         = 100;
 exports.LEVEL_USER_OWNER    = 0;
