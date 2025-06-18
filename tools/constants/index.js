@@ -15,3 +15,32 @@ exports.INSURANCE_STATUS = [
     { value: 2, text: 'Đã nộp' },
     { value: 3, text: 'Thêm mới' },
 ]
+
+exports.TEMPLATE_NOTIFICATION = [
+    {
+        key: 'new_post',
+        messages: {
+            vi: {
+                title: 'Bài viết mới quan trọng!!!',
+                description: 'Hãy vào trang tin tức của Lamin sau {3} phút nữa để đọc bài nhé'
+            },
+            en: {
+                title: 'Its bedtime!!!',
+                description: 'Finish this to-do item in just {3} minutes'
+            }
+        }
+    },
+    {
+        key: 'sleep_reminder',
+        messages: {
+            vi: {
+                title: 'Tới giờ đi ngủ rồi!!!',
+                description: 'Hoàn thành mục việc-cần-làm-này chỉ với {3} phút nào'
+            },
+            en: {
+                title: 'Its bedtime!!!',
+                description: 'Finish this to-do item in just {3} minutes'
+            }
+        }
+    }
+]

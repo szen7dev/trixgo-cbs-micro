@@ -76,6 +76,8 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type    :  Number,
         default : 0
     },
+    //_________Giờ bắn bài
+    alert: { type: Number, default: 0 },
     //_________Người tạo bài viết
     author: {
         type    :  Schema.Types.ObjectId,

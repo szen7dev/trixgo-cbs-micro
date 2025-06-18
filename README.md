@@ -1,3 +1,14 @@
+#LUỒNG PUSH NOTIFICATION
+1. Chủ động push thông báo chung 
+2. Push thông báo theo lịch hẹn của 1 chủ đề
+3. Push thông báo theo lịch định kỳ của hệ thống (chạy kiểm tra DB -> lấy các user cần push, tính toán giá trị để show thông tin)
+
+reminder.core-handler.js -> setup lên lịch cron (vào hệ điều hành)
+reminder.service.js -> thực hiện bắn thông báo theo cron
+
+Hiệp định nghĩa bộ TEMPLATE_NOTIFICATION và dùng trong trường hợp nào
+Minh sẽ cung cấp API và cronjob cho team Mobile để chạy
+
 [![Moleculer](https://badgen.net/badge/Powered%20by/Moleculer/0e83cd)](https://moleculer.services)
 
 # CBS Microservices [TRIXGO](https://app.trixgo.com)
