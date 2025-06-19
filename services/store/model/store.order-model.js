@@ -47,7 +47,7 @@ class Model extends BaseModel {
  * Author: HiepNH
  * Code: 8/9/2024
  */
-insert({ companyID, userID, outin, type, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID }) {
+insert({ companyID, userID, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID }) {
 return new Promise(async (resolve) => {
     try {
         // if([2,3,4,5,6].includes(Number(type))){
@@ -57,8 +57,8 @@ return new Promise(async (resolve) => {
         //     if (!checkObjectIDs(projectID) ||!checkObjectIDs(customerID) ||!name)
         //         return resolve({error: true, message: "projectID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
         // }
-        if (!checkObjectIDs(customerID) ||!name)
-            return resolve({error: true, message: "customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
+        if (!checkObjectIDs(customerID) ||!name || !checkObjectIDs(warehouseID))
+            return resolve({error: true, message: "customerID|warehouseID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
 
         let dataInsert = { 
             company: companyID,
@@ -73,7 +73,11 @@ return new Promise(async (resolve) => {
                 dataInsert.funda = infoFunda._id;
             }
         }
+        if (checkObjectIDs(channelID)) {
+            dataInsert.channel = channelID;
 
+            // Kiểm tra kênh cha
+        }
         if (checkObjectIDs(projectID)) {
             dataInsert.project = projectID;
         }
