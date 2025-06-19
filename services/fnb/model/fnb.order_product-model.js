@@ -1070,10 +1070,10 @@ class Model extends BaseModel {
 
                     let listData2 = await FNB_ORDER_PRODUCT_COLL.find({order: {$in: listData.map(item => ObjectID(item._id))}})
                     .populate({
-                        path: 'order product',
+                        path: 'order product funda',
                         // select: 'name sign date unit quantity unitPrice amount'
                     })
-                    .select('order product')
+                    .select('order product funda')
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order_product.xlsx')))
@@ -1103,6 +1103,7 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(18).value(Number(item?.order?.offer));
                             workbook.sheet("Order").row(i).cell(19).value(Number(item?.order?.loyaltyPoints));
                             workbook.sheet("Order").row(i).cell(20).value(Number(item?.order?.appOrderSign));
+                            workbook.sheet("Order").row(i).cell(21).value(Number(item?.funda?.name));
 
                             i++
                         })
