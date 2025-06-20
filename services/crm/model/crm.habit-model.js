@@ -11,7 +11,8 @@ const moment                            = require('moment');
 /**
  * DOMAIN AND ACTIONS
  */
-// const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_DOMAIN_SERVICES } 		            = require('../../gateway/helper/domain.constant');
+const { CF_ACTIONS_REMINDER }                   = require('../../reminder/helper/reminder.actions-constant');
 // const { CF_ACTIONS_ANALYSIS }                   = require('../../analysis/helper/analysis.actions-constant');
 
 /**
@@ -23,7 +24,7 @@ const {
   IsJsonString,
 }  = require('../../../tools/utils/utils.js');
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
-const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
+// const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
 
 
 /**
@@ -31,7 +32,8 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
  */
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
-const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
+const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll');
+const { TEMPLATE_NOTIFICATION } = require('../../../tools/constants/index.js');
 
 class Model extends BaseModel {
 
@@ -44,14 +46,17 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType }) {
+    insert({
+        userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note,
+        startTime, dayOfChallenge, finishDate, color, resultType, ctx,
+    }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(contactID))
                     return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
 
                 let dataInsert = {
-                    userCreate: userID, 
+                    userCreate: userID,
                     company: companyID,
                 }
 
@@ -114,6 +119,23 @@ class Model extends BaseModel {
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
+
+                if (startTime) {
+                    const template = TEMPLATE_NOTIFICATION.find(item => item.key === 'sleep_reminder');
+
+                    if (template) {
+                        const { messages } = template;
+                        const { title, description } = messages.vi;
+
+                        ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_HABIT}`, {
+                            title,
+                            description: description.replace('{minute}', duration),
+                            startTime,
+                            receiverID: userID,
+                            habitID: infoAfterInsert._id?.toString(),
+                        })
+                    }
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -184,6 +206,23 @@ class Model extends BaseModel {
                         message: "Cannot update",
                         keyError: "cannot_update",
                     })
+                }
+
+                if (startTime) {
+                    // // Xóa tất cả job reminder cũ (đã setup trước đó đi)
+                    // await ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_HABIT}`, {
+                    //     habitID
+                    // })
+
+                    // // Setup con crontab mới
+                    // ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_HABIT}`, {
+                    //     alert,
+                    //     senderMail,
+                    //     status: infoTask.status,
+                    //     taskID: infoTask._id?.toString(),
+                    //     userID: infoTask.author?.toString(),
+                    //     actualFinishTime: infoTask.actualFinishTime?.toString(),
+                    // })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });

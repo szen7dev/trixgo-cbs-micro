@@ -38,7 +38,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType })
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, ctx })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {

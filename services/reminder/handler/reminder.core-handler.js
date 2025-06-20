@@ -21,6 +21,15 @@ let agenda;
 	await new Promise(resolve => agenda.once('ready', resolve));
 })(); //IIFE func - run now
 
+const every = (interval, name, data, options) => {
+	return new Promise((resolve, reject) => {
+		agenda.create(name, data)
+			//.schedule(interval) if you don't want the job to run right away
+			.repeatEvery(interval, options)
+			.save((err) => err ? reject(err) : resolve());
+	});
+};
+
 module.exports = {
 	addJob: {
 		params: {},
@@ -390,5 +399,73 @@ module.exports = {
 			}
 		}
 	},
+
+	addJobReminderHabit: {
+		params: {
+			title: { type: "string" },
+			description: { type: "string" },
+			startTime: { type: "string" },
+			receiverID: { type: "string" },
+			habitID: { type: "string", optional: true },
+		},
+		async handler(ctx) {
+			try {
+				let { title, description, startTime, receiverID, habitID } = ctx.params;
+
+				/**
+				 * Extract time from startTime
+				 * Agenda will schedule job at this time every day
+				 */
+				const timeScheduler = new Date(startTime);
+				const hours = timeScheduler.getHours();
+				const minutes = timeScheduler.getMinutes();
+
+				// Cron expression for daily at HH:MM (e.g., 0 30 7 * * *)
+				const cronExpression = `0 ${minutes} ${hours} * * *`;
+				console.log({ timeScheduler, cronExpression });
+
+				// https://www.npmjs.com/package/agenda#repeateveryinterval-options
+				every(cronExpression, 'add_reminder_habit', {
+					title,
+					description,
+					receiverID,
+					habitID,
+				});
+				console.log(`agenda: add_reminder_habit added - ${timeScheduler} - ${cronExpression}`);
+
+				return { error: false, message: 'success' }
+			} catch (error) {
+				throw new Error(error.message);
+			}
+		}
+	},
+
+	deleteJobReminderHabit: {
+		params: {
+			habitID: { type: "string" },
+		},
+		async handler(ctx) {
+			try {
+				const { habitID } = ctx.params;
+
+				if (!habitID)
+					throw new Error("Request params habitID invalid");
+
+				const listJob = await agenda.jobs({
+					name: "add_reminder_habit",
+					"data.habitID": habitID
+				});
+
+				if (listJob && listJob.length) {
+					const jobsID = listJob.map(job => ObjectID(job.attrs._id));
+					await agenda.cancel({ _id: { $in: jobsID } });
+				}
+
+				return { error: false, message: 'success' };
+			} catch (error) {
+				throw new Error(error.message);
+			}
+		}
+	}
 
 }

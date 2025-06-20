@@ -13,6 +13,8 @@ exports.LANGUAGE_KEYS = {
     ADD_FILE_TO_RESPONSE: "ADD_FILE_TO_RESPONSE",
     REMINDER_EXPIRED_TASK: "REMINDER_EXPIRED_TASK",
     UPDATE_STATUS_TASK: "UPDATE_STATUS_TASK",
+    // Lamin App
+    REMINDER_HABIT: "REMINDER_HABIT",
 }
 
 module.exports.APP_KEYS = {
@@ -25,6 +27,7 @@ module.exports.APP_KEYS = {
     DATAHUB: "60390cb12b367a1cdd9f3fb2",
     FNB: "60390cb12b367a1cdd9f3fb2",
     STORE: "5f52341f880c2f26c8df8c10",
+    LAMIN: ""
 }
 
 exports.KEY_ERROR  = {

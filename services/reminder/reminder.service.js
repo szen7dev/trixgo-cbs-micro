@@ -11,7 +11,7 @@ const { CF_ACTIONS_SUBJECT_PCM }		= require('../subject_pcm/helper/subject_pcm.a
 const { CF_ACTIONS_ZALO }				= require('../zalo_oa/helper/zalo.actions');
 
 const { APP_KEYS, LANGUAGE_KEYS }		= require('../../tools/keys');
-const { ENV_DEVICE_WEB_CBS }			= require('../notification/helper/notification.keys-constant');
+const { ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_LAMIN }			= require('../notification/helper/notification.keys-constant');
 const REMINDER__CORE_HANLDER            = require('./handler/reminder.core-handler');
 const { MONGODB_URL } 					= require('../../tools/db/utils');
 
@@ -21,7 +21,7 @@ module.exports = {
 		DbService('reminder_cores'),
 		DbService('reminder_tasks'),
 		CacheCleaner([CF_DOMAIN_SERVICES.REMINDER])
-    ],
+	],
 
 	/**
 	* Service metadata
@@ -51,7 +51,9 @@ module.exports = {
 		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_EXPIRED_TASK]					: REMINDER__CORE_HANLDER.addJobReminderExpiredTask,
 		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_EXPIRED_TASK]				: REMINDER__CORE_HANLDER.deleteJobReminderExpiredTask,
 		[CF_ACTIONS_REMINDER.ADD_JOB_REFRESH_TOKEN_ZALO_OA]					: REMINDER__CORE_HANLDER.addJobRefreshTokenZaloOA,
-
+		// Lamin App
+		[CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_HABIT]						: REMINDER__CORE_HANLDER.addJobReminderHabit,
+		[CF_ACTIONS_REMINDER.DELETE_JOB_REMINDER_HABIT]						: REMINDER__CORE_HANLDER.deleteJobReminderHabit,
 	},
 
 	/**
@@ -224,6 +226,43 @@ module.exports = {
 					console.error(err);
 				} finally {
 					done();
+				}
+			})
+
+			agenda.define('add_reminder_habit', async (job, done) => {
+				try {
+					console.log(`========================================`);
+					console.log(`done add reminder habit !!!!`);
+					console.log({ __JOB: job.attrs });
+
+					const {
+						title,
+						description,
+						receiverID,
+						habitID,
+					} = job.attrs.data;
+
+					/**
+					 * Cấu trúc data send tới Cloud MSS cho Mobile
+					 */
+					const dataSend = {
+						app: APP_KEYS.LAMIN, // Do mobile yêu cầu gửi sang
+						languageKey: LANGUAGE_KEYS.REMINDER_HABIT, // Phân biệt ngôn ngữ
+					}
+
+					// SEND CLOUD-MSG
+					await this.broker.emit("NOTIFICATION__LOG_CREATE:MOBILE_WEB", {
+						users: [receiverID],
+						title,
+						description,
+						dataSend,
+						web_url: `/habit/${habitID}`,
+						env: ENV_DEVICE_APP_LAMIN
+					});
+
+					done()
+				} catch(err) {
+					console.error(err)
 				}
 			})
 

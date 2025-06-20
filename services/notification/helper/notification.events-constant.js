@@ -44,9 +44,10 @@ const NOTIFICATION__LOG_MODEL            = require('../model/notification.log-mo
             // console.log("Metadata:", ctx.meta);
             // console.log("The called event name:", ctx.eventName);
 
-            if(process.env.NODE_ENV == 'development') {
-                return;
-            }
+            // const NODE_ENV = process.env.NODE_ENV;
+            // if(NODE_ENV == 'development') {
+            //     return;
+            // }
 
             /**
              *  =========== env(auth.user-coll) =================
