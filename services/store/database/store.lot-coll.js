@@ -32,6 +32,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_lot", {
     sign: String,
     //_________Ghi chú
     note: String,
+    //_________Mẫu mã hiệu kích hoạt sản phẩm
+    itemSignSample: String,
     //_________Số lượng sản phẩm
     totalQuantity: { type: Number, default: 0 },
     //_________Số lượng đã kích hoạt
