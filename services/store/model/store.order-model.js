@@ -57,7 +57,7 @@ return new Promise(async (resolve) => {
         //     if (!checkObjectIDs(projectID) ||!checkObjectIDs(customerID) ||!name)
         //         return resolve({error: true, message: "projectID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
         // }
-        if (!checkObjectIDs(customerID) ||!name || !checkObjectIDs(warehouseID))
+        if (!checkObjectIDs(customerID) ||!name)
             return resolve({error: true, message: "customerID|warehouseID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
 
         let dataInsert = { 
