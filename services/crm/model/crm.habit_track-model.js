@@ -700,6 +700,50 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
+                // getDailyStreakProgress
+                else if(option == 2){
+                    // 1. Chuyển về start-of-day & end-of-day để truy vấn chính xác 
+                    const start = moment(startDate).startOf('day').toDate();
+                    const end   = moment(endDate).endOf('day').toDate();
+
+                    // 2. Lấy tất cả bản ghi track trong khoảng thời gian
+                    //    – chỉ cần field date & status để giảm bandwidth
+                    const tracks = await CRM_HABIT_TRACK_COLL.find(
+                        { habit: habitID, date: { $gte: start, $lte: end } },
+                        { date: 1, status: 1, _id: 0 }
+                    ).lean()
+
+                    // 3. Chuyển track thành map theo ngày YYYY-MM-DD
+                    const statusByDate = new Map();
+                    tracks.forEach(t => {
+                        const key = moment(t.date).format('YYYY-MM-DD');
+                        statusByDate.set(key, t.status);  // 1 = không hoàn thành, 2 = hoàn thành
+                    });                    
+
+                    // 4. Tính streak từng ngày
+                    const result = [];
+                    let streak = 0;
+
+                    const current = moment(start);
+                    const endMoment = moment(end);
+
+                    while (current.isSameOrBefore(endMoment, 'day')) {
+                        const key = current.format('YYYY-MM-DD');
+                        const status = statusByDate.get(key);
+
+                        if (status === 2) {
+                            streak += 1;
+                        } else {
+                            streak = 0;
+                        }
+
+                        result.push({ date: key, streak });
+                        current.add(1, 'day');
+                    }
+
+                    // return result;
+                    return resolve({ error: false, data: result })
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
