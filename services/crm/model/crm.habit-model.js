@@ -52,7 +52,7 @@ class Model extends BaseModel {
     }) {
         return new Promise(async resolve => {
             try {
-                if(!name || !checkObjectIDs(contactID))
+                if(!name)
                     return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
 
                 let dataInsert = {
