@@ -266,7 +266,7 @@ class Model extends BaseModel {
                             height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
                         })
                     }    
-
+                    
                     await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
                         percentile: P,
                         predictedAdultHeight: Number(ageHeightNow[0].height)
