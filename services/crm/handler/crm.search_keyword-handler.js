@@ -128,7 +128,7 @@ module.exports = {
                 let { optionSeller, trackID, contactID, month, year, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -206,7 +206,7 @@ module.exports = {
 				const { _id: userID, email, company } = ctx.meta.infoUser;
 
                 let { option, year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await CRM__SEARCH_KEYWORD_MODEL.exportExcel({
                     companyID: company._id, option, year, month, email, userID
