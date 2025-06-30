@@ -1070,10 +1070,10 @@ class Model extends BaseModel {
 
                     let listData2 = await FNB_ORDER_PRODUCT_COLL.find({order: {$in: listData.map(item => ObjectID(item._id))}})
                     .populate({
-                        path: 'order product funda',
+                        path: 'order product funda subProducts',
                         // select: 'name sign date unit quantity unitPrice amount'
                     })
-                    .select('order product funda')
+                    .select('order product funda quantity unitPrice amount size')
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order_product.xlsx')))
@@ -1089,12 +1089,13 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(6).value(item?.product?.name);
                             workbook.sheet("Order").row(i).cell(7).value(item?.product?.unit);
 
-                            workbook.sheet("Order").row(i).cell(8).value(Number(item?.product?.quantity));
-                            workbook.sheet("Order").row(i).cell(9).value(Number(item?.product?.unitPrice));
-                            workbook.sheet("Order").row(i).cell(10).value(Number(item?.product?.amount));
+                            workbook.sheet("Order").row(i).cell(8).value(Number(item?.quantity));
+                            workbook.sheet("Order").row(i).cell(9).value(Number(item?.unitPrice));
+                            workbook.sheet("Order").row(i).cell(10).value(Number(item?.amount));
 
-                            workbook.sheet("Order").row(i).cell(11).value(Number(item?.order?.numberOfSizeM));
-                            workbook.sheet("Order").row(i).cell(12).value(Number(item?.order?.numberOfSizeL));
+                            workbook.sheet("Order").row(i).cell(11).value((item?.size == 1) ? Number(item?.quantity) : 0);
+                            workbook.sheet("Order").row(i).cell(12).value((item?.size == 2) ? Number(item?.quantity) : 0);
+
                             workbook.sheet("Order").row(i).cell(13).value(`${FNB_STATUS[Number(item.order.status) - 1].text}`);
                             workbook.sheet("Order").row(i).cell(14).value(Number(item?.order?.total));
                             workbook.sheet("Order").row(i).cell(15).value(Number(item?.order?.discount));
@@ -1104,6 +1105,15 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(19).value(Number(item?.order?.loyaltyPoints));
                             workbook.sheet("Order").row(i).cell(20).value(item?.order?.appOrderSign);
                             workbook.sheet("Order").row(i).cell(21).value(item?.funda?.name);
+
+                            if(item?.subProducts?.length){
+                                let str = ''
+                                item?.subProducts?.forEach((subitem, subindex) => {
+                                    str = str + `${subitem.name} - ${Number(subitem.unitPrice)} |`
+                                })
+
+                                workbook.sheet("Order").row(i).cell(22).value(str);
+                            }
 
                             i++
                         })
