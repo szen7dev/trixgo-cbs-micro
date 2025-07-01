@@ -700,7 +700,10 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
-                // getDailyStreakProgress
+                /**
+                 * getDailyStreakProgress
+                 * https://chatgpt.com/c/685f1a72-0b14-8001-b530-65d1acebc25b
+                 */
                 else if(option == 2){
                     // 1. Chuyển về start-of-day & end-of-day để truy vấn chính xác 
                     const start = moment(startDate).startOf('day').toDate();
