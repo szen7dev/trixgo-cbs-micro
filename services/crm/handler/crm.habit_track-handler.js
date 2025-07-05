@@ -86,44 +86,6 @@ module.exports = {
     },
 
     /**
-     * Name: updateMany
-     * Author: HiepNH
-     * Code: 27/3/2025
-     */
-    updateMany: {
-        auth: "required",
-        params: {
-            contactID             : { type: "string" },
-        },
-        async handler(ctx) {
-            try {
-                await this.validateEntity(ctx.params);
-                let { optionSeller, date, contactID, tracks } = ctx.params;
-
-                // console.log(ctx.params)
-
-				const { _id: userID, company } = ctx.meta.infoUser;
-
-                let companyID, commonHabitID
-                if(optionSeller){
-                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
-                    commonHabitID = OPTION_COMMON_HABITS[Number(optionSeller) - 1].habit
-                }else{
-                    companyID = company?._id
-                }
-
-                // console.log({commonHabitID})
-
-                let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.updateMany({ companyID, userID, commonHabitID, date, contactID, tracks });
-
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
-            } catch (error) {
-                return { error: true, message: error.message };
-            }
-        }
-    },
-
-    /**
      * Name: Remove
      * Author: HiepNH
      * Code: 22/3/2024
