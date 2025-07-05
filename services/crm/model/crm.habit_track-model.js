@@ -219,8 +219,52 @@ class Model extends BaseModel {
 
                     if(status == 2){
                         dataInsert.percentage = 100
+
+                        // XỬ LÝ XP & STREAK
+                        // Cập nhật vào Habit
+                        await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
+                            percentage: 100,
+                            $inc: {
+                                currentStreak: 1,
+                                maxStreak: 1
+                            }
+                        }, { new: true })
+
+                        // Cập nhật vào Contact
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
+                            $inc: {
+                                membershipLevel: 1,
+                                xp: 15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+                                streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
+                                hearts: 1, // Tính toán đảm bảo max 5 điểm máu
+                                gems: 1, // Tính toán đảm bảo max 5 điểm máu
+                                badges: 1, // Tính toán đảm bảo max 5 điểm máu
+                            }
+                        }, { new: true })
                     }else{
                         dataInsert.percentage = 0
+
+                        // XỬ LÝ XP & STREAK
+                        // Cập nhật vào Habit
+                        await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
+                            percentage: 0,
+                            $inc: {
+                                currentStreak: -1,
+                                maxStreak: -1
+                            }
+                        }, { new: true })
+
+                        // Cập nhật vào Contact
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
+                            $inc: {
+                                membershipLevel: -1,
+                                xp: -15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+                                streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
+                                hearts: -1, // Tính toán đảm bảo max 5 điểm máu
+                                gems: -1, // Tính toán đảm bảo max 5 điểm máu
+                                badges: -1, // Tính toán đảm bảo max 5 điểm máu
+                            }
+                        }, { new: true })
                     }
 
                     let infoAfterInsert = await this.insertData(dataInsert)
@@ -244,6 +288,7 @@ class Model extends BaseModel {
                     if(status == 2){
                         dataUpdate.percentage = 100
 
+                        // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
                             percentage: 100,
@@ -267,6 +312,7 @@ class Model extends BaseModel {
                     }else{
                         dataUpdate.percentage = 0
 
+                        // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
                             percentage: 0,
