@@ -248,7 +248,8 @@ class Model extends BaseModel {
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
                             percentage: 100,
                             $inc: {
-                                currentStreak: 1
+                                currentStreak: 1,
+                                maxStreak: 1
                             }
                         }, { new: true })
 
@@ -270,7 +271,8 @@ class Model extends BaseModel {
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
                             percentage: 0,
                             $inc: {
-                                currentStreak: -1
+                                currentStreak: -1,
+                                maxStreak: -1
                             }
                         }, { new: true })
 
