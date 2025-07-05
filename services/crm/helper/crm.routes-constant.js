@@ -14,7 +14,6 @@ const CF_ROUTINGS_CRM = {
 
     // ==================== CRM_HABIT_TRACK ======================== //
     CRM_HABIT_TRACK                             : `${BASE_ROUTE}/habit_track`,
-    CRM_HABIT_TRACK_UPDATE_MANY                 : `${BASE_ROUTE}/habit_track/update-many`,
     CRM_HABIT_TRACK_GET_LIST_BY_PROPERTY        : `${BASE_ROUTE}/habit_track/get-list-by-property`,
     CRM_HABIT_TRACK_EXPORT_EXCEL                : `${BASE_ROUTE}/habit_track/export-excel`,
     CRM_HABIT_TRACK_IMPORT_EXCEL                : `${BASE_ROUTE}/habit_track/import-from-excel`,
