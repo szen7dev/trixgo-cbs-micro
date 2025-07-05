@@ -257,6 +257,7 @@ class Model extends BaseModel {
                         // Cập nhật vào Contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
                             $inc: {
+                                membershipLevel: 1,
                                 xp: 15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
                                 streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: 1, // Tính toán đảm bảo max 5 điểm máu
@@ -278,6 +279,7 @@ class Model extends BaseModel {
                         // Cập nhật vào Contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
                             $inc: {
+                                membershipLevel: -1,
                                 xp: -15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
                                 streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: -1, // Tính toán đảm bảo max 5 điểm máu
