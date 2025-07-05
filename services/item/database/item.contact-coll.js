@@ -385,7 +385,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default : 0
     },
     /**
-     * Hạng thành viên
+     * Hạng thành viên (để được ưu đãi khi mua hàng)
      * 1-Bạc
      * 2-Vàng
      * 3-Kim Cương
@@ -404,11 +404,30 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 0
     },
-    //______Thanh năng lượng
-    energy : {
+    //______Trái tim
+    hearts : {
         type: Number,
         default: 0,
         min: 0,
+        max: 5, // Giới hạn tối đa
+    },
+    //______Gems tiền tệ trong app
+    gems : {
+        type: Number,
+        default: 0,
+    },
+    //______Huy hiệu
+    /**
+     * 1-Đồng
+     * 2-Bạc
+     * 3-Vàng
+     * 4-Kim Cương
+     * 5-Vương miện
+     */
+    badges : {
+        type: Number,
+        default: 1,
+        min: 1,
         max: 5, // Giới hạn tối đa
     },
     /**
