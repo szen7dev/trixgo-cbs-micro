@@ -59,6 +59,19 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit_track", {
     namecv: String,
     //________Ghi chú
     note: String,
+    /**
+     * Đánh giá xếp hạng
+     */
+    //______Điểm thành tích
+    xp: {
+        type: Number,
+        default: 0
+    },
+    //______Ngày duy trì liên tục
+    streak : {
+        type: Number,
+        default: 0
+    },
     //_________Hình ảnh
     images: [{
         type: Schema.Types.ObjectId,
