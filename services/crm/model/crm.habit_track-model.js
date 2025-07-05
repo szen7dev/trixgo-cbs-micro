@@ -219,6 +219,8 @@ class Model extends BaseModel {
 
                     if(status == 2){
                         dataInsert.percentage = 100
+                        dataInsert.xp = 15
+                        dataInsert.streak = 1
 
                         // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
@@ -243,6 +245,8 @@ class Model extends BaseModel {
                         }, { new: true })
                     }else{
                         dataInsert.percentage = 0
+                        dataInsert.xp = 15
+                        dataInsert.streak = 1
 
                         // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
@@ -287,6 +291,8 @@ class Model extends BaseModel {
 
                     if(status == 2){
                         dataUpdate.percentage = 100
+                        dataUpdate.xp = 15
+                        dataUpdate.streak = 1
 
                         // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
@@ -311,6 +317,9 @@ class Model extends BaseModel {
                         }, { new: true })
                     }else{
                         dataUpdate.percentage = 0
+                        dataUpdate.percentage = 100
+                        dataUpdate.xp = 15
+                        dataUpdate.streak = 1
 
                         // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
@@ -707,6 +716,56 @@ class Model extends BaseModel {
 
                     // return result;
                     return resolve({ error: false, data: result })
+                }
+
+                // Xếp hạng theo tuần
+                else if(option == 3){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        status: 2, // Hoàn thành
+                    }
+
+                    if(startDate && endDate){
+                        conditionObj.date =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+
+                    // console.log(conditionObj)
+
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: '$contact',
+                                // _id: {contact: '$contact'},
+                                score:       { $sum: 1 },           // số lần hoàn thành
+                                totalXP:     { $sum: '$xp' },       // tổng điểm XP
+                                totalStreak: { $sum: '$streak' },   // tổng streak
+                            },
+                        },
+                        { 
+                            $sort: { score: -1 } 
+                        }
+                    ])
+
+                    // console.log(listData)
+
+                    await ITEM__CONTACT_COLL.populate(listData, {  
+                        path: '_id',
+                        select: 'name image userCreate',
+                        model: 'contact',
+                        populate: {
+                            path: 'userCreate',
+                            select: 'fullname address',
+                            model: 'user',
+                        }
+                    })
+
+                    return resolve({ error: false, data: listData })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
