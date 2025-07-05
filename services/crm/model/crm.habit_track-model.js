@@ -225,8 +225,6 @@ class Model extends BaseModel {
                     }
 
                     let infoAfterInsert = await this.insertData(dataInsert)
-                    // console.log(infoAfterInsert)
-
                     if(!infoAfterInsert)
                         return resolve({ error: true, message: "cannot_insert" })
 
@@ -268,6 +266,25 @@ class Model extends BaseModel {
                         }, { new: true })
                     }else{
                         dataUpdate.percentage = 0
+
+                        // Cập nhật vào Habit
+                        await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
+                            percentage: 0,
+                            $inc: {
+                                currentStreak: -1
+                            }
+                        }, { new: true })
+
+                        // Cập nhật vào Contact
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
+                            $inc: {
+                                xp: -15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+                                streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
+                                hearts: -1, // Tính toán đảm bảo max 5 điểm máu
+                                gems: -1, // Tính toán đảm bảo max 5 điểm máu
+                                badges: -1, // Tính toán đảm bảo max 5 điểm máu
+                            }
+                        }, { new: true })
                     }
 
                     let infoAfterUpdate = await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(infoTrack._id, dataUpdate, { new: true })
@@ -289,126 +306,126 @@ class Model extends BaseModel {
         })
     }
 
-    /**
-     * Name: updateMany
-     * Author: HiepNH
-     * Code: 27/3/2025
-     */
-    updateMany({ companyID, userID, commonHabitID, date, contactID, tracks }){
-        // console.log({companyID, userID, commonHabitID, date, contactID, tracks})
-        const that = this
-        return new Promise(async (resolve) => {
-            try {
-                if(tracks && tracks.length){
-                    let commonHabitTrackID
+    // /**
+    //  * Name: updateMany
+    //  * Author: HiepNH
+    //  * Code: 27/3/2025
+    //  */
+    // updateMany({ companyID, userID, commonHabitID, date, contactID, tracks }){
+    //     // console.log({companyID, userID, commonHabitID, date, contactID, tracks})
+    //     const that = this
+    //     return new Promise(async (resolve) => {
+    //         try {
+    //             if(tracks && tracks.length){
+    //                 let commonHabitTrackID
 
-                    // Tạo Track cho Parent trước: nếu chưa tồn tại
-                    const formattedDate = new Date(date);
-                    let condition = {
-                        habit: commonHabitID,
-                        date: formattedDate,
-                        contact: contactID
-                    }
-                    // console.log(condition)
+    //                 // Tạo Track cho Parent trước: nếu chưa tồn tại
+    //                 const formattedDate = new Date(date);
+    //                 let condition = {
+    //                     habit: commonHabitID,
+    //                     date: formattedDate,
+    //                     contact: contactID
+    //                 }
+    //                 // console.log(condition)
                     
-                    // Tạo track cho Habit cha
-                    let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
-                    // console.log(infoTrack)
-                    if(!infoTrack){
-                        let infocommonHabitTrack = await that.insert({ userID, companyID, habitID: commonHabitID, contactID, date, name: 'HABIT TỔNG HỢP' })
-                        if(infocommonHabitTrack){
-                            // console.log('Habit track cha chưa tồn tại')
-                            commonHabitTrackID = infocommonHabitTrack.data._id
-                        }
-                    }else{
-                        // console.log('Habit track cha đã tồn tại')
-                        commonHabitTrackID = infoTrack._id
-                    }
-                    // console.log({commonHabitTrackID})
-                    // console.log('=======================')
+    //                 // Tạo track cho Habit cha
+    //                 let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
+    //                 // console.log(infoTrack)
+    //                 if(!infoTrack){
+    //                     let infocommonHabitTrack = await that.insert({ userID, companyID, habitID: commonHabitID, contactID, date, name: 'HABIT TỔNG HỢP' })
+    //                     if(infocommonHabitTrack){
+    //                         // console.log('Habit track cha chưa tồn tại')
+    //                         commonHabitTrackID = infocommonHabitTrack.data._id
+    //                     }
+    //                 }else{
+    //                     // console.log('Habit track cha đã tồn tại')
+    //                     commonHabitTrackID = infoTrack._id
+    //                 }
+    //                 // console.log({commonHabitTrackID})
+    //                 // console.log('=======================')
 
-                    // Cập nhật cho Habit thành phần
-                    let checkStatusAll = 0
-                    for(const item of tracks){
-                        let percentage = 0
+    //                 // Cập nhật cho Habit thành phần
+    //                 let checkStatusAll = 0
+    //                 for(const item of tracks){
+    //                     let percentage = 0
                         
-                        if(Number(item.status) === 1){
-                            checkStatusAll++
-                        }else{
-                            percentage = 100
-                        }
+    //                     if(Number(item.status) === 1){
+    //                         checkStatusAll++
+    //                     }else{
+    //                         percentage = 100
+    //                     }
 
-                        // Cập nhật
-                        if(item.trackID && checkObjectIDs(item.trackID)){
-                            // console.log('1111111111111111')
-                            let info1 = await that.update({
-                                userID,
-                                trackID: item.trackID, 
-                                status: item.status, 
-                                name: item.name, 
-                                note: item.note, 
-                                duration: item.duration,
-                                percentage: percentage,
-                            })
-                            // console.log(info1)
-                        }
+    //                     // Cập nhật
+    //                     if(item.trackID && checkObjectIDs(item.trackID)){
+    //                         // console.log('1111111111111111')
+    //                         let info1 = await that.update({
+    //                             userID,
+    //                             trackID: item.trackID, 
+    //                             status: item.status, 
+    //                             name: item.name, 
+    //                             note: item.note, 
+    //                             duration: item.duration,
+    //                             percentage: percentage,
+    //                         })
+    //                         // console.log(info1)
+    //                     }
 
-                        // Tạo mới
-                        else{
-                            // console.log('2222222222222222222')
-                            let info1 = await that.insert({
-                                companyID,
-                                userID,
-                                habitID: item.habitID,
-                                contactID, 
-                                date, 
-                                name: item.name, 
-                                note: item.note, 
-                                duration: item.duration,
-                                status: item.status, 
-                            })
-                            // console.log(info1)
-                        }
-                    }
-                    // console.log({checkStatusAll})
+    //                     // Tạo mới
+    //                     else{
+    //                         // console.log('2222222222222222222')
+    //                         let info1 = await that.insert({
+    //                             companyID,
+    //                             userID,
+    //                             habitID: item.habitID,
+    //                             contactID, 
+    //                             date, 
+    //                             name: item.name, 
+    //                             note: item.note, 
+    //                             duration: item.duration,
+    //                             status: item.status, 
+    //                         })
+    //                         // console.log(info1)
+    //                     }
+    //                 }
+    //                 // console.log({checkStatusAll})
 
-                    // Cập nhật trạng thái Thực hiện Habit cha: Hoàn thành
-                    if(checkStatusAll == 0){
-                        // Cập nhật Habit cha
-                        await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(commonHabitTrackID, {
-                            userUpdate: userID,
-                            modifyAt: Date.now(),
-                            status: 2,
-                            percentage: 100,
-                        }, { new: true })
+    //                 // Cập nhật trạng thái Thực hiện Habit cha: Hoàn thành
+    //                 if(checkStatusAll == 0){
+    //                     // Cập nhật Habit cha
+    //                     await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(commonHabitTrackID, {
+    //                         userUpdate: userID,
+    //                         modifyAt: Date.now(),
+    //                         status: 2,
+    //                         percentage: 100,
+    //                     }, { new: true })
 
-                        // Cập nhật vào Contact
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, {
-                            $inc: {
-                                xp: 15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
-                                streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
-                                hearts: 1, // Tính toán đảm bảo max 5 điểm máu
-                            }
-                        }, { new: true })
-                    }else{
-                        // Cập nhật Habit cha
-                        await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(commonHabitTrackID, {
-                            userUpdate: userID,
-                            modifyAt: Date.now(),
-                            status: 1,
-                            percentage: Number(checkStatusAll/tracks.length).toFixed(0),
-                        }, { new: true })
-                    }
+    //                     // Cập nhật vào Contact
+    //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(contactID, {
+    //                         $inc: {
+    //                             xp: 15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+    //                             streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
+    //                             hearts: 1, // Tính toán đảm bảo max 5 điểm máu
+    //                         }
+    //                     }, { new: true })
+    //                 }else{
+    //                     // Cập nhật Habit cha
+    //                     await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(commonHabitTrackID, {
+    //                         userUpdate: userID,
+    //                         modifyAt: Date.now(),
+    //                         status: 1,
+    //                         percentage: Number(checkStatusAll/tracks.length).toFixed(0),
+    //                     }, { new: true })
+    //                 }
 
-                    return resolve({ error: false, message: 'Cập nhật thành công' });
-                }else{
-                    return resolve({ error: true, message: "Không cập nhật được dữ liệu", status: 403 });
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message });
-            }
-        })
-    }
+    //                 return resolve({ error: false, message: 'Cập nhật thành công' });
+    //             }else{
+    //                 return resolve({ error: true, message: "Không cập nhật được dữ liệu", status: 403 });
+    //             }
+    //         } catch (error) {
+    //             return resolve({ error: true, message: error.message });
+    //         }
+    //     })
+    // }
 
     /**
      * Name: get info expert timesheet
