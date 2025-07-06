@@ -35,7 +35,8 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     type: { type: Number, default: 1 },
     /**
      * 1-Mặc định
-     * 2-Trải nghiệm khách hàng
+     * 2-Khảo sát trải nghiệm
+     * 3-Hành trình trải nghiệm
      */
     subType: { type: Number, default: 1 },
     //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)

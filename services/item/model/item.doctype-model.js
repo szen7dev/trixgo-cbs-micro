@@ -50,7 +50,7 @@ class Model extends BaseModel {
 
                 let dataInsert = { name, type, description, sign, unit, company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date() }
 
-                if(!isNaN(subType) && [1,2,3,4].includes(Number(subType))){
+                if(subType){
                     dataInsert.subType = Number(subType);
                 }
 
@@ -149,7 +149,7 @@ class Model extends BaseModel {
                     dataUpdate.type = Number(type);
                 }
 
-                if(!isNaN(subType) && [1,2,3,4].includes(Number(subType))){
+                if(subType){
                     dataUpdate.subType = Number(subType);
                 }
 
