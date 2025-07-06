@@ -15,10 +15,7 @@ module.exports  = DATABASE_MIDDLEWARE("crm_survey_result", {
         ref : "contact"
     },
     //________Trạng thái (1-Active|2-Hủy)
-    status: {
-        type: Number,
-        default: 1
-    },
+    status: { type: Number, default: 1 },
     //_________Trải nghiệm khách hay gặp
     cx: {
         type: Schema.Types.ObjectId,
@@ -30,6 +27,12 @@ module.exports  = DATABASE_MIDDLEWARE("crm_survey_result", {
      * 2-Không
      */
     result: { type: Number, default: 1 },
+    //________Tên
+    name: String,
+    //________Điện thoại
+    phone: String,
+    //________Địa chỉ
+    address: String,
     //________Ghi chú
     note: String,
     // //_________File/ảnh đính kèm
