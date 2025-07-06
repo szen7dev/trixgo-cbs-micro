@@ -27,7 +27,6 @@ module.exports.APP_KEYS = {
     DATAHUB: "60390cb12b367a1cdd9f3fb2",
     FNB: "60390cb12b367a1cdd9f3fb2",
     STORE: "5f52341f880c2f26c8df8c10",
-    LAMIN: ""
 }
 
 exports.KEY_ERROR  = {
