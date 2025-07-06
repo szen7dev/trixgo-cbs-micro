@@ -264,7 +264,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, projectID, parentID, type, keyword, limit = 10, lastestID, select, populates }) {
+    getList({ companyID, projectID, parentID, type, subType, keyword, limit = 10, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if(isNaN(limit) || +limit > 20) {
@@ -313,6 +313,10 @@ class Model extends BaseModel {
                 //____________Loại doctype
                 if(type){
                     conditionObj.type = type;
+                }
+
+                if(subType){
+                    conditionObj.subType = subType;
                 }
 
                 if(keyword){
