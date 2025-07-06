@@ -120,7 +120,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, mediaID, categoryID, menuSlug, slug, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
+                let { optionSeller, option, mediaID, type, categoryID, menuSlug, slug, keyword, limit, lastestID, select, populates, sortKey } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -140,7 +140,7 @@ module.exports = {
                     });
                 } else{
                     resultAfterCallHandler = await MEDIA_MODEL.getList({
-                        option, companyID, categoryID, menuSlug, keyword, limit, lastestID, select, populates, sortKey
+                        option, companyID, type, categoryID, menuSlug, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
 
