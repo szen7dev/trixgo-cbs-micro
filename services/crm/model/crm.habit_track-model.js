@@ -829,7 +829,7 @@ class Model extends BaseModel {
                 else if(option == 5){
                     let conditionObj = {
                         company: ObjectID(companyID),
-                        status: 2, // Hoàn thành
+                        // status: 2, // Hoàn thành
                     }
 
                     if(startDate && endDate){
@@ -848,22 +848,15 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: '$contact',
-                                // _id: {contact: '$contact'},
-                                score:       { $sum: 1 },           // số lần hoàn thành
-                                totalXP:     { $sum: '$xp' },       // tổng điểm XP
-                                totalStreak: { $sum: '$streak' },   // tổng streak
                             },
                         },
-                        { 
-                            $sort: { score: -1 } 
-                        }
                     ])
 
                     // console.log(listData)
 
                     await ITEM__CONTACT_COLL.populate(listData, {  
                         path: '_id',
-                        select: 'name image userCreate',
+                        select: 'name birthday image userCreate createAt',
                         model: 'contact',
                         populate: {
                             path: 'userCreate',
