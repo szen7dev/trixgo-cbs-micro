@@ -30,7 +30,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { optionSeller, contactID, cxID, name, phone, address, status, result, note, filesID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 console.log(ctx.params)
@@ -42,7 +42,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID })
+                let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.insert({ userID, companyID, contactID, cxID, name, phone, address, status, result, note, filesID })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -58,20 +58,20 @@ module.exports = {
      */
     update: {
         params: {
-            trackID      : { type: "string" },
+            resultID             : { type: "string" },
             members             : { type: "array", optional: true },
             admins              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { trackID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID } = ctx.params;
+                let { resultID, contactID, cxID, name, phone, address, status, result, note, filesID } = ctx.params;
 
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.update({ trackID, userID, phone, contactID, status, birthday, gender, height, weight, name, note, filesID });
+                let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.update({ resultID, userID, contactID, cxID, name, phone, address, status, result, note, filesID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -114,8 +114,7 @@ module.exports = {
      */
     getInfoAndGetList: {
         params: {
-            trackID       : { type: "string", optional: true },
-            contactID       : { type: "string", optional: true },
+            resultID        : { type: "string", optional: true },
 
             // Field mặc định
             limit           : { type: "string", optional: true },
@@ -127,7 +126,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, trackID, contactID, month, year, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, resultID, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 console.log(ctx.params)
@@ -139,13 +138,13 @@ module.exports = {
                     companyID = company?._id
                 }
                 let resultAfterCallHandler;
-                if(trackID){
+                if(resultID){
                     resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.getInfo({
-                        trackID, userID, select, populates
+                        resultID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.getList({
-                        companyID, contactID, month, year, keyword, limit, lastestID, select, populates
+                        companyID, keyword, limit, lastestID, select, populates
                     })
                 }
 
