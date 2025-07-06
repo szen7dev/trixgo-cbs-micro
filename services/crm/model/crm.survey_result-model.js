@@ -33,6 +33,7 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 // const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_SURVEY_RESULT_COLL              = require('../database/crm.survey_result-coll')
+const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll');
 
 class Model extends BaseModel {
 
@@ -355,10 +356,16 @@ class Model extends BaseModel {
                         },
                         {
                             $sort: {
-                                "_id.count": -1
+                                "count": -1
                             }
                         }
                     ])
+
+                    await CRM_SURVEY_RESULT_COLL.populate(listData, {  
+                        path: '_id.cx',
+                        select: 'name',
+                        model: 'doctype',
+                    })
 
                     return resolve({ error: false, data: listData })
                 }
