@@ -52,6 +52,8 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         type: Schema.Types.ObjectId,
         ref: 'file'
     },
+    //_________Video link
+    video: { type: String, default: "https://www.youtube.com/watch?v=JTNCV5GTMl8" },
     /**
      * Trạng thái của bài viết
      * 1: Hoạt động (active)

@@ -27,9 +27,9 @@ module.exports = {
             try {
 				await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-                const { categoryID, title, content, tags, summary, description, thumbnailID, status } = ctx.params;
+                const { categoryID, title, content, tags, summary, description, thumbnailID, video, status } = ctx.params;
 
-                const resultAfterCallHandler = await MEDIA_MODEL.insert({ companyID: company._id, userID, categoryID, title, content, tags, summary, description, thumbnailID, status });
+                const resultAfterCallHandler = await MEDIA_MODEL.insert({ companyID: company._id, userID, categoryID, title, content, tags, summary, description, thumbnailID, video, status });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -57,11 +57,11 @@ module.exports = {
 				await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
                 const {
-                    mediaID, categoryID, title, content, tags, summary, description, thumbnailID, status
+                    mediaID, categoryID, title, content, tags, summary, description, thumbnailID, video, status
                 } = ctx.params;
 
                 const resultAfterCallHandler = await MEDIA_MODEL.update({
-                    userID, mediaID, categoryID, title, content, tags, summary, description, thumbnailID, status
+                    userID, mediaID, categoryID, title, content, tags, summary, description, thumbnailID, video, status
 				});
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
