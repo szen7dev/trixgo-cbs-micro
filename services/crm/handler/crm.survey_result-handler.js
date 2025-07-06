@@ -183,15 +183,18 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, year, companyID, projectID, assigneeID, month } = ctx.params;
+                let { optionSeller, option, year, startDate, endDate } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
 
                 let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.getListByProperty({
-                    option, year, companyID, projectID, userID, assigneeID, month, ctx
+                    option, year, companyID, userID, startDate, endDate
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -181,7 +181,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { optionSeller, option, habitID, contactID, startDate, endDate } = ctx.params;
                 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -191,13 +191,6 @@ module.exports = {
                 }else{
                     companyID = company?._id
                 }
-
-                // console.log({commonHabitID})
-                // /**
-                //  * Convert dữ liệu ngày tháng để theo chuẩn chung
-                //  */
-                // fromDate   = moment(fromDate).startOf('day').format();// <=== fix ISODate here
-                // toDate     = moment(toDate).endOf('day').format();// <=== fix ISODate here
 
                 let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getListByProperty({
                     option, companyID, contactID, habitID, startDate, endDate
