@@ -33,7 +33,7 @@ module.exports = {
                 let { optionSeller, contactID, cxID, name, phone, address, status, result, note, filesID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -58,22 +58,33 @@ module.exports = {
      */
     update: {
         params: {
-            resultID             : { type: "string" },
-            members             : { type: "array", optional: true },
-            admins              : { type: "array", optional: true },
+            // resultID            : { type: "string" },
+            // members             : { type: "array", optional: true },
+            // admins              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { resultID, contactID, cxID, name, phone, address, status, result, note, filesID } = ctx.params;
+                let { optionSeller, arrUpdate, resultID, contactID, cxID, name, phone, address, status, result, note, filesID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.update({ resultID, userID, contactID, cxID, name, phone, address, status, result, note, filesID });
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
 
-                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+                if(!arrUpdate){
+                    let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.update({ resultID, userID, contactID, cxID, name, phone, address, status, result, note, filesID })
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }else{
+                    let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.updateMany({ companyID, userID, arrUpdate })
+                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+                }
             } catch (error) {
                 return { error: true, message: error.message };
             }
@@ -94,7 +105,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {  arraysRemove } = ctx.params;
-        				const { _id: userID } = ctx.meta.infoUser;
+        	    const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.remove({
                     arraysRemove, userID
@@ -129,7 +140,7 @@ module.exports = {
                 let { optionSeller, resultID, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -180,8 +191,8 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.getListByProperty({
-                        option, year, companyID, projectID, userID, assigneeID, month, ctx
-                    });
+                    option, year, companyID, projectID, userID, assigneeID, month, ctx
+                });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -207,7 +218,7 @@ module.exports = {
 				const { _id: userID, email, company } = ctx.meta.infoUser;
 
                 let { option, year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await CRM_SURVEY_RESULT_MODEL.exportExcel({
                     companyID: company._id, option, year, month, email, userID

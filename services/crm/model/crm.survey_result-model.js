@@ -169,6 +169,33 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Update Many
+     * Author: HiepNH
+     * Code: 6/7/2025
+     */
+    updateMany({ companyID, userID, arrUpdate }){
+        return new Promise(async (resolve) => {
+            const that = this
+            try {
+                for(const item of arrUpdate){
+                    await that.insert({
+                        userID, 
+                        companyID, 
+                        cxID: item._id, 
+                        status: 1, 
+                        result: item.result, 
+                        note: 'Từ khách hàng khảo sát'
+                    })
+                }
+
+                return resolve({ error: false, message: 'Cập nhật thành công' })
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
      * Name: get info expert timesheet
      * Author: Depv
      * Code:
