@@ -246,7 +246,7 @@ module.exports = {
 					 * Cấu trúc data send tới Cloud MSS cho Mobile
 					 */
 					const dataSend = {
-						app: APP_KEYS.LAMIN, // Do mobile yêu cầu gửi sang
+						app: 'lamin', // Do mobile yêu cầu gửi sang
 						languageKey: LANGUAGE_KEYS.REMINDER_HABIT, // Phân biệt ngôn ngữ
 					}
 

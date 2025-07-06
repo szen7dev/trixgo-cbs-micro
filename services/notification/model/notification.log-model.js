@@ -1,12 +1,13 @@
 "use strict";
 
+const uuidv4                                    = require("uuid").v4;
 const PromisePool								= require('@supercharge/promise-pool');
 const NOTIFICATION__LOG_COLL                    = require('../database/notification.log-coll');
 const BaseModel                                 = require('../../../tools/db/base_model');
 const { checkObjectIDs, IsJsonString }          = require('../../../tools/utils/utils');
 const { CF_DOMAIN_SERVICES } 					= require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_AUTH } 						= require('../../auth/helper/auth.actions-constant');
-const { sendNotificationviaOneSignal }          = require('../../../tools/cloudmsg/noti.send');
+const { sendNotificationviaOneSignal, sendNotificationviaOneSignalV2 }          = require('../../../tools/cloudmsg/noti.send');
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
 const {
     ENV_DEVICE_APP_CBS,
@@ -363,8 +364,9 @@ class Model extends BaseModel {
                 const objEnv = {
                     1: [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_CBS],
                     2: [ENV_DEVICE_WEB_CBS, ENV_DEVICE_APP_TEASER],
+                    3: [ENV_DEVICE_APP_CBS],
                     4: [ENV_DEVICE_APP_FNB],
-                    5: [ENV_DEVICE_APP_FNB, ENV_DEVICE_APP_CBS, ENV_DEVICE_APP_LAMIN],
+                    5: [ENV_DEVICE_APP_LAMIN],
                 }
 
                 let listEnvReceiveNoti = objEnv[env];
@@ -481,95 +483,115 @@ class Model extends BaseModel {
                             let listDeviceFromMobileWith_LAMIN     = listDeviceFromMobile.filter(item => item.app_id == ONESIGNAL_APP_LAMIN);
 
                             // =================== MOBILE PUSH (CBS) ===================
-                            let dataForMobilePushCBS = {
-                                ...dataForSend,
-                                data: objDataForSend,
-                                app_id: ONESIGNAL_APP_CBS,
-                                ios_sound: 'teaser.wav',
-                                android_sound: 'teaser',
-                                ios_badgeType: 'Increase',
-                                ios_badgeCount: 1,
-                                priority: 'high',
-                                include_player_ids: listDeviceFromMobileWith_CBS.map(item => item.oneSignalID)
-                            }
-                            if(objDataForSend.amountNoti) {
-                                dataForMobilePushCBS.ios_badgeType = 'SetTo';
-                                dataForMobilePushCBS.ios_badgeCount = objDataForSend.amountNoti;
-                            }
-                            // console.info('MOBILE PUSH (CBS)')
+                            const cbsOneSignalIds = [...new Set(listDeviceFromMobileWith_CBS.map(item => item.oneSignalID))];
 
-                            if(dataForMobilePushCBS.include_player_ids.length) {
-                                dataForMobilePushCBS.include_player_ids = [...new Set(dataForMobilePushCBS.include_player_ids)];
-                                sendNotificationviaOneSignal(dataForMobilePushCBS)
+                            if (cbsOneSignalIds.length) {
+                                const dataForMobilePushCBS = {
+                                    ...dataForSend,
+                                    data: objDataForSend,
+                                    app_id: ONESIGNAL_APP_CBS,
+                                    ios_sound: 'teaser.wav',
+                                    android_sound: 'teaser',
+                                    ios_badgeType: 'Increase',
+                                    ios_badgeCount: 1,
+                                    priority: 'high',
+                                    target_channel: "push",
+                                    include_aliases: {
+                                        onesignal_id: cbsOneSignalIds,
+                                    },
+                                    idempotency_key: uuidv4(),
+                                }
+
+                                if (objDataForSend.amountNoti) {
+                                    dataForMobilePushCBS.ios_badgeType = 'SetTo';
+                                    dataForMobilePushCBS.ios_badgeCount = objDataForSend.amountNoti;
+                                }
+                                // console.info('MOBILE PUSH (CBS)')
+                                sendNotificationviaOneSignalV2(dataForMobilePushCBS)
                             }
 
                             //  =================== MOBILE PUSH (TEASER) ===================
-                            let dataForMobilePushTeaser = {
-                                ...dataForSend,
-                                data: objDataForSend,
-                                app_id: ONESIGNAL_APP_TEASER,
-                                ios_sound: 'teaser.wav',
-                                android_sound: 'teaser',
-                                ios_badgeType: 'Increase',
-                                ios_badgeCount: 1,
-                                priority: 'high',
-                                include_player_ids: listDeviceFromMobileWith_TEASER.map(item => item.oneSignalID)
-                            }
-                            if(objDataForSend.amountNoti) {
-                                dataForMobilePushTeaser.ios_badgeType = 'SetTo';
-                                dataForMobilePushTeaser.ios_badgeCount = objDataForSend.amountNoti;
-                            }
-                            // console.info('MOBILE PUSH (TEASER)')
+                            const teaserOneSignalIds = [...new Set(listDeviceFromMobileWith_TEASER.map(item => item.oneSignalID))];
 
-                            if(dataForMobilePushTeaser.include_player_ids.length) {
-                                dataForMobilePushTeaser.include_player_ids = [...new Set(dataForMobilePushTeaser.include_player_ids)];
-                                sendNotificationviaOneSignal(dataForMobilePushTeaser)
+                            if (teaserOneSignalIds.length) {
+                                const dataForMobilePushTeaser = {
+                                    ...dataForSend,
+                                    data: objDataForSend,
+                                    app_id: ONESIGNAL_APP_TEASER,
+                                    ios_sound: 'teaser.wav',
+                                    android_sound: 'teaser',
+                                    ios_badgeType: 'Increase',
+                                    ios_badgeCount: 1,
+                                    priority: 'high',
+                                    target_channel: "push",
+                                    include_aliases: {
+                                        onesignal_id: teaserOneSignalIds,
+                                    },
+                                    idempotency_key: uuidv4(),
+                                }
+
+                                if (objDataForSend.amountNoti) {
+                                    dataForMobilePushTeaser.ios_badgeType = 'SetTo';
+                                    dataForMobilePushTeaser.ios_badgeCount = objDataForSend.amountNoti;
+                                }
+                                // console.info('MOBILE PUSH (TEASER)')
+                                sendNotificationviaOneSignalV2(dataForMobilePushTeaser)
                             }
 
                             //  =================== MOBILE PUSH (FNB) ===================
-                            let dataForMobilePushFNB = {
-                                ...dataForSend,
-                                data: objDataForSend,
-                                app_id: ONESIGNAL_APP_FNB,
-                                ios_sound: 'teaser.wav',
-                                android_sound: 'teaser',
-                                ios_badgeType: 'Increase',
-                                ios_badgeCount: 1,
-                                priority: 'high',
-                                include_player_ids: listDeviceFromMobileWith_FNB.map(item => item.oneSignalID)
-                            }
-                            if(objDataForSend.amountNoti) {
-                                dataForMobilePushFNB.ios_badgeType = 'SetTo';
-                                dataForMobilePushFNB.ios_badgeCount = objDataForSend.amountNoti;
-                            }
-                            // console.info('MOBILE PUSH (FNB)');
+                            const fnbOneSignalIds = [...new Set(listDeviceFromMobileWith_FNB.map(item => item.oneSignalID))];
 
-                            if(dataForMobilePushFNB.include_player_ids.length) {
-                                dataForMobilePushFNB.include_player_ids = [...new Set(dataForMobilePushFNB.include_player_ids)];
-                                sendNotificationviaOneSignal(dataForMobilePushFNB);
+                            if (fnbOneSignalIds.length) {
+                                const dataForMobilePushFNB = {
+                                    ...dataForSend,
+                                    data: objDataForSend,
+                                    app_id: ONESIGNAL_APP_FNB,
+                                    ios_sound: 'teaser.wav',
+                                    android_sound: 'teaser',
+                                    ios_badgeType: 'Increase',
+                                    ios_badgeCount: 1,
+                                    priority: 'high',
+                                    target_channel: "push",
+                                    include_aliases: {
+                                        onesignal_id: fnbOneSignalIds,
+                                    },
+                                    idempotency_key: uuidv4(),
+                                }
+
+                                if (objDataForSend.amountNoti) {
+                                    dataForMobilePushFNB.ios_badgeType = 'SetTo';
+                                    dataForMobilePushFNB.ios_badgeCount = objDataForSend.amountNoti;
+                                }
+                                // console.info('MOBILE PUSH (FNB)');
+                                sendNotificationviaOneSignalV2(dataForMobilePushFNB);
                             }
 
                             //  =================== MOBILE PUSH (LAMIN) ===================
-                            let dataForMobilePushLamin = {
-                                ...dataForSend,
-                                data: objDataForSend,
-                                app_id: ONESIGNAL_APP_LAMIN,
-                                ios_sound: 'teaser.wav',
-                                android_sound: 'teaser',
-                                ios_badgeType: 'Increase',
-                                ios_badgeCount: 1,
-                                priority: 'high',
-                                include_player_ids: listDeviceFromMobileWith_LAMIN.map(item => item.oneSignalID)
-                            }
-                            if(objDataForSend.amountNoti) {
-                                dataForMobilePushLamin.ios_badgeType = 'SetTo';
-                                dataForMobilePushLamin.ios_badgeCount = objDataForSend.amountNoti;
-                            }
-                            console.info('MOBILE PUSH (LAMIN)', JSON.stringify(dataForMobilePushLamin));
+                            const laminOneSignalIds = [...new Set(listDeviceFromMobileWith_LAMIN.map(item => item.oneSignalID))];
 
-                            if(dataForMobilePushLamin.include_player_ids.length) {
-                                dataForMobilePushLamin.include_player_ids = [...new Set(dataForMobilePushLamin.include_player_ids)];
-                                sendNotificationviaOneSignal(dataForMobilePushLamin)
+                            if (laminOneSignalIds.length) {
+                                const dataForMobilePushLamin = {
+                                    ...dataForSend,
+                                    data: objDataForSend,
+                                    app_id: ONESIGNAL_APP_LAMIN,
+                                    ios_sound: 'teaser.wav',
+                                    android_sound: 'teaser',
+                                    ios_badgeType: 'Increase',
+                                    ios_badgeCount: 1,
+                                    priority: 'high',
+                                    target_channel: "push",
+                                    include_aliases: {
+                                        onesignal_id: laminOneSignalIds,
+                                    },
+                                    idempotency_key: uuidv4(),
+                                }
+
+                                if(objDataForSend.amountNoti) {
+                                    dataForMobilePushLamin.ios_badgeType = 'SetTo';
+                                    dataForMobilePushLamin.ios_badgeCount = objDataForSend.amountNoti;
+                                }
+                                // console.info('MOBILE PUSH (LAMIN)', JSON.stringify(dataForMobilePushLamin));
+                                sendNotificationviaOneSignalV2(dataForMobilePushLamin)
                             }
                         }
 

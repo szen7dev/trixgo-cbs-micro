@@ -1,41 +1,88 @@
-exports.sendNotificationviaOneSignal = function(data) {
-    console.log({ env: process.env.NODE_ENV })
-    if(process.env.NODE_ENV === "development") {
-      return;
-    }
 
-    let headers = {
-      "Content-Type": "application/json; charset=utf-8",
-      "Authorization": "OGE2ZTEwNzAtYzY5MC00YjBjLTk3ZGItMTQzNGM4ZjM1YjYw",
-    };
+// https://documentation.onesignal.com/reference/push-notification
 
-    let options = {
-      host: "onesignal.com",
-      port: 443,
-      path: "/api/v1/notifications",
-      method: "POST",
-      headers: headers
-    };
+exports.sendNotificationviaOneSignal = function (data) {
+  console.log({ env: process.env.NODE_ENV });
+  if (process.env.NODE_ENV === "development") {
+    return;
+  }
 
-    let https = require('https');
-    let req = https.request(options, function(res) {
-        res.on('data', function(data) {
-          try {
-            console.log("Response:", data);
-            // console.log(JSON.parse(data));
-          } catch (error) {
-            console.error(error);
-          }
-        });
+  let headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    Authorization: "OGE2ZTEwNzAtYzY5MC00YjBjLTk3ZGItMTQzNGM4ZjM1YjYw",
+  };
+
+  let options = {
+    host: "onesignal.com",
+    port: 443,
+    path: "/api/v1/notifications",
+    method: "POST",
+    headers: headers,
+  };
+
+  let https = require("https");
+  let req = https.request(options, function (res) {
+    res.on("data", function (data) {
+      try {
+        console.log("Response:", data);
+        // console.log(JSON.parse(data));
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  });
+
+  req.on("error", function (e) {
+    console.error("ERROR: (noti.send.js)");
+    console.error(e);
+  });
+
+  req.write(JSON.stringify(data));
+  req.end();
+};
+
+exports.sendNotificationviaOneSignalV2 = (data) => {
+  const payload = JSON.stringify(data);
+  console.log("OneSignal Payload: ", payload)
+
+  const options = {
+    hostname: "api.onesignal.com",
+    port: 443,
+    path: "/notifications?c=push",
+    method: "POST",
+    headers: {
+      Authorization: (process.env.ONESIGNAL_API_KEY || "").trim(),
+      "Content-Type": "application/json",
+      "Content-Length": Buffer.byteLength(payload),
+    },
+  };
+
+  const https = require("https");
+  const req = https.request(options, function (res) {
+    let responseBody = "";
+
+    res.on("data", function (chunk) {
+      responseBody += chunk;
     });
 
-    req.on('error', function(e) {
-      console.error("ERROR: (noti.send.js)");
-      console.error(e);
+    res.on("end", function () {
+      console.log("OneSignal Response:", responseBody);
+      // try {
+      //   const parsedData = JSON.parse(responseBody);
+      //   console.log("OneSignal Response:", parsedData);
+      // } catch (error) {
+      //   console.error("OneSignal error parsing response:", error);
+      // }
     });
+  });
 
-    req.write(JSON.stringify(data));
-    req.end();
+  req.on("error", function (e) {
+    console.error("OneSignal ERROR: (noti.send.js)");
+    console.error(e);
+  });
+
+  req.write(payload);
+  req.end();
 };
 
 // let message = {
