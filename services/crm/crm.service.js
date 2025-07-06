@@ -21,6 +21,8 @@ const CRM_HABIT_HANDLER					= require('./handler/crm.habit-handler');
 const CRM_HABIT_TRACK_HANDLER			= require('./handler/crm.habit_track-handler');
 const CRM_VNG_FUND_HANDLER				= require('./handler/crm.vng_fund-handler');
 const CRM_VNG_EVENT_HANDLER				= require('./handler/crm.vng_event-handler');
+const CRM_REGISTER_HANDLER				= require('./handler/crm.register-handler');
+const CRM_STORY_HANDLER					= require('./handler/crm.story-handler');
 
 /**
  * COLLECTIONS
@@ -34,6 +36,8 @@ const CRM_HABIT_COLL 					= require('./database/crm.habit-coll');
 const CRM_HABIT_TRACK_COLL 				= require('./database/crm.habit_track-coll');
 const CRM_VNG_FUND_COLL 				= require('./database/crm.vng_fund-coll');
 const CRM_VNG_EVENT_COLL 				= require('./database/crm.vng_event-coll');
+const CRM_REGISTER_COLL 				= require('./database/crm.register-coll');
+const CRM_STORY_COLL 					= require('./database/crm.story-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CRM,
@@ -47,6 +51,8 @@ module.exports = {
 		DbService(CRM_HABIT_TRACK_COLL),
 		DbService(CRM_VNG_FUND_COLL),
 		DbService(CRM_VNG_EVENT_COLL),
+		DbService(CRM_REGISTER_COLL),
+		DbService(CRM_STORY_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
     ],
 
@@ -142,6 +148,22 @@ module.exports = {
 		[CF_ACTIONS_CRM.CRM_VNG_EVENT_GET_INFO_AND_GET_LIST] : CRM_VNG_EVENT_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_CRM.CRM_VNG_EVENT_GET_LIST_BY_PROPERTY] : CRM_VNG_EVENT_HANDLER.getListByProperty,
 		[CF_ACTIONS_CRM.CRM_VNG_EVENT_EXPORT_EXCEL] : CRM_VNG_EVENT_HANDLER.exportExcel,
+
+		// ==================== CRM_REGISTER ======================== //
+		[CF_ACTIONS_CRM.CRM_REGISTER_INSERT] : CRM_REGISTER_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_REGISTER_UPDATE] : CRM_REGISTER_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_REGISTER_REMOVE] : CRM_REGISTER_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_REGISTER_GET_INFO_AND_GET_LIST] : CRM_REGISTER_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_REGISTER_GET_LIST_BY_PROPERTY] : CRM_REGISTER_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_REGISTER_EXPORT_EXCEL] : CRM_REGISTER_HANDLER.exportExcel,
+
+		// ==================== CRM_STORY ======================== //
+		[CF_ACTIONS_CRM.CRM_STORY_INSERT] : CRM_STORY_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_STORY_UPDATE] : CRM_STORY_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_STORY_REMOVE] : CRM_STORY_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_STORY_GET_INFO_AND_GET_LIST] : CRM_STORY_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_STORY_GET_LIST_BY_PROPERTY] : CRM_STORY_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_STORY_EXPORT_EXCEL] : CRM_STORY_HANDLER.exportExcel,
 	},
 
 	/**
