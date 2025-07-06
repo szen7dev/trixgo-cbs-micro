@@ -400,7 +400,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ option, companyID, habitID, contactID, status, date, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ option, companyID, habitID, contactID, status, date, startDate, endDate, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -429,19 +429,6 @@ class Model extends BaseModel {
                 if(checkObjectIDs(habitID)){
                     conditionObj.habit = habitID
                 }
-                
-                // else{
-                //     if(!option){
-                //         if(checkObjectIDs(commonHabitID)){
-                //             conditionObj.habit = commonHabitID
-                //         }
-                //     }else{
-                //         let listSubHabit = await CRM_HABIT_COLL.find({parent: commonHabitID})
-                //         if(listSubHabit && listSubHabit.length){
-                //             conditionObj.habit = {$in: listSubHabit.map(item=>item._id)}
-                //         }
-                //     }
-                // }
                 
                 if(checkObjectIDs(contactID)){
                     conditionObj.contact = contactID
@@ -866,6 +853,40 @@ class Model extends BaseModel {
                     })
 
                     return resolve({ error: false, data: listData })
+                }
+
+                else if(option == 6){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        // status: 2, // Hoàn thành
+                    }
+
+                    if(startDate && endDate){
+                        conditionObj.date =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+
+                    // console.log(conditionObj)
+
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: '$contact',
+                            },
+                        },
+                    ])
+
+                    let listData1 = await ITEM__CONTACT_COLL.find({
+                            company: ObjectID(companyID),
+                            _id: {$nin: listData.map(item => item._id)}
+                    }).select('name phone')
+
+                    return resolve({ error: false, data: listData1 })
                 }
 
             } catch (error) {
