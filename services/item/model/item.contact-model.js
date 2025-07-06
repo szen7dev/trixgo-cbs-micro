@@ -48,6 +48,7 @@ const FNB_VOUCHER_COLL = require('../../fnb/database/fnb.voucher-coll')
 const FNB_ORDER_COLL = require('../../fnb/database/fnb.order-coll')
 const HUMAN__CONTACT_DOCUMENT_COLL = require('../../human/database/human.contact_document-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const CRM_HABIT_TRACK_COLL                      = require('../../crm/database/crm.habit_track-coll')
 
 // const AUTH__USER = require('../../auth/model/auth.user-model').MODEL // Gọi ở đây -> không chạy được bên user-model
 const AUTH__APP_USER = require('../.../../../auth/model/auth.app_users').MODEL
@@ -1196,13 +1197,77 @@ class Model extends BaseModel {
                 let keys = ['createAt__-1', '_id__-1']
 
                 // Theo user đang truy cập
-                if (option && option == 1 && contacts && contacts.length) {
-                    let listContacts = contacts.map(item => ObjectID(item._id))
+                if(option){
+                    if (option == 1 && contacts && contacts.length) {
+                        let listContacts = contacts.map(item => ObjectID(item._id))
 
-                    conditionObj.nestedParents = { $in: listContacts }
-                }else if (option && option == 2) {
-                    conditionObj.nestedParents = { $in: [ObjectID(uplineID)] }
-                }
+                        conditionObj.nestedParents = { $in: listContacts }
+                    }
+                    
+                    else if (option == 2) {
+                        conditionObj.nestedParents = { $in: [ObjectID(uplineID)] }
+                    }
+
+                    else if(option == 3){
+                        let conditionTempObj = {
+                            company: ObjectID(companyID),
+                        }
+
+                        if(fromDate && toDate){
+                            conditionTempObj.date =  { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate() 
+                            }
+                        }
+                        // console.log(conditionTempObj)
+
+                        let listDataTemp = await CRM_HABIT_TRACK_COLL.aggregate([
+                            {
+                                $match: conditionTempObj
+                            },
+                            {
+                                $group: {
+                                    _id: '$contact',
+                                },
+                            },
+                        ])
+                        // console.log(listDataTemp)
+
+                        if(listDataTemp && listDataTemp.length){
+                            conditionObj._id = {$in: listDataTemp.map(item => item._id)}
+                        }
+                    }
+
+                    else if(option == 4){
+                        let conditionTempObj = {
+                            company: ObjectID(companyID),
+                        }
+
+                        if(fromDate && toDate){
+                            conditionTempObj.date =  { 
+                                $gte: moment(fromDate).toDate(),
+                                $lte: moment(toDate).toDate() 
+                            }
+                        }
+                        // console.log(conditionTempObj)
+
+                        let listDataTemp = await CRM_HABIT_TRACK_COLL.aggregate([
+                            {
+                                $match: conditionTempObj
+                            },
+                            {
+                                $group: {
+                                    _id: '$contact',
+                                },
+                            },
+                        ])
+                        // console.log(listDataTemp)
+
+                        if(listDataTemp && listDataTemp.length){
+                            conditionObj._id = {$nin: listDataTemp.map(item => item._id)}
+                        }
+                    }
+                }        
 
                 // Theo phân loại
                 if (type && [1, 2, 3].includes(Number(type))) {
