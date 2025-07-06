@@ -15,13 +15,13 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
         ref     : 'department'
     },
     /**
-     * Loại bài viết
-     * 1: Bài viết công ty (Thành viên trong công ty)
-     * 2: Dự án, phòng ban
-     * 3: Chuyển đổi số
-     * 4: Hệ thống
-     * 5: Bài viết cá nhân
-     * 6: Bài viết giới thiệu công ty
+     * Phân loại
+     * 1: Bài viết thông thường
+     * 2: Bài viết câu chuyện khách hàng
+     * 3: 
+     * 4: 
+     * 5: 
+     * 6: 
 	 */
     type: {
         type: Number,

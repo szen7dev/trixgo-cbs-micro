@@ -33,13 +33,6 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_SURVEY_RESULT_COLL              = require('../database/crm.survey_result-coll')
 
-// let dataTF = {
-//     appID: "61e049cffdebf77b072d1b14", // TIMESHEET
-//     menuID: "623f1ecae998e94feda0cd70", //
-//     type: 1,
-//     action: 1,
-// }
-
 class Model extends BaseModel {
 
     constructor() {
