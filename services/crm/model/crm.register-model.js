@@ -123,7 +123,7 @@ class Model extends BaseModel {
                     dataUpdate.$addToSet = dataAddToset;
                 }
 
-                 if(!isNaN(status) && [1,2].includes(Number(status))){
+                if(!isNaN(status) && [1,2].includes(Number(status))){
                     dataUpdate.status = status;
                 }
 
@@ -250,10 +250,12 @@ class Model extends BaseModel {
                     }
                 }
 
+                if(!isNaN(status) && [1,2].includes(Number(status))){
+                    conditionObj.status = status;
+                }
 
-                // Bảng lương theo tháng, năm
-                if(month && year){
-                    conditionObj.$where = `return this.createAt.getMonth() === ${Number(month - 1)} && this.createAt.getFullYear() === ${Number(year)}`
+                if(!isNaN(type) && [1,2,3].includes(Number(type))){
+                    conditionObj.type = type;
                 }
 
                 if(keyword){

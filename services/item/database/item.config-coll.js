@@ -1,6 +1,5 @@
 "use strict";
 
-const { youtube } = require('googleapis/build/src/apis/youtube');
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 

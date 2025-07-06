@@ -24,7 +24,7 @@ class Model extends BaseModel {
 	 * Func: THÊM BÀI VIẾT MỚI
      * Updated: 24/02/2022
 	 */
-	insert({ companyID, userID, categoryID, title, content, tags, summary, description, thumbnailID, status }) {
+	insert({ companyID, userID, categoryID, title, content, tags, summary, description, thumbnailID, video, status }) {
 		return new Promise(async (resolve) => {
 			try {
 				let checkName = await MEDIA_COLL.findOne({ company: companyID, title: title.trim() });
@@ -57,6 +57,10 @@ class Model extends BaseModel {
 
 				if (summary && summary != '') {
 					dataInsert.summary = summary;
+				}
+
+				if (video && video != '') {
+					dataInsert.video = video;
 				}
 
 				if (description && description != '') {
@@ -92,7 +96,7 @@ class Model extends BaseModel {
 	 * Func: CHỈNH SỬA BÀI VIẾT
      * Updated: 24/02/2022
 	 */
-	update({ userID, mediaID, categoryID, title, content, tags, summary, description, thumbnailID, status }) {
+	update({ userID, mediaID, categoryID, title, content, tags, summary, description, thumbnailID, video, status }) {
         return new Promise(async (resolve) => {
             try {
 				let infoMedia = await MEDIA_COLL.findById(mediaID)
@@ -135,6 +139,10 @@ class Model extends BaseModel {
 
 				if (summary && summary != '') {
 					dataUpdate.summary = summary;
+				}
+
+				if (video && video != '') {
+					dataUpdate.video = video;
 				}
 
 				if (description && description != '') {
