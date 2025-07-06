@@ -263,7 +263,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 29/3/2025
      */
-	getList({ option, companyID, categoryID, menuSlug, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
+	getList({ option, companyID, categoryID, type, menuSlug, keyword, limit = 50, lastestID, select, populates = {}, sortKey }) {
 		return new Promise(async (resolve) => {
 			try {
 				let sortBy;
@@ -293,6 +293,10 @@ class Model extends BaseModel {
 				} else{
 					conditionObj.company = companyID;
 				}
+
+				if(!isNaN(type) && [1,2,3].includes(Number(type))){
+                    conditionObj.type = type;
+                }
 
 				if(menuSlug){
 					let infoMenu = await MEDIA__MENU_COLL.findOne({ company: companyID, slug: menuSlug})
