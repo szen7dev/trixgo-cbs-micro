@@ -26,7 +26,7 @@ class Model extends BaseModel {
      * Func: Insert doctype
      * Date: 22/02/2022
      */
-    insert({ type, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel, grade }) {
+    insert({ type, subType, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel, grade }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !type || !DOCTYPE_TYPE.includes(+type) || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
@@ -49,6 +49,10 @@ class Model extends BaseModel {
                 }
 
                 let dataInsert = { name, type, description, sign, unit, company: companyID, userCreate: userID, userUpdate: userID, modifyAt: new Date() }
+
+                if(!isNaN(subType) && [1,2,3,4].includes(Number(subType))){
+                    dataInsert.subType = Number(subType);
+                }
 
                 let convertStr = ''
                 if(name && name != ""){
@@ -119,7 +123,7 @@ class Model extends BaseModel {
      * Func: Update doctype
      * Date: 22/02/2022
      */
-    update({ doctypeID, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID }) {
+    update({ doctypeID, type, subType, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID }) {
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -140,6 +144,14 @@ class Model extends BaseModel {
                 description && (dataUpdate.description = description)
                 sign && (dataUpdate.sign = sign)
                 unit && (dataUpdate.unit = unit)
+
+                if(!isNaN(type) && [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24].includes(Number(type))){
+                    dataUpdate.type = Number(type);
+                }
+
+                if(!isNaN(subType) && [1,2,3,4].includes(Number(subType))){
+                    dataUpdate.subType = Number(subType);
+                }
 
                 if(alert){
                     dataUpdate.alert = Number(alert);

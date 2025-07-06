@@ -33,6 +33,11 @@ module.exports  = DATABASE_MIDDLEWARE("doctype", {
     24-Kênh bán hàng
     */
     type: { type: Number, default: 1 },
+    /**
+     * 1-Mặc định
+     * 2-Trải nghiệm khách hàng
+     */
+    subType: { type: Number, default: 1 },
     //_________Do hệ thống quy định hay không (giá trị 1 hoặc trường company = null)
     belongSystem: { type: Number, default: 0 },
     //_________Công ty
