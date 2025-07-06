@@ -32,7 +32,7 @@ module.exports = {
                 let { optionSeller, contactID, type, status, name, birthday, phone, email, address, note, filesID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -66,7 +66,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { registerID, contactID, type, status, name, birthday, phone, email, address, note, filesID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -93,7 +93,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {  arraysRemove } = ctx.params;
-        				const { _id: userID } = ctx.meta.infoUser;
+        		const { _id: userID } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await CRM_REGISTER_MODEL.remove({
                     arraysRemove, userID
@@ -129,7 +129,7 @@ module.exports = {
                 let { optionSeller, registerID, type, status, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -207,7 +207,7 @@ module.exports = {
 				const { _id: userID, email, company } = ctx.meta.infoUser;
 
                 let { option, year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await CRM_REGISTER_MODEL.exportExcel({
                     companyID: company._id, option, year, month, email, userID
