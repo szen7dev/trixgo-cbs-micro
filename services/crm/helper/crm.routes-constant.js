@@ -48,6 +48,16 @@ const CF_ROUTINGS_CRM = {
     CRM_VNG_EVENT                                : `${BASE_ROUTE}/vng_event`,
     CRM_VNG_EVENT_GET_LIST_BY_PROPERTY           : `${BASE_ROUTE}/vng_event/get-list-by-property`,
     CRM_VNG_EVENT_EXPORT_EXCEL                   : `${BASE_ROUTE}/vng_event/export-excel`,    
+
+    // ==================== CRM_REGISTER ======================== //
+    CRM_REGISTER                               : `${BASE_ROUTE}/register`,
+    CRM_REGISTER_GET_LIST_BY_PROPERTY          : `${BASE_ROUTE}/register/get-list-by-property`,
+    CRM_REGISTER_EXPORT_EXCEL                  : `${BASE_ROUTE}/register/export-excel`,
+
+    // ==================== CRM_STORY ======================== //
+    CRM_STORY                                  : `${BASE_ROUTE}/story`,
+    CRM_STORY_GET_LIST_BY_PROPERTY             : `${BASE_ROUTE}/story/get-list-by-property`,
+    CRM_STORY_EXPORT_EXCEL                     : `${BASE_ROUTE}/story/export-excel`,
 }
 
 exports.CF_ROUTINGS_CRM = CF_ROUTINGS_CRM;

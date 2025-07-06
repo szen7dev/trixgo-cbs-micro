@@ -19,26 +19,24 @@ module.exports  = DATABASE_MIDDLEWARE("crm_survey_result", {
         type: Number,
         default: 1
     },
-    //_______Ngày sinh
-    birthday: { type: Date, default: Date.now },
-    //_________Giới tính(1-nam/ 2 - nữ/3-khác)
-    gender: { type: Number, default: 1 },
-    //_________Chiều cao (cm)
-    height: { type: Number, default: 0 },
-    //_________Cân nặng (kg)
-    weight: { type: Number, default: 0 },
-    //________Nội dung
-    name: String,
-    namecv: String,
-    //________Điện thoại liên hệ
-    phone: String,
+    //_________Trải nghiệm khách hay gặp
+    cx: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype",
+    },
+    /**
+     * Kết quả khảo sát
+     * 1-Có
+     * 2-Không
+     */
+    result: { type: Number, default: 1 },
     //________Ghi chú
     note: String,
-    //_________File/ảnh đính kèm
-    files: [{
-        type: Schema.Types.ObjectId,
-        ref: "file"
-    }],
+    // //_________File/ảnh đính kèm
+    // files: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: "file"
+    // }],
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
