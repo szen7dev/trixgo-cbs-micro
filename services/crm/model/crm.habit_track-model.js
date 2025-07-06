@@ -767,6 +767,114 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, data: listData })
                 }
+
+                // Báo cáo thực hiện Habit
+                else if(option == 4){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        // status: 2, // Hoàn thành
+                    }
+
+                    if(startDate && endDate){
+                        conditionObj.date =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+                    // console.log(conditionObj)
+
+                    let listData = await ITEM__CONTACT_COLL.aggregate([
+                        {
+                          $match: {
+                            company: ObjectID(companyID)
+                          }
+                        },
+                        {
+                            $group: {
+                                _id: '$_id',
+                            },
+                        },
+                        {
+                            $count: 'total',
+                        },
+                    ])
+
+                    let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: '$contact',
+                            },
+                        },
+                        {
+                            $count: 'total',
+                        },
+                    ])
+
+                    let total = 0, active = 0
+                    if(listData && listData.length){
+                        total = listData[0].total
+                    }
+
+                    if(listData1 && listData1.length){
+                        active = listData1[0].total
+                    }
+
+                    return resolve({ error: false, data: {total, active } })
+                }
+
+                // Chi tiết Nhân sự cập nhật dữ liệu
+                else if(option == 5){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        status: 2, // Hoàn thành
+                    }
+
+                    if(startDate && endDate){
+                        conditionObj.date =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+
+                    // console.log(conditionObj)
+
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: '$contact',
+                                // _id: {contact: '$contact'},
+                                score:       { $sum: 1 },           // số lần hoàn thành
+                                totalXP:     { $sum: '$xp' },       // tổng điểm XP
+                                totalStreak: { $sum: '$streak' },   // tổng streak
+                            },
+                        },
+                        { 
+                            $sort: { score: -1 } 
+                        }
+                    ])
+
+                    // console.log(listData)
+
+                    await ITEM__CONTACT_COLL.populate(listData, {  
+                        path: '_id',
+                        select: 'name image userCreate',
+                        model: 'contact',
+                        populate: {
+                            path: 'userCreate',
+                            select: 'fullname address',
+                            model: 'user',
+                        }
+                    })
+
+                    return resolve({ error: false, data: listData })
+                }
+
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }

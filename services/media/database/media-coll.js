@@ -18,7 +18,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
      * Phân loại
      * 1: Bài viết thông thường
      * 2: Bài viết câu chuyện khách hàng
-     * 3: 
+     * 3: Truyện tranh, truyện hay
      * 4: 
      * 5: 
      * 6: 
