@@ -804,8 +804,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 
                 let {
-                    userID, projectID, companyID, arrayID,
-                    keyword, limit, lastestID, select, populates, isLoadAll
+                    optionSeller, result, option, userID, projectID, companyID, arrayID,
+                    keyword, limit, lastestID, select, populates, isLoadAll, startDate, endDate
                 } = ctx.params;
                 // console.log(ctx.params)
 
@@ -820,8 +820,12 @@ module.exports = {
                         userID, select, populates
                     });
                 }else{
+                    if(optionSeller){
+                        companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                    }
+
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
-                        arrayID, projectID, companyID, keyword, limit, lastestID, select, populates, ctx, isLoadAll
+                        result, option, arrayID, projectID, companyID, keyword, limit, lastestID, select, populates, ctx, isLoadAll, startDate, endDate
                     });
                 }
 

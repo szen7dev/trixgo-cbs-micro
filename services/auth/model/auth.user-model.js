@@ -4,6 +4,7 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const crypto                            = require("crypto");
 const AUTH__USER_COLL                   = require('../database/auth.user-coll');
 const AUTH__COMPANY_COLL                = require('../database/auth.company-coll');
+const moment = require('moment');
 
 const { randomStringFixLengthCode }     = require('../../../tools/utils/string_utils');
 const { hash, compare }                 = require('../../../tools/bcrypt');
@@ -33,6 +34,7 @@ const ITEM__CONTACT_COLL                = require('../../item/database/item.cont
 // const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 const TIMESHEET__EXPERT_SALARY_COLL     = require('../../timesheet/database/timesheet.expert_salary-coll');
+const CRM_SURVEY_RESULT_COLL             = require('../../crm/database/crm.survey_result-coll')
 
 const ITEM__CONTACT_MODEL                       = require('../../item/model/item.contact-model').MODEL;
 class Model extends BaseModel {
@@ -2398,8 +2400,8 @@ class Model extends BaseModel {
      * Code  :
      */
     getListV2({
-        companyID, projectID, arrayID,
-        keyword, limit = 20, lastestID, select, populates= {}, ctx, isLoadAll}) {
+        result, option, companyID, projectID, arrayID,
+        keyword, limit = 20, lastestID, select, populates= {}, ctx, isLoadAll, startDate, endDate }) {
         return new Promise(async (resolve) => {
             try {
                 if(limit > 20){
@@ -2436,6 +2438,41 @@ class Model extends BaseModel {
                     }
 
                     return resolve({ error: false, data: infoDataAfterGet, status: 200 });
+                }
+
+                if(option){
+
+                    // Tham gia khảo sát
+                    if(option == 1){
+                        let conditionTempObj = {
+                            company: ObjectID(companyID),
+                            result: Number(result)
+                        }
+
+                        if(startDate && endDate){
+                            conditionTempObj.createAt =  { 
+                                $gte: moment(startDate).toDate(),
+                                $lte: moment(endDate).toDate() 
+                            }
+                        }
+                        // console.log(conditionTempObj)
+
+                        let listDataTemp = await CRM_SURVEY_RESULT_COLL.aggregate([
+                            {
+                                $match: conditionTempObj
+                            },
+                            {
+                                $group: {
+                                    _id: '$userCreate',
+                                },
+                            },
+                        ])
+                        // console.log(listDataTemp)
+
+                        if(listDataTemp && listDataTemp.length){
+                            conditionObj._id = {$in: listDataTemp.map(item => item._id)}
+                        }
+                    }
                 }
 
                 if(populates && typeof populates === 'string'){
