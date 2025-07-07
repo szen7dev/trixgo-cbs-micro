@@ -65,7 +65,8 @@ const CF_ACTIONS_STORE= {
    ITEM_UPDATE                                    : `${BASE_ACTIONS}_${ITEM}_UPDATE`,
    ITEM_REMOVE                                    : `${BASE_ACTIONS}_${ITEM}_REMOVE`,
    ITEM_GET_INFO_AND_GET_LIST                     : `${BASE_ACTIONS}_${ITEM}_GET_INFO_AND_GET_LIST`,
-   ITEM_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${ITEM}_DOWNLOAD_TEMPLATE_EXCEL`,
+   ITEM_GET_LIST_BY_PROPERTY                      : `${BASE_ACTIONS}_${ITEM}_GET_AMOUNT_BY_PROPERTY`,
+   ITEM_DOWNLOAD_TEMPLATE_EXCEL                   : `${BASE_ACTIONS}_${ITEM}_GET_LIST_BY_PROPERTY`,
    ITEM_IMPORT_FROM_EXCEL                         : `${BASE_ACTIONS}_${ITEM}_IMPORT_FROM_EXCEL`,
    ITEM_EXPORT_EXCEL                              : `${BASE_ACTIONS}_${ITEM}_EXPORT_EXCEL`,
 }

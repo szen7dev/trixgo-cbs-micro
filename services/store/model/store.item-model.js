@@ -394,7 +394,105 @@ class Model extends BaseModel {
         })
     }
 
-     /**
+    /**
+     * Name: Gom nhóm theo thuộc tính
+     * Author: Hiepnh
+     * Date: 6/7/2025
+     */
+    getListByProperty({ userID, option, year, startDate, endDate, companyID }){
+        return new Promise(async resolve => {
+            try {
+                let yearFilter
+                let currentYear = new Date().getFullYear()
+                if(year && !isNaN(year)){
+                    yearFilter = Number(year)
+                }else{
+                    yearFilter = Number(currentYear)
+                }
+
+                // Khảo sát khách hàng
+                if(!option){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                    }
+
+                    if(startDate && endDate){
+                        conditionObj.createAt =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+
+                    let listData = await STORE_ITEM_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { doctype: '$channel' },
+                                count: { $sum: 1 },
+                            }
+                        },
+                        {
+                            $sort: {
+                                "count": -1
+                            }
+                        }
+                    ])
+
+                    await STORE_ITEM_COLL.populate(listData, {  
+                        path: '_id.doctype',
+                        select: 'name',
+                        model: 'doctype',
+                    })
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                else if(option == 1){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                    }
+
+                    if(startDate && endDate){
+                        conditionObj.createAt =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+
+                    let listData = await STORE_ITEM_COLL.aggregate([
+                        {
+                            $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: { doctype: '$reason' },
+                                count: { $sum: 1 },
+                            }
+                        },
+                        {
+                            $sort: {
+                                "count": -1
+                            }
+                        }
+                    ])
+
+                    await STORE_ITEM_COLL.populate(listData, {  
+                        path: '_id.doctype',
+                        select: 'name',
+                        model: 'doctype',
+                    })
+
+                    return resolve({ error: false, data: listData })
+                }
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Download Template Excel
      * Author: HiepNH
      * Date: 21/3/2023
