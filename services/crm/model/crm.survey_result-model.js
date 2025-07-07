@@ -33,7 +33,6 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 // const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_SURVEY_RESULT_COLL              = require('../database/crm.survey_result-coll')
-const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll');
 
 class Model extends BaseModel {
 
