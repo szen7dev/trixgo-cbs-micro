@@ -355,10 +355,16 @@ class Model extends BaseModel {
                         },
                         {
                             $sort: {
-                                "_id.count": -1
+                                "count": -1
                             }
                         }
                     ])
+
+                    await CRM_SURVEY_RESULT_COLL.populate(listData, {  
+                        path: '_id.cx',
+                        select: 'name',
+                        model: 'doctype',
+                    })
 
                     return resolve({ error: false, data: listData })
                 }
