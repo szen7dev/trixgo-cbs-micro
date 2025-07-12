@@ -23,6 +23,7 @@ const CRM_VNG_FUND_HANDLER				= require('./handler/crm.vng_fund-handler');
 const CRM_VNG_EVENT_HANDLER				= require('./handler/crm.vng_event-handler');
 const CRM_REGISTER_HANDLER				= require('./handler/crm.register-handler');
 const CRM_STORY_HANDLER					= require('./handler/crm.story-handler');
+const CRM_POINT_TRANSACTION_HANDLER		= require('./handler/crm.point_transaction-handler');
 
 /**
  * COLLECTIONS
@@ -38,6 +39,7 @@ const CRM_VNG_FUND_COLL 				= require('./database/crm.vng_fund-coll');
 const CRM_VNG_EVENT_COLL 				= require('./database/crm.vng_event-coll');
 const CRM_REGISTER_COLL 				= require('./database/crm.register-coll');
 const CRM_STORY_COLL 					= require('./database/crm.story-coll');
+const CRM_POINT_TRANSACTION_COLL 		= require('./database/crm.point_transaction-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CRM,
@@ -164,6 +166,14 @@ module.exports = {
 		[CF_ACTIONS_CRM.CRM_STORY_GET_INFO_AND_GET_LIST] : CRM_STORY_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_CRM.CRM_STORY_GET_LIST_BY_PROPERTY] : CRM_STORY_HANDLER.getListByProperty,
 		[CF_ACTIONS_CRM.CRM_STORY_EXPORT_EXCEL] : CRM_STORY_HANDLER.exportExcel,
+
+		// ==================== CRM_POINT_TRANSACTION ======================== //
+		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_INSERT] : CRM_POINT_TRANSACTION_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_UPDATE] : CRM_POINT_TRANSACTION_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_REMOVE] : CRM_POINT_TRANSACTION_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_GET_INFO_AND_GET_LIST] : CRM_POINT_TRANSACTION_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_GET_LIST_BY_PROPERTY] : CRM_POINT_TRANSACTION_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_EXPORT_EXCEL] : CRM_POINT_TRANSACTION_HANDLER.exportExcel,
 	},
 
 	/**

@@ -58,6 +58,12 @@ const CF_ROUTINGS_CRM = {
     CRM_STORY                                  : `${BASE_ROUTE}/story`,
     CRM_STORY_GET_LIST_BY_PROPERTY             : `${BASE_ROUTE}/story/get-list-by-property`,
     CRM_STORY_EXPORT_EXCEL                     : `${BASE_ROUTE}/story/export-excel`,
+
+    // ==================== CRM_POINT_TRANSACTION ======================== //
+    CRM_POINT_TRANSACTION                                   : `${BASE_ROUTE}/point_transaction`,
+    CRM_POINT_TRANSACTION_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}/point_transaction/get-list-by-property`,
+    CRM_POINT_TRANSACTION_EXPORT_EXCEL                      : `${BASE_ROUTE}/point_transaction/export-excel`,
+
 }
 
 exports.CF_ROUTINGS_CRM = CF_ROUTINGS_CRM;

@@ -3,7 +3,7 @@
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
-module.exports  = DATABASE_MIDDLEWARE("crm_combo", {
+module.exports  = DATABASE_MIDDLEWARE("crm_point_transaction", {
     //________Công ty
     company: {
         type: Schema.Types.ObjectId,
@@ -16,34 +16,49 @@ module.exports  = DATABASE_MIDDLEWARE("crm_combo", {
     },
     /**
      * Phân loại
+     * 1. Mua hàng
+     * 2. Tham gia khảo sát
+     * 3. Redeem
      */
     type: {
         type: Number,
         default: 1
     },
-    //_________Tên
-    name: String,
-    //_________Slug/URL
-    slug: String,
-    //_________Thời hạn
+    //_________Mã khách
+    contact: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
+    //________Điện thoại (lấy từ mã khách)
+    phone: String,
+    //_________Đơn hàng tham chiếu
+    order: {
+        type: Schema.Types.ObjectId,
+        ref : "store_order"
+    },
+    //_________Voucher đổi điểm
+    voucher: {
+        type: Schema.Types.ObjectId,
+        ref : "store_voucher"
+    },
+    /**
+     * Hướng
+     * 1-Tích điểm
+     * 2-Sử dụng
+     */
+    direction: {
+        type: Number,
+        default: 1
+    },
+    // Số điểm
+    points: {
+        type: Number,
+        default: 0
+    },
+    //_________Thời hạn sử dụng
     expired: Date,
     //________Ghi chú
     note: String,
-    //_________Sản phẩm trong commbo
-    products: [{
-        type: Schema.Types.ObjectId,
-        ref: "goods"
-    }],
-    //_________Thumbnail
-    thumbnail: {
-        type: Schema.Types.ObjectId,
-        ref: 'file'
-    },
-    //_________Hình ảnh
-    images: [{
-        type: Schema.Types.ObjectId,
-        ref: "file"
-    }],
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
