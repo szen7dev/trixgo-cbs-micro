@@ -50,13 +50,6 @@ class Model extends BaseModel {
 insert({ companyID, userID, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID }) {
 return new Promise(async (resolve) => {
     try {
-        // if([2,3,4,5,6].includes(Number(type))){
-        //     if (!checkObjectIDs(projectID) || !checkObjectIDs(warehouseID) ||!checkObjectIDs(customerID) ||!name)
-        //         return resolve({error: true, message: "projectID|warehouseID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-        // }else{
-        //     if (!checkObjectIDs(projectID) ||!checkObjectIDs(customerID) ||!name)
-        //         return resolve({error: true, message: "projectID|customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
-        // }
         if (!checkObjectIDs(customerID) ||!name)
             return resolve({error: true, message: "customerID|warehouseID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
 

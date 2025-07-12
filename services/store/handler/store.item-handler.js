@@ -169,6 +169,44 @@
          }
      },
 
+    /**
+     * Name: getListByProperty
+     * Author: HiepNH
+     * Code: 6/7/2025
+     */
+    getListByProperty: {
+        auth: "required",
+        params: {
+            option              : { type: "string", optional: true  },
+            companyID           : { type: "string", optional: true  },
+            projectID           : { type: "string", optional: true  },
+            year                : { type: "string", optional: true  },
+            month               : { type: "string", optional: true  },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { optionSeller, option, year, startDate, endDate } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
+
+                let resultAfterCallHandler = await STORE_ITEM_MODEL.getListByProperty({
+                    option, year, companyID, userID, startDate, endDate
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
+        }
+    },
+
      /**
      * Name: Download Template Excel
      * Author: HiepNH
