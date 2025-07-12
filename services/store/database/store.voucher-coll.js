@@ -62,6 +62,16 @@ module.exports  = DATABASE_MIDDLEWARE("store_voucher", {
         type: Schema.Types.ObjectId,
         ref: "user"
     }],
+    //_________Số điểm cần để đổi***
+    pointsRequired: {
+        type: Number,
+        default: 0
+    }, 
+    //_________ Giới hạn số lượng đổi (nếu có)
+    quantityLimit: {
+        type: Number,
+        default: 0
+    }, 
     //_________Lịch sử thay đổi
     history: String,
     /**
