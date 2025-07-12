@@ -167,9 +167,9 @@ module.exports = {
     },
 
     /**
-     * Name: Get
+     * Name: getListByProperty
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 6/7/2025
      */
     getListByProperty: {
         auth: "required",

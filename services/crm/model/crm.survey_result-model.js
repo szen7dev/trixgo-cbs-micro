@@ -317,7 +317,7 @@ class Model extends BaseModel {
     /**
      * Name: Gom nhóm theo thuộc tính
      * Author: Hiepnh
-     * Date: 21/9/2022
+     * Date: 6/7/2025
      */
     getListByProperty({ userID, option, year, startDate, endDate, companyID }){
         return new Promise(async resolve => {

@@ -317,7 +317,6 @@ class Model extends BaseModel {
                         }, { new: true })
                     }else{
                         dataUpdate.percentage = 0
-                        dataUpdate.percentage = 100
                         dataUpdate.xp = 15
                         dataUpdate.streak = 1
 

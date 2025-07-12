@@ -40,6 +40,7 @@ const CF_ROUTINGS_STORE = {
 
     //================================STORE_ITEM=======================================//
     ITEM                                    : `${BASE_ROUTE}${ITEM}`,
+    ITEM_GET_LIST_BY_PROPERTY               : `${BASE_ROUTE}${ITEM}/get-list-by-property`,
     ITEM_DOWNLOAD_TEMPLATE_EXCEL            : `${BASE_ROUTE}${ITEM}/download-template-excel`,
     ITEM_IMPORT_FROM_EXCEL                  : `${BASE_ROUTE}${ITEM}/import-from-excel`,
     ITEM_EXPORT_EXCEL                       : `${BASE_ROUTE}${ITEM}/export-excel`,
