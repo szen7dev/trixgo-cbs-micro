@@ -522,9 +522,6 @@ class Model extends BaseModel {
     getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 let yearFilter
                 let currentYear = new Date().getFullYear()
                 if(year && !isNaN(year)){
@@ -1140,17 +1137,6 @@ class Model extends BaseModel {
     exportExcel({ option, companyID, year, month, email, userID }) {
        return new Promise(async resolve => {
            try {
-            // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-            //     appID: "61e049cffdebf77b072d1b14",
-            //     userID
-            // })
-
-            // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                
-            // }else{
-            //     return resolve({ error: true, message: "Can't get data", status: 403 });
-            // }
-
             // TỔNG HỢP LƯƠNG TOÀN BỘ CÔNG TY
             if(option == 1){
                 if(SALARY_DOWNLOAD_ALL_PERMISSION.includes(email)){
