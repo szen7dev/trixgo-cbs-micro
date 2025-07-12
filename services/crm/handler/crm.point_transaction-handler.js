@@ -59,13 +59,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { transactionID, status, type, contactID, orderID, voucherID, direction, points, phone, expired } = ctx.params;
+                let { transactionID, status, type, contactID, orderID, voucherID, direction, points, note, phone, expired } = ctx.params;
 
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_POINT_TRANSACTION_MODEL.update({ userID, transactionID, status, type, contactID, orderID, voucherID, direction, points, phone, expired });
+                let resultAfterCallHandler = await CRM_POINT_TRANSACTION_MODEL.update({ userID, transactionID, status, type, contactID, orderID, voucherID, direction, points, note, phone, expired });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
