@@ -45,7 +45,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice }) {
+    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -183,12 +183,14 @@ class Model extends BaseModel {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
 
-                // Cập nhật lại thông tin Order
-                await that.updateValue({orderID, userID})
-
                 await STORE_ORDER_COLL.findByIdAndUpdate(orderID, { 
                     $addToSet: { products: infoAfterInsert._id } 
                 }, { new: true });
+
+                // Cập nhật Giá trị cho Order
+                if(!option){
+                    await that.updateValue({orderID, userID})
+                }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {

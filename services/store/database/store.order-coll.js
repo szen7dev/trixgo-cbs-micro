@@ -226,6 +226,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref : 'contact'
     }, 
+    //_________Mã người giới thiệu (thường là khách hàng cũ hoặc người dùng)
+    referralCode: String,
     //_________Lead Sale
     salesLeader: {
         type: Schema.Types.ObjectId,
@@ -238,11 +240,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     },
     //_________Seller (Nhà bán hàng)
     seller: {
-        type: Schema.Types.ObjectId,
-        ref : "contact"
-    },
-    //_________Người làm Affiliate (Nhân viên kinh doanh)
-    affiliate: {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
@@ -346,15 +343,9 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
      * SẢN PHẨM VÀ SIZE
      */
     //______Số size M sử dụng trong ca
-    numberOfSizeM: {
-        type: Number,
-        default: 0
-    },
+    numberOfSizeM: Number,
     //______Số size L sử dụng trong ca
-    numberOfSizeL: {
-        type: Number,
-        default: 0
-    },
+    numberOfSizeL: Number,
     /**
      * Số lượng sản phẩm
      * => Không tính với product là Topping
@@ -404,6 +395,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
      * Giảm giá bằng Credit
      */
     credit: {
+        type: Number,
+        default : 0
+    },
+    //______Chiết khấu giới thiệu
+    referralDiscount: {
         type: Number,
         default : 0
     },

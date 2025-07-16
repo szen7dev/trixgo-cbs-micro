@@ -145,6 +145,8 @@ class Model extends BaseModel {
                 
                 let fundaID = infoFunda._id
 
+                let suid = await stringUtils.randomAndCheckExists(ITEM__CONTACT_COLL, 'suid')
+
                 let dataInsert = {
                     userCreate: authorID,
                     company: companyID,
@@ -157,7 +159,8 @@ class Model extends BaseModel {
                     address,
                     taxid,
                     birthday,
-                    status: status ? Number(status) : Number(1)
+                    status: status ? Number(status) : Number(1),
+                    suid
                 }
 
                 if (phone && phone != ""){
@@ -249,21 +252,6 @@ class Model extends BaseModel {
                  */
                 let infoParent
                 if (parent && checkObjectIDs(parent)) {
-                    // // Chỉ admin ứng dụng mới được thêm phần tử cha con
-                    // if (!infoAppUser.error && infoAppUser.data.level == 0) {
-                    //     dataInsert.parent = parent
-                    //     dataInsert.nestedParents = [parent] // Cha cấp 1
-
-                    //     // Cập nhật Level để phục vụ việc tính toán, đệ quy
-                    //     infoParent = await ITEM__CONTACT_COLL.findById(parent)
-                    //     dataInsert.level = infoParent.level + 1
-
-                    //     // Lấy nguồn theo phần tử cha
-                    //     if (infoParent.dataSource && checkObjectIDs(infoParent.dataSource)) {
-                    //         dataInsert.dataSource = infoParent.dataSource
-                    //     }
-                    // }
-
                     dataInsert.parent = parent
                     dataInsert.nestedParents = [parent] // Cha cấp 1
 
