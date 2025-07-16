@@ -22,22 +22,28 @@ module.exports = {
             accountID: { type: "string", optional: true },
             customerID: { type: "string", optional: true },
             contractID: { type: "string", optional: true },
-            name: { type: "string" },
+            name: { type: "string", optional: true  },
             sign: { type: "string", optional: true },
             note: { type: "string", optional: true },
             date: { type: "string", optional: true },
         },
-        async handler(ctx) {
+        async handler(ctx) { 
             try {
                 await this.validateEntity(ctx.params);
-                let { outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID } = ctx.params;
-
+                let { optionSeller, option, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, referralCode, referralDiscount, vatRate, products } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company._id
+                }
+
                 let resultAfterCallHandler = await STORE_ORDER_MODEL.insert({
-                    companyID: company._id, userID, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID
+                    companyID, userID, option, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, referralCode, referralDiscount, vatRate, products
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })

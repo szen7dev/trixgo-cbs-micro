@@ -1171,6 +1171,21 @@ class Model extends BaseModel {
                     }
                 }
 
+                // Bổ sung mã người giới thiệu
+                else if(option == 21){
+                    let listData = await ITEM__CONTACT_COLL.find({
+                        company: companyID
+                    })
+
+                    for(const item of listData){
+                        let suid = await stringUtils.randomAndCheckExists(ITEM__CONTACT_COLL, 'suid')
+
+                        await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, {
+                            suid
+                        })
+                    }
+                }
+
                 return resolve({ error: false, data: 'Convert thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -1435,7 +1450,6 @@ class Model extends BaseModel {
     }
 
     exportExcel({ option, isPrivate, companyID, year, fromDate, toDate }){
-        // console.log({ option, isPrivate, companyID, year, fromDate, toDate })
         return new Promise(async resolve => { 
             try {
                 let yearFilter

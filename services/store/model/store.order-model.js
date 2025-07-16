@@ -27,6 +27,7 @@ const ITEM__FUNDA_COLL = require("../../item/database/item.funda-coll");
 const ITEM__CONTACT_COLL = require("../../item/database/item.contact-coll");
 const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
 const ITEM__DOCTYPE_COLL = require("../../item/database/item.doctype-coll");
+const ITEM__GOODS_COLL = require("../../item/database/item.goods-coll");
 const ITEM__AREA_COLL = require("../../item/database/item.area-coll");
 const STORE_ORDER_COLL = require("../database/store.order-coll");
 const STORE_ORDER_PRODUCT_COLL = require('../database/store.order_product-coll');
@@ -47,111 +48,348 @@ class Model extends BaseModel {
  * Author: HiepNH
  * Code: 8/9/2024
  */
-insert({ companyID, userID, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID }) {
+insert({ companyID, userID, option, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, voucherID, referralCode, referralDiscount, vatRate, products }) {
 return new Promise(async (resolve) => {
     try {
-        if (!checkObjectIDs(customerID) ||!name)
-            return resolve({error: true, message: "customerID|warehouseID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
+        if(!option){
+            if (!checkObjectIDs(customerID) ||!name)
+                return resolve({error: true, message: "customerID|name invalid", keyError: KEY_ERROR.PARAMS_INVALID})
 
-        let dataInsert = { 
-            company: companyID,
-            userCreate: userID, 
-        }
+            let dataInsert = { 
+                company: companyID,
+                userCreate: userID, 
+            }
 
-        if (checkObjectIDs(fundaID)) {
-            dataInsert.funda = fundaID;
+            if (checkObjectIDs(fundaID)) {
+                dataInsert.funda = fundaID;
+            }else{
+                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
+                if(infoFunda){
+                    dataInsert.funda = infoFunda._id;
+                }
+            }
+            if (checkObjectIDs(channelID)) {
+                dataInsert.channel = channelID;
+
+                // Kiểm tra kênh cha
+            }
+            if (checkObjectIDs(projectID)) {
+                dataInsert.project = projectID;
+            }
+            if (checkObjectIDs(packageID)) {
+                dataInsert.package = packageID;
+            }
+            if (checkObjectIDs(toPackageID)) {
+                dataInsert.toPackage = toPackageID;
+            }
+            if (checkObjectIDs(warehouseID)) {
+                dataInsert.warehouse = warehouseID;
+            }
+            if (checkObjectIDs(toWarehouseID)) {
+                dataInsert.toWarehouse = toWarehouseID;
+            }
+            if (checkObjectIDs(customerID)) {
+                dataInsert.customer = customerID;
+            }
+            if (checkObjectIDs(contractID)) {
+                dataInsert.contract = contractID;
+            }
+            if (checkObjectIDs(linkID)) {
+                dataInsert.link = linkID;
+            }
+
+            if (checkObjectIDs(lotID)) {
+                dataInsert.lot = lotID;
+            }
+            if (checkObjectIDs(referrerID)) {
+                dataInsert.referrer = referrerID;
+            }
+            if (checkObjectIDs(salesLeaderID)) {
+                dataInsert.salesLeader = salesLeaderID;
+            }
+            if (checkObjectIDs(salesID)) {
+                dataInsert.sales = salesID;
+            }
+            if (checkObjectIDs(sellerID)) {
+                dataInsert.seller = sellerID;
+            }
+            if (checkObjectIDs(affiliateID)) {
+                dataInsert.affiliate = affiliateID;
+            }
+            if (checkObjectIDs(customerCareID)) {
+                dataInsert.customerCare = customerCareID;
+            }
+
+            if (!isNaN(outin) && Number(outin) >= 1) {
+                dataInsert.outin = Number(outin)
+            }
+            if (!isNaN(type) && Number(type) >= 1) {
+                dataInsert.type = Number(type)
+            }
+
+            if (date) {
+                dataInsert.date = date;
+            }
+
+            let convertStr = ''
+            if (name && name != '') {
+                dataInsert.name = name;
+                convertStr = convertStr + " " + stringUtils.removeAccents(name)
+            }
+            if (sign && sign != '') {
+                dataInsert.sign = sign;
+                convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+            }
+            if (note && note != '') {
+                dataInsert.note = note;
+                convertStr = convertStr + " " + stringUtils.removeAccents(note)
+            }
+            if(convertStr != ""){
+                dataInsert.namecv = convertStr
+            }
+            // console.log(dataInsert)
+
+            let infoAfterInsert = await this.insertData(dataInsert)
+            if (!infoAfterInsert)
+                return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
+            return resolve({ error: false, data: infoAfterInsert, status: 200 })
         }else{
-            let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
-            if(infoFunda){
-                dataInsert.funda = infoFunda._id;
+
+            // Đặt đơn hàng từ Mobile
+            if(option == 1){
+                /**
+                 * Cấu hình bổ sung:
+                 * Thuế VAT
+                 * Hoa hồng cho Người giới thiệu (theo các mức để kích thích)
+                 */
+
+                let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID).select('remainLoyaltyPoints name phone')
+                if(!infoCustomer)
+                    return resolve({ error: true, message: "customer|name invalid", keyError: KEY_ERROR.PARAMS_INVALID })
+
+                // Tính số lượng đơn hàng của phân vùng hiện tại
+                let numberOfOrder = await STORE_ORDER_COLL.count({
+                    company: companyID,
+                })
+                let nameNew = `Đơn hàng ${infoCustomer?.name}-${infoCustomer?.phone}-C${Number(numberOfOrder + 1)}`
+
+                let dataInsert = { 
+                    company: companyID,
+                    userCreate: userID, 
+                    type: 5, // Thành phẩm
+                    outin: 1, // Bán ra
+                    name: nameNew,
+                    sign: `C${Number(numberOfOrder + 1)}`,
+                }
+
+                // Cần fix cơ sở mặc định hoặc cho khách hàng chọn
+                if (checkObjectIDs(fundaID)) {
+                    dataInsert.funda = fundaID;
+                }else{
+                    let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID, status: 1})
+                    if(infoFunda){
+                        dataInsert.funda = infoFunda._id;
+                    }
+                }
+
+                /**
+                 * Tính toán giá trị
+                 */
+                let total = 0, amount = 0, referralDiscount = 0, offer = 0
+                const updatedProducts = [];
+                if (products && products.length) {
+                    for(const item of products){
+                        let infoProduct = await ITEM__GOODS_COLL.findById(item.productID).select('listedUnitprice sellingUnitprice')
+                        if(infoProduct){
+                            const newItem = {
+                                ...item,
+                                listedUnitprice: infoProduct.listedUnitprice,
+                                unitPrice: infoProduct.sellingUnitprice,
+                                name: infoProduct.name,
+                            }
+
+                            updatedProducts.push(newItem);
+
+                            total = Number(total) + Number(item.quantity * infoProduct.listedUnitprice)
+                            amount = Number(amount) + Number(item.quantity * infoProduct.sellingUnitprice)
+                        }
+                    }
+                }
+
+                // Cần fix kho mặc định hoặc cho khách hàng chọn
+                if (checkObjectIDs(warehouseID)) {
+                    dataInsert.warehouse = warehouseID;
+                }
+
+                // Đơn hàng từ người giới thiệu
+                if (referralCode && referralCode != '') {
+                    let infoRef = await ITEM__CONTACT_COLL.findOne({ company: companyID, suid: referralCode })
+
+                    if(infoRef){
+                        dataInsert.referralCode = referralCode
+                        dataInsert.referrer = infoRef._id;
+
+                        // Đưa vào cấu hình
+                        referralDiscount = Number(infoRef?.referralDiscountRate * amount)/100
+
+                        amount = Number(amount) - Number(referralDiscount)
+                    }                   
+                }
+                
+                // Ưu đãi voucher
+                else{
+                    if (checkObjectIDs(voucherID)) {
+                        let noticeVoucherErr = '', countVoucherErr = 0
+
+                        let infoVoucher = await STORE_VOUCHER_COLL.findById(voucherID);
+                        if (!infoVoucher){
+                            noticeVoucherErr = noticeVoucherErr + "Voucher không tồn tại"
+                            countVoucherErr++
+                        }
+
+                        // Kiểm tra xem đúng VoucherID của customerID hay không
+                        if (!infoVoucher.receivers.includes(customerID)){
+                            noticeVoucherErr = noticeVoucherErr + "Voucher không hợp lệ với khách hàng"
+                            countVoucherErr++
+                        }
+
+                        // Kiểm tra thời hạn VoucherID
+                        let currentTime = new Date();
+                        let checkExpired = compareTwoTime(currentTime, infoVoucher.expired);
+                        if (checkExpired == 1){
+                            noticeVoucherErr = noticeVoucherErr + "Voucher đã hết hạn"
+                            countVoucherErr++
+                        }
+
+                        // Kiểm tra giá trị đơn hàng xem có được áp dụng Voucher hay không
+                        if (Number(amount) < Number(infoVoucher.minOrderAmount)){
+                            noticeVoucherErr = noticeVoucherErr + `Đơn hàng không đủ điều kiện áp dụng (Giá trị phải >= ${infoVoucher.minOrderAmount})`
+                            countVoucherErr++
+                        }
+
+                        // Kiểm tra xem khách hàng đã sử dụng voucherID hay chưa
+                        if (infoVoucher.buyers.includes(customerID)){
+                            noticeVoucherErr = noticeVoucherErr + `Khách hàng đã sử dụng voucher`
+                            countVoucherErr++
+                        }
+
+                        if(countVoucherErr > 0)
+                            return resolve({ error: true, message: noticeVoucherErr, keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
+                        /**
+                         * Kiểm tra nếu Giá trị Voucher
+                         */
+                        if (Number(infoVoucher.salesoffAmount) > 0) {
+                            offer = Number(infoVoucher.salesoffAmount)
+                        } else {
+                            offer = Number((Number(infoVoucher.salesoffRate) * Number(amount)) / 100).toFixed(0);
+                        }
+
+                        if (Number(amount) <= Number(offer)) {
+                            offer = amount; // Set Offer
+                            amount = 0; // Set Amount về 0
+                        } else {
+                            amount = Number(amount) - Number(offer);
+                        }
+
+                        dataInsert.voucher = voucherID;
+                        dataInsert.voucherType = Number(infoVoucher.type);
+                        dataInsert.offer = Number(offer);
+                    }
+                }
+
+                // Doanh số và giá trị thanh toán
+                dataInsert.total = Number(total)
+                dataInsert.amount = Number(amount)
+
+                /**
+                 * BỘ THẺ PHÂN LOẠI DOANH SỐ
+                 */
+                // Mã khách
+                if (checkObjectIDs(customerID)) {
+                    // Địa chỉ mã khách
+
+                    dataInsert.customer = customerID;
+                }
+
+                if (checkObjectIDs(salesLeaderID)) {
+                    dataInsert.salesLeader = salesLeaderID;
+                }
+                if (checkObjectIDs(salesID)) {
+                    dataInsert.sales = salesID;
+                }
+                if (checkObjectIDs(sellerID)) {
+                    dataInsert.seller = sellerID;
+                }
+                if (checkObjectIDs(customerCareID)) {
+                    dataInsert.customerCare = customerCareID;
+                }
+
+                if (date) {
+                    dataInsert.date = date;
+                }
+
+                let convertStr = ''
+                if (name && name != '') {
+                    dataInsert.name = name;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
+                }
+                if (sign && sign != '') {
+                    dataInsert.sign = sign;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                }
+                if (note && note != '') {
+                    dataInsert.note = note;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(convertStr != ""){
+                    dataInsert.namecv = convertStr
+                }
+                // console.log(dataInsert)
+
+                let infoAfterInsert = await this.insertData(dataInsert)
+                if (!infoAfterInsert)
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
+                /**
+                 * CẦN TỐI ƯU HÀM TẠO SẢN PHẨM
+                 * - Tạo một hàm khác để dùng riêng cho khách hàng đặt hàng
+                 */
+                const orderID = infoAfterInsert._id
+                if (updatedProducts && updatedProducts.length) {
+                    const productsAsync = updatedProducts.map((item) => {
+                        const dataInsertProduct = {
+                            userID, 
+                            fundaID: infoAfterInsert.funda, 
+                            orderID, 
+                            customerID, 
+                            goodsID: item.productID, 
+                            name: item.name, 
+                            quantity: Number(item.quantity), 
+                            unitPrice: Number(item.unitPrice),
+                            listedUnitprice: Number(item.listedUnitprice),
+                        }
+
+                        return STORE_ORDER_PRODUCT_MODEL.insert(dataInsertProduct)
+                    })
+
+                    await Promise.all(productsAsync)
+                }
+                
+                // Cập nhật voucher đã sử dụng
+                if (voucherID && checkObjectIDs(voucherID)) {
+                    //______Cập nhật thông tin Người sử dụng voucher
+                    await STORE_VOUCHER_MODEL.update({
+                        userID,
+                        voucherID,
+                        buyers: [customerID],
+                    })
+                }
+
+                return resolve({ error: false, data: infoAfterInsert, status: 200 })
             }
         }
-        if (checkObjectIDs(channelID)) {
-            dataInsert.channel = channelID;
-
-            // Kiểm tra kênh cha
-        }
-        if (checkObjectIDs(projectID)) {
-            dataInsert.project = projectID;
-        }
-        if (checkObjectIDs(packageID)) {
-            dataInsert.package = packageID;
-        }
-        if (checkObjectIDs(toPackageID)) {
-            dataInsert.toPackage = toPackageID;
-        }
-        if (checkObjectIDs(warehouseID)) {
-            dataInsert.warehouse = warehouseID;
-        }
-        if (checkObjectIDs(toWarehouseID)) {
-            dataInsert.toWarehouse = toWarehouseID;
-        }
-        if (checkObjectIDs(customerID)) {
-            dataInsert.customer = customerID;
-        }
-        if (checkObjectIDs(contractID)) {
-            dataInsert.contract = contractID;
-        }
-        if (checkObjectIDs(linkID)) {
-            dataInsert.link = linkID;
-        }
-
-        if (checkObjectIDs(lotID)) {
-            dataInsert.lot = lotID;
-        }
-        if (checkObjectIDs(referrerID)) {
-            dataInsert.referrer = referrerID;
-        }
-        if (checkObjectIDs(salesLeaderID)) {
-            dataInsert.salesLeader = salesLeaderID;
-        }
-        if (checkObjectIDs(salesID)) {
-            dataInsert.sales = salesID;
-        }
-        if (checkObjectIDs(sellerID)) {
-            dataInsert.seller = sellerID;
-        }
-        if (checkObjectIDs(affiliateID)) {
-            dataInsert.affiliate = affiliateID;
-        }
-        if (checkObjectIDs(customerCareID)) {
-            dataInsert.customerCare = customerCareID;
-        }
-
-        if (!isNaN(outin) && Number(outin) >= 1) {
-            dataInsert.outin = Number(outin)
-        }
-        if (!isNaN(type) && Number(type) >= 1) {
-            dataInsert.type = Number(type)
-        }
-
-        if (date) {
-            dataInsert.date = date;
-        }
-
-        let convertStr = ''
-        if (name && name != '') {
-            dataInsert.name = name;
-            convertStr = convertStr + " " + stringUtils.removeAccents(name)
-        }
-        if (sign && sign != '') {
-            dataInsert.sign = sign;
-            convertStr = convertStr + " " + stringUtils.removeAccents(sign)
-        }
-        if (note && note != '') {
-            dataInsert.note = note;
-            convertStr = convertStr + " " + stringUtils.removeAccents(note)
-        }
-        if(convertStr != ""){
-            dataInsert.namecv = convertStr
-        }
-        // console.log(dataInsert)
-
-        let infoAfterInsert = await this.insertData(dataInsert);
-        if (!infoAfterInsert)
-            return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
-
-        return resolve({ error: false, data: infoAfterInsert, status: 200 });
     } catch (error) {
         return resolve({ error: true, message: error.message, status: 500 });
     }
