@@ -751,7 +751,7 @@ class Model extends BaseModel {
                             templateId,
                             appId,
                         }
-                        console.log({ dataOA_2: dataOA })
+                        // console.log({ dataOA_2: dataOA })
                         await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                             dataOA,
@@ -1029,7 +1029,7 @@ class Model extends BaseModel {
                             templateId,
                             appId,
                         }
-                        console.log({ dataOA_2: dataOA })
+                        // console.log({ dataOA_2: dataOA })
                         await ctx.call(
                             `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
                             dataOA,

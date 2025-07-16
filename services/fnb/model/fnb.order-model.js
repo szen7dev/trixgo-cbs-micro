@@ -1910,16 +1910,16 @@ class Model extends BaseModel {
            * Mẫu ZNS này không được phép gửi vào ban đêm (từ 22h-6h)
            * Tài khoản Zalo không tồn tại hoặc đã bị vô hiệu hoá
            */
-          console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
+          // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
           let hour = Number(moment(new Date()).hours())
-          console.log({hour})
+          // console.log({hour})
 
           let infoConfig = await ITEM__CONFIG_COLL.findOne({
             company: infoFunda.company,
             type: 1,
             active: 1,
           });
-          console.log({infoConfig})
+          // console.log({infoConfig})
           const { metadata: { template } } = infoConfig;
 
           if (infoConfig && template) {
@@ -1939,12 +1939,12 @@ class Model extends BaseModel {
               templateId: template.new_order,
               appId: infoConfig.channel,
             };
-            console.log({dataOA1})
+            // console.log({dataOA1})
             let infoOA = await ctx.call(
               `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
               dataOA1,
             );
-            console.log(infoOA)
+            // console.log(infoOA)
 
             let dataOA2 = {
               phone: "84985199295",

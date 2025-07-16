@@ -284,7 +284,7 @@ exports.nl2p = function (string){
  * Chức năng function: sẽ đảm bảo random: 6text+3number đảm bảo ko trùng
  */
 exports.randomAndCheckExists = async (COLL, fieldCheck) => {
-    let textRandom = randomStringFixLengthCodeWithOnlyText(6);
+    let textRandom = randomStringFixLengthCodeWithOnlyText(3);
     let numRandom = Math.floor(Math.random() * (999 - 100)) + 100;
 
     let textResult = `${textRandom}${numRandom}`;

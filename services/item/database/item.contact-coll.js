@@ -7,6 +7,12 @@ const Schema                = require('mongoose').Schema;
  * DANH BẠ (Nhân viên, Khách hàng, Đối tác)
  */
 module.exports  = DATABASE_MIDDLEWARE("contact", {
+    //_________Mã hiệu bằng số do hệ thống tự phát sinh: sử dụng làm mã giới thiệu luôn
+    suid : {
+        type   : String,
+        require:  true,
+        unique : true
+    },
     //_________Là danh bạ mặc định của công ty (2)
     isDefault: {
         type: Number,
@@ -429,6 +435,14 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default: 1,
         min: 1,
         max: 5, // Giới hạn tối đa
+    },
+    /**
+     * Giảm giá mã người giới thiệu
+     * Sẽ tùy thuộc theo từng Level của người giới thiệu
+     */
+    referralDiscountRate: {
+        type: Number,
+        default: 20,
     },
     /**
      * THÔNG TIN NGƯỜI TẠO/CẬP NHẬT
