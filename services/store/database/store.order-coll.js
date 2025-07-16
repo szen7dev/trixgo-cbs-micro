@@ -343,15 +343,9 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
      * SẢN PHẨM VÀ SIZE
      */
     //______Số size M sử dụng trong ca
-    numberOfSizeM: {
-        type: Number,
-        default: 0
-    },
+    numberOfSizeM: Number,
     //______Số size L sử dụng trong ca
-    numberOfSizeL: {
-        type: Number,
-        default: 0
-    },
+    numberOfSizeL: Number,
     /**
      * Số lượng sản phẩm
      * => Không tính với product là Topping

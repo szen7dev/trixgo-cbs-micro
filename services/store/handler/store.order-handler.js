@@ -30,7 +30,7 @@ module.exports = {
         async handler(ctx) { 
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, referralCode, referralDiscount, vatRate, products } = ctx.params;
+                let { optionSeller, option, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, voucherID, referralCode, referralDiscount, vatRate, products } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
@@ -43,7 +43,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await STORE_ORDER_MODEL.insert({
-                    companyID, userID, option, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, referralCode, referralDiscount, vatRate, products
+                    companyID, userID, option, outin, type, fundaID, channelID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, customerID, contractID, date, name, sign, note, linkID, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, voucherID, referralCode, referralDiscount, vatRate, products
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })

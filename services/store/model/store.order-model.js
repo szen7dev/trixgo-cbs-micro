@@ -200,7 +200,7 @@ return new Promise(async (resolve) => {
                 const updatedProducts = [];
                 if (products && products.length) {
                     for(const item of products){
-                        let infoProduct = await ITEM__GOODS_COLL.findById(item.productID).select('listedUnitprice sellingUnitprice')
+                        let infoProduct = await ITEM__GOODS_COLL.findById(item.productID).select('name listedUnitprice sellingUnitprice')
                         if(infoProduct){
                             const newItem = {
                                 ...item,
@@ -244,12 +244,14 @@ return new Promise(async (resolve) => {
 
                         let infoVoucher = await STORE_VOUCHER_COLL.findById(voucherID);
                         if (!infoVoucher){
+                            // console.log('111111111111')
                             noticeVoucherErr = noticeVoucherErr + "Voucher không tồn tại"
                             countVoucherErr++
                         }
 
                         // Kiểm tra xem đúng VoucherID của customerID hay không
                         if (!infoVoucher.receivers.includes(customerID)){
+                            // console.log('222222222222222')
                             noticeVoucherErr = noticeVoucherErr + "Voucher không hợp lệ với khách hàng"
                             countVoucherErr++
                         }
@@ -258,18 +260,21 @@ return new Promise(async (resolve) => {
                         let currentTime = new Date();
                         let checkExpired = compareTwoTime(currentTime, infoVoucher.expired);
                         if (checkExpired == 1){
+                            // console.log('33333333333333')
                             noticeVoucherErr = noticeVoucherErr + "Voucher đã hết hạn"
                             countVoucherErr++
                         }
 
                         // Kiểm tra giá trị đơn hàng xem có được áp dụng Voucher hay không
                         if (Number(amount) < Number(infoVoucher.minOrderAmount)){
+                            // console.log('44444444444444')
                             noticeVoucherErr = noticeVoucherErr + `Đơn hàng không đủ điều kiện áp dụng (Giá trị phải >= ${infoVoucher.minOrderAmount})`
                             countVoucherErr++
                         }
 
                         // Kiểm tra xem khách hàng đã sử dụng voucherID hay chưa
                         if (infoVoucher.buyers.includes(customerID)){
+                            // console.log('5555555555555')
                             noticeVoucherErr = noticeVoucherErr + `Khách hàng đã sử dụng voucher`
                             countVoucherErr++
                         }
@@ -285,6 +290,8 @@ return new Promise(async (resolve) => {
                         } else {
                             offer = Number((Number(infoVoucher.salesoffRate) * Number(amount)) / 100).toFixed(0);
                         }
+
+                        // console.log({offer})
 
                         if (Number(amount) <= Number(offer)) {
                             offer = amount; // Set Offer
@@ -352,6 +359,9 @@ return new Promise(async (resolve) => {
                 if (!infoAfterInsert)
                     return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
+                // console.log(infoAfterInsert)
+                // console.log(updatedProducts)
+
                 /**
                  * CẦN TỐI ƯU HÀM TẠO SẢN PHẨM
                  * - Tạo một hàm khác để dùng riêng cho khách hàng đặt hàng
@@ -360,6 +370,7 @@ return new Promise(async (resolve) => {
                 if (updatedProducts && updatedProducts.length) {
                     const productsAsync = updatedProducts.map((item) => {
                         const dataInsertProduct = {
+                            option,
                             userID, 
                             fundaID: infoAfterInsert.funda, 
                             orderID, 
