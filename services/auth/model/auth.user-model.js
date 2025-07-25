@@ -138,7 +138,7 @@ class Model extends BaseModel {
                         if(isExist?.codeReset.toString() != password.toString()){
                             return resolve({
                                 error: true,
-                                message: 'OTP không đúng',
+                                message: 'Thông tin đăng nhập không đúng',
                                 keyError: "password_not_match",
                                 status: 400
                             })  

@@ -280,7 +280,7 @@ module.exports = {
 
                 let { option, companyID, fundaID, arrObjectID, goodsID, warehouseID, exportQuantity, fromDate, toDate, voucherID, voucherDate } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 if(!companyID) {
                     companyID = company._id;
@@ -331,6 +331,7 @@ module.exports = {
 				const { _id: userID, email, company } = ctx.meta.infoUser;
                 let { companyID, option, month, year, filterParams } = ctx.params;
 
+                // console.log('===========================')
                 // console.log(ctx.params)
 
                 if(!companyID) {
@@ -361,6 +362,7 @@ module.exports = {
 
                 let { option, filterParams } = ctx.params;
                 
+                console.log('===========================')
                 console.log(ctx.params)
 
                 const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.exportExcelByFilter({
