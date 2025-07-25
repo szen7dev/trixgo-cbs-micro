@@ -440,8 +440,8 @@ class Model extends BaseModel {
     getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) > 50){
-                    limit = 50;
+                if(Number(limit) >= 500){
+                    limit = 500;
                 } else{
                     limit = +Number(limit);
                 }
@@ -2302,7 +2302,8 @@ class Model extends BaseModel {
                     const result = await this.downloadExcelFile(data)
                     return resolve(result);
                 }
-
+                
+                // Thẻ kho
                 else if (Number(option) === 2) {
                     const year = (new Date()).getFullYear(filterParams?.toDate)
 
@@ -2338,6 +2339,59 @@ class Model extends BaseModel {
                                 workbook.sheet("Data").row(i).cell(7).value(Number(item.quantity));
                                 workbook.sheet("Data").row(i).cell(8).value(Number(item.unitPrice));
                                 workbook.sheet("Data").row(i).cell(9).value(Number(item.amount));
+                        
+                                i++
+                            })
+                        }
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `BaoCaoChiTiet_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+                }
+
+                // Sổ quỹ
+                else if (Number(option) === 3) {
+                    let conditionObj = { company: companyID, status: 5 }
+
+                    if (checkObjectIDs(filterParams.accountID)) {
+                        conditionObj.account = filterParams.accountID;
+                    }
+
+                    let listData = await STORE_ORDER_PRODUCT_COLL.find(conditionObj)
+                    .select('outin amount date account customer')
+                    .populate({
+                        path: 'account customer',
+                        select: 'name phone description'
+                    })
+                    .sort({date: 1})
+                    // console.log(listData)
+
+                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cash_detail_report.xlsx')))
+                    .then(async workbook => {
+
+                        let i = 3, tonQuy = 0
+                        if(listData && listData.length){
+                            listData?.forEach((item, index) => {
+                                workbook.sheet("Data").row(i).cell(1).value(item.date);
+                                workbook.sheet("Data").row(i).cell(2).value(`${item?.account?.name}-${item?.account?.description}`);
+                                workbook.sheet("Data").row(i).cell(3).value(`${item?.customer?.name}-${item?.customer?.phone}`);
+                                if(item.outin == 2){
+                                    tonQuy = Number(tonQuy) + Number(item?.amount)
+                                    workbook.sheet("Data").row(i).cell(4).value(Number(item?.amount));
+                                }else{
+                                    tonQuy = Number(tonQuy) - Number(item?.amount)
+                                    workbook.sheet("Data").row(i).cell(5).value(Number(item?.amount));
+                                }
+
+                                workbook.sheet("Data").row(i).cell(6).value(Number(tonQuy));
                         
                                 i++
                             })
