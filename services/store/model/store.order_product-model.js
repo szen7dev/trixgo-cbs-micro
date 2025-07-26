@@ -694,16 +694,19 @@ class Model extends BaseModel {
                         $lt: moment(fromDate).toDate(), // $lte (<=), $lt (<)
                     },
                 }
+                // console.log(conditionMatchOF)
+                // console.log('======================')
 
                 // Từ đầu kỳ tới cuối kỳ (fromDate-toDate)
                 conditionMatchFT = {
                     "forward": 0,
                     "status": 5,
                     "date": {
-                        $gte: moment(fromDate).toDate(),
-                        $lte: moment(toDate).toDate(),
+                        $gte: moment(fromDate).startOf('day').toDate(),
+                        $lte: moment(toDate).endOf('day').toDate(),
                     }
                 }
+                // console.log(conditionMatchFT)
 
                 // Thẻ kho
                 if(option == 1){
