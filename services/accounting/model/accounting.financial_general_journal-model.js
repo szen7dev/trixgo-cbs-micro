@@ -3019,7 +3019,7 @@ class Model extends BaseModel {
                     let conditionOb = {};
                     if(!fundaID){
                         conditionOb = { 
-                            company: companyID,
+                            company: companyID, // 6046c015b55525368b11ea98
                             returning: 0, // Không chạy cho các Phiếu trả lại hàng mượn
                             forward: 0, // Không chạy cho các Phiếu kết chuyển cuối kỳ
                             cancel: 0, // Không chạy cho các Phiếu hủy
@@ -3049,27 +3049,29 @@ class Model extends BaseModel {
                         .select('_id date name')
                         .lean();
 
-                    if(!listVouchers.length) {
+                    if (!listVouchers.length) {
                         return resolve({ error: false, data: [] })
                     }
     
                     /**
                      * Xử lý Worker
                      */
-                    for(const voucher of listVouchers) {
-                        await queue.add("price_analyze", {
-                            option: 1,
-                            voucher,
-                            fundaID,
-                            companyID,
-                            userID,
-                            arrObjectID
-                        }, {
-                            backoff: 3,
-                            attempts: 3
-                        })
+                    const { id: jobId } = await queue.add("price_analyze", {
+                        option: 1,
+                        listVouchers,
+                        fundaID,
+                        companyID,
+                        userID,
+                        arrObjectID
+                    }, {
+                        backoff: 3,
+                        attempts: 3
+                    });
+
+                    if (!jobId) {
+                        return resolve({ error: true, data: listVouchers, status: 400, message: "Add job error" });
                     }
-    
+
                     return resolve({ error: false, data: listVouchers, status: 200 });
 
                     // /**
