@@ -52,6 +52,7 @@ module.exports = {
     name: "socket-io",
     mixins: [ApiService, SocketIOService], // Should after moleculer-web
     settings: {
+        // port: 4000,
         io: {
             options: {
                 adapter: redisAdapter({
