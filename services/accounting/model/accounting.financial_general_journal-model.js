@@ -540,11 +540,11 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ option, companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
-        keyword, limit = 500, lastestID, select, populates = {}, sortKey }) {
+        keyword, limit = 1000, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
-                if (limit > 500) {
-                    limit = 500
+                if (limit > 1000) {
+                    limit = 1000
                 } else {
                     limit = +limit;
                 }
@@ -796,11 +796,11 @@ class Model extends BaseModel {
 
     getListByFilter({
         companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
-        limit = 500, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
+        limit = 1000, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
         return new Promise(async (resolve) => {
             try {
-                if (limit > 500) {
-                    limit = 500
+                if (limit > 1000) {
+                    limit = 1000
                 } else {
                     limit = +limit;
                 }
