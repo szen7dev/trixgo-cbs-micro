@@ -374,77 +374,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove
-     * Author: HiepNH
-     * Code: 22/3/2024
-     */
-    remove({ arraysRemove, userID }) {
-        const that = this
-        return new Promise(async (resolve) => {
-            try {
-                if(!checkObjectIDs(arraysRemove)) {
-                    return resolve({ error: true, message: 'Yêu cầu không hợp lệ', status: 200 });
-                }
-
-                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                    appID: "61e049cffdebf77b072d1b14",
-                    userID
-                })
-
-                if(!infoAppUser.error && infoAppUser.data.level == 0){
-                    let info = await CRM__GROW_TRACK_COLL.findById(arraysRemove[0])
-
-                    const result = await CRM__GROW_TRACK_COLL.deleteMany({
-                        _id: { $in: arraysRemove },
-                        // userCreate: userID,
-                        // $or: [
-                        //     { userCreate: userID },
-                        //     { admins: { $in: [userID] } }
-                        // ]
-                    })
-
-                    if(result.deletedCount !== arraysRemove.length) {
-                        return resolve({
-                            error: true,
-                            message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
-                            status: 200
-                        });
-                    }
-
-                    // Cập nhật số nhân sự bảng lương
-                    if(info && info.parent){
-                        let numberOfHuman = await CRM__GROW_TRACK_COLL.count({parent: info?.parent})
-                        if(numberOfHuman){
-                            await CRM__GROW_TRACK_COLL.findByIdAndUpdate(info?.parent, {
-                                userUpdate: userID,
-                                modifyAt: Date.now(),
-                                numberOfHuman
-                            }, { new: true })
-                        }
-                    }
-
-                    /**
-                     * CẬP NHẬT VÀO BẢNG LƯƠNG CHA
-                     */
-                    if(info.parent && checkObjectIDs(info.parent)){
-                        await that.updateValue({ expertSalaryID: info.parent, userID })
-                    }
-
-                    return resolve({ error: false, message: "Xóa dữ liệu thành công", status: 200 });
-                }else{
-                    return resolve({
-                        error: true,
-                        message: "Dữ liệu có thể chưa xóa hết vì không đủ quyền",
-                        status: 200
-                    });
-                }
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
      * Name: get info expert timesheet
      * Author: Depv
      * Code:
@@ -475,7 +404,7 @@ class Model extends BaseModel {
 
                 let L, M, S, Z, P, startAge, endAge = 20, hdfs, whoHS, wdfs, whoWS
 
-                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, W = infoAterGet.weight, gender, genderHWho, genderWWho;
+                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, Xm = infoAterGet.height/100, W = infoAterGet.weight, gender, genderHWho, genderWWho;
                 if(infoAterGet.gender == 1){
                     gender = "Male";
                     genderHWho = "MaleHWho";
@@ -531,7 +460,7 @@ class Model extends BaseModel {
                     return prob * 100;
                 }
 
-                // Hàm tính chuẩn theo WHO
+                // Hàm tính chiều cao theo chuẩn theo WHO
                 function evaluateHeightW({H, SD2neg, SD1neg, SD1, SD2}) {
                     let conclusion = '';
                 
@@ -552,21 +481,43 @@ class Model extends BaseModel {
                     return conclusion;
                 }
 
-                function evaluateWBmi({H, SD2neg, SD1neg, SD1, SD2}) {
+                // Tính chuẩn cân nặng theo WHO
+                function evaluateWWHO({ WIndex, SD2neg, SD1neg, SD1, SD2, W, minQuantity, maxQuantity }) {
                     let conclusion = '';
                 
-                    if (H < SD2neg) {
-                        conclusion = 'Gầy theo chuẩn BMI';
-                    } else if (H >= SD2neg && H < SD1neg) {
-                        conclusion = 'Thiếu cân theo chuẩn BMI';
-                    } else if (H >= SD1neg && H <= SD1) {
-                        conclusion = 'Bình thường theo chuẩn BMI';
-                    } else if (H > SD1) {
-                        conclusion = 'Thừa cân theo chuẩn BMI';
-                    } else if (H > SD2) {
-                        conclusion = 'Béo phí theo chuẩn BMI';
+                    if (WIndex < SD2neg) {
+                        conclusion = `Gầy. Bé cần tăng tối thiểu ${Number(minQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                    } else if (WIndex >= SD2neg && WIndex < SD1neg) {
+                        conclusion = `Thiếu cân. Bé cần tăng tối thiểu ${Number(minQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                    } else if (WIndex >= SD1neg && WIndex <= SD1) {
+                        conclusion = `Đủ cân. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                    } else if (WIndex > SD1) {
+                        conclusion = `Thừa cân. Bé cần giảm tối thiểu ${Number(maxQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                    } else if (WIndex > SD2) {
+                        conclusion = `Béo phí. Bé cần giảm tối thiểu ${Number(maxQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
                     } else {
-                        conclusion = 'Không xác định'; // fallback an toàn
+                        conclusion = `Không xác định`; // fallback an toàn
+                    }
+                
+                    return conclusion;
+                }
+
+                // Tính chuẩn cân nặng theo BMI
+                function evaluateWBmi({ WIndex, SD2neg, SD1neg, SD1, SD2, W, minQuantity, maxQuantity }) {
+                    let conclusion = '';
+                
+                    if (WIndex < SD2neg) {
+                        conclusion = `Gầy. Bé cần tăng tối thiểu ${Number(minQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                    } else if (WIndex >= SD2neg && WIndex < SD1neg) {
+                        conclusion = `Thiếu cân. Bé cần tăng tối thiểu ${Number(minQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                    } else if (WIndex >= SD1neg && WIndex <= SD1) {
+                        conclusion = `Đủ cân. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits: 2,maximumFractionDigits: 2})}kg`;
+                    } else if (WIndex > SD1) {
+                        conclusion = `Thừa cân. Bé cần giảm tối thiểu ${Number(maxQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                    } else if (WIndex > SD2) {
+                        conclusion = `Béo phí. Bé cần giảm tối thiểu ${Number(maxQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                    } else {
+                        conclusion = `Không xác định`; // fallback an toàn
                     }
                 
                     return conclusion;
@@ -774,16 +725,19 @@ class Model extends BaseModel {
                             const agemosCheck = sheet2.cell(`A${i}`).value();
     
                             if (agemosCheck >= ageInMonths) {
-                                whoWS = sheet2.cell(`I${i}`).value();
+                                // console.log({agemosCheck})
+                                whoWS = sheet2.cell(`I${i}`).value(); // Không sử dụng cho cân nặng
     
                                 let SD2neg = sheet2.cell(`G${i}`).value();
                                 let SD1neg = sheet2.cell(`H${i}`).value();
                                 let SD1 = sheet2.cell(`J${i}`).value();
                                 let SD2 = sheet2.cell(`K${i}`).value();
+
+                                let minQuantity = SD1neg, maxQuantity = SD1
     
-                                noticeW =  evaluateHeightW({H: W, SD2neg, SD1neg, SD1, SD2})
+                                noticeW =  evaluateWWHO({WIndex: W, SD2neg, SD1neg, SD1, SD2, W, minQuantity, maxQuantity})
     
-                                wdfs = Number(Number(W - whoWS).toFixed(2))
+                                wdfs = Number(Number(W - whoWS).toFixed(2)) // Không sử dụng cho cân nặng
     
                                 // ✅ Ngắt vòng lặp sau khi tìm thấy
                                 break;
@@ -797,18 +751,23 @@ class Model extends BaseModel {
                             const agemosCheck = sheet2.cell(`A${i}`).value();
     
                             if (agemosCheck >= ageInMonths) {
-                                whoWS = sheet2.cell(`I${i}`).value();
-
-                                let BIM = W*10000/(X * X)
+                                // console.log({agemosCheck})
+                                whoWS = sheet2.cell(`I${i}`).value(); // Công thức sai, không sử dụng
+                                
+                                let BIM = W/(Xm * Xm)
+                                // console.log({Xm})
+                                // console.log({BIM})
     
                                 let SD2neg = sheet2.cell(`G${i}`).value();
                                 let SD1neg = sheet2.cell(`H${i}`).value();
                                 let SD1 = sheet2.cell(`J${i}`).value();
                                 let SD2 = sheet2.cell(`K${i}`).value();
+
+                                let minQuantity = SD1neg*Xm*Xm, maxQuantity = SD1*Xm*Xm
     
-                                noticeW =  evaluateWBmi({H: BIM, SD2neg, SD1neg, SD1, SD2})
+                                noticeW =  evaluateWBmi({ WIndex: BIM, SD2neg, SD1neg, SD1, SD2, W, minQuantity, maxQuantity })
     
-                                wdfs = Number(Number(W - whoWS).toFixed(2))
+                                wdfs = Number(Number(W - whoWS).toFixed(2)) // Công thức sai, không sử dụng
     
                                 // ✅ Ngắt vòng lặp sau khi tìm thấy
                                 break;
