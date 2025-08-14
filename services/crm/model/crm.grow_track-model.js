@@ -484,35 +484,16 @@ class Model extends BaseModel {
                 // Tính chuẩn cân nặng theo WHO
                 function evaluateWWHO({ WIndex, SD2neg, SD1neg, SD0, SD1, SD2, W, minQuantity, maxQuantity }) {
                     let conclusion = '';
-                
-                    // if (WIndex < SD2neg) {
-                    //     conclusion = `Gầy. Bé cần tăng tối thiểu ${Number(minQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
-                    // } else if (WIndex >= SD2neg && WIndex < SD1neg) {
-                    //     conclusion = `Thiếu cân. Bé cần tăng tối thiểu ${Number(minQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
-                    // } else if (WIndex >= SD1neg && WIndex <= SD1) {
-                    //     conclusion = `Đủ cân. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
-                    // } else if (WIndex > SD1) {
-                    //     conclusion = `Thừa cân. Bé cần giảm tối thiểu ${Number(maxQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
-                    // } else if (WIndex > SD2) {
-                    //     conclusion = `Béo phí. Bé cần giảm tối thiểu ${Number(maxQuantity - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Cân nặng chuẩn từ ${Number(minQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg đến ${Number(maxQuantity).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
-                    // } else {
-                    //     conclusion = `Không xác định`; // fallback an toàn
-                    // }
-
                     if (WIndex < SD2neg) {
-                        conclusion = `Gầy. Bé thiếu cân so với cân nặng trung bình là ${Number(SD0 - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                        conclusion = `Dưới chuẩn cấp độ 2. Bé nhẹ hơn so với cân nặng trung bình là ${Number(SD0 - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
                     } else if (WIndex >= SD2neg && WIndex < SD1neg) {
-                        conclusion = `Thiếu cân. Bé thiếu cân so với cân nặng trung bình là ${Number(SD0 - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                        conclusion = `Dưới chuẩn cấp độ 1. Bé nhẹ hơn so với cân nặng trung bình là ${Number(SD0 - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
                     } else if (WIndex >= SD1neg && WIndex <= SD1) {
-                        if(WIndex < SD0){
-                            conclusion = `Đạt chuẩn. Bé nhẹ hơn so với cân nặng trung bình là ${Number(SD0 - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
-                        }else{
-                            conclusion = `Đạt chuẩn. Bé nặng hơn so với cân nặng trung bình là ${Number(W - SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
-                        }
+                        conclusion = `Đạt chuẩn. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
                     } else if (WIndex > SD1) {
-                        conclusion = `Thừa cân. Bé thừa cân so với cân nặng trung bình là ${Number(W - SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                        conclusion = `Trên chuẩn cấp độ 1. Bé nặng hơn so với cân nặng trung bình là ${Number(W - SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
                     } else if (WIndex > SD2) {
-                        conclusion = `Béo phí. Bé thừa cân so với cân nặng trung bình là ${Number(W - SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                        conclusion = `Trên chuẩn cấp độ 2. Bé nặng hơn so với cân nặng trung bình là ${Number(W - SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
                     } else {
                         conclusion = `Không xác định`; // fallback an toàn
                     }
