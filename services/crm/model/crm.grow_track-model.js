@@ -380,7 +380,19 @@ class Model extends BaseModel {
      */
     getInfo({ trackID, userID, select, populates }) {
         return new Promise(async (resolve) => {
-            try {                
+            try { 
+                /**
+                 * CHIỀU CAO
+                 * 0-5 tuổi thì WHO theo từng ngày
+                 * Trên 5 tuổi thì theo WHO và theo tháng
+                 */      
+                
+                /**
+                 * CÂN NẶNG
+                 * 0-5 tuổi thì WHO theo từng ngày
+                 * 5-10 tuổi thì theo WHO và theo từng tháng
+                 * Trên 10 tuổi thì theo BMI và theo từng tháng
+                 */  
                 if(populates && typeof populates === 'string'){
                     if(!IsJsonString(populates))
                         return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -404,13 +416,17 @@ class Model extends BaseModel {
 
                 let L, M, S, Z, P, startAge, endAge = 20, hdfs, whoHS, wdfs, whoWS
 
-                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, Xm = infoAterGet.height/100, W = infoAterGet.weight, gender, genderHWho, genderWWho;
+                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, Xm = infoAterGet.height/100, W = infoAterGet.weight
+                let gender, genderHWho5, genderHWho, genderWWho;
+
                 if(infoAterGet.gender == 1){
                     gender = "Male";
+                    genderHWho5 = "LFA_boys_z_exp";
                     genderHWho = "MaleHWho";
                     genderWWho = "MaleWWho";
                 }else{
                     gender = "Female";
+                    genderHWho5 = "LFA_girls_z_exp";
                     genderHWho = "FemaleHWho";
                     genderWWho = "FemaleWWho";
                 }
@@ -431,7 +447,24 @@ class Model extends BaseModel {
                     return months;
                 }
 
+                function getDayDifference(date1, date2) {
+                    const d1 = new Date(date1);
+                    const d2 = new Date(date2);
+
+                    // Tính số mili-giây giữa 2 mốc thời gian
+                    const diffTime = Math.abs(d2 - d1);
+
+                    // Chia cho số mili-giây trong 1 ngày
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+                    return diffDays;
+                }
+
                 let ageInMonths = getMonthDifference(date1, date2)
+                let ageInDays = getDayDifference(date1, date2)
+
+                console.log({ageInMonths})
+                console.log({ageInDays})
 
                 // Hàm tính Zscore theo: X, L, M, S
                 function calculateZScore(X, L, M, S) {
@@ -461,7 +494,7 @@ class Model extends BaseModel {
                 }
 
                 // Hàm tính chiều cao theo chuẩn theo WHO
-                function evaluateHeightW({H, SD2neg, SD1neg, SD1, SD2}) {
+                function evaluateHeightW({H, SD2neg, SD1neg, SD0, SD1, SD2}) {
                     let conclusion = '';
                 
                     if (H < SD2neg) {
@@ -531,9 +564,14 @@ class Model extends BaseModel {
                     const sheet = workbook.sheet(gender);
                     const sheet1 = workbook.sheet(genderHWho);
                     const sheet2 = workbook.sheet(genderWWho);
+                    const sheet3 = workbook.sheet(genderHWho5);
+                    console.log({genderHWho5})
+                    // const sheet4 = workbook.sheet(genderHWho5);
+
                     const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
                     const lastRow1 = sheet1.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
                     const lastRow2 = sheet2.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
+                    const lastRow3 = sheet3.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
                     for (let i = 2; i <= lastRow; i++) {
@@ -696,23 +734,56 @@ class Model extends BaseModel {
 
                     // Kiểm tra cao so với chuẩn WHO
                     let noticeH = ''
-                    for (let i = 2; i <= lastRow1; i++) {
-                        const agemosCheck = sheet1.cell(`A${i}`).value();
+                    if(ageInDays <= 1856){
+                        for (let i = 2; i <= lastRow3; i++) {
+                            const agedaysCheck = sheet3.cell(`A${i}`).value();
 
-                        if (agemosCheck >= ageInMonths) {
-                            whoHS = sheet1.cell(`K${i}`).value();
+                            if (agedaysCheck >= ageInDays) {
+                                whoHS = sheet3.cell(`K${i}`).value();
 
-                            let SD2neg = sheet1.cell(`I${i}`).value();
-                            let SD1neg = sheet1.cell(`J${i}`).value();
-                            let SD1 = sheet1.cell(`L${i}`).value();
-                            let SD2 = sheet1.cell(`M${i}`).value();
+                                let SD2neg = sheet3.cell(`I${i}`).value();
+                                let SD1neg = sheet3.cell(`J${i}`).value();
+                                let SD0 = sheet3.cell(`K${i}`).value();
+                                let SD1 = sheet3.cell(`L${i}`).value();
+                                let SD2 = sheet3.cell(`M${i}`).value();
 
-                            noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD1, SD2})
+                                noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
 
-                            hdfs = Number(Number(X - whoHS).toFixed(2))
+                                console.log({SD0})
+                                console.log({noticeH})
 
-                            // ✅ Ngắt vòng lặp sau khi tìm thấy
-                            break;
+                                hdfs = Number(Number(X - whoHS).toFixed(2))
+
+                                // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                break;
+                            }
+                        }
+
+                        // console.log({noticeH})
+                        // console.log({SD0})
+                    }else{
+                        for (let i = 2; i <= lastRow1; i++) {
+                            const agemosCheck = sheet1.cell(`A${i}`).value();
+
+                            if (agemosCheck >= ageInMonths) {
+                                whoHS = sheet1.cell(`K${i}`).value();
+
+                                let SD2neg = sheet1.cell(`I${i}`).value();
+                                let SD1neg = sheet1.cell(`J${i}`).value();
+                                let SD0 = sheet1.cell(`K${i}`).value();
+                                let SD1 = sheet1.cell(`L${i}`).value();
+                                let SD2 = sheet1.cell(`M${i}`).value();
+
+                                noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
+
+                                console.log({SD0})
+                                console.log({noticeH})
+
+                                hdfs = Number(Number(X - whoHS).toFixed(2))
+
+                                // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                break;
+                            }
                         }
                     }
 
@@ -724,7 +795,7 @@ class Model extends BaseModel {
                             const agemosCheck = sheet2.cell(`A${i}`).value();
     
                             if (agemosCheck >= ageInMonths) {
-                                // console.log({agemosCheck})
+                                console.log({agemosCheck})
                                 whoWS = sheet2.cell(`I${i}`).value(); // Không sử dụng cho cân nặng
     
                                 let SD2neg = sheet2.cell(`G${i}`).value();
@@ -751,12 +822,12 @@ class Model extends BaseModel {
                             const agemosCheck = sheet2.cell(`A${i}`).value();
     
                             if (agemosCheck >= ageInMonths) {
-                                // console.log({agemosCheck})
+                                console.log({agemosCheck})
                                 whoWS = sheet2.cell(`I${i}`).value(); // Công thức sai, không sử dụng
                                 
                                 let BIM = W/(Xm * Xm)
-                                // console.log({Xm})
-                                // console.log({BIM})
+                                console.log({Xm})
+                                console.log({BIM})
     
                                 let SD2neg = sheet2.cell(`G${i}`).value();
                                 let SD1neg = sheet2.cell(`H${i}`).value();
