@@ -417,17 +417,21 @@ class Model extends BaseModel {
                 let L, M, S, Z, P, startAge, endAge = 20, hdfs, whoHS, wdfs, whoWS
 
                 let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, Xm = infoAterGet.height/100, W = infoAterGet.weight
-                let gender, genderHWho5, genderHWho, genderWWho;
+                let gender, genderHWho5, genderHWho, genderWWho5, genderWWho;
 
                 if(infoAterGet.gender == 1){
+                    console.log('=====Nam=====')
                     gender = "Male";
                     genderHWho5 = "LFA_boys_z_exp";
                     genderHWho = "MaleHWho";
+                    genderWWho5 = "WFA_boys_z_exp";
                     genderWWho = "MaleWWho";
                 }else{
+                    console.log('=====Nữ=====')
                     gender = "Female";
                     genderHWho5 = "LFA_girls_z_exp";
                     genderHWho = "FemaleHWho";
+                    genderWWho5 = "WFA_girls_z_exp";
                     genderWWho = "FemaleWWho";
                 }
 
@@ -565,13 +569,13 @@ class Model extends BaseModel {
                     const sheet1 = workbook.sheet(genderHWho);
                     const sheet2 = workbook.sheet(genderWWho);
                     const sheet3 = workbook.sheet(genderHWho5);
-                    console.log({genderHWho5})
-                    // const sheet4 = workbook.sheet(genderHWho5);
+                    const sheet4 = workbook.sheet(genderWWho5);
 
                     const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
                     const lastRow1 = sheet1.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
                     const lastRow2 = sheet2.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
                     const lastRow3 = sheet3.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
+                    const lastRow4 = sheet4.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
                     for (let i = 2; i <= lastRow; i++) {
@@ -749,6 +753,7 @@ class Model extends BaseModel {
 
                                 noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
 
+                                console.log('======Chiều cao=======')
                                 console.log({SD0})
                                 console.log({noticeH})
 
@@ -776,6 +781,7 @@ class Model extends BaseModel {
 
                                 noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
 
+                                console.log('======Chiều cao=======')
                                 console.log({SD0})
                                 console.log({noticeH})
 
@@ -790,23 +796,26 @@ class Model extends BaseModel {
                     // Kiểm tra cân nặng so với chuẩn WHO, BMI
                     let noticeW = ''
                     // Dưới 10 tuổi theo WHO
-                    if(ageInMonths <= 120){
-                        for (let i = 2; i <= 122; i++) {
-                            const agemosCheck = sheet2.cell(`A${i}`).value();
+                    if(ageInDays <= 1856){
+                        for (let i = 2; i <= lastRow4; i++) {
+                            const agedaysCheck = sheet4.cell(`A${i}`).value();
     
-                            if (agemosCheck >= ageInMonths) {
-                                console.log({agemosCheck})
-                                whoWS = sheet2.cell(`I${i}`).value(); // Không sử dụng cho cân nặng
+                            if (agedaysCheck >= ageInDays) {
+                                whoWS = sheet4.cell(`I${i}`).value(); // Không sử dụng cho cân nặng
     
-                                let SD2neg = sheet2.cell(`G${i}`).value();
-                                let SD1neg = sheet2.cell(`H${i}`).value();
-                                let SD0 = sheet2.cell(`I${i}`).value();
-                                let SD1 = sheet2.cell(`J${i}`).value();
-                                let SD2 = sheet2.cell(`K${i}`).value();
+                                let SD2neg = sheet4.cell(`G${i}`).value();
+                                let SD1neg = sheet4.cell(`H${i}`).value();
+                                let SD0 = sheet4.cell(`I${i}`).value();
+                                let SD1 = sheet4.cell(`J${i}`).value();
+                                let SD2 = sheet4.cell(`K${i}`).value();
 
                                 let minQuantity = SD1neg, maxQuantity = SD1
     
                                 noticeW =  evaluateWWHO({WIndex: W, SD2neg, SD1neg, SD0, SD1, SD2, W, minQuantity, maxQuantity})
+
+                                console.log('======Cân nặng=======')
+                                console.log({SD0})
+                                console.log({noticeW})
     
                                 wdfs = Number(Number(W - whoWS).toFixed(2)) // Không sử dụng cho cân nặng
     
@@ -814,34 +823,66 @@ class Model extends BaseModel {
                                 break;
                             }
                         }
-                    }
+                    }else{
+                        if(ageInMonths <= 120){
+                            for (let i = 2; i <= 122; i++) {
+                                const agemosCheck = sheet2.cell(`A${i}`).value();
+        
+                                if (agemosCheck >= ageInMonths) {
+                                    console.log({agemosCheck})
+                                    whoWS = sheet2.cell(`I${i}`).value(); // Không sử dụng cho cân nặng
+        
+                                    let SD2neg = sheet2.cell(`G${i}`).value();
+                                    let SD1neg = sheet2.cell(`H${i}`).value();
+                                    let SD0 = sheet2.cell(`I${i}`).value();
+                                    let SD1 = sheet2.cell(`J${i}`).value();
+                                    let SD2 = sheet2.cell(`K${i}`).value();
 
-                    // Trên 10 tuổi theo BMI: cân nặng (kg)/Bình phương chiều cao (m)
-                    else{
-                        for (let i = 123; i <= lastRow2; i++) {
-                            const agemosCheck = sheet2.cell(`A${i}`).value();
-    
-                            if (agemosCheck >= ageInMonths) {
-                                console.log({agemosCheck})
-                                whoWS = sheet2.cell(`I${i}`).value(); // Công thức sai, không sử dụng
-                                
-                                let BIM = W/(Xm * Xm)
-                                console.log({Xm})
-                                console.log({BIM})
-    
-                                let SD2neg = sheet2.cell(`G${i}`).value();
-                                let SD1neg = sheet2.cell(`H${i}`).value();
-                                let SD1 = sheet2.cell(`J${i}`).value();
-                                let SD2 = sheet2.cell(`K${i}`).value();
+                                    let minQuantity = SD1neg, maxQuantity = SD1
+        
+                                    noticeW =  evaluateWWHO({WIndex: W, SD2neg, SD1neg, SD0, SD1, SD2, W, minQuantity, maxQuantity})
 
-                                let minQuantity = SD1neg*Xm*Xm, maxQuantity = SD1*Xm*Xm
-    
-                                noticeW =  evaluateWBmi({ WIndex: BIM, SD2neg, SD1neg, SD1, SD2, W, minQuantity, maxQuantity })
-    
-                                wdfs = Number(Number(W - whoWS).toFixed(2)) // Công thức sai, không sử dụng
-    
-                                // ✅ Ngắt vòng lặp sau khi tìm thấy
-                                break;
+                                    console.log('======Cân nặng=======')
+                                    console.log({SD0})
+                                    console.log({noticeW})
+            
+                                    wdfs = Number(Number(W - whoWS).toFixed(2)) // Không sử dụng cho cân nặng
+        
+                                    // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                    break;
+                                }
+                            }
+                        }else{ // Trên 10 tuổi theo BMI: cân nặng (kg)/Bình phương chiều cao (m)
+                            for (let i = 123; i <= lastRow2; i++) {
+                                const agemosCheck = sheet2.cell(`A${i}`).value();
+        
+                                if (agemosCheck >= ageInMonths) {
+                                    console.log({agemosCheck})
+                                    whoWS = sheet2.cell(`I${i}`).value(); // Công thức sai, không sử dụng
+                                    
+                                    let BIM = W/(Xm * Xm)
+                                    console.log({Xm})
+                                    console.log({BIM})
+        
+                                    let SD2neg = sheet2.cell(`G${i}`).value();
+                                    let SD1neg = sheet2.cell(`H${i}`).value();
+                                    let SD0 = sheet2.cell(`I${i}`).value();
+                                    let SD1 = sheet2.cell(`J${i}`).value();
+                                    let SD2 = sheet2.cell(`K${i}`).value();
+
+                                    let minQuantity = SD1neg*Xm*Xm, maxQuantity = SD1*Xm*Xm
+        
+                                    noticeW =  evaluateWBmi({ WIndex: BIM, SD2neg, SD1neg, SD1, SD2, W, minQuantity, maxQuantity })
+
+                                    console.log('======Cân nặng=======')
+                                    console.log({SD0})
+                                    console.log({noticeW})
+        
+                                    wdfs = Number(Number(W - whoWS).toFixed(2)) // Công thức sai, không sử dụng
+        
+                                    // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                    break;
+                                }
                             }
                         }
                     }
