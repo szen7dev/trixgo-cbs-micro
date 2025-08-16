@@ -526,7 +526,11 @@ class Model extends BaseModel {
                     } else if (WIndex >= SD2neg && WIndex < SD1neg) {
                         conclusion = `Dưới chuẩn cấp độ 1. Bé nhẹ hơn so với cân nặng trung bình là ${Number(SD0 - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
                     } else if (WIndex >= SD1neg && WIndex <= SD1) {
-                        conclusion = `Đạt chuẩn. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                        if(W > SD0){
+                            conclusion = `Đạt chuẩn. Bé nặng hơn so với cân nặng trung bình là ${Number(W - SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                        }else{
+                            conclusion = `Đạt chuẩn. Bé nhẹ hơn so với cân nặng trung bình là ${Number(SD0 - W).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
+                        }
                     } else if (WIndex > SD1) {
                         conclusion = `Trên chuẩn cấp độ 1. Bé nặng hơn so với cân nặng trung bình là ${Number(W - SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg. Chuẩn WHO: ${Number(SD0).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2})}kg`;
                     } else if (WIndex > SD2) {
