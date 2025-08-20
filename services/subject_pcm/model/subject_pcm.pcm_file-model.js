@@ -907,7 +907,7 @@ class Model extends BaseModel {
                     Bucket: bucketNameDemo,
                     Key: fileNameZip,
                     Body: passThrough,
-                    ACL: 'public-read',
+                    // ACL: 'public-read',
                     ContentType: 'application/zip',
                 };
 

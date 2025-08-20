@@ -41,7 +41,7 @@ let render_link_upload_file_s3 = async ({ fileName, type, typeUpload, pathS3 }) 
         let signedUrl = await getSignedUrl(s3Object, new PutObjectCommand({
             Bucket: config.bucket,
             Key: key,
-            ACL: "public-read",
+            // ACL: "public-read",
             ContentType: type,
         }), {
             expiresIn: config.signedUrlExpireSeconds,
@@ -84,7 +84,7 @@ const uploadFile = (pathFile, key) => {
             const params = {
                 ContentEncoding: 'base64',
                 ContentType: 'image/jpeg',
-                ACL: 'public-read',
+                // ACL: 'public-read',
                 Bucket: bucket,
                 Key: key,
                 Body: parseBase64ToBuffer

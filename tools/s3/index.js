@@ -51,7 +51,7 @@ const uploadFileS3 = (pathFile, fileName) => {
     // Setting up S3 upload parameters
     const params = {
         Bucket: bucket,
-        ACL: 'public-read',
+        // ACL: 'public-read',
         Key: key, // File name you want to save as in S3
         Body: fileContent,
     };
@@ -101,7 +101,7 @@ const uploadFileS3V2 = (uploadParams) => {
     const params = {
         Bucket: bucketName,
         Key: key,
-        ACL: 'public-read',
+        // ACL: 'public-read',
         ...uploadParams,
     };
     return new Upload({
@@ -138,7 +138,7 @@ const downloadFileS3V2 = (params) => {
                     Bucket: bucketName,
                     Key: zipTo ? `${zipTo}/${fileName}` : `files/temporary_uploads/${KeyDefault}`,
                     Body: passThrough,
-                    ACL: 'public-read',
+                    // ACL: 'public-read',
                     ContentType: 'application/zip',
                 };
                 try {
@@ -188,7 +188,7 @@ const copyFileS3 = (copyParams) => {
 
         const params = {
             Bucket: bucketName,
-            ACL: 'public-read',
+            // ACL: 'public-read',
             ...copyParams
         };
 
@@ -233,7 +233,7 @@ const zipFileToS3 = async (files, key) => {
             Bucket,
             Key,
             Body: passThrough,
-            ACL: 'public-read',
+            // ACL: 'public-read',
             ContentType: 'application/zip',
         };
         try {
