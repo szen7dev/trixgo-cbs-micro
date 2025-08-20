@@ -21,13 +21,13 @@ const s3Options = {
 }
 
 const s3Object = new S3({
-    region: s3Options.region,
-    ...(!isProd() && {
-        credentials: {
-            accessKeyId: s3Options.accessKeyId,
-            secretAccessKey: s3Options.secretAccessKey
-        }
-    })
+    forcePathStyle: false, // Configures to use subdomain/virtual calling format.
+    endpoint: "https://sgp1.digitaloceanspaces.com",
+    region: "us-east-1",
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
 });
 
 const s3Client = s3.createClient({
