@@ -13,13 +13,13 @@ const { RANGE_BASE_PAGINATION_V2 } 	        = require('../../../tools/cursor_bas
 /**
  * import inter-model, exter-model
  */
-class Model extends BaseModel {               
-    
+class Model extends BaseModel {
+
     constructor() {
         super(AUTH__APP_COLL)
     }
-    
-    getList({ lock, limit = 50, lastestID, select, populates = {} }) { 
+
+    getList({ lock, limit = 50, lastestID, select, populates = {} }) {
         // console.log({ lock, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
@@ -38,7 +38,7 @@ class Model extends BaseModel {
                 if(lock){
                     conditionObj.lock = Number(lock);
                 }
-                
+
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -50,7 +50,7 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
- 
+
                 let conditionObjOrg = { ...conditionObj };
 
 				if(lastestID && checkObjectIDs(lastestID)){
@@ -67,7 +67,7 @@ class Model extends BaseModel {
                     let dataPagingAndSort = RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObjOrg });
 					sortBy                = dataPagingAndSort.data.sort;
                 }
-                
+
                 let infoDataAfterGet = await AUTH__APP_COLL.find(conditionObj)
                     .select(select)
                     .limit(+limit+1)
@@ -77,7 +77,7 @@ class Model extends BaseModel {
 
                 if(!infoDataAfterGet)
                     return resolve({ error: true, message: "Lấy danh sách thất bại", keyError: KEY_ERROR.GET_LIST_FAILED, status: 403 });
-                    
+
                 let nextCursor	= null;
                 if(infoDataAfterGet && infoDataAfterGet.length){
                     if(infoDataAfterGet.length > limit){
@@ -96,7 +96,7 @@ class Model extends BaseModel {
                     totalPage,
                     nextCursor,
                 }, status: 200 });
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

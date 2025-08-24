@@ -1593,27 +1593,25 @@ class Model extends BaseModel {
     resolveToken({ token }) {
         return new Promise(async (resolve) => {
             try {
-
                 if(!token || token == '')
                     return resolve({ error: true, message: 'token_invalid' });
 
                 let decoded = await verify(token, JWT_SECRET_KEY);
-
                 if (!decoded) return resolve({ error: true, message: 'token_not_valid' });
 
                 const { infoUser: { _id: userIDAfterDecoded } } = decoded;
 
                 if (!userIDAfterDecoded)
-                    return resolve({ error: true, message: 'token_not_valid' });
+                    return resolve({ error: true, message: 'user_in_token_not_valid' });
 
-                let infoUserDB = await AUTH__USER_COLL.findOne({ status: STATUS_ACTIVE, _id: userIDAfterDecoded });
+                const infoUserDB = await AUTH__USER_COLL.findOne({ status: STATUS_ACTIVE, _id: userIDAfterDecoded });
 
                 if (!infoUserDB)
-                    return resolve({ error: true, message: 'token_not_valid' });
+                    return resolve({ error: true, message: 'user_in_token_not_active' });
 
                 return resolve({ error: false, data: decoded });
             } catch (error) {
-                return resolve({ error: true, message: error.message })
+                return resolve({ error: true, message: error.message });
             }
         })
     }

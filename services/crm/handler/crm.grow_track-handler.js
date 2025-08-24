@@ -30,6 +30,14 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                const { scopes } = ctx.meta;
+                const actionName = ctx.action.name;
+                console.log(`CALLED ACTION: ${actionName}`);
+
+                if (scopes && !scopes.includes(actionName)) {
+                    return { error: true, message: `You don't have permission to access this action` };
+                }
+
                 await this.validateEntity(ctx.params);
                 let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
@@ -64,6 +72,14 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                const { scopes } = ctx.meta;
+                const actionName = ctx.action.name;
+                console.log(`CALLED ACTION: ${actionName}`);
+
+                if (scopes && !scopes.includes(actionName)) {
+                    return { error: true, message: `You don't have permission to access this action` };
+                }
+
                 await this.validateEntity(ctx.params);
                 let { trackID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID } = ctx.params;
 
@@ -92,6 +108,14 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                const { scopes } = ctx.meta;
+                const actionName = ctx.action.name;
+                console.log(`CALLED ACTION: ${actionName}`);
+
+                if (scopes && !scopes.includes(actionName)) {
+                    return { error: true, message: `You don't have permission to access this action` };
+                }
+
                 await this.validateEntity(ctx.params);
                 let {  arraysRemove } = ctx.params;
         				const { _id: userID } = ctx.meta.infoUser;
@@ -126,6 +150,14 @@ module.exports = {
         },
         async handler(ctx) {
             try {
+                const { scopes } = ctx.meta;
+                const actionName = ctx.action.name;
+                console.log(`CALLED ACTION: ${actionName}`);
+
+                if (scopes && !scopes.includes(actionName)) {
+                    return { error: true, message: `You don't have permission to access this action` };
+                }
+
                 await this.validateEntity(ctx.params);
                 let { optionSeller, trackID, contactID, phone, userCreateID, keyword, limit, lastestID, select, populates } = ctx.params;
 

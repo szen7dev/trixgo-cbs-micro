@@ -38,6 +38,10 @@ exports.KEY_ERROR  = {
     GET_LIST_FAILED     : "get_list_failed",
     PARAMS_INVALID      : "params_invalid",
     ITEM_EXISTED        : "item_existed",
+    CLIENT_ALREADY_EXIST: "client_already_exist",
+    CLIENT_NOT_EXIST    : "client_not_exist",
+    CLIENT_REVOKED      : "client_revoked",
+    CLIENT_SECRET_NOT_MATCH: "client_secret_not_match",
 }
 
 exports.REACTION_TYPES = [1,2,3,4,5,6,7];
