@@ -1,7 +1,7 @@
 "use strict";
 
 const crypto = require('crypto');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const BaseModel                         = require('../../../tools/db/base_model');
 const { KEY_ERROR }                     = require('../../../tools/keys/index');
