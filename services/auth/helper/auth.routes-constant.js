@@ -10,7 +10,8 @@ const BASE_ROUTE = '/auth';
        APP_ROLE_MENU     = '/app_role_menus',
        APP_ROLE          = '/app_roles',
        APP_USER          = '/app_users',
-       APP_COMPANY       = '/app_companies'
+       APP_COMPANY       = '/app_companies',
+       CLIENT_CREDENTIAL = '/client_credentials'
 
 const CF_ROUTINGS_AUTH = {
     ORIGIN_APP: BASE_ROUTE,
@@ -81,6 +82,13 @@ const CF_ROUTINGS_AUTH = {
      * VERSION APP
      */
     CHECK_LASTEST_APP : `/check-lastest-app`,
+
+    /**
+     * Client credential
+     */
+    CLIENT_CREDENTIAL : `${BASE_ROUTE}${CLIENT_CREDENTIAL}`,
+    CLIENT_CREDENTIAL_GET_TOKEN : `${BASE_ROUTE}${CLIENT_CREDENTIAL}/token`,
+    CLIENT_CREDENTIAL_REVOKE : `${BASE_ROUTE}${CLIENT_CREDENTIAL}/revoke`,
 }
 
 exports.CF_ROUTINGS_AUTH = CF_ROUTINGS_AUTH;

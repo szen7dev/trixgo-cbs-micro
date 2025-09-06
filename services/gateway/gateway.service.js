@@ -124,18 +124,18 @@ module.exports = {
 		// async authenticate(ctx, route, req, res) {
 		// 	try {
 		// 		let accessToken = req.headers[ 'x-access-token' ] || req.headers.token || null;
-		// 		if(accessToken){
+		// 		// if(accessToken){
 
-		// 			let resolveToken = null;
-		// 			// let resolveToken = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token: accessToken })
-		// 			if(resolveToken.error){
-		// 				return Promise.reject(resolveToken.message);
-		// 			}
-		// 			return Promise.resolve(null)
-		// 		}
-		// 		else{
-		// 			return Promise.reject('redirect_url_clear_session');
-		// 		}
+		// 		// 	let resolveToken = null;
+		// 		// 	// let resolveToken = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token: accessToken })
+		// 		// 	if(resolveToken.error){
+		// 		// 		return Promise.reject(resolveToken.message);
+		// 		// 	}
+		// 		// 	return Promise.resolve(null)
+		// 		// }
+		// 		// else{
+		// 		// 	return Promise.reject('redirect_url_clear_session');
+		// 		// }
 		// 	} catch (error) {
 		// 		return Promise.reject(error);
 		// 	}
@@ -151,15 +151,21 @@ module.exports = {
 		 */
 		async authorize(ctx, _, req) {
 			let token;
-			if (req.headers.authorization) {
-				let type = req.headers.authorization.split(" ")[0];
-				if (type === "Token" || type === "Bearer")
-					token = req.headers.authorization.split(" ")[1];
+			let type;
+			const authHeader = req.headers.authorization;
+
+			if (authHeader) {
+				type = authHeader.split(" ")[0];
+
+				if (type === "Token" || type === "Bearer" || type === "OAuth") {
+					token = authHeader.split(" ")[1];
+				}
+			} else {
+				return Promise.reject('Unauthorized');
 			}
 
 			try {
 				let checkAuthorization = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.RESOLVE_TOKEN}`, { token });
-				// console.log({ checkAuthorization })
 
 				if (checkAuthorization.error) {
 					return Promise.reject(checkAuthorization.message);
@@ -169,13 +175,19 @@ module.exports = {
 					return Promise.reject('Unauthorized');
 				}
 
-				const { infoUser, exp } = checkAuthorization.data;
+				const { infoUser, exp, scopes, clientId } = checkAuthorization.data;
 
 				// if(exp < Date.now()) {
 				// 	return Promise.reject('Token is expired');
 				// }
 
 				this.logger.info("Authenticated via JWT: ", infoUser.username, exp);
+
+				// For server-to-server
+				if (type === "OAuth") {
+					ctx.meta.scopes = scopes;
+					ctx.meta.clientId = clientId;
+				}
 
 				// Reduce user fields (it will be transferred to other nodes)
 				ctx.meta.infoUser = infoUser;
