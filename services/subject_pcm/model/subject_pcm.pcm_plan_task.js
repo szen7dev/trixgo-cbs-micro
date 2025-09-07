@@ -56,7 +56,7 @@ const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file
 let dataTF = {
     appID: "5eabfdc72171391e5f6a0468", // PCM
     menuID: "623ef213e998e94feda0ccd8", //
-    type: 1, 
+    type: 1,
     action: 1, // Xem
 }
 let dataTF2 = {
@@ -639,7 +639,7 @@ class Model extends BaseModel {
                             accessUsers: relatedRemoves, // Xóa trong quyền truy cập
                             news: relatedRemoves, // Xóa trong newFeed
                         }
-                       
+
                         /**
                          * Ghi log
                          */
@@ -652,7 +652,7 @@ class Model extends BaseModel {
                                 str = str + item.fullname
                             }
                         }
-                        
+
                         await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
                             taskID: `${taskID}`,
                             type: 4,
@@ -827,7 +827,7 @@ class Model extends BaseModel {
                             str = str + item.fullname
                         }
                     }
-                    
+
                     await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
                         taskID: `${taskID}`,
                         type: 4,
@@ -837,7 +837,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * TÍNH CHẤT CHỦ ĐỀ 
+                 * TÍNH CHẤT CHỦ ĐỀ
                  * - Không cho phép thay đổi Phân loại Thầu và mua sắm/Báo cáo/Họp
                  */
                 if(subType && !isNaN(subType)){
@@ -1090,8 +1090,8 @@ class Model extends BaseModel {
                      * Các công việc khác
                      */
                     else{
-                        if( (infoTask?.assignee?._id.toString() === userID.toString()) 
-                            || (infoTask?.author.toString() === userID.toString()) 
+                        if( (infoTask?.assignee?._id.toString() === userID.toString())
+                            || (infoTask?.author.toString() === userID.toString())
                             || (infoTask.project.admins.map(item=>item.toString()).includes(userID?.toString())))
                         {
                             dataUpdate.approver = userID
@@ -1279,14 +1279,14 @@ class Model extends BaseModel {
                     let initialComment = await PCM_COMMENT_COLL.findOne({type: 5, task: taskID })
                     if(initialComment){
                         await PCM_COMMENT_COLL.updateMany(
-                            {type: 5, task: taskID }, 
-                            {$set : 
+                            {type: 5, task: taskID },
+                            {$set :
                                 {
                                     content: infoAfterUpdate.name,
                                     contentcv: convertStr,
                                     accessUsers: infoAfterUpdate.accessUsers
                                 }
-                            }, 
+                            },
                             { new: true })
                     }else{
                         await ctx.call(`${CF_DOMAIN_SERVICES.SUBJECT_PCM}.${CF_ACTIONS_SUBJECT_PCM.PCM_PLAN_TASK_COMMENT_INSERT}`, {
@@ -1348,7 +1348,7 @@ class Model extends BaseModel {
                 // if(status && status == 3 && ![4].includes(infoTask.subtype)){
                 //     // Cập nhật công việc này về trạng thái Mặc định
                 //     await PCM_PLAN_TASK_COLL.findByIdAndUpdate(taskID,
-                //         { upcoming: 1 }, 
+                //         { upcoming: 1 },
                 //         { new: true })
 
                 //     // Nếu công việc cha là Quy trình động thì kích hoạt công việc kế tiếp
@@ -1374,12 +1374,12 @@ class Model extends BaseModel {
                 //             if(isLastestElement === 1){
                 //                 // Cập nhật trạng thái quy trình động cho phần tử cha
                 //                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(infoAfterUpdate?.parent,
-                //                 { upcoming: 1 }, 
+                //                 { upcoming: 1 },
                 //                 { new: true })
                 //             }else{
                 //                 // Cập nhật trạng thái quy trình động cho phần tử tiếp theo
                 //                 await PCM_PLAN_TASK_COLL.findByIdAndUpdate(nextSubTaskID,
-                //                 { upcoming: 1 }, 
+                //                 { upcoming: 1 },
                 //                 { new: true })
                 //             }
                 //         }
@@ -1947,7 +1947,7 @@ class Model extends BaseModel {
                     ctx
                 })
                 if(infoAfterCloneTask.error) return resolve(infoAfterCloneTask);
-                
+
                 // Copy các công việc con nếu có
                 if(isCloneChildTask) {
                     // Clone child task (level 2)
@@ -2009,25 +2009,25 @@ class Model extends BaseModel {
                     let isAssignee = false;
                     let isRelated = false;
                     let isMemberGroup = false;
-    
+
                     if(author.toString() == userID.toString()){
                         isAuthor = true;
                     }
-    
+
                     if(assignee.toString() == userID.toString()){
                         isAssignee = true;
                     }
-    
+
                     related = related.map(item => `${item}`);
                     if(related.includes(userID)){
                         isRelated = true;
                     }
-    
+
                     let memberInGroup = group?.members?.map(item => `${item}`) || [];
                     if(memberInGroup.includes(userID.toString())){
                         isMemberGroup = true;
                     }
-    
+
                     if(!isAuthor && !isAssignee && !isRelated && !isMemberGroup)
                         return resolve({ error: true, message: 'permission_denied', keyError: KEY_ERROR.PERMISSION_DENIED })
                 }
@@ -2059,13 +2059,13 @@ class Model extends BaseModel {
                 // Record Traffic
                 //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
-                // // Ghi dữ liệu Hồ sơ thầu    
+                // // Ghi dữ liệu Hồ sơ thầu
                 // if(infoTask.subtype == 14){
-                //     let infoTF = await ANALYSIS__HISTORY_TRAFFIC_MODEL.insert({ 
+                //     let infoTF = await ANALYSIS__HISTORY_TRAFFIC_MODEL.insert({
                 //         appID: "60390cb12b367a1cdd9f3fb2", // DataHub
                 //         menuID: "623f239fe998e94feda0cd9f", // Hồ sơ mời thầu
-                //         type: 2, 
-                //         companyOfAuthor: companyID, 
+                //         type: 2,
+                //         companyOfAuthor: companyID,
                 //         userCreate: userID
                 //     })
                 // }
@@ -2380,7 +2380,7 @@ class Model extends BaseModel {
 
                     if(!isNaN(subtype)){
                         conditionObj.subtype = +subtype;
-                    }                   
+                    }
                 }else{
                     // Quảng bá sản phẩm dịch vụ
                     if(option == 1){
@@ -2397,7 +2397,7 @@ class Model extends BaseModel {
                         conditionObj = { subtype: 15 }
                     }
                 }
-                
+
                 // console.log('============================')
                 // console.log(conditionObj)
 
@@ -2927,7 +2927,7 @@ class Model extends BaseModel {
                             amount: 1,
                             vatAmount: 1,
                         }
-    
+
                         delete conditionObj.$or
                         conditionObj.company = ObjectID(companyID)
                         conditionObj.subtype = 12
@@ -2947,7 +2947,7 @@ class Model extends BaseModel {
                                 }
                             },
                         ])
-    
+
                         return resolve({ error: false, data: listData })
                     }
                 }
@@ -3267,14 +3267,14 @@ class Model extends BaseModel {
                     // console.log({amountMyTask3})
 
                     return resolve({ error: false, data: {
-                        amountUnreadTask, 
-                        amountMyTaskComing, 
-                        amountMyTaskToday, 
+                        amountUnreadTask,
+                        amountMyTaskComing,
+                        amountMyTaskToday,
                         amountMyApproval,
                         amountMyTask,
                         amountMyTask1,
-                        amountMyTask2, 
-                        amountMyTask3, 
+                        amountMyTask2,
+                        amountMyTask3,
                         amountMyTask4,
                         amountMyTask5
                     }})
@@ -3340,16 +3340,16 @@ class Model extends BaseModel {
                         let [ amountMyTaskToday, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4 ] = await Promise.all([amountMyTaskTodaySync, amountMyTask1Sync, amountMyTask2Sync, amountMyTask3Sync, amountMyTask4Sync])
 
                         return resolve({ error: false, data: {
-                            amountMyTaskToday, 
+                            amountMyTaskToday,
                             amountMyTask1,
-                            amountMyTask2, 
+                            amountMyTask2,
                             amountMyTask3,
                             amountMyTask4
                         }})
                     }
                 }
 
-                
+
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
@@ -3766,7 +3766,7 @@ class Model extends BaseModel {
                             },
                             {
                                 $match: conditionMatch
-                            }, 
+                            },
                             {
                                 $group: {
                                     _id: objectGroup,
@@ -3821,7 +3821,7 @@ class Model extends BaseModel {
                             },
                             {
                                 $match: conditionMatch
-                            }, 
+                            },
                             {
                                 $group: {
                                     _id: objectGroup,
@@ -3841,7 +3841,7 @@ class Model extends BaseModel {
                             },
                             {
                                 $match: conditionMatch
-                            }, 
+                            },
                             {
                                 $group: {
                                     _id: { project: '$project', month: '$month'},
@@ -3869,7 +3869,7 @@ class Model extends BaseModel {
                             },
                             {
                                 $match: conditionMatch
-                            }, 
+                            },
                             {
                                 $group: {
                                     _id: { companyOfAuthor: '$companyOfAuthor', month: '$month'},
@@ -3898,7 +3898,7 @@ class Model extends BaseModel {
                             },
                             {
                                 $match: conditionMatch
-                            }, 
+                            },
                             {
                                 $group: {
                                     _id: { author: '$author', month: '$month'},
@@ -4172,23 +4172,26 @@ class Model extends BaseModel {
                         });
                     }
                 }
-                mailsUser = mailsUser.join(',');
+
+                const recipientEmailsString = mailsUser.join(',');
 
                 // Ghi log
                 await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_LOG_INSERT}`, {
                     taskID: `${taskID}`,
                     type: 2,
                     title: "Thông báo email",
-                    content: `đã thông báo email tới ${mailsUser}`,
+                    content: `đã thông báo email tới ${recipientEmailsString}`,
                 })
-                // console.log({ mailsUser, notice, infoTask })
+
+                console.log({ recipientEmailsString, title, sender, notice })
 
                 const result = await sendNoticeToMember({
-                    email: mailsUser,
+                    email: recipientEmailsString,
                     title,
                     content: { sender, notice, infoTask },
-                    comments: listComment
-                });
+                    comments: listComment,
+                    recipientEmails: mailsUser
+                }, { useLegacy: false });
 
                 return resolve(result);
             } catch (error) {
@@ -4416,7 +4419,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'projectID_invalid' });
 
                 let objectSearch = {
-                    project: ObjectID(projectID), 
+                    project: ObjectID(projectID),
                     companyOfAssignee: { $exists: true }
                 }
 
@@ -4541,8 +4544,8 @@ class Model extends BaseModel {
 
                 return resolve({ error: false, data: {
                     listCompany,
-                    listCompanyAndTaskOverdueWork, 
-                    listCompanyAndTaskNextWeekWork, 
+                    listCompanyAndTaskOverdueWork,
+                    listCompanyAndTaskNextWeekWork,
                     listCompanyAndTaskMoreThan7Days,
                     listCompanyAndTaskFinish
                     } });
@@ -5101,11 +5104,11 @@ class Model extends BaseModel {
                     let infoProject = await DEPARTMENT_COLL.findById(projectID).populate({ path: "members", select: "fullname name" });
                     if(infoProject.error)
                         return res.json(infoProject);
-    
+
                     let memberInProject     = infoProject.members;
                     let planGroupInProject  = await PCM_PLAN_GROUP_COLL.find({ project: projectID, members: {$in: [userID]} }).select("name sign");
                     let listContracts = await CONTRACT_COLL.find({ company: infoProject.company }).select('_id name sign').sort({_id: 1})
-    
+
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_2_ImportTask.xlsm')))
                     .then(async workbook => {
@@ -5115,29 +5118,29 @@ class Model extends BaseModel {
                             workbook.sheet("Export").row(i).cell(2).value(`${item.sign}-${item.name}`);
                             i++
                         });
-    
+
                         var i = 2;
                         memberInProject.forEach((item, index) => {
                             workbook.sheet("Export").row(i).cell(4).value(`${item._id}`);
                             workbook.sheet("Export").row(i).cell(5).value(item.fullname);
                             i++
                         });
-    
+
                         var i = 2;
                         listContracts.forEach((item, index) => {
                             workbook.sheet("Export").row(i).cell(7).value(`${item._id}`);
                             workbook.sheet("Export").row(i).cell(8).value(`${item.sign}-${item.name}`);
                             i++
                         });
-    
+
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
                         const fileName = `Template_import_task_${now.getTime()}.xlsm`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-    
+
                         await workbook.toFileAsync(pathWriteFile);
                         const result = await uploadFileS3(pathWriteFile, fileName);
-    
+
                         fs.unlinkSync(pathWriteFile);
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     })
@@ -5194,8 +5197,8 @@ class Model extends BaseModel {
 
                 // Báo cáo điểm danh
                 else if(option == 3){
-                    let listData = await PCM_COMMENT_COLL.find({ 
-                        companyOfAuthor: companyID, 
+                    let listData = await PCM_COMMENT_COLL.find({
+                        companyOfAuthor: companyID,
                         subType: 16,
                         createAt: {
                             $gte: moment( new Date(fromDate)).toDate(),
@@ -5219,7 +5222,7 @@ class Model extends BaseModel {
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/pcm_attendance_report.xlsx')))
                     .then(async workbook => {
                         var i = 3;
-                        
+
                         listData?.forEach((item, index) => {
                             let year = new Date(item.createAt).getFullYear()
                             let month = new Date(item.createAt).getMonth() + 1
@@ -5233,7 +5236,7 @@ class Model extends BaseModel {
                             let b1 = (new Date(time1)).getTime()
                             let b2 = (new Date(time2)).getTime()
                             let b3 = (new Date(time3)).getTime()
-                            
+
                             let d = new Date(item.createAt);
 
                             workbook.sheet("Data").row(i).cell(1).value(Number(index + 1))
@@ -5245,7 +5248,7 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(7).value(time2)
                             workbook.sheet("Data").row(i).cell(8).value(time3)
                             if(Number(d.getHours()) > 18){
-                                workbook.sheet("Data").row(i).cell(11).value(Number((a - b3) / (1000*60))) 
+                                workbook.sheet("Data").row(i).cell(11).value(Number((a - b3) / (1000*60)))
                             }else{
                                 if(Number(d.getHours()) > 13){
                                     workbook.sheet("Data").row(i).cell(10).value(Number((a - b2) / (1000*60)))
@@ -5365,12 +5368,12 @@ class Model extends BaseModel {
                         dataInsert.projectID = `${infoGroup.project}`;
                         let infoAfterInsert = await this.insert(dataInsert);
                         // console.log(infoAfterInsert)
-                        
+
                         // Công việc cha
                         if(data?.__EMPTY_1){
                             parentID = infoAfterInsert?.data?._id;
                         }
-                        
+
                         if(infoAfterInsert.error){
                             errorNumber++;
                         }
@@ -5398,7 +5401,7 @@ class Model extends BaseModel {
             try {
                 if(password.toString() != `noPass12345${email}`)
                     return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
-                
+
 
                 /**
                  * CẬP NHẬT COMMENT TYPE = 5 CHO CÁC TASKS NẾU CHƯA CÓ
@@ -5424,7 +5427,7 @@ class Model extends BaseModel {
                     ])
                     // console.log(listDataAgg)
 
-                    let listTasks = await PCM_PLAN_TASK_COLL.find({ 
+                    let listTasks = await PCM_PLAN_TASK_COLL.find({
                         _id: {$nin: listDataAgg.map(item => item._id.task)},
                         createAt: {
                             $gte: new Date(fromDate),
@@ -5454,7 +5457,7 @@ class Model extends BaseModel {
 
                 if(option == 2){
                     // Danh sách các chủ đề
-                    let listTasks = await PCM_PLAN_TASK_COLL.find({ 
+                    let listTasks = await PCM_PLAN_TASK_COLL.find({
                         createAt: {
                             $gte: new Date(fromDate),
                             $lte: new Date(toDate),
@@ -5488,11 +5491,11 @@ class Model extends BaseModel {
                             accessUsers.push(...item?.related)
                         }
 
-                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(item._id, 
-                            { 
+                        await PCM_PLAN_TASK_COLL.findByIdAndUpdate(item._id,
+                            {
                                 namecv: convertStr,
                                 accessUsers: accessUsers,
-                            }, 
+                            },
                             { new: true })
                     }
 

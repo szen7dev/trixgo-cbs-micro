@@ -12,6 +12,7 @@ const AUTH__APP_ROLE_MENU_HANDLER 	= require('./handler/auth.app_role_menu-handl
 const AUTH__APP_USER_HANDLER 		= require('./handler/auth.app_user-handler');
 const AUTH__APP_COMPANY_HANDLER 	= require('./handler/auth.app_company-handler');
 const AUTH__APP_HANDLER 			= require('./handler/auth.app-handler');
+const AUTH__CLIENT_CREDENTIAL_HANDLER = require('./handler/auth.client_credential-handler');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.AUTH,
@@ -25,6 +26,7 @@ module.exports = {
 		DbService('app_role_menus'),
 		DbService('app_users'),
 		DbService('app_companies'),
+		DbService('client_credential'),
 		CacheCleaner([CF_DOMAIN_SERVICES.AUTH])
 	],
 	/**
@@ -129,6 +131,12 @@ module.exports = {
 		// Version app
 		[CF_ACTIONS_AUTH.CHECK_VERSION_APP]						    : AUTH__APP_HANDLER.checkVersionApp,
 
+
+		//============================   AUTH: CLIENT CREDENTIAL   ==========================//
+		[CF_ACTIONS_AUTH.CREATE_CLIENT_CREDENTIAL]					: AUTH__CLIENT_CREDENTIAL_HANDLER.createClient,
+		[CF_ACTIONS_AUTH.REVOKE_CLIENT_CREDENTIAL]					: AUTH__CLIENT_CREDENTIAL_HANDLER.revokeClient,
+		[CF_ACTIONS_AUTH.GET_CLIENT_CREDENTIAL]						: AUTH__CLIENT_CREDENTIAL_HANDLER.getClient,
+		[CF_ACTIONS_AUTH.GET_TOKEN_CREDENTIAL]						: AUTH__CLIENT_CREDENTIAL_HANDLER.getToken,
 	},
 
 	/**

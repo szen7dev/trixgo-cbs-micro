@@ -145,6 +145,12 @@ module.exports = {
 		[`POST ${CF_ROUTINGS_SHIPMENT.SHIPMENT_WEBHOOK}`] :
 		[`${CF_DOMAIN_SERVICES.SHIPMENT}.${CF_ACTIONS_SHIPMENT.SHIPMENT_GHTK_WEBHOOK}`],
 
+		/**
+		 * Client credential
+		 */
+		[`GET ${CF_ROUTINGS_AUTH.CLIENT_CREDENTIAL_GET_TOKEN}`] :
+		[`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.GET_TOKEN_CREDENTIAL}`],
+
 		// //---------------------------🏁 BEGIN SERVICE CRM 🏁---------------------------//
 
 		// [`POST ${CF_ROUTINGS_CRM.CRM_GROW_TRACK}`] :

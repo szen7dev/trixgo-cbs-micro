@@ -1,0 +1,34 @@
+</div>
+        <div class="footer" style="background-color: #f8f9fa; padding: 20px; border-top: 1px solid #e9ecef; text-align: center; font-size: 12px; color: #6c757d;">
+            <div class="footer-content">
+                <p style="margin-bottom: 10px;">
+                    <i>This email is sent from {{branding.companyName}}. 
+                    <span style="color: orange;">Please click Star (*)</span> to receive other important email relate to you</i>
+                </p>
+                <p style="margin-bottom: 10px;">
+                    <i>Email này được gửi từ hệ thống {{branding.companyName}}. 
+                    <span style="color: orange;">Vui lòng bấm Star (*)</span> để nhận được các email quan trọng khác liên quan tới bạn</i>
+                </p>
+                
+                <div class="footer-links" style="margin: 15px 0;">
+                    <a href="{{branding.companyUrl}}" style="color: #4267b2; text-decoration: none; margin: 0 10px;">Website</a>
+                    <a href="{{branding.appUrl}}" style="color: #4267b2; text-decoration: none; margin: 0 10px;">App</a>
+                    <a href="mailto:{{branding.supportEmail}}" style="color: #4267b2; text-decoration: none; margin: 0 10px;">Support</a>
+                    {{#if branding.unsubscribeUrl}}
+                    <a href="{{branding.unsubscribeUrl}}" style="color: #6c757d; text-decoration: none; margin: 0 10px;">Unsubscribe</a>
+                    {{/if}}
+                </div>
+                
+                <div class="footer-info" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dee2e6;">
+                    <p style="margin-bottom: 5px;">
+                        © {{system.year}} {{branding.companyName}}. All rights reserved.
+                    </p>
+                    <p style="margin-bottom: 0;">
+                        Generated on {{system.timestamp}} | Version {{system.version}}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
