@@ -55,6 +55,7 @@ exports.sendNoticeToMember = function (stringify, options = {}) {
         !options.useLegacy &&
         process.env.SENDGRID_API_KEY &&
         process.env.SENDGRID_TEMPLATE_PCM_TASK;
+      console.log({ useSendGrid, k: process.env.SENDGRID_API_KEY, sender: process.env.SENDGRID_SENDER_EMAIL });
 
       if (useSendGrid) {
         try {
@@ -87,7 +88,9 @@ exports.sendNoticeToMember = function (stringify, options = {}) {
             messageId: result.messageId,
             recipients: validEmails,
             taskId: content.infoTask._id || content.infoTask.id,
-            result
+            result: JSON.stringify(result),
+            errors: result.details?.['errors'],
+            validationErrors: result.validation_errors
           });
 
           resolve(result);
