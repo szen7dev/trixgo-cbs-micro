@@ -70,7 +70,7 @@ exports.sendNoticeToMember = function (stringify, options = {}) {
               categories: ["pcm", "task_notification", "production"],
             }
           );
-          console.log({ emailData });
+          // console.log({ emailData });
 
           // Send via SendGrid - Fix: Pass parameters separately
           const result = await sendDynamicTemplateMail(
@@ -87,7 +87,7 @@ exports.sendNoticeToMember = function (stringify, options = {}) {
             messageId: result.messageId,
             recipients: validEmails,
             taskId: content.infoTask._id || content.infoTask.id,
-            result
+            result: JSON.stringify(result),
           });
 
           resolve(result);
