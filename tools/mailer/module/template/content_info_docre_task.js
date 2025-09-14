@@ -14,7 +14,7 @@ exports.infoDocrePcm = ({ content }) => {
     let linkServerS3 = "https://trx-demo-003.s3-ap-southeast-1.amazonaws.com";
 
     if(String(socket_product) == 'true') {
-        linkServerS3 = "hhttps://trixgo-main.sgp1.cdn.digitaloceanspaces.com";
+        linkServerS3 = "hhttps://trx-main.sgp1.cdn.digitaloceanspaces.com/";
     } else {
         linkServerS3 = "https://trx-demo-003.s3-ap-southeast-1.amazonaws.com";
     }

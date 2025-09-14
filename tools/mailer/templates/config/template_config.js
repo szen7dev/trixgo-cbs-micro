@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS = {
         companyName: 'TRIXGO',
         companyUrl: 'https://trixgo.com',
         appUrl: 'https://app.trixgo.com',
-        logoUrl: process.env.AWS_BUCKET_URL ? `${process.env.AWS_BUCKET_URL}/files/branding/logo.png` : 'https://trixgo-main.sgp1.cdn.digitaloceanspaces.com/files/branding/logo.png',
+        logoUrl: process.env.AWS_BUCKET_URL ? `${process.env.AWS_BUCKET_URL}/files/branding/logo.png` : 'https://trx-main.sgp1.cdn.digitaloceanspaces.com//files/branding/logo.png',
         supportEmail: 'support@trixgo.com',
         unsubscribeUrl: 'https://app.trixgo.com/unsubscribe'
     },
@@ -110,7 +110,7 @@ function prepareTemplateData(templateName, data, options = {}) {
         },
         // AWS/CDN links
         cdn: {
-            baseUrl: process.env.AWS_BUCKET_URL || 'https://trixgo-main.sgp1.cdn.digitaloceanspaces.com',
+            baseUrl: process.env.AWS_BUCKET_URL || 'https://trx-main.sgp1.cdn.digitaloceanspaces.com/',
             filesPath: '/files/db/users/',
             brandingPath: '/files/branding/'
         }
@@ -127,7 +127,7 @@ function prepareTemplateData(templateName, data, options = {}) {
 function formatUserInfo(user) {
     if (!user) return null;
     
-    const cdnBaseUrl = process.env.AWS_BUCKET_URL || 'https://trixgo-main.sgp1.cdn.digitaloceanspaces.com';
+    const cdnBaseUrl = process.env.AWS_BUCKET_URL || 'https://trx-main.sgp1.cdn.digitaloceanspaces.com/';
     
     return {
         id: user._id || user.id,
