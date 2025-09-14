@@ -16,12 +16,11 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
     },
     /**
      * Phân loại
-     * 1: Bài viết thông thường
-     * 2: Bài viết câu chuyện khách hàng
-     * 3: Truyện tranh, truyện hay
-     * 4: 
-     * 5: 
-     * 6: 
+     * 1: Thông thường
+     * 2: Câu chuyện thương hiệu
+     * 3: Câu chuyện khách hàng
+     * 4: Truyện tranh
+     * 5: Khác
 	 */
     type: {
         type: Number,

@@ -30,7 +30,7 @@ exports.infoTaskContent = ({ content, comments }) => {
         }
     }
 
-    const linkServerS3 = process.env.AWS_BUCKET_URL || "https://dntdurzwr12tp.cloudfront.net";
+    const linkServerS3 = process.env.AWS_BUCKET_URL || "https://trixgo-main.sgp1.cdn.digitaloceanspaces.com";
 
     for(const item of comments){
         txtComments = txtComments + `<p style="margin-bottom: 1px;"><span style="color: #1B75D0;">${item.author.fullname}</span><span style="color: grey"> - ${moment(item.createAt).format('DD/MM/YYYY HH:mm')} (${moment(item.createAt).fromNow()})</span></p>`;

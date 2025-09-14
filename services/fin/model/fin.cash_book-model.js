@@ -1080,7 +1080,7 @@ class Model extends BaseModel {
      * Date: 25/7/2023
      */
     downloadTemplateExcel({ option, companyID, parentID, salaryID, templateID, year, userID }) {
-        console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
+        // console.log({  option, companyID, parentID, salaryID, templateID, year, userID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -1361,11 +1361,13 @@ class Model extends BaseModel {
                      * TẢI BẢNG LƯƠNG
                      */
                     if(option == 2){
+                        console.log('11111111111111')
                         if (!checkObjectIDs(templateID)) 
                             return resolve({ error: true, message: "Download thất bại | Bạn phải chọn Template" })
 
                         let infoParent = await TIMESHEET__EXPERT_SALARY_COLL.findById(parentID)
                         .select('type name status date note salary userCreate admins members')
+                         console.log('222222222222')
 
                         /**
                          * KIỂM SOÁT QUYỀN ĐƯỢC TẢI
@@ -1389,6 +1391,7 @@ class Model extends BaseModel {
                         // }
 
                         if(checkPermission >= 2){
+                            console.log('3333333333333')
 
                             let conditionObj = {parent: parentID}
                             
@@ -1449,7 +1452,7 @@ class Model extends BaseModel {
                                     }
                                 },
                             ])
-                            // console.log(listData1)
+                            console.log(listData1)
 
                             // Lấy các ngày chủ nhật đi làm
                             let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -1487,7 +1490,7 @@ class Model extends BaseModel {
                                     }
                                 },
                             ])
-                            // console.log(listData2)
+                            console.log(listData2)
 
                             // Chấm tăng ca (>8h)
                             // let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
@@ -1512,7 +1515,7 @@ class Model extends BaseModel {
                                 // console.log(infoTemplate)
 
                                 const response = await axios({
-                                    url: `https://dntdurzwr12tp.cloudfront.net${infoTemplate?.path}`,
+                                    url: `https://trixgo-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
                                     method: 'GET',
                                     responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
                                 })
@@ -2018,6 +2021,7 @@ class Model extends BaseModel {
                         
                         // Không có quyền thì tải về dữ liệu trắng
                         else{
+                            console.log('44444444444444')
                             XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/Book1.xlsx')))
                             .then(async workbook => {
                                 const now = new Date();
