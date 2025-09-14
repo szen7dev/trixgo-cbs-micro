@@ -9,7 +9,13 @@ const { Upload } = require('@aws-sdk/lib-storage');
 const { PutObjectCommand, S3 } = require('@aws-sdk/client-s3');
 
 let s3Object = new S3({
-    region: config.aws_region,
+    forcePathStyle: false, // Configures to use subdomain/virtual calling format.
+    endpoint: "https://sgp1.digitaloceanspaces.com",
+    region: "sgp1",
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
 });
 
 let render_link_upload_file_s3 = async ({ fileName, type, typeUpload, pathS3 }) => {
