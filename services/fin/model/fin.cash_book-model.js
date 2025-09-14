@@ -1452,7 +1452,7 @@ class Model extends BaseModel {
                                     }
                                 },
                             ])
-                            console.log(listData1)
+                            // console.log(listData1)
 
                             // Lấy các ngày chủ nhật đi làm
                             let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -1490,7 +1490,7 @@ class Model extends BaseModel {
                                     }
                                 },
                             ])
-                            console.log(listData2)
+                            // console.log(listData2)
 
                             // Chấm tăng ca (>8h)
                             // let listData4 = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
@@ -1515,7 +1515,7 @@ class Model extends BaseModel {
                                 // console.log(infoTemplate)
 
                                 const response = await axios({
-                                    url: `https://trixgo-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
+                                    url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com/${infoTemplate?.path}`,
                                     method: 'GET',
                                     responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
                                 })

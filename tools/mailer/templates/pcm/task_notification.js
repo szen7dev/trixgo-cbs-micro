@@ -102,7 +102,7 @@ function generateEmailSubject(task, notice) {
  */
 function formatTaskDetails(task) {
   const cdnBaseUrl =
-    process.env.AWS_BUCKET_URL || "https://trixgo-main.sgp1.cdn.digitaloceanspaces.com";
+    process.env.AWS_BUCKET_URL || "https://trx-main.sgp1.cdn.digitaloceanspaces.com/";
 
   return {
     id: task._id || task.id,
