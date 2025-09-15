@@ -1514,10 +1514,10 @@ class Model extends BaseModel {
 
                             if (checkObjectIDs(templateID)) {
                                 let infoTemplate = await PCM_FILE__COLL.findById(templateID)
-                                console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com/${infoTemplate?.path}`)
+                                console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`)
 
                                 const response = await axios({
-                                    url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com/${infoTemplate?.path}`,
+                                    url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
                                     method: 'GET',
                                     responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
                                 })
