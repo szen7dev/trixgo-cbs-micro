@@ -1514,14 +1514,14 @@ class Model extends BaseModel {
 
                             if (checkObjectIDs(templateID)) {
                                 let infoTemplate = await PCM_FILE__COLL.findById(templateID)
-                                console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com/${infoTemplate?.path}`)
+                                console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`)
 
                                 const response = await axios({
-                                    url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com/${infoTemplate?.path}`,
+                                    url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
                                     method: 'GET',
                                     responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
                                 })
-                                console.log("[1524] RESPONSE:", JSON.stringify(response))
+                                console.log("[1524] RESPONSE:", response?.data)
 
                                 templateFile1 = response.data
                             }
@@ -2018,7 +2018,7 @@ class Model extends BaseModel {
 
                                     await workbook.toFileAsync(pathWriteFile);
                                     const result = await uploadFileS3(pathWriteFile, fileName);
-                                    console.log("[2017] RESULT:", JSON.stringify(result))
+                                    // console.log("[2017] RESULT:", JSON.stringify(result))
 
                                     fs.unlinkSync(pathWriteFile);
                                     return resolve({ error: false, data: result?.Location, status: 200 })
@@ -2335,8 +2335,8 @@ class Model extends BaseModel {
                     }
                 }
             } catch (error) {
+                console.log("[2339] ERROR: \n")
                 console.error(error);
-                console.log("[2339] ERROR: ", JSON.stringify(error))
                 return resolve({ error: true, message: error.message, status: 500 });
             }
         })

@@ -1,7 +1,7 @@
 "use strict";
 
 const { REDIS_SEPERATOR } = require('./tools/cache/cf_redis');
-const NewRelicMiddleware = require('./tools/newrelic/newrelic.middleware');
+// const NewRelicMiddleware = require('./tools/newrelic/newrelic.middleware');
 
 /**
  * Moleculer ServiceBroker configuration file
@@ -246,7 +246,7 @@ module.exports = {
 	// middlewares: [],
 	middlewares: [
 		// require("./routing/role/_mid.check"),
-		NewRelicMiddleware,
+		// NewRelicMiddleware,
 	],
 
 	// Register custom REPL commands.
