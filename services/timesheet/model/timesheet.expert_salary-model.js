@@ -1363,12 +1363,25 @@ class Model extends BaseModel {
                     return revenue;
                 }
                 
-                // Ví dụ sử dụng hàm
+                /**
+                 * Hàm tính bậc thang
+                 * Mức 1: A<100
+                 * Mức 2: 100<=A<=500
+                 * Mức 3: 501<=A<=1000
+                 * Mức 4: A>=1001
+                 */
+                // const priceLevels1 = [
+                //     { quantity: 99, price: 300 }, // 100 cốc đầu x 100
+                //     { quantity: 401, price: 500 }, // 200 cốc tiếp theo x 200
+                //     { quantity: 500, price: 600 }, // 200 cốc tiếp theo x 200
+                //     { quantity: 50000, price: 700 }, // 200 cốc tiếp theo x 200
+                // ];
+
                 const priceLevels = [
-                    { quantity: 99, price: 300 }, // 100 cốc đầu x 100
-                    { quantity: 401, price: 500 }, // 200 cốc tiếp theo x 200
-                    { quantity: 500, price: 600 }, // 200 cốc tiếp theo x 200
-                    { quantity: 50000, price: 700 }, // 200 cốc tiếp theo x 200
+                    { quantity: 99, price: 150 },
+                    { quantity: 401, price: 250 },
+                    { quantity: 500, price: 300 },
+                    { quantity: 50000, price: 350 },
                 ];
 
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
