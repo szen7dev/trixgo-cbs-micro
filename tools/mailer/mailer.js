@@ -4,7 +4,7 @@ const mailer = require("nodemailer");
 const cfMailer = require('./config/cf_mailer');
 
 module.exports = function (to, subject, content, callback, from) {
-    let smtpTransport = mailer.createTransport({
+    let smtpTransport = mailer.createTransport(cfMailer.opts || {
         service: cfMailer.service,
         auth: {
             user: cfMailer.email,
