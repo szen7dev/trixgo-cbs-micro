@@ -10,7 +10,7 @@ jobs:
   curl:
     runs-on: ubuntu-latest
     container:
-      image: alpine:latest
+      image: curlimages/curl:latest
     steps:
       - name: curl
         run: |
