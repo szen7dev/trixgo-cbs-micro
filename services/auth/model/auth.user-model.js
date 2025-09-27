@@ -1103,8 +1103,8 @@ class Model extends BaseModel {
                     email,
                     'CODE XÁC NHẬN MẬT KHẨU/CONFIRM PASSWORD - TRIXGO.COM',
                     mailContent,
-                    cb => {
-                        console.log(cb);
+                    result => {
+                        console.log({ result });
                     }
                 )
 
