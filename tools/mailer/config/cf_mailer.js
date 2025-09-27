@@ -9,7 +9,7 @@ module.exports = {
     password: process.env.MAILER_PWD || '...',
 
     host: process.env.MAILER_HOST || 'smtp.gmail.com',
-    port: process.env.MAILER_PORT || '587',
+    port: +(process.env.MAILER_PORT || 587),
     service: 'Gmail',
     opts: process.env.MAILER_OPS_DISABLED ? null : {
         host: process.env.MAILER_HOST || 'smtp.gmail.com',

@@ -12,7 +12,7 @@ module.exports = function (to, subject, content, callback, from) {
         }
     });
 
-    let mail = {
+    const mail = {
         // from: from || 'Trixgo <noreply.trixgo@gmail.com',
         from: from || 'Trixgo Platform <no-reply@trixgo.com>',
         to: to,
@@ -35,7 +35,9 @@ module.exports = function (to, subject, content, callback, from) {
     };
 
     smtpTransport.sendMail(mail, function (error, response) {
-        // console.log({ error, response })
+        console.log(error)
+        console.log(response)
+
         if (error) {
             if (callback == null || typeof callback == "undefined") {
             } else {
