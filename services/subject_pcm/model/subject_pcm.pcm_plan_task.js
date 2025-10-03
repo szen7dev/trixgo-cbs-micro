@@ -4183,15 +4183,13 @@ class Model extends BaseModel {
                     content: `đã thông báo email tới ${recipientEmailsString}`,
                 })
 
-                console.log({ recipientEmailsString, title, sender, notice })
-
                 const result = await sendNoticeToMember({
                     email: recipientEmailsString,
                     title,
                     content: { sender, notice, infoTask },
                     comments: listComment,
                     recipientEmails: mailsUser
-                }, { useLegacy: false });
+                }, { useLegacy: true });
 
                 return resolve(result);
             } catch (error) {
