@@ -30,13 +30,13 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { template, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired } = ctx.params;
+                let { template, name, sign, pointsRequired, note, minOrderAmount, salesoffAmount, salesoffRate, expired } = ctx.params;
 
                 // console.log(ctx.params)
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await STORE_VOUCHER_MODEL.insert({
-                    userID, companyID: company._id, template, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired
+                    userID, companyID: company._id, template, name, sign, pointsRequired, note, minOrderAmount, salesoffAmount, salesoffRate, expired
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -71,13 +71,13 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove } = ctx.params;
+                let { voucherID, template, type, name, sign, pointsRequired, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove } = ctx.params;
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await STORE_VOUCHER_MODEL.update({
-                companyID: company._id, userID, voucherID, template, type, name, sign, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove
+                companyID: company._id, userID, voucherID, template, type, name, sign, pointsRequired, note, minOrderAmount, salesoffAmount, salesoffRate, expired, receivers, buyers, membersAdd, membersRemove
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
