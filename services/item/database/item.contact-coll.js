@@ -268,7 +268,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default : 0
     },
     /**
-     * PHỤC VỤ ỨNG DỤNG FNB
+     * PHỤC VỤ ĐƠN HÀNG
      */
     //_________Phân loại chiến dịch
     campaignType: {
@@ -305,6 +305,16 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: "store_voucher"
     }],
+    //_________Tỷ lệ tích điểm (%)
+    earningRate: {
+        type: Number,
+        default: 3
+    },
+    //_________Hoa hồng affiliate (%)
+    affiliateCommission: {
+        type: Number,
+        default: 10
+    },
     /**
      * Khách biết tên hay vãng lai
      * 1-Biết tên
