@@ -9,11 +9,6 @@ module.exports  = DATABASE_MIDDLEWARE("crm_point_transaction", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //________Trạng thái (1-Active|2-Hủy)
-    status: {
-        type: Number,
-        default: 1
-    },
     /**
      * Phân loại
      * 1. Mua hàng
@@ -57,6 +52,11 @@ module.exports  = DATABASE_MIDDLEWARE("crm_point_transaction", {
     },
     //_________Thời hạn sử dụng
     expired: Date,
+    //________Trạng thái (1-Chưa sử dụng |2-Đã sử dụng)
+    status: {
+        type: Number,
+        default: 1
+    },
     //________Ghi chú
     note: String,
     userCreate: {

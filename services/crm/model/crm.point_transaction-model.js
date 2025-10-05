@@ -44,12 +44,12 @@ class Model extends BaseModel {
     /**
      * Name: Insert
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 5/10/2025
      */
     insert({ userID, companyID, status, type, contactID, orderID, voucherID, direction, points, note, phone, expired }) {
         return new Promise(async resolve => {
             try {
-                if(!phone || !checkObjectIDs(contactID))
+                if(!checkObjectIDs(contactID))
                     return resolve({ error: true, message: "Danh bạ/Điện thoại chưa hợp lệ" })
 
                 //__________Khai báo và validate dữ liệu
@@ -110,9 +110,14 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                if(expired && expired != ""){
-                    dataInsert.expired = expired;
-                }
+                // if(expired && expired != ""){
+                //     const now = new Date();
+                //     const expiredDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // cộng thêm 90 ngày
+                //     dataInsert.expired = expiredDate;
+                // }
+                const now = new Date();
+                const expiredDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // cộng thêm 90 ngày
+                dataInsert.expired = expiredDate;
 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
@@ -128,7 +133,7 @@ class Model extends BaseModel {
     /**
      * Name: Update
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 5/10/2025
      */
     update({ transactionID, userID, status, type, contactID, orderID, voucherID, direction, points, note, phone, expired }){
         return new Promise(async (resolve) => {
@@ -212,8 +217,8 @@ class Model extends BaseModel {
 
     /**
      * Name: get info expert timesheet
-     * Author: Depv
-     * Code:
+     * Author: HiepNH
+     * Code: 5/10/2025
      */
     getInfo({ transactionID, userID, select, populates }) {
         return new Promise(async (resolve) => {
@@ -246,8 +251,8 @@ class Model extends BaseModel {
 
     /**
      * Name  : Danh sách expert timesheet
-     * Author: Depv
-     * Code  :
+     * Author: HiepNH
+     * Code  : 5/10/2025
      */
     getList({ companyID, contactID, phone, direction, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
@@ -349,675 +354,41 @@ class Model extends BaseModel {
         })
     }
 
-    /**
-     * Name: bestSeller
-     * Author: HiepNH
-     * Code: 7/3/2025
-     */
-    bestSeller({ companyID, option, categoryID, limit = 10, select, populates= {} }) {
-        return new Promise(async (resolve) => {
-            try {
-                if(Number(limit) > 50){
-                    limit = 50;
-                } else{
-                    limit = +Number(limit);
-                }
-
-                let conditionObj = {
-                    usage: 2,
-                }
-                let sortBy = {quantitySold: -1};
-
-                if(!option){
-                    conditionObj.company = companyID
-                }else{
-                    conditionObj.category = categoryID
-                }
-
-                if(populates && typeof populates === 'string'){
-					if(!IsJsonString(populates))
-						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
-
-					populates = JSON.parse(populates);
-				}else{
-                    populates = {
-                        path: "",
-                        select: ""
-                    }
-                }
-                // console.log(conditionObj)
-
-                let infoDataAfterGet = await ITEM__GOODS_COLL.find(conditionObj)
-                    .select(select)
-                    .limit(+limit+1)
-                    .sort(sortBy)
-                    .populate(populates)
-                    .lean();
-                
-                // console.log(infoDataAfterGet.length)
-
-                if(!infoDataAfterGet)
-                    return resolve({ error: true, message: "Can't get data", status: 403 });
-
-                return resolve({ error: false, data: {
-                    listRecords: infoDataAfterGet
-                }, status: 200 });
-
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
 
     /**
      * Name: Gom nhóm theo thuộc tính
-     * Author: Hiepnh
-     * Date: 21/9/2022
+     * Author: HiepNH
+     * Date: 5/10/2025
      */
-    getListByProperty({ userID, option, year, month, companyID, projectID, assigneeID }){
+    getListByProperty({ option, companyID, contactID }){
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                let yearFilter
-                let currentYear = new Date().getFullYear()
-                if(year && !isNaN(year)){
-                    yearFilter = Number(year)
-                }else{
-                    yearFilter = Number(currentYear)
-                }
-
-                // Tổng hợp Lương của công ty theo tháng
                 if(!option){
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null },
-                        project: { $exists: true, $ne: null },
-                    }
-
                     let listData = await CRM_POINT_TRANSACTION_COLL.aggregate([
                         {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                // subAllowance1: 1,
-                                // subAllowance2: 1,
-                                // subAllowance3: 1,
-                                // subAllowance4: 1,
-                                // subAllowance5: 1,
-                                // subAllowance6: 1,
-                                // subAllowance7: 1,
-                                // subAllowance8: 1,
-                                // subAllowance9: 1,
-                                // subAllowance10: 1,
-                                // subAllowance11: 1,
-                                // subAllowance12: 1,
-                                // subAllowance13: 1,
-                                // subAllowance14: 1,
-                                // subAllowance15: 1,
-                                // subAllowance16: 1,
-                                // subAllowance17: 1,
-                                // subAllowance18: 1,
-                                // subAllowance19: 1,
-                                // subAllowance20: 1,
-                                // subAllowance21: 1,
-                                // subAllowance22: 1,
-                            }
-                        },
-                        {
                             $match: {
-                                year: Number(yearFilter)
+                                // expired: {$gt: new Date()},
+                                contact: ObjectID(contactID)
                             }
                         },
                         {
                             $group: {
-                                _id: { month: '$month' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
+                                _id: null,
+                                earned: {
+                                    $sum: { $cond: [{ $eq: ["$direction", 1] }, "$points", 0] }
+                                },
+                                used: {
+                                    $sum: { $cond: [{ $eq: ["$direction", 2] }, "$points", 0] }
+                                }
                             }
                         },
                         {
-                            $sort: {
-                                "_id.month": 1
+                            $project: {
+                                _id: 0,
+                                remain: { $subtract: ["$earned", "$used"] }
                             }
                         }
                     ])
-
-                    return resolve({ error: false, data: listData })
-                }
-
-                // Bảng lương của assigneeID theo tháng
-                else if(option == 1){
-
-                    let conditionObj = {
-                        human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }
-                    }
-
-                    let listData = await CRM_POINT_TRANSACTION_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter)
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { month: '$month' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                    ])
-                    // console.log(listData)
-
-                    return resolve({ error: false, data: listData })
-                }
-
-                // Bảng lương của assigneeID 1 tháng
-                else if(option == 2){
-
-                    let conditionObj = {
-                        human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }
-                    }
-
-                    let listData = await CRM_POINT_TRANSACTION_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                salary: { $sum:"$salary" },
-                                onLeaveSalary: { $sum:"$onLeaveSalary" },
-                                overtimeSalary: { $sum:"$overtimeSalary" },
-                                revenueBonus: { $sum:"$revenueBonus" },
-                                reward: { $sum:"$reward" },
-                                mealAllowance: { $sum:"$mealAllowance" },
-                                punishment: { $sum:"$punishment" },
-                                insurance: { $sum:"$insurance" },
-                                pitax: { $sum:"$pitax" },
-                                union: { $sum:"$union" },
-                                share: { $sum:"$share" },
-                                other: { $sum:"$other" },
-                                advance: { $sum:"$advance" },
-                                paid: { $sum:"$paid" },
-                                remaining: { $sum:"$remaining" },
-                                subAllowance1: { $sum:"$subAllowance1" },
-                                subAllowance2: { $sum:"$subAllowance2" },
-                                subAllowance3: { $sum:"$subAllowance3" },
-                                subAllowance4: { $sum:"$subAllowance4" },
-                                subAllowance5: { $sum:"$subAllowance5" },
-                                subAllowance6: { $sum:"$subAllowance6" },
-                                subAllowance7: { $sum:"$subAllowance7" },
-                                subAllowance8: { $sum:"$subAllowance8" },
-                                subAllowance9: { $sum:"$subAllowance9" },
-                                subAllowance10: { $sum:"$subAllowance10" },
-                                subAllowance11: { $sum:"$subAllowance11" },
-                                subAllowance12: { $sum:"$subAllowance12" },
-                                subAllowance13: { $sum:"$subAllowance13" },
-                                subAllowance14: { $sum:"$subAllowance14" },
-                                subAllowance15: { $sum:"$subAllowance15" },
-                                subAllowance16: { $sum:"$subAllowance16" },
-                                subAllowance17: { $sum:"$subAllowance17" },
-                                subAllowance18: { $sum:"$subAllowance18" },
-                                subAllowance19: { $sum:"$subAllowance19" },
-                                subAllowance20: { $sum:"$subAllowance20" },
-                                subAllowance21: { $sum:"$subAllowance21" },
-                                subAllowance22: { $sum:"$subAllowance22" },
-                            }
-                        },
-                    ])
-                    // console.log(listData)
-
-                    return resolve({ error: false, data: listData })
-                }
-
-                // Gom nhóm theo Dự án/Bộ phận
-                else if(option == 3){
-                    let sortBy = { "_id.project": 1 }
-
-                    let conditionPopulate1 = {
-                        path: '_id.project',
-                        select: '_id name',
-                        model: 'department',
-                    }
-
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null },
-                    }
-
-                    let listData1 = await CRM_POINT_TRANSACTION_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                project: 1,
-                                position: 1,
-                                human: 1,
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { project: '$project' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                        {
-                            $sort: sortBy
-                        },
-                    ])
-
-                    if(listData1.length){
-                        await CRM_POINT_TRANSACTION_COLL.populate(listData1, conditionPopulate1)
-                    }
-
-                    return resolve({ error: false, data: listData1 })
-                }
-
-                // Gom nhóm theo Nhân sự trong bộ phận
-                else if(option == 4){
-                    let sortBy = { "_id.human": 1 }
-
-                    let conditionPopulate1 = {
-                        path: '_id.human',
-                        select: '_id fullname image',
-                        model: 'user',
-                    }
-
-                    let conditionObj = {
-                        project: ObjectID(projectID),
-                        parent: { $exists: true, $ne: null },
-                    }
-
-                    let listData1 = await CRM_POINT_TRANSACTION_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                project: 1,
-                                human: 1,
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { human: '$human' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                        {
-                            $sort: sortBy
-                        },
-                    ])
-
-                    if(listData1.length){
-                        await CRM_POINT_TRANSACTION_COLL.populate(listData1, conditionPopulate1)
-                    }
-
-                    return resolve({ error: false, data: listData1 })
-                }
-
-                // Gom nhóm theo Nhân sự trong 1 tháng/
-                else if(option == 5){
-                    let sortBy = { "_id.human": 1 }
-
-                    let conditionPopulate1 = {
-                        path: '_id.human',
-                        select: '_id fullname',
-                        model: 'user',
-                    }
-
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        parent: { $exists: true, $ne: null },
-                    }
-
-                    let listData1 = await CRM_POINT_TRANSACTION_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                human: 1,
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $match: {
-                                year: Number(yearFilter),
-                                month: Number(month),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { human: '$human' },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                        {
-                            $sort: sortBy
-                        },
-                    ])
-
-                    if(listData1.length){
-                        await CRM_POINT_TRANSACTION_COLL.populate(listData1, conditionPopulate1)
-                    }
-
-                    return resolve({ error: false, data: listData1 })
-                }
-
-                // Tổng hợp toàn bộ của 1 nhân sự
-                else if(option == 6){
-
-                    let conditionObj = {
-                        human: ObjectID(assigneeID),
-                        parent: { $exists: true, $ne: null }
-                    }
-
-                    let listData = await CRM_POINT_TRANSACTION_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $project: {
-                                year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                salary: 1,
-                                onLeaveSalary: 1,
-                                overtimeSalary: 1,
-                                revenueBonus: 1,
-                                reward: 1,
-                                mealAllowance: 1,
-                                punishment: 1,
-                                insurance: 1,
-                                pitax: 1,
-                                union: 1,
-                                share: 1,
-                                other: 1,
-                                advance: 1,
-                                paid: 1,
-                                remaining: 1,
-                                subAllowance1: 1,
-                                subAllowance2: 1,
-                                subAllowance3: 1,
-                                subAllowance4: 1,
-                                subAllowance5: 1,
-                                subAllowance6: 1,
-                                subAllowance7: 1,
-                                subAllowance8: 1,
-                                subAllowance9: 1,
-                                subAllowance10: 1,
-                                subAllowance11: 1,
-                                subAllowance12: 1,
-                                subAllowance13: 1,
-                                subAllowance14: 1,
-                                subAllowance15: 1,
-                                subAllowance16: 1,
-                                subAllowance17: 1,
-                                subAllowance18: 1,
-                                subAllowance19: 1,
-                                subAllowance20: 1,
-                                subAllowance21: 1,
-                                subAllowance22: 1,
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                                paid: { $sum: {$add: [ "$paid", "$advance" ]} },
-                            }
-                        },
-                    ])
-                    // console.log(listData)
 
                     return resolve({ error: false, data: listData })
                 }
@@ -1030,7 +401,7 @@ class Model extends BaseModel {
     /**
      * Dev: HiepNH
      * Name: Download Template Excel
-     * Date: 25/11/2024
+     * Date: 5/10/2025
      */
     exportExcel({ option, companyID, year, month, email, userID }) {
        return new Promise(async resolve => {

@@ -27,7 +27,7 @@ module.exports = {
                 let { optionSeller, status, type, contactID, orderID, voucherID, direction, points, note, phone, expired } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -61,7 +61,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { transactionID, status, type, contactID, orderID, voucherID, direction, points, note, phone, expired } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -167,15 +167,18 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { option, year, companyID, projectID, assigneeID, month } = ctx.params;
+                let { option, optionSeller, contactID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
                 }
 
                 let resultAfterCallHandler = await CRM_POINT_TRANSACTION_MODEL.getListByProperty({
-                        option, year, companyID, projectID, userID, assigneeID, month, ctx
+                        option, companyID, contactID
                     });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
