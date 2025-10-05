@@ -376,7 +376,7 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     getList({ companyID, userID, option, customerID, template, type, keyword, limit=50, lastestID, select, populates, isMember }) {
-        // console.log({ companyID, userID, customerID, template, type, keyword, limit, lastestID, select, populates })
+        // console.log({ companyID, userID, option, customerID, template, type, keyword, limit, lastestID, select, populates, isMember })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -390,14 +390,24 @@ class Model extends BaseModel {
                 let keys	 = ['salesoffAmount__-1', 'createAt__-1'];
                 // let keys	 = ['createAt__-1', '_id__-1'];
 
+                if(type && !isNaN(type)){
+                    conditionObj.type = Number(type)
+                }
+
+                if(template && !isNaN(template)){
+                    conditionObj.template = Number(template)
+                }
+
+                // Danh sách các voucher của customerID chưa sử dụng và Còn thời hạn
                 if(customerID && checkObjectIDs(customerID)){
-                    // Danh sách các voucher của customerID chưa sử dụng và Còn thời hạn
                     conditionObj.expired = {
                         $gt: new Date()
                     }
                     conditionObj.receivers = { $in: [customerID]}
                     conditionObj.buyers = { $nin: [customerID]}
-                }else{
+                }
+                
+                else{
                     // Voucher của userID đang truy cập
                     if(option){
                         let infoContact = await ITEM__CONTACT_COLL.findOne({company: companyID, linkUser: userID }).select('_id name linkUser')
@@ -411,18 +421,16 @@ class Model extends BaseModel {
 
                         conditionObj.company = ObjectID(companyID)
                     }
-                }
 
-                if(type && !isNaN(type)){
-                    conditionObj.type = Number(type)
-                }
+                    // Voucher của userID có quyền được truy cập quản trị
+                    if(isMember && isMember == 1){
+                        conditionObj.members = { $in: [userID] }
+                    }
 
-                if(template && !isNaN(template)){
-                    conditionObj.template = Number(template)
-                }
-
-                if(isMember && isMember == 1){
-                    conditionObj.members = { $in: [userID] }
+                    // Voucher của công ty
+                    else{
+                        conditionObj.company = ObjectID(companyID)
+                    }
                 }
                 // console.log(conditionObj)
 
