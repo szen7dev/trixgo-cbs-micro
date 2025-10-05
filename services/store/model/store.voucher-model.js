@@ -281,7 +281,6 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     updateMultiple({ companyID, userID, receivers, vouchers }) {
-        // console.log({ companyID, userID, receivers, vouchers })
         return new Promise(async resolve => {
             try {
                
@@ -406,11 +405,22 @@ class Model extends BaseModel {
 
                 // Danh sách các voucher của customerID chưa sử dụng và Còn thời hạn
                 if(customerID && checkObjectIDs(customerID)){
-                    conditionObj.expired = {
-                        $gt: new Date()
+                    // Voucher được quyền sử dụng
+                    if(!option){
+                        conditionObj.expired = {
+                            $gt: new Date()
+                        }
+                        conditionObj.receivers = { $in: [customerID]}
+                        conditionObj.buyers = { $nin: [customerID]}
                     }
-                    conditionObj.receivers = { $in: [customerID]}
-                    conditionObj.buyers = { $nin: [customerID]}
+                    
+                    // Voucher chưa được quyền sửa dụng
+                    else{
+                        conditionObj.expired = {
+                            $gt: new Date()
+                        }
+                        conditionObj.receivers = { $nin: [customerID]}
+                    }
                 }
                 
                 else{
