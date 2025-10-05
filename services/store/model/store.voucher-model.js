@@ -38,7 +38,7 @@ class Model extends BaseModel {
     /**
      * Name: Insert
      * Author: HiepNH
-     * Date: 21/3/2023
+     * Date: 05/10/2025
      */
     insert({  userID, companyID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, pointsRequired }) {
         return new Promise(async resolve => {
