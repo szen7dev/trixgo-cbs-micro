@@ -40,8 +40,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    insert({  userID, companyID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign }) {
-        // console.log({ userID, companyID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign })
+    insert({  userID, companyID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, pointsRequired }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(companyID) || !name || !sign || !expired )
@@ -63,6 +62,10 @@ class Model extends BaseModel {
 
                 if(note && note != ""){
                     dataInsert.note = note
+                }
+
+                if(!isNaN(pointsRequired) && Number(pointsRequired) > 0){
+                    dataInsert.pointsRequired = Number(pointsRequired)
                 }
 
                 if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
@@ -94,7 +97,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 21/3/2023
      */
-    update({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, receivers, buyers, membersAdd, membersRemove }) {
+    update({ option, companyID, userID, voucherID, template, type, name, note, minOrderAmount, salesoffAmount, salesoffRate, expired, sign, pointsRequired, receivers, buyers, membersAdd, membersRemove }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(voucherID))
@@ -135,6 +138,10 @@ class Model extends BaseModel {
 
                 if(!isNaN(template) && Number(template) > 0){
                     dataUpdate.template = Number(template)
+                }
+
+                if(!isNaN(pointsRequired) && Number(pointsRequired) > 0){
+                    dataUpdate.pointsRequired = Number(pointsRequired)
                 }
                 
                 if(!isNaN(minOrderAmount) && Number(minOrderAmount) >= 0){
