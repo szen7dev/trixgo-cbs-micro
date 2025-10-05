@@ -383,7 +383,6 @@ class Model extends BaseModel {
      * Date: 21/3/2023
      */
     getList({ companyID, userID, option, customerID, template, type, keyword, limit=50, lastestID, select, populates, isMember }) {
-        // console.log({ companyID, userID, option, customerID, template, type, keyword, limit, lastestID, select, populates, isMember })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
