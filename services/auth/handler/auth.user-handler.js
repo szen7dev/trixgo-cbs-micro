@@ -802,6 +802,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                const { company } = ctx.meta.infoUser;
 
                 let {
                     optionSeller, result, option, userID, projectID, companyID, arrayID,
@@ -822,6 +823,8 @@ module.exports = {
                 }else{
                     if(optionSeller){
                         companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                    }else{
+                        companyID = company._id
                     }
 
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
