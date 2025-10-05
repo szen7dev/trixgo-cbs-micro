@@ -120,10 +120,10 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, transactionID, direction, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, transactionID, contactID, direction, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -139,7 +139,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM_POINT_TRANSACTION_MODEL.getList({
-                        companyID, direction, keyword, limit, lastestID, select, populates
+                        companyID, contactID, direction, keyword, limit, lastestID, select, populates
                     })
                 }
 

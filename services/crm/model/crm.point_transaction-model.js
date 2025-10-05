@@ -20,7 +20,8 @@ const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/pl
 const {
   checkObjectIDs,
   IsJsonString,
-  validateParamsObjectID
+  validateParamsObjectID,
+  isValidVietnamPhoneNumber
 }  = require('../../../tools/utils/utils.js');
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
 const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
@@ -48,6 +49,9 @@ class Model extends BaseModel {
     insert({ userID, companyID, status, type, contactID, orderID, voucherID, direction, points, note, phone, expired }) {
         return new Promise(async resolve => {
             try {
+                if(!phone || !checkObjectIDs(contactID))
+                    return resolve({ error: true, message: "Danh bạ/Điện thoại chưa hợp lệ" })
+
                 //__________Khai báo và validate dữ liệu
                 let dataInsert = {
                     userCreate: userID, 
@@ -69,16 +73,13 @@ class Model extends BaseModel {
                     }
                 }
 
-                if(!checkObjectIDs(contactID)){
-                    dataInsert.contact = contactID;
-
-                    if(!checkObjectIDs(contactID)){
+                if(checkObjectIDs(contactID)){
                     dataInsert.contact = contactID;
                     let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
+
                     if(infoContact && isValidVietnamPhoneNumber(infoContact.phone)){
                         dataInsert.phone = infoContact.phone;
                     }
-                }
                 }
 
                 if(!checkObjectIDs(orderID)){
@@ -274,7 +275,7 @@ class Model extends BaseModel {
                     }
                 }
                 
-                if(!checkObjectIDs(contactID)){
+                if(checkObjectIDs(contactID)){
                     conditionObj.contact = contactID;
                 }
 
