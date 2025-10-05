@@ -37,6 +37,49 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref : "contract"
     },
+    //_________Lĩnh vực kinh doanh
+    business: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
+    //_________Phân loại
+    classification: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
+    //_________Nguồn
+    source: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
+    //_________Kênh thị trường cha
+    parentChannel: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
+    //_________Kênh thị trường
+    channel: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
+    //_________Kênh thực thi cha
+    parentExecutionChannel: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
+    //_________Kênh thực thi
+    executionChannel: {
+        type: Schema.Types.ObjectId,
+        ref: "doctype"
+    },
+    /**
+     * Link tới phiếu
+     * Sử dụng để tính giá xuất theo Nhập (linkID) xuất đích danh
+     */
+    link: {
+        type: Schema.Types.ObjectId,
+        ref: "store_order"
+    },
     //_________Kho bãi (kho của công ty)
     warehouse: {
         type: Schema.Types.ObjectId,
@@ -47,40 +90,37 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref : "warehouse"
     },
-    //_________Lĩnh vực kinh doanh
-    business: {
+    //_________Lô hàng
+    lot: {
         type: Schema.Types.ObjectId,
-        ref: "doctype"
+        ref: "store_lot"
     },
-    //_________Kênh bán hàng
-    channel: {
-        type: Schema.Types.ObjectId,
-        ref: "doctype"
-    },
-    //_________Phân loại kênh
-    parentChannel: {
-        type: Schema.Types.ObjectId,
-        ref: 'doctype'
-    },
-    //_________Mã khách
+    //_________Mã khách (Khách hàng)
     customer: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    /**
-     * Link tới phiếu
-     * Sử dụng để tính giá xuất theo Nhập (linkID) xuất đích danh
-     */
-    link: {
+    //_________Mã người giới thiệu
+    referralCode: String,
+    //_________Người giới thiệu
+    referrer: {
         type: Schema.Types.ObjectId,
-        ref: "store_order"
+        ref : 'contact'
+    }, 
+    //_________Sale
+    sales: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
     },
-    /**
-     * Lô hàng
-     */
-    lot: {
+    //_________Chăm sóc khách hàng
+    customerCare: {
         type: Schema.Types.ObjectId,
-        ref: "store_lot"
+        ref : "contact"
+    },
+    //_________Affiliate
+    affiliate: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
     },
     /**
      * Phân loại vào ra
@@ -176,16 +216,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     customerType: {
         type: Number,
         default: 2
-    },   
-    /**
-     * Người thực hiện
-     */
-    //_________Ca nhiều người (chuỗi/đồ uống)
-    assignee: [{
-        type: Schema.Types.ObjectId,
-        ref: "user"
-    }],
-    //_________Ca 1 người (trị liệu)
+    },
+    //_________Người thực hiện
     doer: {
         type: Schema.Types.ObjectId,
         ref: "user"
@@ -208,45 +240,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     shiftType: {
         type: Number,
         default: 1
-    },
-    /**
-     * Phân loại nguồn***
-     * 1-Thông thường
-     * 2-Video
-     * 3-Affiliate
-     * 4-Live stream
-     * 5-Quảng cáo
-     */
-    sources: {
-        type: Number,
-        default: 1
-    },
-    //_________Người giới thiệu
-    referrer: {
-        type: Schema.Types.ObjectId,
-        ref : 'contact'
-    }, 
-    //_________Mã người giới thiệu (thường là khách hàng cũ hoặc người dùng)
-    referralCode: String,
-    //_________Lead Sale
-    salesLeader: {
-        type: Schema.Types.ObjectId,
-        ref : "contact"
-    },
-    //_________Sale (Nhân viên kinh doanh)
-    sales: {
-        type: Schema.Types.ObjectId,
-        ref : "contact"
-    },
-    //_________Seller (Nhà bán hàng)
-    seller: {
-        type: Schema.Types.ObjectId,
-        ref : "contact"
-    },
-    //_________Chăm sóc khách hàng
-    customerCare: {
-        type: Schema.Types.ObjectId,
-        ref : "contact"
     },
     /**
      * Phương thức thanh toán
@@ -333,12 +326,7 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     numberOfMistakes: {
         type: Number,
         default: 0
-    },  
-    //_________Danh mục lỗi
-    mistakes: [{
-        type: Schema.Types.ObjectId,
-        ref: "doctype"
-    }],
+    },
     /**
      * SẢN PHẨM VÀ SIZE
      */
@@ -466,6 +454,9 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default : 0
     },
+    /**
+     * PHÊ DUYỆT - SỔ QUỸ, KHO
+     */
     //_________Người phê duyệt
     approver:{
         type: Schema.Types.ObjectId,
