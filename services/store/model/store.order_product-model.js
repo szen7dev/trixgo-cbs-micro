@@ -45,7 +45,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice }) {
+    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice, classification }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -90,6 +90,10 @@ class Model extends BaseModel {
 
                 if(listedUnitprice >= 0){
                     dataInsert.listedUnitprice = listedUnitprice
+                }
+
+                if(listedUnitprice >= 1){
+                    dataInsert.classification = classification
                 }
 
                 if (checkObjectIDs(fundaID)) {

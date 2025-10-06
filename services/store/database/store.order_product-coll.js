@@ -264,6 +264,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
     /**
      * THÔNG TIN GIÁ TRỊ
      */
+    //______Hàng bán (1), Hàng tặng (2)
+    classification: {
+        type: Number,
+        default : 1
+    },
     //______Khối lượng/Số lượng
     quantity: {
         type: Number,
