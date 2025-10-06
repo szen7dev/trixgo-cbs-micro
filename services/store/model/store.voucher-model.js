@@ -412,6 +412,7 @@ class Model extends BaseModel {
                         }
                         conditionObj.receivers = { $in: [customerID]}
                         conditionObj.buyers = { $nin: [customerID]}
+                        conditionObj.company = ObjectID(companyID)
                     }
                     
                     // Voucher chưa được quyền sửa dụng
