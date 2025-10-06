@@ -420,6 +420,7 @@ class Model extends BaseModel {
                             $gt: new Date()
                         }
                         conditionObj.receivers = { $nin: [customerID]}
+                        conditionObj.company = ObjectID(companyID)
                     }
                 }
                 
