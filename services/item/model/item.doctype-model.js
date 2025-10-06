@@ -29,7 +29,7 @@ class Model extends BaseModel {
     insert({ type, subType, name, description, sign, unit, amount, alert, companyID, parent, linkItemID, level, userID, salesChannel, grade }) {
         return new Promise(async resolve => {
             try {
-                if(!name || !type || !DOCTYPE_TYPE.includes(+type) || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
+                if(!name || !type || !checkObjectIDs([userID]) || !checkObjectIDs([companyID])) {
                     return resolve({
 						error: true,
 						message: "Tham số name|type|userID|companyID không hợp lệ",
