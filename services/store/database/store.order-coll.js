@@ -122,6 +122,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Schema.Types.ObjectId,
         ref : "contact"
     },
+    //_________Đơn vị vận chuyển
+    delivery: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
     /**
      * Phân loại vào ra
      * 1-Bán ra/Xuất kho/Thu tiền vào
@@ -155,11 +160,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
     /**
      * Trạng thái đơn
      * 1-Khởi tạo
-     * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
-     * 3-Đang vận chuyển/giao hàng
+     * 2-Chờ Ship lấy hàng
+     * 3-Đang giao
      * 4-Giao không thành công
-     * 5-Đã giao/Hoàn thành
-     * 6-Đã hủy (cũ là 4)
+     * 5-Hoàn thành
+     * 6-Đã hủy
      * 7-Trả hàng/Hoàn tiền
      */
     status: {
@@ -368,12 +373,12 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
         type: Number,
         default : 0
     },
-    //______Chiết khấu (chỉ áp dụng cho đơn App)
+    //______Chiết khấu
     discount: {
         type: Number,
         default : 0
     },
-    //______Giảm giá (áp dụng cho đơn Off)
+    //______Giảm giá trực tiếp (giá niêm yết - giá thực bán)
     salesoff: {
         type: Number,
         default : 0
@@ -401,6 +406,11 @@ module.exports  = DATABASE_MIDDLEWARE("store_order", {
      * amount = total - discount - salesoff - credit - offer
      */
     amount: {
+        type: Number,
+        default : 0
+    },
+    //______Điểm thưởng sau khi mua đơn
+    earningScore: {
         type: Number,
         default : 0
     },

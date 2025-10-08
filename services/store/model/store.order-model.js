@@ -413,7 +413,7 @@ return new Promise(async (resolve) => {
  * Author: HiepNH
  * Code: 20/2/2025
  */
-insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, areaID, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, feedbackNotes, products }) {
+insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, areaID, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, classificationID, sourceID, executionChannelID, warehouseID, deliveryID, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
         try {            
             let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID).select('remainLoyaltyPoints name phone')
@@ -458,7 +458,7 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
              */
             let amount = 0
 
-            // Giảm giá Food App
+            // Chiết khấu
             if(!isNaN(discount)){
                 amount = Number(total - discount)
             }
@@ -598,6 +598,21 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
             }
             if (checkObjectIDs(shiftID)) {
                 dataInsert.shift = shiftID;
+            }
+            if (checkObjectIDs(classificationID)) {
+                dataInsert.classification = classificationID;
+            }
+            if (checkObjectIDs(sourceID)) {
+                dataInsert.source = sourceID;
+            }
+            if (checkObjectIDs(executionChannelID)) {
+                dataInsert.executionChannel = executionChannelID;
+            }
+            if (checkObjectIDs(warehouseID)) {
+                dataInsert.warehouse = warehouseID;
+            }
+            if (checkObjectIDs(deliveryID)) {
+                dataInsert.delivery = deliveryID;
             }
 
             if (checkObjectIDs(customerID)) {
