@@ -823,9 +823,10 @@ module.exports = {
                 }else{
                     if(optionSeller){
                         companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
-                    }else{
-                        companyID = company._id
                     }
+                    // else{
+                    //     companyID = company._id
+                    // }
 
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
                         result, option, arrayID, projectID, companyID, keyword, limit, lastestID, select, populates, ctx, isLoadAll, startDate, endDate
