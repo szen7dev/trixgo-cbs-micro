@@ -402,9 +402,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
     },
     /**
      * Hạng thành viên (để được ưu đãi khi mua hàng)
-     * 1-Bạc
-     * 2-Vàng
-     * 3-Kim Cương
+     * 1-Đồng
+     * 2-Bạc
+     * 3-Vàng
+     * 4-Kim Cương
+     * 5-Vương miện
      */
     membershipLevel: {
         type: Number,

@@ -413,7 +413,7 @@ return new Promise(async (resolve) => {
  * Author: HiepNH
  * Code: 20/2/2025
  */
-insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, areaID, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, classificationID, sourceID, executionChannelID, warehouseID, deliveryID, feedbackNotes, products }) {
+insertFull({ outin, type, companyID, projectID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, areaID, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, classificationID, sourceID, executionChannelID, warehouseID, deliveryID, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
         try {            
             let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID).select('remainLoyaltyPoints name phone')
@@ -590,6 +590,9 @@ insertFull({ outin, type, companyID, fundaID, businessID, channelID, shiftID, cu
                 }
             }
 
+            if (checkObjectIDs(projectID)) {
+                dataInsert.project = projectID;
+            }
             if (checkObjectIDs(businessID)) {
                 dataInsert.business = businessID;
             }
