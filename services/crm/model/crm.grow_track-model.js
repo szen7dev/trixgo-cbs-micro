@@ -37,7 +37,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine }) {
+    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge }) {
+        const that = this;
         return new Promise(async resolve => {
             try {
                 if(phone){
@@ -100,7 +101,12 @@ class Model extends BaseModel {
                 if(birthday && birthday != ""){
                     dataInsert.birthday = birthday;
                 }
-
+                if(pubertyOnsetDate && pubertyOnsetDate != ""){
+                    dataInsert.pubertyOnsetDate = pubertyOnsetDate;
+                }
+                if(!isNaN(boneAge)){
+                    dataInsert.boneAge = boneAge;
+                }
                 if(date && date != ""){
                     dataInsert.date = date;
                 }
@@ -172,106 +178,17 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "cannot_insert" })
 
                 /**
-                 * TÍNH TOÁN ĐƯỜNG PHÂN VỊ
+                 * TÍNH TOÁN ĐƯỜNG PHÂN VỊ VÀ CẬP NHẬT
                  */
-                let ageHeightNow = []
-                let date1 = infoAfterInsert.birthday, date2 = infoAfterInsert.date, X = infoAfterInsert.height, genderName;
-                if(infoAfterInsert.gender == 1){
-                    genderName = "Male";
-                }else{
-                    genderName = "Female";
-                }
-
-                // Hàm tính số tháng tuổi của trẻ
-                function getMonthDifference(date1, date2) {
-                    const d1 = new Date(date1);
-                    const d2 = new Date(date2);
-                  
-                    let months = (d2.getFullYear() - d1.getFullYear()) * 12;
-                    months += d2.getMonth() - d1.getMonth();
-                  
-                    // Nếu ngày của date2 nhỏ hơn ngày của date1 => chưa đủ 1 tháng
-                    if (d2.getDate() < d1.getDate()) {
-                      months -= 1;
-                    }
-                  
-                    return months;
-                }
-
-                let ageInMonths = getMonthDifference(date1, date2)
-
-                // Hàm tính Zscore theo: X, L, M, S
-                function calculateZScore(X, L, M, S) {
-                    if (L === 0) {
-                      return Math.log(X / M) / S;
-                    } else {
-                      return (Math.pow(X / M, L) - 1) / (L * S);
-                    }
-                }
-
-                // Hàm tính chiều cao theo: Z, L, M, S
-                function calculateHeightFromZ(Z, L, M, S) {
-                    if (L === 0) {
-                        return M * Math.exp(S * Z);
-                    } else {
-                        return M * Math.pow(1 + L * S * Z, 1 / L);
-                    }
-                }
-
-                // Hàm tính P theo Z
-                function getPercentileFromZ(z) {
-                    const t = 1 / (1 + 0.2316419 * Math.abs(z));
-                    const d = 0.3989423 * Math.exp(-z * z / 2);
-                    let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-                    prob = z > 0 ? 1 - prob : prob;
-                    return prob * 100;
-                }
-
-                let L, M, S, Z, P, endAge = 20
-
-                // Đường dẫn tới file cdc_grow.xlsx
-                const filePath = path.join(__dirname, '../../../files/templates/excels/cdc_grow.xlsx')
-
-                // Đọc file
-                XlsxPopulate.fromFileAsync(filePath)
-                .then(async (workbook) => {
-                    const sheet = workbook.sheet(genderName);
-                    const lastRow = sheet.usedRange().endCell().rowNumber();
-
-                    // Lặp qua từng dòng để tìm Agemos >= ageInMonths
-                    for (let i = 2; i <= lastRow; i++) {
-                        const agemosCheck = sheet.cell(`B${i}`).value();
-
-                        if (agemosCheck >= ageInMonths) {
-
-                            L = sheet.cell(`C${i}`).value();
-                            M = sheet.cell(`D${i}`).value();
-                            S = sheet.cell(`E${i}`).value();
-                            Z = calculateZScore(X, L, M, S);
-                            P = Number(getPercentileFromZ(Z).toFixed(2));
-
-                            // ✅ Ngắt vòng lặp sau khi tìm thấy
-                            break;
-                        }
-                    }
-        
-                    // Lấy các giá trị ứng với từng độ tuổi
-                    for (let age = endAge; age <= endAge; age++) {
-                        const L = sheet.cell(`C243`).value();
-                        const M = sheet.cell(`D243`).value();
-                        const S = sheet.cell(`E243`).value();
-        
-                        ageHeightNow.push({
-                            age,
-                            height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
-                        })
-                    }    
-                    
+                let infoNew = await that.getInfo({ trackID: infoAfterInsert._id, userID })
+                if(infoNew){
                     await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
-                        percentile: P,
-                        predictedAdultHeight: Number(ageHeightNow[0].height)
+                            percentile: Number(infoNew.P),
+                            predictedAdultHeight: Number(infoNew.predictedAdultHeight)
                     }, { new: true })
-                })   
+                }
+                // console.log(infoNew.P)
+                // console.log(infoNew.predictedAdultHeight)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -416,18 +333,116 @@ class Model extends BaseModel {
 
                 let L, M, S, Z, P, startAge, endAge = 20, hdfs, whoHS, wdfs, whoWS
 
-                let date1 = infoAterGet.birthday, date2 = infoAterGet.createAt, X = infoAterGet.height, Xm = infoAterGet.height/100, W = infoAterGet.weight
+                let date1 = infoAterGet.birthday, date2 = infoAterGet.date, X = infoAterGet.height, Xm = infoAterGet.height/100, W = infoAterGet.weight
+
                 let gender, genderHWho5, genderHWho, genderWWho5, genderWWho;
 
+                /**
+                 * Tính toán tuổi xương dựa vào tuổi dậy thì
+                 * 1. Nếu ngày dậy thì có giá trị -> tính theo ngày dậy thì
+                 * 2. Nếu ngày tuổi xương thực có giá trị -> tính theo ngày tuổi xương thực
+                 * 3. Nếu cả 2 trông -> tính theo ngày sinh
+                 */
+                // ── Utils ─────────────────────────────────────────────────────────────
+                const DAY_MS = 24 * 60 * 60 * 1000;
+
+                function toDateUTC(v) {
+                    if (v == null || v === "") return null;
+                    if (v instanceof Date) return new Date(Date.UTC(
+                        v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate()
+                    ));
+                    // try ISO first
+                    const d = new Date(v);
+                    if (!Number.isNaN(d)) return new Date(Date.UTC(
+                        d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()
+                    ));
+                    // try DD/MM/YYYY
+                    const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(v).trim());
+                    if (m) {
+                        const [, dd, mm, yyyy] = m.map(Number);
+                        return new Date(Date.UTC(yyyy, mm - 1, dd));
+                    }
+                    return null;
+                }
+                const valid = d => d instanceof Date && !Number.isNaN(d.getTime());
+                const iso = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}`;
+
+                // ── Core ──────────────────────────────────────────────────────────────
+                /**
+                 * Tính "ngày tuổi xương" theo công thức Excel đã cho.
+                 * @param {Date|string} B1  Ngày đo
+                 * @param {Date|string} B2  Ngày sinh (fallback khi lỗi)
+                 * @param {Date|string|null} M2  Ngày dậy thì (nếu có)
+                 * @param {number|null} M3  Tuổi xương thực (năm, vd 7.4) nếu có
+                 * @returns {Date}  Ngày tuổi xương (hoặc B2 khi lỗi/thiếu dữ liệu)
+                 */
+                function calcBoneAgeDate(B1, B2, M2 = null, M3 = null) {
+                    const b1 = toDateUTC(B1);
+                    const b2 = toDateUTC(B2);
+                    const hasM2 = M2 != null && M2 !== "";
+                    const hasM3 = M3 != null && M3 !== "";
+
+                    if (!valid(b1) || !valid(b2)) return b2; // dữ liệu nền phải hợp lệ
+
+                    // IF(M2, …, IF(M3, …, B2))
+                    if (hasM2) {
+                        const m2 = toDateUTC(M2);
+                        if (!valid(m2)) return b2; // IFERROR(...;B2)
+
+                        // DATEDIF(M2;B1;"D")
+                        const daysDiff = Math.floor((b1.getTime() - m2.getTime()) / DAY_MS);
+                        if (daysDiff < 0) return b2; // Excel DATEDIF lỗi nếu M2 > B1 → IFERROR
+
+                        // DATE(YEAR(B1)-13; MONTH(B1); DAY(B1) - daysDiff)
+                        const year  = b1.getUTCFullYear() - 13;
+                        const month = b1.getUTCMonth();
+                        const day   = b1.getUTCDate() - daysDiff;
+                        const res = new Date(Date.UTC(year, month, day));
+                        return valid(res) ? res : b2; // IFERROR(...;B2)
+                    }
+
+                    if (hasM3) {
+                        const years = Number(String(M3).replace(",", ".")); // cho phép nhập "7,4"
+                        if (!Number.isFinite(years) || years < 0) return b2; // IFERROR
+
+                        // B1 - M3*365.25 (ngày) → trừ số ngày khỏi B1
+                        const deltaMs = years * 365.25 * DAY_MS;
+                        const res = new Date(b1.getTime() - deltaMs);
+                        return valid(res) ? new Date(Date.UTC(res.getUTCFullYear(), res.getUTCMonth(), res.getUTCDate())) : b2;
+                    }
+
+                    return b2;
+                }
+
+                // ── Ví dụ sử dụng ─────────────────────────────────────────────────────
+                const B1 = infoAterGet.createAt;    // Ngày đo
+                const B2 = infoAterGet.birthday;    // Ngày sinh (fallback)
+                const M2 = infoAterGet.pubertyOnsetDate;    // Ngày dậy thì (nhánh 1)
+                const M3 = infoAterGet.boneAge;    // Tuổi xương thực (nhánh 2)
+                // console.log(M2)
+                // console.log(M3)
+
+                // console.log("Nhánh M2:", iso(calcBoneAgeDate(B1, B2, M2, null))); // nếu M2 > B1 → trả về B2
+                // console.log("Nhánh M3:", iso(calcBoneAgeDate(B1, B2, null, M3))); // ~ 2017-11-05
+
+                if(infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != ''){
+                    date1 = iso(calcBoneAgeDate(B1, B2, M2, null))
+                }else{
+                    if(infoAterGet.boneAge && infoAterGet.boneAge != ''){
+                        date1 = iso(calcBoneAgeDate(B1, B2, null, M3))
+                    }
+                }
+                // console.log({date1})
+
                 if(infoAterGet.gender == 1){
-                    console.log('=====Nam=====')
+                    // console.log('=====Nam=====')
                     gender = "Male";
                     genderHWho5 = "LFA_boys_z_exp";
                     genderHWho = "MaleHWho";
                     genderWWho5 = "WFA_boys_z_exp";
                     genderWWho = "MaleWWho";
                 }else{
-                    console.log('=====Nữ=====')
+                    // console.log('=====Nữ=====')
                     gender = "Female";
                     genderHWho5 = "LFA_girls_z_exp";
                     genderHWho = "FemaleHWho";
@@ -467,8 +482,8 @@ class Model extends BaseModel {
                 let ageInMonths = getMonthDifference(date1, date2)
                 let ageInDays = getDayDifference(date1, date2)
 
-                console.log({ageInMonths})
-                console.log({ageInDays})
+                // console.log({ageInMonths})
+                // console.log({ageInDays})
 
                 // Hàm tính Zscore theo: X, L, M, S
                 function calculateZScore(X, L, M, S) {
@@ -757,9 +772,9 @@ class Model extends BaseModel {
 
                                 noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
 
-                                console.log('======Chiều cao=======')
-                                console.log({SD0})
-                                console.log({noticeH})
+                                // console.log('======Chiều cao=======')
+                                // console.log({SD0})
+                                // console.log({noticeH})
 
                                 hdfs = Number(Number(X - whoHS).toFixed(2))
 
@@ -785,9 +800,9 @@ class Model extends BaseModel {
 
                                 noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
 
-                                console.log('======Chiều cao=======')
-                                console.log({SD0})
-                                console.log({noticeH})
+                                // console.log('======Chiều cao=======')
+                                // console.log({SD0})
+                                // console.log({noticeH})
 
                                 hdfs = Number(Number(X - whoHS).toFixed(2))
 
@@ -817,9 +832,9 @@ class Model extends BaseModel {
     
                                 noticeW =  evaluateWWHO({WIndex: W, SD2neg, SD1neg, SD0, SD1, SD2, W, minQuantity, maxQuantity})
 
-                                console.log('======Cân nặng=======')
-                                console.log({SD0})
-                                console.log({noticeW})
+                                // console.log('======Cân nặng=======')
+                                // console.log({SD0})
+                                // console.log({noticeW})
     
                                 wdfs = Number(Number(W - whoWS).toFixed(2)) // Không sử dụng cho cân nặng
     
@@ -833,7 +848,7 @@ class Model extends BaseModel {
                                 const agemosCheck = sheet2.cell(`A${i}`).value();
         
                                 if (agemosCheck >= ageInMonths) {
-                                    console.log({agemosCheck})
+                                    // console.log({agemosCheck})
                                     whoWS = sheet2.cell(`I${i}`).value(); // Không sử dụng cho cân nặng
         
                                     let SD2neg = sheet2.cell(`G${i}`).value();
@@ -846,9 +861,9 @@ class Model extends BaseModel {
         
                                     noticeW =  evaluateWWHO({WIndex: W, SD2neg, SD1neg, SD0, SD1, SD2, W, minQuantity, maxQuantity})
 
-                                    console.log('======Cân nặng=======')
-                                    console.log({SD0})
-                                    console.log({noticeW})
+                                    // console.log('======Cân nặng=======')
+                                    // console.log({SD0})
+                                    // console.log({noticeW})
             
                                     wdfs = Number(Number(W - whoWS).toFixed(2)) // Không sử dụng cho cân nặng
         
@@ -861,12 +876,12 @@ class Model extends BaseModel {
                                 const agemosCheck = sheet2.cell(`A${i}`).value();
         
                                 if (agemosCheck >= ageInMonths) {
-                                    console.log({agemosCheck})
+                                    // console.log({agemosCheck})
                                     whoWS = sheet2.cell(`I${i}`).value(); // Công thức sai, không sử dụng
                                     
                                     let BIM = W/(Xm * Xm)
-                                    console.log({Xm})
-                                    console.log({BIM})
+                                    // console.log({Xm})
+                                    // console.log({BIM})
         
                                     let SD2neg = sheet2.cell(`G${i}`).value();
                                     let SD1neg = sheet2.cell(`H${i}`).value();
@@ -878,9 +893,9 @@ class Model extends BaseModel {
         
                                     noticeW =  evaluateWBmi({ WIndex: BIM, SD2neg, SD1neg, SD1, SD2, W, minQuantity, maxQuantity })
 
-                                    console.log('======Cân nặng=======')
-                                    console.log({SD0})
-                                    console.log({noticeW})
+                                    // console.log('======Cân nặng=======')
+                                    // console.log({SD0})
+                                    // console.log({noticeW})
         
                                     wdfs = Number(Number(W - whoWS).toFixed(2)) // Công thức sai, không sử dụng
         

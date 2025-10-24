@@ -20,7 +20,7 @@ module.exports  = DATABASE_MIDDLEWARE("media", {
      * 2: Câu chuyện thương hiệu
      * 3: Câu chuyện khách hàng
      * 4: Truyện tranh
-     * 5: Khác
+     * 5: Bằng chứng khoa học
 	 */
     type: {
         type: Number,

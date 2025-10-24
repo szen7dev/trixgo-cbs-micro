@@ -43,10 +43,10 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
      */
     //_______Ngày sinh
     birthday: { type: Date, default: Date.now },
-    //_______Ngày tuổi xương
-    boneAge: { type: Date },
     //_______Ngày dậy thì
     pubertyOnsetDate: { type: Date },
+    //_______Tuổi xương thực (dạng số - Đo bằng máy)
+    boneAge: { type: Number },
     //_________Giới tính (1-nam/ 2 - nữ/3-khác)
     gender: { type: Number, default: 1 },
     //_________Chiều cao đo (cm)

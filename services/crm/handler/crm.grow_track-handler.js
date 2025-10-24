@@ -32,14 +32,14 @@ module.exports = {
             try {
                 const { scopes } = ctx.meta;
                 const actionName = ctx.action.name;
-                console.log(`CALLED ACTION: ${actionName}`);
+                // console.log(`CALLED ACTION: ${actionName}`);
 
                 if (scopes && !scopes.includes(actionName)) {
                     return { error: true, message: `You don't have permission to access this action` };
                 }
 
                 await this.validateEntity(ctx.params);
-                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine } = ctx.params;
+                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -51,7 +51,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine })
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -74,7 +74,7 @@ module.exports = {
             try {
                 const { scopes } = ctx.meta;
                 const actionName = ctx.action.name;
-                console.log(`CALLED ACTION: ${actionName}`);
+                // console.log(`CALLED ACTION: ${actionName}`);
 
                 if (scopes && !scopes.includes(actionName)) {
                     return { error: true, message: `You don't have permission to access this action` };
@@ -110,7 +110,7 @@ module.exports = {
             try {
                 const { scopes } = ctx.meta;
                 const actionName = ctx.action.name;
-                console.log(`CALLED ACTION: ${actionName}`);
+                // console.log(`CALLED ACTION: ${actionName}`);
 
                 if (scopes && !scopes.includes(actionName)) {
                     return { error: true, message: `You don't have permission to access this action` };
@@ -152,7 +152,7 @@ module.exports = {
             try {
                 const { scopes } = ctx.meta;
                 const actionName = ctx.action.name;
-                console.log(`CALLED ACTION: ${actionName}`);
+                // console.log(`CALLED ACTION: ${actionName}`);
 
                 if (scopes && !scopes.includes(actionName)) {
                     return { error: true, message: `You don't have permission to access this action` };
