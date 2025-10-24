@@ -68,7 +68,36 @@ class Model extends BaseModel {
                     userCreate: userID,
                 }
 
-                let convertStr = ''
+                let convertStr = '';
+
+                if(checkObjectIDs(contactID)){
+                    dataInsert.contact = contactID;
+
+                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).populate({
+                        path: 'parent',
+                        select: 'phone name'
+                    })
+
+                    if(infoContact){
+                        dataInsert.name = infoContact?.name;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
+
+                        if(infoContact.phone){
+                            dataInsert.phone = infoContact?.phone;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
+                        }else{
+                            dataInsert.phone = infoContact?.parent?.phone;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.parent?.phone)
+                        }
+
+                        if(infoContact?.birthday && infoContact?.birthday != null){
+                            dataInsert.birthday = infoContact?.birthday;
+                        }
+                        
+                        dataInsert.gender = infoContact?.gender;
+                        dataInsert.parentName = infoContact?.parent?.name;
+                    }
+                }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     dataInsert.status = status;
@@ -109,32 +138,6 @@ class Model extends BaseModel {
                 }
                 if(date && date != ""){
                     dataInsert.date = date;
-                }
-
-                if(checkObjectIDs(contactID)){
-                    dataInsert.contact = contactID;
-
-                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).populate({
-                        path: 'parent',
-                        select: 'phone name'
-                    })
-
-                    if(infoContact){
-                        dataInsert.name = infoContact?.name;
-                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
-
-                        if(infoContact.phone){
-                            dataInsert.phone = infoContact?.phone;
-                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
-                        }else{
-                            dataInsert.phone = infoContact?.parent?.phone;
-                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.parent?.phone)
-                        }
-
-                        dataInsert.birthday = infoContact?.birthday;
-                        dataInsert.gender = infoContact?.gender;
-                        dataInsert.parentName = infoContact?.parent?.name;
-                    }
                 }
 
                 if(name && name != ""){
