@@ -309,13 +309,16 @@ class Model extends BaseModel {
                     }
 
                     if(status == 2){
-                        let xp = 0
+                        let xp = 0, xpVal = 0
                         if(resultType == 1){
-                            xp = Number(CRM_XP[0].xp - infoTrack.xp)
+                            xp = Number(CRM_XP[0].xp)
+                            xpVal = Number(CRM_XP[0].xp - infoTrack.xp)
                         }else if(resultType == 2){
-                            xp = Number(CRM_XP[1].xp - infoTrack.xp)
+                            xp = Number(CRM_XP[1].xp)
+                            xpVal = Number(CRM_XP[1].xp - infoTrack.xp)
                         }else{
-                            xp = Number(CRM_XP[2].xp - infoTrack.xp)
+                            xp = Number(CRM_XP[2].xp)
+                            xpVal = Number(CRM_XP[2].xp - infoTrack.xp)
                         }
 
                         dataUpdate.percentage = 100
@@ -335,7 +338,7 @@ class Model extends BaseModel {
                         // Cập nhật vào Contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
                             $inc: {
-                                xp: xp,
+                                xp: xpVal,
                                 streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: 1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: 1, // Tính toán đảm bảo max 5 điểm máu
