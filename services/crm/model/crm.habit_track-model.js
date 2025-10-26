@@ -779,12 +779,12 @@ class Model extends BaseModel {
 
                     await ITEM__CONTACT_COLL.populate(listData, {  
                         path: '_id',
-                        select: 'name image userCreate createAt',
+                        select: 'name image parent createAt',
                         model: 'contact',
                         populate: {
-                            path: 'userCreate',
-                            select: 'fullname address',
-                            model: 'user',
+                            path: 'parent',
+                            select: 'name address',
+                            model: 'contact',
                         }
                     })
 
