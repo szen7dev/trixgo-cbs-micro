@@ -308,9 +308,7 @@ class Model extends BaseModel {
                  * CHIỀU CAO
                  * 0-5 tuổi thì WHO theo từng ngày
                  * Trên 5 tuổi thì theo WHO và theo tháng
-                 */      
-                
-                /**
+                 * ---------------
                  * CÂN NẶNG
                  * 0-5 tuổi thì WHO theo từng ngày
                  * 5-10 tuổi thì theo WHO và theo từng tháng

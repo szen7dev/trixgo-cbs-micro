@@ -422,6 +422,8 @@ class Model extends BaseModel {
                         }
                         conditionObj.receivers = { $nin: [customerID]}
                         conditionObj.company = ObjectID(companyID)
+
+                        // console.log(conditionObj)
                     }
                 }
                 
