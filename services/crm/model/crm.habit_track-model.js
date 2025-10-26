@@ -765,7 +765,7 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: '$contact',
-                                score:       { $sum: 1 },           // số lần hoàn thành
+                                // score:       { $sum: 1 },           // số lần hoàn thành
                                 totalXP:     { $sum: '$xp' },       // tổng điểm XP
                                 totalStreak: { $sum: '$streak' },   // tổng streak
                             },
