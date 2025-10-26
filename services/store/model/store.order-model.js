@@ -33,10 +33,12 @@ const STORE_ORDER_COLL = require("../database/store.order-coll");
 const STORE_ORDER_PRODUCT_COLL = require('../database/store.order_product-coll');
 const STORE_VOUCHER_COLL       = require('../database/store.voucher-coll');
 const { CF_ACTIONS_SHIPMENT } = require("../../shipment/helper/shipment.actions.js");
+const { STORE_FACTOR } = require("../helper/store.keys-constant");
 
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 const STORE_ORDER_PRODUCT_MODEL         = require('../model/store.order_product-model.js').MODEL
 const STORE_VOUCHER_MODEL               = require("../model/store.voucher-model").MODEL;
+const CRM_POIN_TRANSACTION_MODEL        = require("../../crm/model/crm.point_transaction-model").MODEL;
 
 class Model extends BaseModel {
   constructor() {
@@ -416,7 +418,7 @@ return new Promise(async (resolve) => {
 insertFull({ outin, type, companyID, projectID, fundaID, businessID, channelID, shiftID, customerID, affiliateID, voucherID, userID, date, toDate, name, sign, note, total, discount, salesoff, credit, shippingFee, paymentMethod, areaID, buyerName, buyerPhone, buyerEmail, recipientName, recipientPhone, recipientAddress, classificationID, sourceID, executionChannelID, warehouseID, deliveryID, feedbackNotes, products }) {
     return new Promise(async (resolve) => {
         try {            
-            let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID).select('remainLoyaltyPoints name phone')
+            let infoCustomer = await ITEM__CONTACT_COLL.findById(customerID).select('remainLoyaltyPoints name phone membershipLevel')
             if(!name || !infoCustomer)
                 return resolve({ error: true, message: "customer|name invalid", keyError: KEY_ERROR.PARAMS_INVALID })
 
@@ -717,6 +719,19 @@ insertFull({ outin, type, companyID, projectID, fundaID, businessID, channelID, 
                     buyers: [customerID],
                 });
             }
+
+            // console.log(amount)
+            // console.log(Number(STORE_FACTOR[Number(infoCustomer.membershipLevel - 1)].rate))
+            // Thêm tích điểm cho khách
+            await CRM_POIN_TRANSACTION_MODEL.insert({
+                userID, 
+                companyID, 
+                contactID: customerID, 
+                orderID, 
+                direction: 1, 
+                points: Number(amount * Number(STORE_FACTOR[Number(infoCustomer.membershipLevel - 1)].rate))/100, 
+                note: 'Tích điểm từ mua đơn hàng'
+            })
 
             return resolve({ error: false, data: infoAfterInsert, status: 200 });
         } catch (error) {
