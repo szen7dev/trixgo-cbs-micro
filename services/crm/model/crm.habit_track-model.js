@@ -308,18 +308,16 @@ class Model extends BaseModel {
                         resultType,
                     }
 
-                    // Trạng thái hoàn thành
-                    let xp = 0
-
-                    if(resultType == 1){
-                        xp = Number(CRM_XP[0].xp - infoTrack.xp)
-                    }else if(resultType == 2){
-                        xp = Number(CRM_XP[1].xp - infoTrack.xp)
-                    }else{
-                        xp = Number(CRM_XP[2].xp - infoTrack.xp)
-                    }
-
                     if(status == 2){
+                        let xp = 0
+                        if(resultType == 1){
+                            xp = Number(CRM_XP[0].xp - infoTrack.xp)
+                        }else if(resultType == 2){
+                            xp = Number(CRM_XP[1].xp - infoTrack.xp)
+                        }else{
+                            xp = Number(CRM_XP[2].xp - infoTrack.xp)
+                        }
+
                         dataUpdate.percentage = 100
                         dataUpdate.xp = xp
                         dataUpdate.streak = 1
@@ -344,6 +342,15 @@ class Model extends BaseModel {
                             }
                         }, { new: true })
                     }else{
+                        let xp = 0
+                        if(resultType == 1){
+                            xp = Number(CRM_XP[0].xp)
+                        }else if(resultType == 2){
+                            xp = Number(CRM_XP[1].xp)
+                        }else{
+                            xp = Number(CRM_XP[2].xp)
+                        }
+
                         dataUpdate.percentage = 0
                         dataUpdate.xp = 0
                         dataUpdate.streak = 0
