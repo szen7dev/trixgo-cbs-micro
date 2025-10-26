@@ -195,6 +195,7 @@ class Model extends BaseModel {
                  * 1. Hoàn thành tối thiểu: XP = 10
                  * 2. Hoàn thành tối Ưu: XP = 15
                  * 3. Hoàn thành tối thượng: XP = 30
+                 * Cần lưu ý: khi chuyển tối thiểu -> ưu -> thượng và ngược lại
                  * Về membershipLevel:
                  * - Tăng khi mua hàng
                  * - Tăng khi tham gia game hàng ngày
@@ -213,17 +214,6 @@ class Model extends BaseModel {
                 let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
                 // console.log(infoTrack)
 
-                // Trạng thái hoàn thành
-                let xp = 0
-
-                if(resultType == 1){
-                    xp = CRM_XP[0].xp
-                }else if(resultType == 2){
-                    xp = CRM_XP[1].xp
-                }else{
-                    xp = CRM_XP[2].xp
-                }
-
                 // Tạo mới
                 if(!infoTrack){
                     // console.log('Chưa tồn tại mẩu tin==============')
@@ -237,6 +227,17 @@ class Model extends BaseModel {
                         resultType, 
                         duration: infoHabit.duration,
                         habitCate: infoHabit.habitCate
+                    }
+
+                    // Trạng thái hoàn thành
+                    let xp = 0
+
+                    if(resultType == 1){
+                        xp = CRM_XP[0].xp
+                    }else if(resultType == 2){
+                        xp = CRM_XP[1].xp
+                    }else{
+                        xp = CRM_XP[2].xp
                     }
 
                     if(status == 2){
@@ -305,6 +306,17 @@ class Model extends BaseModel {
                         date: formattedDate,
                         status, 
                         resultType,
+                    }
+
+                    // Trạng thái hoàn thành
+                    let xp = 0
+
+                    if(resultType == 1){
+                        xp = Number(CRM_XP[0].xp - infoTrack.xp)
+                    }else if(resultType == 2){
+                        xp = Number(CRM_XP[1].xp - infoTrack.xp)
+                    }else{
+                        xp = Number(CRM_XP[2].xp - infoTrack.xp)
                     }
 
                     if(status == 2){
