@@ -1212,6 +1212,7 @@ class Model extends BaseModel {
                         conditionObj.nestedParents = { $in: [ObjectID(uplineID)] }
                     }
 
+                    // Đã cập nhật Habit_track
                     else if(option == 3){
                         let conditionTempObj = {
                             company: ObjectID(companyID),
@@ -1242,6 +1243,7 @@ class Model extends BaseModel {
                         }
                     }
 
+                    // Chưa cập nhật Habit_track
                     else if(option == 4){
                         let conditionTempObj = {
                             company: ObjectID(companyID),
@@ -1306,24 +1308,14 @@ class Model extends BaseModel {
                 }
 
                 // Phân loại theo thời khoảng
-                if (isValidDate(fromDate) && isValidDate(toDate)) {
-                    conditionObj.joinedDate = {
-                        $gte: new Date(fromDate),
-                        $lte: new Date(toDate),
+                if(!option){
+                    if (isValidDate(fromDate) && isValidDate(toDate)) {
+                        conditionObj.joinedDate = {
+                            $gte: new Date(fromDate),
+                            $lte: new Date(toDate),
+                        }
                     }
                 }
-
-                // // Lấy những danh bạ có sinh nhật vào hôm nay: sử dụng dạng $gte, $lte để tăng hiệu suất*** Không sử dụng return
-                // if (isBirthday == 1) {
-                //     const day = (new Date()).getDate()
-                //     const month = (new Date()).getMonth()
-                //     conditionObj.$where = `return this.birthday && this.birthday.getDate() === ${day} && this.birthday.getMonth() === ${month}`
-                // }
-
-                // // Danh sách sinh nhật theo tháng: sử dụng dạng $gte, $lte để tăng hiệu suất
-                // if (month) {
-                //     conditionObj.$where = `return this.birthday && this.birthday.getMonth() === ${Number(month - 1)}`
-                // }
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
@@ -1345,7 +1337,6 @@ class Model extends BaseModel {
 
                     conditionObj.namecv = regSearch
                 }
-
                 // console.log(conditionObj)
 
                 let conditionObjOrg = {
