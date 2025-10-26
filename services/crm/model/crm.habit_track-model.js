@@ -29,6 +29,8 @@ const ITEM__CONTACT_COLL                = require('../../item/database/item.cont
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
 
+const { CRM_XP } = require("../helper/crm.keys-constant");
+
 class Model extends BaseModel {
 
     constructor() {
@@ -188,6 +190,15 @@ class Model extends BaseModel {
     updateByDay({ companyID, userID, habitID, date, status, resultType, percentage }){
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * 1. Hoàn thành tối thiểu: XP = 10
+                 * 2. Hoàn thành tối Ưu: XP = 15
+                 * 3. Hoàn thành tối thượng: XP = 30
+                 * Về membershipLevel:
+                 * - Tăng khi mua hàng
+                 * - Tăng khi tham gia game hàng ngày
+                 */
                 let infoHabit = await CRM_HABIT_COLL.findById(habitID)
                 if(!infoHabit)
                     return resolve({ error: true, message: "Habit không hợp lệ", keyError: "Request params name invalid" })
@@ -201,6 +212,17 @@ class Model extends BaseModel {
 
                 let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
                 // console.log(infoTrack)
+
+                // Trạng thái hoàn thành
+                let xp = 0
+
+                if(resultType == 1){
+                    xp = CRM_XP[0].xp
+                }else if(resultType == 2){
+                    xp = CRM_XP[1].xp
+                }else{
+                    xp = CRM_XP[2].xp
+                }
 
                 // Tạo mới
                 if(!infoTrack){
@@ -219,13 +241,13 @@ class Model extends BaseModel {
 
                     if(status == 2){
                         dataInsert.percentage = 100
-                        dataInsert.xp = 15
+                        dataInsert.xp = xp
                         dataInsert.streak = 1
 
                         // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
-                            percentage: 100,
+                            percentage: 100, // Cần tính toán toán lại theo tổng số ngày hoàn thành???
                             $inc: {
                                 currentStreak: 1,
                                 maxStreak: 1
@@ -235,8 +257,7 @@ class Model extends BaseModel {
                         // Cập nhật vào Contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
                             $inc: {
-                                membershipLevel: 1,
-                                xp: 15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+                                xp: xp,
                                 streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: 1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: 1, // Tính toán đảm bảo max 5 điểm máu
@@ -245,8 +266,8 @@ class Model extends BaseModel {
                         }, { new: true })
                     }else{
                         dataInsert.percentage = 0
-                        dataInsert.xp = 15
-                        dataInsert.streak = 1
+                        dataInsert.xp = 0
+                        dataInsert.streak = 0
 
                         // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
@@ -261,8 +282,7 @@ class Model extends BaseModel {
                         // Cập nhật vào Contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
                             $inc: {
-                                membershipLevel: -1,
-                                xp: -15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+                                xp: -xp, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
                                 streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: -1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: -1, // Tính toán đảm bảo max 5 điểm máu
@@ -291,13 +311,13 @@ class Model extends BaseModel {
 
                     if(status == 2){
                         dataUpdate.percentage = 100
-                        dataUpdate.xp = 15
+                        dataUpdate.xp = xp
                         dataUpdate.streak = 1
 
                         // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
-                            percentage: 100,
+                            percentage: 100, // Cần tính toán toán lại theo tổng số ngày hoàn thành???
                             $inc: {
                                 currentStreak: 1,
                                 maxStreak: 1
@@ -307,8 +327,7 @@ class Model extends BaseModel {
                         // Cập nhật vào Contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
                             $inc: {
-                                membershipLevel: 1,
-                                xp: 15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+                                xp: xp,
                                 streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: 1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: 1, // Tính toán đảm bảo max 5 điểm máu
@@ -317,8 +336,8 @@ class Model extends BaseModel {
                         }, { new: true })
                     }else{
                         dataUpdate.percentage = 0
-                        dataUpdate.xp = 15
-                        dataUpdate.streak = 1
+                        dataUpdate.xp = 0
+                        dataUpdate.streak = 0
 
                         // XỬ LÝ XP & STREAK
                         // Cập nhật vào Habit
@@ -333,8 +352,7 @@ class Model extends BaseModel {
                         // Cập nhật vào Contact
                         await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
                             $inc: {
-                                membershipLevel: -1,
-                                xp: -15, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
+                                xp: -xp,
                                 streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: -1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: -1, // Tính toán đảm bảo max 5 điểm máu
@@ -902,17 +920,6 @@ class Model extends BaseModel {
     exportExcel({ option, companyID, year, month, email, userID }) {
        return new Promise(async resolve => {
            try {
-            // let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-            //     appID: "61e049cffdebf77b072d1b14",
-            //     userID
-            // })
-
-            // if(!getInfoUserApp.error && Number(getInfoUserApp.data.level) == 0){
-                
-            // }else{
-            //     return resolve({ error: true, message: "Can't get data", status: 403 });
-            // }
-
             // TỔNG HỢP LƯƠNG TOÀN BỘ CÔNG TY
             if(option == 1){
                 if(SALARY_DOWNLOAD_ALL_PERMISSION.includes(email)){
