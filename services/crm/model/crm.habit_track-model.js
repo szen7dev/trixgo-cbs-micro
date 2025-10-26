@@ -261,7 +261,6 @@ class Model extends BaseModel {
                                 streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: 1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: 1, // Tính toán đảm bảo max 5 điểm máu
-                                badges: 1, // Tính toán đảm bảo max 5 điểm máu
                             }
                         }, { new: true })
                     }else{
@@ -286,7 +285,6 @@ class Model extends BaseModel {
                                 streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: -1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: -1, // Tính toán đảm bảo max 5 điểm máu
-                                badges: -1, // Tính toán đảm bảo max 5 điểm máu
                             }
                         }, { new: true })
                     }
@@ -331,7 +329,6 @@ class Model extends BaseModel {
                                 streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: 1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: 1, // Tính toán đảm bảo max 5 điểm máu
-                                badges: 1, // Tính toán đảm bảo max 5 điểm máu
                             }
                         }, { new: true })
                     }else{
@@ -356,7 +353,6 @@ class Model extends BaseModel {
                                 streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
                                 hearts: -1, // Tính toán đảm bảo max 5 điểm máu
                                 gems: -1, // Tính toán đảm bảo max 5 điểm máu
-                                badges: -1, // Tính toán đảm bảo max 5 điểm máu
                             }
                         }, { new: true })
                     }
