@@ -199,6 +199,8 @@ class Model extends BaseModel {
                  * Về membershipLevel:
                  * - Tăng khi mua hàng
                  * - Tăng khi tham gia game hàng ngày
+                 * db.contacts.updateMany({},{$set:{"streak": 0,"xp":0,"badges":1,"hearts":0,"gems":0}})
+                * db.crm_habits.updateMany({},{$set:{"currentStreak": 0,"maxStreak":0,"percentage":0}})
                  */
                 let infoHabit = await CRM_HABIT_COLL.findById(habitID)
                 if(!infoHabit)
@@ -763,14 +765,13 @@ class Model extends BaseModel {
                         {
                             $group: {
                                 _id: '$contact',
-                                // _id: {contact: '$contact'},
                                 score:       { $sum: 1 },           // số lần hoàn thành
                                 totalXP:     { $sum: '$xp' },       // tổng điểm XP
                                 totalStreak: { $sum: '$streak' },   // tổng streak
                             },
                         },
                         { 
-                            $sort: { score: -1 } 
+                            $sort: { totalXP: -1 } 
                         }
                     ])
 
@@ -778,7 +779,7 @@ class Model extends BaseModel {
 
                     await ITEM__CONTACT_COLL.populate(listData, {  
                         path: '_id',
-                        select: 'name image userCreate',
+                        select: 'name image userCreate createAt',
                         model: 'contact',
                         populate: {
                             path: 'userCreate',
