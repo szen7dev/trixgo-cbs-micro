@@ -15,7 +15,8 @@ const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
  * TOOLS
  */
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
-const { checkObjectIDs, IsJsonString}   = require('../../../tools/utils/utils.js')
+const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils.js')
+const { isValidDate }                   = require('../../../tools/utils/time_utils.js')
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
 
 /**
@@ -175,6 +176,7 @@ class Model extends BaseModel {
                 if(convertStr != ""){
                     dataInsert.namecv = convertStr
                 }
+                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
@@ -184,6 +186,7 @@ class Model extends BaseModel {
                  * TÍNH TOÁN ĐƯỜNG PHÂN VỊ VÀ CẬP NHẬT
                  */
                 let infoNew = await that.getInfo({ trackID: infoAfterInsert._id, userID })
+                // console.log(infoNew)
                 if(infoNew){
                     await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
                             percentile: Number(infoNew.P),
@@ -346,96 +349,44 @@ class Model extends BaseModel {
                  * 2. Nếu ngày tuổi xương thực có giá trị -> tính theo ngày tuổi xương thực
                  * 3. Nếu cả 2 trông -> tính theo ngày sinh
                  */
-                // ── Utils ─────────────────────────────────────────────────────────────
-                const DAY_MS = 24 * 60 * 60 * 1000;
-
-                function toDateUTC(v) {
-                    if (v == null || v === "") return null;
-                    if (v instanceof Date) return new Date(Date.UTC(
-                        v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate()
-                    ));
-                    // try ISO first
-                    const d = new Date(v);
-                    if (!Number.isNaN(d)) return new Date(Date.UTC(
-                        d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()
-                    ));
-                    // try DD/MM/YYYY
-                    const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(String(v).trim());
-                    if (m) {
-                        const [, dd, mm, yyyy] = m.map(Number);
-                        return new Date(Date.UTC(yyyy, mm - 1, dd));
-                    }
-                    return null;
+                const DAY_MS = 1000 * 60 * 60 * 24;
+                function diffDays(date1, date2) {
+                    const d1 = new Date(date1);
+                    const d2 = new Date(date2);
+                    return Math.round((d2 - d1) / DAY_MS);
                 }
-                const valid = d => d instanceof Date && !Number.isNaN(d.getTime());
-                const iso = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,"0")}-${String(d.getUTCDate()).padStart(2,"0")}`;
+                function subtractYearsAsDays(A1, A2) {
+                    const base = new Date(A1);
+                    if (isNaN(base)) throw new Error("A1 không hợp lệ");
+                    if (typeof A2 !== "number" || isNaN(A2)) throw new Error("A2 phải là số");
 
-                // ── Core ──────────────────────────────────────────────────────────────
-                /**
-                 * Tính "ngày tuổi xương" theo công thức Excel đã cho.
-                 * @param {Date|string} B1  Ngày đo
-                 * @param {Date|string} B2  Ngày sinh (fallback khi lỗi)
-                 * @param {Date|string|null} M2  Ngày dậy thì (nếu có)
-                 * @param {number|null} M3  Tuổi xương thực (năm, vd 7.4) nếu có
-                 * @returns {Date}  Ngày tuổi xương (hoặc B2 khi lỗi/thiếu dữ liệu)
-                 */
-                function calcBoneAgeDate(B1, B2, M2 = null, M3 = null) {
-                    const b1 = toDateUTC(B1);
-                    const b2 = toDateUTC(B2);
-                    const hasM2 = M2 != null && M2 !== "";
-                    const hasM3 = M3 != null && M3 !== "";
-
-                    if (!valid(b1) || !valid(b2)) return b2; // dữ liệu nền phải hợp lệ
-
-                    // IF(M2, …, IF(M3, …, B2))
-                    if (hasM2) {
-                        const m2 = toDateUTC(M2);
-                        if (!valid(m2)) return b2; // IFERROR(...;B2)
-
-                        // DATEDIF(M2;B1;"D")
-                        const daysDiff = Math.floor((b1.getTime() - m2.getTime()) / DAY_MS);
-                        if (daysDiff < 0) return b2; // Excel DATEDIF lỗi nếu M2 > B1 → IFERROR
-
-                        // DATE(YEAR(B1)-13; MONTH(B1); DAY(B1) - daysDiff)
-                        const year  = b1.getUTCFullYear() - 13;
-                        const month = b1.getUTCMonth();
-                        const day   = b1.getUTCDate() - daysDiff;
-                        const res = new Date(Date.UTC(year, month, day));
-                        return valid(res) ? res : b2; // IFERROR(...;B2)
-                    }
-
-                    if (hasM3) {
-                        const years = Number(String(M3).replace(",", ".")); // cho phép nhập "7,4"
-                        if (!Number.isFinite(years) || years < 0) return b2; // IFERROR
-
-                        // B1 - M3*365.25 (ngày) → trừ số ngày khỏi B1
-                        const deltaMs = years * 365.25 * DAY_MS;
-                        const res = new Date(b1.getTime() - deltaMs);
-                        return valid(res) ? new Date(Date.UTC(res.getUTCFullYear(), res.getUTCMonth(), res.getUTCDate())) : b2;
-                    }
-
-                    return b2;
+                    const days = A2 * 365.25;
+                    const result = new Date(base.getTime() - days * DAY_MS);
+                    return result;
                 }
 
-                // ── Ví dụ sử dụng ─────────────────────────────────────────────────────
-                const B1 = infoAterGet.createAt;    // Ngày đo
-                const B2 = infoAterGet.birthday;    // Ngày sinh (fallback)
-                const M2 = infoAterGet.pubertyOnsetDate;    // Ngày dậy thì (nhánh 1)
-                const M3 = infoAterGet.boneAge;    // Tuổi xương thực (nhánh 2)
-                // console.log(M2)
-                // console.log(M3)
-
-                // console.log("Nhánh M2:", iso(calcBoneAgeDate(B1, B2, M2, null))); // nếu M2 > B1 → trả về B2
-                // console.log("Nhánh M3:", iso(calcBoneAgeDate(B1, B2, null, M3))); // ~ 2017-11-05
+                const ngayDo = new Date(date2)
+                const dayDo = ngayDo.getDate();
+                const monthDo = ngayDo.getMonth() + 1;
+                const yearDo = ngayDo.getFullYear();
 
                 if(infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != ''){
-                    date1 = iso(calcBoneAgeDate(B1, B2, M2, null))
+                    const ngayDayThi = infoAterGet.pubertyOnsetDate
+                    const date = new Date(Number(yearDo - 13), monthDo - 1, Number(dayDo - diffDays(ngayDayThi, date2)));
+                    if(isValidDate(date)){
+                        date1 = new Date(Number(yearDo - 13), monthDo - 1, Number(dayDo - diffDays(ngayDayThi, date2)));
+                        // console.log(date); 
+                    }
                 }else{
                     if(infoAterGet.boneAge && infoAterGet.boneAge != ''){
-                        date1 = iso(calcBoneAgeDate(B1, B2, null, M3))
+                        const tuoiThucXuong = infoAterGet.boneAge
+                        const result = subtractYearsAsDays(date2, tuoiThucXuong);
+                        if(isValidDate(result)){
+                            date1 = result
+                            // console.log(result); 
+                        }
                     }
                 }
-                // console.log({date1})
 
                 if(infoAterGet.gender == 1){
                     // console.log('=====Nam=====')
