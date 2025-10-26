@@ -80,7 +80,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours
+    insert({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours, pubertyOnsetDate, boneAge 
     }) {
         return new Promise(async resolve => {
             try {
@@ -271,6 +271,14 @@ class Model extends BaseModel {
 
                 if (workingStatus && checkObjectIDs(workingStatus)) {
                     dataInsert.workingStatus = workingStatus;
+                }
+
+                if (pubertyOnsetDate) {
+                    dataInsert.pubertyOnsetDate = pubertyOnsetDate;
+                }
+
+                if (boneAge) {
+                    dataInsert.boneAge = boneAge;
                 }
 
                 if (realStatus) {
@@ -531,7 +539,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, annualWorkingHours }) {
+    update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, annualWorkingHours, pubertyOnsetDate, boneAge }) {
         return new Promise(async (resolve) => {
             try {
                 //___________Xác thực số điện thoại
@@ -615,6 +623,14 @@ class Model extends BaseModel {
 
                 if (birthday) {
                     dataUpdate.birthday = birthday;
+                }
+
+                if (pubertyOnsetDate) {
+                    dataUpdate.pubertyOnsetDate = pubertyOnsetDate;
+                }
+
+                if (boneAge) {
+                    dataUpdate.boneAge = boneAge;
                 }
 
                 if (phone) {

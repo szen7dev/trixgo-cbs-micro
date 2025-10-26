@@ -94,6 +94,14 @@ class Model extends BaseModel {
                         if(infoContact?.birthday && infoContact?.birthday != null){
                             dataInsert.birthday = infoContact?.birthday;
                         }
+
+                        if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
+                            dataInsert.pubertyOnsetDate = infoContact?.pubertyOnsetDate;
+                        }
+
+                        if(infoContact?.boneAge && !isNaN(infoContact?.boneAge)){
+                            dataInsert.boneAge = infoContact?.boneAge;
+                        }
                         
                         dataInsert.gender = infoContact?.gender;
                         dataInsert.parentName = infoContact?.parent?.name;

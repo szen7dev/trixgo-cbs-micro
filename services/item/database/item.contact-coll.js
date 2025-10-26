@@ -400,6 +400,10 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default : 0
     },
+    //_______Ngày dậy thì
+    pubertyOnsetDate: { type: Date },
+    //_______Tuổi xương thực (dạng số - Đo bằng máy)
+    boneAge: { type: Number },
     /**
      * Hạng thành viên (để được ưu đãi khi mua hàng)
      * 1-Đồng
