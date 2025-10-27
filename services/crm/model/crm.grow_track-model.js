@@ -93,6 +93,10 @@ class Model extends BaseModel {
 
                         if(infoContact?.birthday && infoContact?.birthday != null){
                             dataInsert.birthday = infoContact?.birthday;
+                            
+                            let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
+                            if(check >= 20)
+                            return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
                         }
 
                         if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
@@ -138,7 +142,12 @@ class Model extends BaseModel {
 
                 if(birthday && birthday != ""){
                     dataInsert.birthday = birthday;
+
+                    let check = new Date().getFullYear() - new Date(birthday).getFullYear()
+                    if(check >= 20)
+                        return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
                 }
+
                 if(pubertyOnsetDate && pubertyOnsetDate != ""){
                     dataInsert.pubertyOnsetDate = pubertyOnsetDate;
                 }
@@ -194,15 +203,12 @@ class Model extends BaseModel {
                  * TÍNH TOÁN ĐƯỜNG PHÂN VỊ VÀ CẬP NHẬT
                  */
                 let infoNew = await that.getInfo({ trackID: infoAfterInsert._id, userID })
-                // console.log(infoNew)
                 if(infoNew){
                     await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
                             percentile: Number(infoNew.P),
                             predictedAdultHeight: Number(infoNew.predictedAdultHeight)
                     }, { new: true })
                 }
-                // console.log(infoNew.P)
-                // console.log(infoNew.predictedAdultHeight)
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
