@@ -94,9 +94,9 @@ class Model extends BaseModel {
                         if(infoContact?.birthday && infoContact?.birthday != null){
                             dataInsert.birthday = infoContact?.birthday;
                             
-                            let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
-                            if(check >= 20)
-                            return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
+                            // let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
+                            // if(check >= 20)
+                            // return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
                         }
 
                         if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
