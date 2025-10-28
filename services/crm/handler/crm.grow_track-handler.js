@@ -159,7 +159,7 @@ module.exports = {
                 }
 
                 await this.validateEntity(ctx.params);
-                let { optionSeller, trackID, contactID, phone, userCreateID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, option, trackID, contactID, phone, userCreateID, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
@@ -173,7 +173,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(trackID){
                     resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.getInfo({
-                        trackID, userID, select, populates
+                        option, trackID, userID, select, populates
                     });
                 } else {
                     resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.getList({

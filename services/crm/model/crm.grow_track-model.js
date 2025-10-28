@@ -315,7 +315,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ trackID, userID, select, populates }) {
+    getInfo({ option, trackID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try { 
                 /**
@@ -351,8 +351,8 @@ class Model extends BaseModel {
 
                 let L, M, S, Z, P, startAge, endAge = 20, hdfs, whoHS, wdfs, whoWS
 
-                let date1 = infoAterGet.birthday, date2 = infoAterGet.date, X = infoAterGet.height, Xm = infoAterGet.height/100, W = infoAterGet.weight
-
+                let date1 = infoAterGet.birthday, date2 = infoAterGet.date
+                let X = infoAterGet.height, Xm = infoAterGet.height/100, W = infoAterGet.weight
                 let gender, genderHWho5, genderHWho, genderWWho5, genderWWho;
 
                 /**
@@ -382,6 +382,7 @@ class Model extends BaseModel {
                 const monthDo = ngayDo.getMonth() + 1;
                 const yearDo = ngayDo.getFullYear();
 
+                // Áp dụng có tuổi dậy thì
                 if(infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != ''){
                     const ngayDayThi = infoAterGet.pubertyOnsetDate
                     const date = new Date(Number(yearDo - 13), monthDo - 1, Number(dayDo - diffDays(ngayDayThi, date2)));
@@ -389,7 +390,9 @@ class Model extends BaseModel {
                         date1 = new Date(Number(yearDo - 13), monthDo - 1, Number(dayDo - diffDays(ngayDayThi, date2)));
                         // console.log(date); 
                     }
-                }else{
+                }
+                // Áp dụng có tuổi thực xương
+                else{
                     if(infoAterGet.boneAge && infoAterGet.boneAge != ''){
                         const tuoiThucXuong = infoAterGet.boneAge
                         const result = subtractYearsAsDays(date2, tuoiThucXuong);
@@ -402,11 +405,11 @@ class Model extends BaseModel {
 
                 if(infoAterGet.gender == 1){
                     // console.log('=====Nam=====')
-                    gender = "Male";
-                    genderHWho5 = "LFA_boys_z_exp";
-                    genderHWho = "MaleHWho";
-                    genderWWho5 = "WFA_boys_z_exp";
-                    genderWWho = "MaleWWho";
+                    gender = "Male"; // Đường phân vị chiều cao với Nam
+                    genderHWho5 = "LFA_boys_z_exp"; // Chuẩn chiều cao cho Nam 5 tuổi trở xuống
+                    genderHWho = "MaleHWho"; // Chuẩn chiều cao cho Nam 5 tuổi trở lên
+                    genderWWho5 = "WFA_boys_z_exp"; // Chuẩn cân nặng cho Nam 5 tuổi trở xuống
+                    genderWWho = "MaleWWho"; // Chuẩn cân nặng cho Nam 5 tuổi trở lên
                 }else{
                     // console.log('=====Nữ=====')
                     gender = "Female";
@@ -432,6 +435,7 @@ class Model extends BaseModel {
                     return months;
                 }
 
+                // Hàm tính số ngày tuổi của trẻ
                 function getDayDifference(date1, date2) {
                     const d1 = new Date(date1);
                     const d2 = new Date(date2);
@@ -445,13 +449,17 @@ class Model extends BaseModel {
                     return diffDays;
                 }
 
+                // Tính tuổi theo số ngày, theo tháng
                 let ageInMonths = getMonthDifference(date1, date2)
                 let ageInDays = getDayDifference(date1, date2)
+                let ageInMonthsByBirthday = getMonthDifference(infoAterGet.birthday, date2)
 
-                // console.log({ageInMonths})
+                console.log({date1})
+                console.log({ageInMonths})
+                console.log({ageInMonthsByBirthday})
                 // console.log({ageInDays})
 
-                // Hàm tính Zscore theo: X, L, M, S
+                // Hàm tính Zscore theo: X, L, M, S (X là chiều cao của trẻ)
                 function calculateZScore(X, L, M, S) {
                     if (L === 0) {
                       return Math.log(X / M) / S;
@@ -556,172 +564,219 @@ class Model extends BaseModel {
                     const sheet3 = workbook.sheet(genderHWho5);
                     const sheet4 = workbook.sheet(genderWWho5);
 
-                    const lastRow = sheet.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
-                    const lastRow1 = sheet1.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
-                    const lastRow2 = sheet2.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
-                    const lastRow3 = sheet3.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
-                    const lastRow4 = sheet4.usedRange().endCell().rowNumber(); // Tìm số dòng cuối cùng có dữ liệu
+                    const lastRow = sheet.usedRange().endCell().rowNumber();
+                    const lastRow1 = sheet1.usedRange().endCell().rowNumber();
+                    const lastRow2 = sheet2.usedRange().endCell().rowNumber();
+                    const lastRow3 = sheet3.usedRange().endCell().rowNumber();
+                    const lastRow4 = sheet4.usedRange().endCell().rowNumber();
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
-                    for (let i = 2; i <= lastRow; i++) {
-                        const agemosCheck = sheet.cell(`B${i}`).value();
+                    // Bắt đầu đo
+                    // const label = 'loop_time';
+                    // console.time(label);
+                    // for (let i = 2; i <= lastRow; i++) {
+                    //     const agemosCheckNew = sheet.cell(`B${i}`).value();
 
-                        if (agemosCheck >= ageInMonths) {
+                    //     if (agemosCheckNew >= ageInMonthsByBirthday) {
+                    //         console.log('==================Theo ngày sinh')
+                    //         console.log({i})
+                    //         console.log({agemosCheckNew, ageNew: Number(agemosCheckNew/12).toFixed(2)})
 
-                            L = sheet.cell(`C${i}`).value();
-                            M = sheet.cell(`D${i}`).value();
-                            S = sheet.cell(`E${i}`).value();
-                            Z = calculateZScore(X, L, M, S);
-                            P = Number(getPercentileFromZ(Z).toFixed(2));
+                    //         // ✅ Ngắt vòng lặp sau khi tìm thấy
+                    //         break;
+                    //     }
+                    // }
 
-                            startAge = Math.ceil(agemosCheck / 12);
-
-                            // Lấy các giá trị của điểm bắt đầu
-                            ageHeightNow.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                // agemos: agemosCheck,
-                                // L,
-                                // M,
-                                // S,
-                                height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
-                            })
-
-                            ageHeightP3.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`F${i}`).value()).toFixed(2)
-                            })
-
-                            ageHeightP5.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`G${i}`).value()).toFixed(2)
-                            })
-
-                            ageHeightP10.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`H${i}`).value()).toFixed(2)
-                            })
-
-                            ageHeightP25.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`I${i}`).value()).toFixed(2)
-                            })
-
-                            ageHeightP50.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`J${i}`).value()).toFixed(2)
-                            })
-
-                            ageHeightP75.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`K${i}`).value()).toFixed(2)
-                            })
-
-                            ageHeightP90.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`L${i}`).value()).toFixed(2)
-                            })
-
-                            ageHeightP95.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`M${i}`).value()).toFixed(2)
-                            })
-
-                            ageHeightP97.push({
-                                age: Number(Number(agemosCheck / 12).toFixed(2)),
-                                height: Number(sheet.cell(`N${i}`).value()).toFixed(2)
-                            })
-
-                            // ✅ Ngắt vòng lặp sau khi tìm thấy
-                            break;
-                        }
-                    }  
-        
-                    // Lấy các giá trị ứng với từng độ tuổi
-                    for (let age = startAge; age <= endAge; age++) {
-                        let targetAgemos
-
-                        if(age < 20){
-                            targetAgemos = +(age * 12 + 0.5).toFixed(1); // ví dụ 8 tuổi -> 96.5 tháng
-                        }else{
-                            targetAgemos = 240 // Tuổi 20 chỉ có dữ liệu với 240 tháng
-                        }
-                
-                        let found = false;
-
+                    if(infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != '' && option){
                         for (let i = 2; i <= lastRow; i++) {
-                            const agemos = sheet.cell(`B${i}`).value();
+                            const agemosCheckNew = sheet.cell(`B${i}`).value();
 
-                            if (agemos >= targetAgemos) {
-                                const L = sheet.cell(`C${i}`).value();
-                                const M = sheet.cell(`D${i}`).value();
-                                const S = sheet.cell(`E${i}`).value();
-                
-                                ageHeightNow.push({
-                                    age,
-                                    // agemos,
-                                    // L,
-                                    // M,
-                                    // S,
-                                    height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
-                                });
+                            if (agemosCheckNew >= ageInMonthsByBirthday) {
+                                console.log('==================Theo ngày sinh')
+                                console.log({i})
+                                console.log({agemosCheckNew, ageNew: Number(agemosCheckNew/12).toFixed(2)})
 
-                                ageHeightP3.push({
-                                    age,
-                                    height: Number(sheet.cell(`F${i}`).value()).toFixed(2)
-                                })
-    
-                                ageHeightP5.push({
-                                    age,
-                                    height: Number(sheet.cell(`G${i}`).value()).toFixed(2)
-                                })
-    
-                                ageHeightP10.push({
-                                    age,
-                                    height: Number(sheet.cell(`H${i}`).value()).toFixed(2)
-                                })
-    
-                                ageHeightP25.push({
-                                    age,
-                                    height: Number(sheet.cell(`I${i}`).value()).toFixed(2)
-                                })
-    
-                                ageHeightP50.push({
-                                    age,
-                                    height: Number(sheet.cell(`J${i}`).value()).toFixed(2)
-                                })
-    
-                                ageHeightP75.push({
-                                    age,
-                                    height: Number(sheet.cell(`K${i}`).value()).toFixed(2)
-                                })
-    
-                                ageHeightP90.push({
-                                    age,
-                                    height: Number(sheet.cell(`L${i}`).value()).toFixed(2)
-                                })
-    
-                                ageHeightP95.push({
-                                    age,
-                                    height: Number(sheet.cell(`M${i}`).value()).toFixed(2)
-                                })
-    
-                                ageHeightP97.push({
-                                    age,
-                                    height: Number(sheet.cell(`N${i}`).value()).toFixed(2)
-                                })
+                                // Tính đường phân vị
+                                L = sheet.cell(`C${i}`).value();
+                                M = sheet.cell(`D${i}`).value();
+                                S = sheet.cell(`E${i}`).value();
+                                Z = calculateZScore(X, L, M, S);
+                                P = Number(getPercentileFromZ(Z).toFixed(2));
+                                // console.log({L:L,M:M,S:S,Z:Z})
+                                console.log({P})
 
-                                found = true;
+                                startAge = Math.ceil(agemosCheck / 12);
 
+                                // ✅ Ngắt vòng lặp sau khi tìm thấy
                                 break;
                             }
                         }
-                
-                        if (!found) {
-                            console.warn(`Không tìm thấy dòng phù hợp cho tuổi ${age} (Agemos ~ ${targetAgemos})`);
+
+
+                    }else{
+                        for (let i = 2; i <= lastRow; i++) {
+                            const agemosCheck = sheet.cell(`B${i}`).value();
+
+                            if (agemosCheck >= ageInMonths) {
+                                console.log('==================Theo tuổi dậy thì')
+                                console.log({i})
+                                console.log({agemosCheck, age: Number(agemosCheck/12).toFixed(2)})
+
+                                // Tính đường phân vị
+                                L = sheet.cell(`C${i}`).value();
+                                M = sheet.cell(`D${i}`).value();
+                                S = sheet.cell(`E${i}`).value();
+                                Z = calculateZScore(X, L, M, S);
+                                P = Number(getPercentileFromZ(Z).toFixed(2));
+                                // console.log({L:L,M:M,S:S,Z:Z})
+                                console.log({P})
+
+                                startAge = Math.ceil(agemosCheck / 12);
+
+                                // Lấy các giá trị của điểm bắt đầu
+                                ageHeightNow.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
+                                })
+
+                                ageHeightP3.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`F${i}`).value()).toFixed(2)
+                                })
+
+                                ageHeightP5.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`G${i}`).value()).toFixed(2)
+                                })
+
+                                ageHeightP10.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`H${i}`).value()).toFixed(2)
+                                })
+
+                                ageHeightP25.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`I${i}`).value()).toFixed(2)
+                                })
+
+                                ageHeightP50.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`J${i}`).value()).toFixed(2)
+                                })
+
+                                ageHeightP75.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`K${i}`).value()).toFixed(2)
+                                })
+
+                                ageHeightP90.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`L${i}`).value()).toFixed(2)
+                                })
+
+                                ageHeightP95.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`M${i}`).value()).toFixed(2)
+                                })
+
+                                ageHeightP97.push({
+                                    age: Number(Number(agemosCheck / 12).toFixed(2)),
+                                    height: Number(sheet.cell(`N${i}`).value()).toFixed(2)
+                                })
+
+                                // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                break;
+                            }
+                        }  
+            
+                        // Lấy các giá trị ứng với từng độ tuổi theo các mốc Tiêu chuẩn để so sánh
+                        for (let age = startAge; age <= endAge; age++) {
+                            let targetAgemos
+
+                            if(age < 20){
+                                targetAgemos = +(age * 12 + 0.5).toFixed(1); // ví dụ 8 tuổi -> 96.5 tháng
+                            }else{
+                                targetAgemos = 240 // Tuổi 20 chỉ có dữ liệu với 240 tháng
+                            }
+                    
+                            let found = false;
+
+                            for (let i = 2; i <= lastRow; i++) {
+                                const agemos = sheet.cell(`B${i}`).value();
+
+                                if (agemos >= targetAgemos) {
+                                    const L = sheet.cell(`C${i}`).value();
+                                    const M = sheet.cell(`D${i}`).value();
+                                    const S = sheet.cell(`E${i}`).value();
+                    
+                                    ageHeightNow.push({
+                                        age,
+                                        height: Number(calculateHeightFromZ(Z, L, M, S).toFixed(1)).toFixed(2)
+                                    });
+
+                                    ageHeightP3.push({
+                                        age,
+                                        height: Number(sheet.cell(`F${i}`).value()).toFixed(2)
+                                    })
+        
+                                    ageHeightP5.push({
+                                        age,
+                                        height: Number(sheet.cell(`G${i}`).value()).toFixed(2)
+                                    })
+        
+                                    ageHeightP10.push({
+                                        age,
+                                        height: Number(sheet.cell(`H${i}`).value()).toFixed(2)
+                                    })
+        
+                                    ageHeightP25.push({
+                                        age,
+                                        height: Number(sheet.cell(`I${i}`).value()).toFixed(2)
+                                    })
+        
+                                    ageHeightP50.push({
+                                        age,
+                                        height: Number(sheet.cell(`J${i}`).value()).toFixed(2)
+                                    })
+        
+                                    ageHeightP75.push({
+                                        age,
+                                        height: Number(sheet.cell(`K${i}`).value()).toFixed(2)
+                                    })
+        
+                                    ageHeightP90.push({
+                                        age,
+                                        height: Number(sheet.cell(`L${i}`).value()).toFixed(2)
+                                    })
+        
+                                    ageHeightP95.push({
+                                        age,
+                                        height: Number(sheet.cell(`M${i}`).value()).toFixed(2)
+                                    })
+        
+                                    ageHeightP97.push({
+                                        age,
+                                        height: Number(sheet.cell(`N${i}`).value()).toFixed(2)
+                                    })
+
+                                    found = true;
+
+                                    break;
+                                }
+                            }
+                    
+                            if (!found) {
+                                console.warn(`Không tìm thấy dòng phù hợp cho tuổi ${age} (Agemos ~ ${targetAgemos})`);
+                            }
                         }
                     }
 
-                    // Kiểm tra cao so với chuẩn WHO
+                    // Kết thúc đo và in ra thời gian (ví dụ: 'loop_time: 15.234ms')
+                    // console.timeEnd(label);
+
+                    /**
+                     * Kiểm tra cao so với chuẩn WHO
+                     */
                     let noticeH = ''
                     if(ageInDays <= 1856){
                         for (let i = 2; i <= lastRow3; i++) {
@@ -778,7 +833,9 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Kiểm tra cân nặng so với chuẩn WHO, BMI
+                    /**
+                     * Kiểm tra cân nặng so với chuẩn WHO, BMI
+                     */
                     let noticeW = ''
                     // Dưới 10 tuổi theo WHO
                     if(ageInDays <= 1856){
@@ -883,7 +940,7 @@ class Model extends BaseModel {
                         wdfs,
                         whoWS,
                         noticeW,
-                        predictedAdultHeight: Number(Number(ageHeightNow[ageHeightNow.length - 1].height)),
+                        // predictedAdultHeight: Number(Number(ageHeightNow[ageHeightNow.length - 1].height)),
                         growTrack: {
                             ageHeightNow, 
                             ageHeightP3,
