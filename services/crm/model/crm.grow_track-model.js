@@ -94,9 +94,9 @@ class Model extends BaseModel {
                         if(infoContact?.birthday && infoContact?.birthday != null){
                             dataInsert.birthday = infoContact?.birthday;
                             
-                            let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
-                            if(check >= 20)
-                            return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
+                            // let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
+                            // if(check >= 20)
+                            // return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
                         }
 
                         if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
@@ -454,10 +454,10 @@ class Model extends BaseModel {
                 let ageInDays = getDayDifference(date1, date2)
                 let ageInMonthsByBirthday = getMonthDifference(infoAterGet.birthday, date2)
 
-                console.log({date1})
-                console.log({ageInMonths})
-                console.log({ageInMonthsByBirthday})
-                console.log('========================================')
+                // console.log({date1})
+                // console.log({ageInMonths})
+                // console.log({ageInMonthsByBirthday})
+                // console.log('========================================')
                 // console.log({ageInDays})
 
                 // Hàm tính Zscore theo: X, L, M, S (X là chiều cao của trẻ)
@@ -573,7 +573,8 @@ class Model extends BaseModel {
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
                     // if(infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != '' && option){
-                    if(infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != ''){
+                    // if((infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != '')){
+                    if((infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != '') || (infoAterGet.boneAge && infoAterGet.boneAge > 0)){
                         // Tính tháng theo theo tuổi dậy thì/tuổi xương thực (i1) | theo ngày sinh (i2) 
                         // i1 dùng để tính P
                         // i2 dùng để hiển thị dữ liệu biểu đồ bắt đầu từ ngày sinh
@@ -594,7 +595,7 @@ class Model extends BaseModel {
                                 break;
                             }
                         }
-                        console.log({i1, i2})                    
+                        // console.log({i1, i2})                    
 
                         // Tính đường phân vị
                         L = sheet.cell(`C${i1}`).value();
