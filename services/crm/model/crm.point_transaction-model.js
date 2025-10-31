@@ -390,7 +390,7 @@ class Model extends BaseModel {
                         }
                     ])
 
-                    return resolve({ error: false, data: listData })
+                    return resolve({ error: false, data: listData[0] })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message });
