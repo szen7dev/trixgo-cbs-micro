@@ -450,15 +450,18 @@ class Model extends BaseModel {
                 }
 
                 // Tính tuổi theo số ngày, theo tháng
-                let ageInMonths = getMonthDifference(date1, date2)
-                let ageInDays = getDayDifference(date1, date2)
-                let ageInMonthsByBirthday = getMonthDifference(infoAterGet.birthday, date2)
+                let ageInMonths             = getMonthDifference(date1, date2)
+                let ageInMonthsByBirthday   = getMonthDifference(infoAterGet.birthday, date2)
+
+                let ageInDays               = getDayDifference(date1, date2)
+                let ageInDaysByBirthday     = getDayDifference(infoAterGet.birthday, date2)
 
                 // console.log({date1})
                 // console.log({ageInMonths})
                 // console.log({ageInMonthsByBirthday})
                 // console.log('========================================')
                 // console.log({ageInDays})
+                // console.log({ageInDaysByBirthday})
 
                 // Hàm tính Zscore theo: X, L, M, S (X là chiều cao của trẻ)
                 function calculateZScore(X, L, M, S) {
@@ -490,6 +493,7 @@ class Model extends BaseModel {
                 // Hàm tính chiều cao theo chuẩn theo WHO
                 function evaluateHeightW({H, SD2neg, SD1neg, SD0, SD1, SD2}) {
                     let conclusion = '';
+                    // console.log({H, SD2neg, SD1neg, SD0, SD1, SD2})
                 
                     if (H < SD2neg) {
                         conclusion = 'Dưới chuẩn cấp độ 2';
@@ -572,8 +576,6 @@ class Model extends BaseModel {
                     const lastRow4 = sheet4.usedRange().endCell().rowNumber();
 
                     // Lặp qua từng dòng để tìm Agemos >= ageInMonths
-                    // if(infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != '' && option){
-                    // if((infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != '')){
                     if((infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != '') || (infoAterGet.boneAge && infoAterGet.boneAge > 0)){
                         // Tính tháng theo theo tuổi dậy thì/tuổi xương thực (i1) | theo ngày sinh (i2) 
                         // i1 dùng để tính P
@@ -931,66 +933,122 @@ class Model extends BaseModel {
                     // console.timeEnd(label);
 
                     /**
-                     * Kiểm tra cao so với chuẩn WHO
+                     * KIỂM TRA CHIỀU CAO SO VỚI CHUẨN WHO
                      */
                     let noticeH = ''
-                    if(ageInDays <= 1856){
-                        for (let i = 2; i <= lastRow3; i++) {
-                            const agedaysCheck = sheet3.cell(`A${i}`).value();
+                    if((infoAterGet.pubertyOnsetDate && infoAterGet.pubertyOnsetDate != '') || (infoAterGet.boneAge && infoAterGet.boneAge > 0)){
+                        // console.log('======Chiều caoxxxxxxxxxxxxxxxxx=======')
+                        if(ageInDaysByBirthday <= 1856){
+                            for (let i = 2; i <= lastRow3; i++) {
+                                const agedaysCheck = sheet3.cell(`A${i}`).value();
 
-                            if (agedaysCheck >= ageInDays) {
-                                whoHS = sheet3.cell(`K${i}`).value();
+                                if (agedaysCheck >= ageInDaysByBirthday) {
+                                    whoHS = sheet3.cell(`K${i}`).value();
 
-                                let SD2neg = sheet3.cell(`I${i}`).value();
-                                let SD1neg = sheet3.cell(`J${i}`).value();
-                                let SD0 = sheet3.cell(`K${i}`).value();
-                                let SD1 = sheet3.cell(`L${i}`).value();
-                                let SD2 = sheet3.cell(`M${i}`).value();
+                                    let SD2neg = sheet3.cell(`I${i}`).value();
+                                    let SD1neg = sheet3.cell(`J${i}`).value();
+                                    let SD0 = sheet3.cell(`K${i}`).value();
+                                    let SD1 = sheet3.cell(`L${i}`).value();
+                                    let SD2 = sheet3.cell(`M${i}`).value();
 
-                                noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
+                                    noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
 
-                                // console.log('======Chiều cao=======')
-                                // console.log({SD0})
-                                // console.log({noticeH})
+                                    // console.log('======Chiều cao 1111111111=======')
+                                    // console.log({whoHS})
+                                    // console.log({SD0})
+                                    // console.log({noticeH})
 
-                                hdfs = Number(Number(X - whoHS).toFixed(2))
+                                    hdfs = Number(Number(X - whoHS).toFixed(2))
 
-                                // ✅ Ngắt vòng lặp sau khi tìm thấy
-                                break;
+                                    // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                    break;
+                                }
+                            }
+                        }else{
+                            for (let i = 2; i <= lastRow1; i++) {
+                                const agemosCheck = sheet1.cell(`A${i}`).value();
+
+                                if (agemosCheck >= ageInMonthsByBirthday) {
+                                    whoHS = sheet1.cell(`K${i}`).value();
+
+                                    let SD2neg = sheet1.cell(`I${i}`).value();
+                                    let SD1neg = sheet1.cell(`J${i}`).value();
+                                    let SD0 = sheet1.cell(`K${i}`).value();
+                                    let SD1 = sheet1.cell(`L${i}`).value();
+                                    let SD2 = sheet1.cell(`M${i}`).value();
+
+                                    noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
+
+                                    // console.log('======Chiều cao 22222222222=======')
+                                    // console.log({whoHS})
+                                    // console.log({SD0})
+                                    // console.log({noticeH})
+
+                                    hdfs = Number(Number(X - whoHS).toFixed(2))
+
+                                    // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                    break;
+                                }
                             }
                         }
 
-                        // console.log({noticeH})
-                        // console.log({SD0})
                     }else{
-                        for (let i = 2; i <= lastRow1; i++) {
-                            const agemosCheck = sheet1.cell(`A${i}`).value();
+                        // console.log('======Chiều cao uyyyyyyyyyyyyyyyyyyyyyyyyyyyy=======')
+                        if(ageInDays <= 1856){
+                            for (let i = 2; i <= lastRow3; i++) {
+                                const agedaysCheck = sheet3.cell(`A${i}`).value();
 
-                            if (agemosCheck >= ageInMonths) {
-                                whoHS = sheet1.cell(`K${i}`).value();
+                                if (agedaysCheck >= ageInDays) {
+                                    whoHS = sheet3.cell(`K${i}`).value();
 
-                                let SD2neg = sheet1.cell(`I${i}`).value();
-                                let SD1neg = sheet1.cell(`J${i}`).value();
-                                let SD0 = sheet1.cell(`K${i}`).value();
-                                let SD1 = sheet1.cell(`L${i}`).value();
-                                let SD2 = sheet1.cell(`M${i}`).value();
+                                    let SD2neg = sheet3.cell(`I${i}`).value();
+                                    let SD1neg = sheet3.cell(`J${i}`).value();
+                                    let SD0 = sheet3.cell(`K${i}`).value();
+                                    let SD1 = sheet3.cell(`L${i}`).value();
+                                    let SD2 = sheet3.cell(`M${i}`).value();
 
-                                noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
+                                    noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
 
-                                // console.log('======Chiều cao=======')
-                                // console.log({SD0})
-                                // console.log({noticeH})
+                                    // console.log('======Chiều cao=======')
+                                    // console.log({SD0})
+                                    // console.log({noticeH})
 
-                                hdfs = Number(Number(X - whoHS).toFixed(2))
+                                    hdfs = Number(Number(X - whoHS).toFixed(2))
 
-                                // ✅ Ngắt vòng lặp sau khi tìm thấy
-                                break;
+                                    // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                    break;
+                                }
+                            }
+                        }else{
+                            for (let i = 2; i <= lastRow1; i++) {
+                                const agemosCheck = sheet1.cell(`A${i}`).value();
+
+                                if (agemosCheck >= ageInMonths) {
+                                    whoHS = sheet1.cell(`K${i}`).value();
+
+                                    let SD2neg = sheet1.cell(`I${i}`).value();
+                                    let SD1neg = sheet1.cell(`J${i}`).value();
+                                    let SD0 = sheet1.cell(`K${i}`).value();
+                                    let SD1 = sheet1.cell(`L${i}`).value();
+                                    let SD2 = sheet1.cell(`M${i}`).value();
+
+                                    noticeH =  evaluateHeightW({H: X, SD2neg, SD1neg, SD0, SD1, SD2})
+
+                                    // console.log('======Chiều cao=======')
+                                    // console.log({SD0})
+                                    // console.log({noticeH})
+
+                                    hdfs = Number(Number(X - whoHS).toFixed(2))
+
+                                    // ✅ Ngắt vòng lặp sau khi tìm thấy
+                                    break;
+                                }
                             }
                         }
                     }
 
                     /**
-                     * Kiểm tra cân nặng so với chuẩn WHO, BMI
+                     * KIỂM TRA CÂN NẶNG SO VỚI CHUẨN WHO, BMI
                      */
                     let noticeW = ''
                     // Dưới 10 tuổi theo WHO
