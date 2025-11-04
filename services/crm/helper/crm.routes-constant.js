@@ -64,6 +64,12 @@ const CF_ROUTINGS_CRM = {
     CRM_POINT_TRANSACTION_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}/point_transaction/get-list-by-property`,
     CRM_POINT_TRANSACTION_EXPORT_EXCEL                      : `${BASE_ROUTE}/point_transaction/export-excel`,
 
+    //================================CRM_CUSTOMER_SERVICE=======================================//
+    CRM_CUSTOMER_SERVICE                                 : `${BASE_ROUTE}/customer_service`,
+    CRM_CUSTOMER_SERVICE_GET_LIST_BY_PROPERTY            : `${BASE_ROUTE}/customer_service/get-list-by-property`,
+    CRM_CUSTOMER_SERVICE_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}/customer_service/download-template-excel`,
+    CRM_CUSTOMER_SERVICE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}/customer_service/import-from-excel`,
+    CRM_CUSTOMER_SERVICE_EXPORT_EXCEL                    : `${BASE_ROUTE}/customer_service/export-excel`,
 }
 
 exports.CF_ROUTINGS_CRM = CF_ROUTINGS_CRM;

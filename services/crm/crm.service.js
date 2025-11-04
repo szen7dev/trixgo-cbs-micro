@@ -24,6 +24,7 @@ const CRM_VNG_EVENT_HANDLER				= require('./handler/crm.vng_event-handler');
 const CRM_REGISTER_HANDLER				= require('./handler/crm.register-handler');
 const CRM_STORY_HANDLER					= require('./handler/crm.story-handler');
 const CRM_POINT_TRANSACTION_HANDLER		= require('./handler/crm.point_transaction-handler');
+const CRM_CUSTOMER_SERVICE_HANDLER		= require('./handler/crm.customer_service-handler');
 
 /**
  * COLLECTIONS
@@ -40,6 +41,7 @@ const CRM_VNG_EVENT_COLL 				= require('./database/crm.vng_event-coll');
 const CRM_REGISTER_COLL 				= require('./database/crm.register-coll');
 const CRM_STORY_COLL 					= require('./database/crm.story-coll');
 const CRM_POINT_TRANSACTION_COLL 		= require('./database/crm.point_transaction-coll');
+const CRM_CUSTOMER_SERVICE_COLL 		= require('./database/crm.customer_service-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CRM,
@@ -55,6 +57,8 @@ module.exports = {
 		DbService(CRM_VNG_EVENT_COLL),
 		DbService(CRM_REGISTER_COLL),
 		DbService(CRM_STORY_COLL),
+		DbService(CRM_POINT_TRANSACTION_COLL),
+		DbService(CRM_CUSTOMER_SERVICE_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
     ],
 
@@ -174,6 +178,16 @@ module.exports = {
 		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_GET_INFO_AND_GET_LIST] : CRM_POINT_TRANSACTION_HANDLER.getInfoAndGetList,
 		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_GET_LIST_BY_PROPERTY] : CRM_POINT_TRANSACTION_HANDLER.getListByProperty,
 		[CF_ACTIONS_CRM.CRM_POINT_TRANSACTION_EXPORT_EXCEL] : CRM_POINT_TRANSACTION_HANDLER.exportExcel,
+
+		// ==================== CRM_CUSTOMER_SERVICE ======================== //
+		[CF_ACTIONS_CRM.CRM_CUSTOMER_SERVICE_INSERT] : CRM_CUSTOMER_SERVICE_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_CUSTOMER_SERVICE_UPDATE] : CRM_CUSTOMER_SERVICE_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_CUSTOMER_SERVICE_REMOVE] : CRM_CUSTOMER_SERVICE_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_CUSTOMER_SERVICE_GET_INFO_AND_GET_LIST] : CRM_CUSTOMER_SERVICE_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_CRM.CRM_CUSTOMER_SERVICE_GET_LIST_BY_PROPERTY] : CRM_CUSTOMER_SERVICE_HANDLER.getListByProperty,
+		[CF_ACTIONS_CRM.CRM_CUSTOMER_SERVICE_DOWNLOAD_TEMPLATE_EXCEL] : CRM_CUSTOMER_SERVICE_HANDLER.downloadTemplateExcel,
+		[CF_ACTIONS_CRM.CRM_CUSTOMER_SERVICE_EXPORT_EXCEL] : CRM_CUSTOMER_SERVICE_HANDLER.exportExcel,
+		[CF_ACTIONS_CRM.CRM_CUSTOMER_SERVICE_IMPORT_FROM_EXCEL] : CRM_CUSTOMER_SERVICE_HANDLER.importFromExcel,
 	},
 
 	/**
