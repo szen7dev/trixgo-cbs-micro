@@ -171,8 +171,11 @@ class Model extends BaseModel {
                     modifyAt: new Date(),
                 }
 
-                let infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID)
-                dataUpdate.customer = infoCustomer._id;
+                let infoCustomer
+                if(customerID && checkObjectIDs(customerID)) {
+                    infoCustomer = await ITEM__COCNTACT_COLL.findById(customerID)
+                    dataUpdate.customer = infoCustomer._id;
+                }
 
                 if(checkObjectIDs(childID)) {
                     dataUpdate.child = childID;
