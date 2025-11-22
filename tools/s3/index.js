@@ -10,7 +10,7 @@ const s3                        = require('@auth0/s3');
 const archiver                  = require('archiver');
 const PromisePool               = require('@supercharge/promise-pool');
 const { config }                = require('./config');
-const { isProd }                = require('../utils/utils');
+// const { isProd }                = require('../utils/utils');
 // const { nonAccentVietnamese }   = require('../utils/string_utils');
 // const { getExtension }          = require('../utils/utils');
 
@@ -25,8 +25,8 @@ const s3Object = new S3({
     endpoint: "https://sgp1.digitaloceanspaces.com",
     region: "sgp1",
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: config.aws_access_key_id || process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: config.aws_secret_access_key || process.env.AWS_SECRET_ACCESS_KEY,
     },
 });
 
