@@ -25,6 +25,7 @@ exports.sendNoticeToMember = function (stringify, options = {}) {
   return new Promise(async (resolve) => {
     try {
       let { recipientEmails, email, title, content, comments } = stringify;
+      // console.log({ stringify, options });
 
       // Normalize email recipients - handle both single email and array
       let normalizedEmails = [];
@@ -36,15 +37,21 @@ exports.sendNoticeToMember = function (stringify, options = {}) {
         normalizedEmails = Array.isArray(email) ? email : [email];
       }
 
+      // Trim whitespace from all emails before validation
+      normalizedEmails = normalizedEmails.map((emailAddr) =>
+        typeof emailAddr === "string" ? emailAddr.trim() : emailAddr
+      );
+
       // Validate email addresses
       const validEmails = normalizedEmails.filter((emailAddr) => {
         return (
           emailAddr &&
           typeof emailAddr === "string" &&
-          emailAddr.trim() !== "" &&
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr.trim())
+          emailAddr !== "" &&
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr)
         );
       });
+      console.log({ validEmails });
 
       if (validEmails.length === 0) {
         throw new Error("No valid recipient email addresses provided");
@@ -101,20 +108,21 @@ exports.sendNoticeToMember = function (stringify, options = {}) {
         }
       }
 
-      // Legacy mailer fallback - use first valid email
+      // Legacy mailer fallback - send to all valid emails
       console.log("Using legacy mailer for PCM task notification");
 
       // Generate legacy email content
       let emailContent = infoTaskContent({ content, comments });
 
       /**
-       * Send email via legacy mailer
-       * - Recipient
+       * Send email via legacy mailer to all valid recipients
+       * - Recipient(s)
        * - Subject
        * - Content
        */
+      const recipientString = validEmails.join(", ");
       mailer(
-        validEmails[0], // Use first valid email for legacy mailer
+        recipientString, // Send to all valid emails
         `${title.toUpperCase()}_TRIXGO.COM_${Date.now()}`,
         emailContent,
         resolve
@@ -149,12 +157,18 @@ exports.sendNoticeToMemberSendGrid = async function (params, options = {}) {
 
     // Normalize and validate email
     const normalizedEmails = Array.isArray(email) ? email : [email];
-    const validEmails = normalizedEmails.filter((emailAddr) => {
+
+    // Trim whitespace from all emails before validation
+    const trimmedEmails = normalizedEmails.map((emailAddr) =>
+      typeof emailAddr === "string" ? emailAddr.trim() : emailAddr
+    );
+
+    const validEmails = trimmedEmails.filter((emailAddr) => {
       return (
         emailAddr &&
         typeof emailAddr === "string" &&
-        emailAddr.trim() !== "" &&
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr.trim())
+        emailAddr !== "" &&
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr)
       );
     });
 
@@ -200,12 +214,36 @@ exports.sendNoticeToMemberLegacy = function (stringify) {
     try {
       let { email, title, content, comments } = stringify;
 
+      // Normalize email recipients
+      const normalizedEmails = Array.isArray(email) ? email : [email];
+
+      // Trim whitespace from all emails
+      const trimmedEmails = normalizedEmails.map((emailAddr) =>
+        typeof emailAddr === "string" ? emailAddr.trim() : emailAddr
+      );
+
+      // Validate email addresses
+      const validEmails = trimmedEmails.filter((emailAddr) => {
+        return (
+          emailAddr &&
+          typeof emailAddr === "string" &&
+          emailAddr !== "" &&
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddr)
+        );
+      });
+
+      if (validEmails.length === 0) {
+        resolve({ error: "No valid recipient email addresses provided" });
+        return;
+      }
+
       // Generate legacy email content
       let emailContent = infoTaskContent({ content, comments });
 
-      // Send via legacy mailer
+      // Send via legacy mailer to all valid emails
+      const recipientString = validEmails.join(", ");
       mailer(
-        email,
+        recipientString,
         `${title.toUpperCase()}_TRIXGO.COM_${Date.now()}`,
         emailContent,
         resolve
