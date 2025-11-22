@@ -8,13 +8,16 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { PutObjectCommand, S3 } = require('@aws-sdk/client-s3');
 
+console.log({ config });
+
 let s3Object = new S3({
     forcePathStyle: false, // Configures to use subdomain/virtual calling format.
     endpoint: "https://sgp1.digitaloceanspaces.com",
     region: "sgp1",
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: config.aws_access_key_id,
+        secretAccessKey: config.aws_secret_access_key,
+        // region: config.aws_region,
     },
 });
 
@@ -49,7 +52,8 @@ let render_link_upload_file_s3 = async ({ fileName, type, typeUpload, pathS3 }) 
 
         return signedUrl;
     } catch (error) {
-        return { error: true, message: "Can't presign url" }
+        console.log({ error });
+        return { error: true, message: "Can't presign url: " + error.message }
     }
 }
 
