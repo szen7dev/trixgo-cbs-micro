@@ -400,8 +400,8 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info
-     * Author: Depv
+     * Name: getInfo
+     * Author: HiepNH
      * Code:
      */
     getInfo({ orderProductID, select, populates={} }) {
@@ -1214,75 +1214,139 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 20/9/2024
      */
-    getAmountByProperty({ userID, companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate, ctx }){
+    getAmountByProperty({ companyID, month, option, projectID, subtypeID, fromDate, toDate, ctx }){
         return new Promise(async resolve => {
             try {
-                /**
-                 * BA
-                 * Tham số của option:
-                 * 1-Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị
-                 */
-                let conditionObj = {}, conditionPlanObj = {}, conditionGroup = {}, conditionObjYear = {}, conditionPopulate = {}, sortBy = {"income": -1}
+                let conditionObj = {}, conditionPlanObj = {}, conditionGroup = {}, conditionProject = {}, sort = {"-id.company":1}
+                let conditionMatchO = {}, conditionMatchIn = {}
 
                 // Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị: QUỸ
                 if(Number(option) === 1){
                     let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
                         appID: "5dfe4bf251dc622100bb9d8c", // Ứng dụng Quỹ
-                        menuID: "66ecc9166748e0001242a36c", // Báo cáo quản trị: 66ecc90fa002e190dc4193b4 // 66ecc9166748e0001242a36c**
+                        menuID: "66ecc9166748e0001242a36c", // Báo cáo quản trị: 66ecc9166748e0001242a36c
                         type: "1"
                     })
+                    // console.log(listCompany?.data)
 
-                    let listDataCompany = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                status: 5, // Đã hoàn thành
-                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                                company: {$in: listCompany.data.map(item=> ObjectID(item._id.company._id))},
-                                account: { $exists: true, $ne: null }, // Sổ quỹ
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { company: "$company" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-                    // console.log(listDataCompany)
-                    
-                    let listDataAccount = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                status: 5, // Đã hoàn thành
-                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                                company: ObjectID(companyID),
-                                account: { $exists: true, $ne: null }, // Sổ quỹ
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { account: "$account" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-                    // console.log(listDataAccount)
+                    // Lấy theo dữ liệu của năm hiện tại
+                    let date = new Date()
+                    let year = date.getFullYear()
 
-                    await STORE_ORDER_PRODUCT_COLL.populate(listDataCompany, {
-                        path: '_id.company',
+                    conditionProject = {
+                        forward: 1,
+                        status: 1,
+                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                        type: 1,
+                        outin: 1,
+                        company: 1,
+                        account: 1,
+                        amount: 1,
+                    }
+
+                    // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
+                    conditionMatchO = {
+                        "forward": 1,
+                        "status": 5,
+                        "type": {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                        "company": {$in: listCompany.data.map(item=> ObjectID(item._id.company._id))},
+                        "account": { $exists: true, $ne: null }, // Sổ quỹ
+                        "year": Number(year),
+                    }
+    
+                    // Từ đầu năm tới đầu kỳ (áp dụng lấy dữ liệu 1 mạch)
+                    conditionMatchIn = {
+                        "forward": 0,
+                        "status": 5,
+                        "type": {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                        "company": {$in: listCompany.data.map(item=> ObjectID(item._id.company._id))},
+                        "account": { $exists: true, $ne: null }, // Sổ quỹ
+                        "year": Number(year),
+                    }
+
+                    conditionGroup = {
+                        _id: { company: "$company" },
+                        total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } }, // Chi ra
+                        total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }, // Thu vào
+                    }
+
+                    // Số dư đầu năm
+                    let listDataO = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $project: conditionProject
+                        },
+                        {
+                            $match: conditionMatchO
+                        },
+                        {
+                            $group: conditionGroup
+                        }
+                    ])
+
+                    let listDataIn = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        {
+                            $project: conditionProject
+                        },
+                        {
+                            $match: conditionMatchIn
+                        },
+                        {
+                            $group: conditionGroup
+                        }
+                    ])
+
+                    await STORE_ORDER_PRODUCT_COLL.populate(listCompany, {
+                        path: '_id.company._id',
                         select: '_id name sign image',
                         model: 'company'
                     })
+                    // console.log(listDataO)
+                    // console.log(listDataIn)
+                    // console.log(listCompany)
 
-                    await STORE_ORDER_PRODUCT_COLL.populate(listDataAccount, {
-                        path: '_id.account',
-                        select: '_id name description',
-                        model: 'account'
+                    let arrO = [], arrIn = []
+
+                    listDataO.forEach(element=>{
+                        let key = element._id.company;
+                        if (!Array.isArray(arrO[key])) {
+                            arrO[key] = [];
+                        }
+                        arrO[key].push(element)
                     })
 
-                    return resolve({ error: false, data: { listDataCompany, listDataAccount } })
+                    listDataIn.forEach(element=>{
+                        let key = element._id.company;
+                        if (!Array.isArray(arrIn[key])) {
+                            arrIn[key] = [];
+                        }
+                        arrIn[key].push(element)
+                    })
+
+                    for(var i=0; i < listCompany.data.length; i++ ){
+                        listCompany.data[i].totalO1 = 0
+                        listCompany.data[i].totalO2 = 0
+                        listCompany.data[i].totalIn1 = 0
+                        listCompany.data[i].totalIn2 = 0
+                    }
+
+                    listCompany.data.forEach((item, index)=>{
+                        let key = item._id.company._id
+                        // console.log(key)
+
+                        if(arrO[key]){
+                            // console.log('111111111111111111111')
+                            listCompany.data[index].totalO1 = listCompany.data[index].totalO1 + Number(arrO[key][0].total1)
+                            listCompany.data[index].totalO2 = listCompany.data[index].totalO2 + Number(arrO[key][0].total2)
+                        }
+
+                        if(arrIn[key]){
+                            // console.log('2222222222222222222222222')
+                            listCompany.data[index].totalIn1 = listCompany.data[index].totalIn1 + Number(arrIn[key][0].total1)
+                            listCompany.data[index].totalIn2 = listCompany.data[index].totalIn2 + Number(arrIn[key][0].total2)
+                        }
+                    })
+
+                    return resolve({ error: false, data: listCompany?.data})
                 }
 
                 // Báo cáo Biểu đồ theo năm, tháng: QUỸ
