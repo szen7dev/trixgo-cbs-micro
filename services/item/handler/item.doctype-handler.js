@@ -134,16 +134,18 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, doctypeID, projectID, parentID, type, subType, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, companyID, doctypeID, projectID, parentID, type, subType, keyword, limit, lastestID, select, populates } = ctx.params;
         		
                  const { _id: userID, company } = ctx.meta.infoUser
                 // console.log(ctx.params)
 
-                let companyID
-                if(optionSeller){
-                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
-                }else{
-                    companyID = company?._id
+                // let companyID
+                if(!companyID){
+                    if(optionSeller){
+                        companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                    }else{
+                        companyID = company?._id
+                    }
                 }
                                 
                 let resultAfterCallHandler;
