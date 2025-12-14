@@ -272,7 +272,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
-
+               
                 let { option} = ctx.params;
                 // console.log(ctx.params)
 
