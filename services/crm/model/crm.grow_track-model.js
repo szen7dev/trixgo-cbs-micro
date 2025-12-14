@@ -1368,9 +1368,60 @@ class Model extends BaseModel {
            try {
             // Tải mẫu Template
             if(!option){
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e049f6fdebf77b072d1b16", 
+                    userID
+                })
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cdc_grow_track.xlsm')))
                     .then(async workbook => {
+                        let listData = [], listUser = []
+                        if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
+                            listData = await CRM__GROW_TRACK_COLL.find({ company: companyID })
+                            .populate({
+                                path: 'userCreate',
+                                select:'fullname'
+                            })
+                            .sort({_id: -1})
+                            .limit(5000)
+
+                            listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
+                        }else{
+                            listData = await CRM__GROW_TRACK_COLL.find({ userCreate: userID, company: companyID })
+                            .populate({
+                                path: 'userCreate',
+                                select:'fullname'
+                            })
+                            .sort({_id: -1})
+                            .limit(5000)
+
+                            listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
+                        }
+
+                        var i = 2
+                        listData?.forEach((item, index) => {
+                            workbook.sheet("BaoCao").row(i).cell(1).value(item?.date);
+                            workbook.sheet("BaoCao").row(i).cell(2).value(item?.parentName);
+                            workbook.sheet("BaoCao").row(i).cell(3).value(item?.phone);
+                            workbook.sheet("BaoCao").row(i).cell(4).value(item?.name);
+                            workbook.sheet("BaoCao").row(i).cell(5).value(item?.birthday);
+                            workbook.sheet("BaoCao").row(i).cell(6).value(item?.gender == 1 ? "Nam" : "Nữ");
+                            workbook.sheet("BaoCao").row(i).cell(7).value(item?.height);
+                            workbook.sheet("BaoCao").row(i).cell(8).value(item?.weight);
+                            workbook.sheet("BaoCao").row(i).cell(9).value(item?.boneAge);
+                            workbook.sheet("BaoCao").row(i).cell(10).value(item?.pubertyOnsetDate);
+                            workbook.sheet("BaoCao").row(i).cell(11).value(item?.percentile);
+                            workbook.sheet("BaoCao").row(i).cell(12).value(item?.userCreate.fullname);
+
+                            i++
+                        })
+
+                        var i = 2
+                        listUser?.forEach((item, index) => {
+                            workbook.sheet("BaoCao2").row(i).cell(2).value(item?.fullname);
+
+                            i++
+                        })
             
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
