@@ -163,12 +163,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
     dateInvoice: { type: Date, default: Date.now }, 
     //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
     forward: { type: Number, default: 0 },
-    //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)
-    forwardIs: { type: Number, default: 0 },
-    //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
-    returning: { type: Number, default: 0 },
     /**
-     * Trạng thái đơn
+     * Trạng thái
      * 1-Khởi tạo
      * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
      * 3-Đang vận chuyển/giao hàng
@@ -192,75 +188,6 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
     sign: String,
     //_________Ghi chú
     note: String,
-    //______Khối lượng/Số lượng
-    quantity: {
-        type: Number,
-        default : 1
-    },
-    //______Đơn giá
-    unitPrice: {
-        type: Number,
-        default : 0
-    },
-    //______Thành tiền
-    amount: {
-        type: Number,
-        default : 0
-    },
-    //_________Trọng lượng
-    weight: { type: Number, default: 0 },
-    // /**
-    //  * Sản phẩm phụ (topping)
-    //  */
-    // subGoods: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref : "goods"
-    // }],
-    /**
-     * DÀNH CHO ĐỒ UỐNG
-     */
-    /**
-     * Màu sắc
-     * 1-Đen
-     * 2-Trắng
-     */
-    black: {
-        type: Number,
-        default : 1
-    },
-    /**
-     * Kích cỡ
-     * 1-Size M
-     * 2-Size L
-     */
-    size: {
-        type: Number,
-        default : 1
-    },
-    /**
-     * Đường
-     * 1-100
-     * 2-70
-     * 3-50
-     * 4-30
-     * 5-0
-     */
-    sugar: {
-        type: Number,
-        default : 1
-    },
-    /**
-     * Đá
-     * 1-100
-     * 2-70
-     * 3-50
-     * 4-30
-     * 5-0
-     */
-    ice: {
-        type: Number,
-        default : 1
-    },
     /**
      * THÔNG TIN GIÁ TRỊ
      */

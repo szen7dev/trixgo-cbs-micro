@@ -266,18 +266,20 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    optionSeller, option, uplineID, fundaID, voucherID, contactID, type, isBirthday, parentID, month,
+                    optionSeller, companyID, option, uplineID, fundaID, voucherID, contactID, type, isBirthday, parentID, month,
                     keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID, userCreateID
                 } = ctx.params;
 				const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
-                let companyID
-                if(optionSeller){
-                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
-                }else{
-                    companyID = company?._id
+                // let companyID
+                if(!companyID){
+                    if(optionSeller){
+                        companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                    }else{
+                        companyID = company?._id
+                    }
                 }
 
                 let resultAfterCallHandler;

@@ -17,8 +17,8 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
-            goodsID             : { type: "string", optional: true  },
+            orderID             : { type: "string", optional: true },
+            goodsID             : { type: "string", optional: true },
             subGoodsID          : { type: "string", optional: true },
             size                : { type: "number", optional: true },
             sugar               : { type: "number", optional: true },
@@ -30,13 +30,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, sign, note, quantity, weight, unitPrice, listedUnitprice, classification } = ctx.params;
+                let { fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, sign, note, quantity, weight, unitPrice, listedUnitprice, classification, outin } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, sign, note, quantity, weight, unitPrice, listedUnitprice, classification });
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, sign, note, quantity, weight, unitPrice, listedUnitprice, classification, outin });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -195,8 +195,8 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate } = ctx.params;
-                // console.log(ctx.params)
+                let { companyID, month, option, projectID, subtypeID, fromDate, toDate } = ctx.params;
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -204,9 +204,7 @@ module.exports = {
                     companyID = company._id
                 }
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getAmountByProperty({
-                    userID, companyID, parentID, year, month, option, outin, type, projectID, warehouseID, accountID, contraID, customerID, goodsID, assetsID, workID, subtypeID, userCreateID, fromDate, toDate, ctx
-                })
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.getAmountByProperty({ companyID, month, option, projectID, subtypeID, fromDate, toDate, ctx })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
