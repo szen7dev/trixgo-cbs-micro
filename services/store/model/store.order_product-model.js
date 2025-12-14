@@ -441,7 +441,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}', sortKey }) {
+    getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates, sortKey }) {
+        //  populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}'
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) >= 500){
@@ -503,6 +504,11 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
+
+                if (checkObjectIDs(accountID)) {
+                    conditionObj = { account: accountID }
+                    // conditionObj.account = accountID;
+                }
             
                 if(fromDate && toDate){
                     conditionObj.date = {
@@ -525,10 +531,6 @@ class Model extends BaseModel {
 
                 if (checkObjectIDs(warehouseID)) {
                     conditionObj.warehouse = warehouseID;
-                }
-
-                if (checkObjectIDs(accountID)) {
-                    conditionObj.account = accountID;
                 }
 
                 if (checkObjectIDs(contraID)) {
