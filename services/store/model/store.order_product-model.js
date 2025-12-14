@@ -45,7 +45,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice, classification }) {
+    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice, classification, outin }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -63,7 +63,6 @@ class Model extends BaseModel {
                 let dataInsert = {}
 
                 if (checkObjectIDs(orderID)) {
-                    console.log('1111111')
                     const infoParent = await STORE_ORDER_COLL
                     .findById(orderID)
                     .select('company funda project package toPackage warehouse customer contract outin type date toDate')
@@ -94,7 +93,6 @@ class Model extends BaseModel {
                 }
                 
                 if (checkObjectIDs(accountID)) {
-                    console.log('22222222')
                     let infoAcc = await ITEM__ACCOUNT_COLL.findById(accountID)
                     if(!infoAcc)
                         return resolve({error: true, message: "Tài khoản không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID})
@@ -104,10 +102,14 @@ class Model extends BaseModel {
                         admins: [userID], 
                         members: [userID],
                         company: infoAcc.company,
+                        account: accountID,
                         name,
                     }
                 }
 
+                if (outin && !isNaN(outin)) {
+                    dataInsert.outin = Number(outin)
+                }
 
                 if(listedUnitprice >= 0){
                     dataInsert.listedUnitprice = listedUnitprice

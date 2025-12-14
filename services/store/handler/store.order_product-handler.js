@@ -30,13 +30,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, sign, note, quantity, weight, unitPrice, listedUnitprice, classification } = ctx.params;
+                let { fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, sign, note, quantity, weight, unitPrice, listedUnitprice, classification, outin } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, sign, note, quantity, weight, unitPrice, listedUnitprice, classification });
+                let resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.insert({ userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, sign, note, quantity, weight, unitPrice, listedUnitprice, classification, outin });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
