@@ -1219,9 +1219,8 @@ class Model extends BaseModel {
             try {
                 let conditionObj = {}, conditionPlanObj = {}, conditionGroup = {}, conditionProject = {}, sort = {"-id.company":1}
                 let conditionMatchO = {}, conditionMatchIn = {}
-
-                // Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị: QUỸ
-                if(Number(option) === 1){
+                if(!option){
+                    // Tổng hợp các công ty mà user được quyền truy cập báo cáo quản trị: QUỸ
                     let listCompany = await ctx.call(`${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.APP_MENU_GET_LIST_COMPANY}`, {
                         appID: "5dfe4bf251dc622100bb9d8c", // Ứng dụng Quỹ
                         menuID: "66ecc9166748e0001242a36c", // Báo cáo quản trị: 66ecc9166748e0001242a36c
@@ -1250,7 +1249,7 @@ class Model extends BaseModel {
                         "status": 5,
                         "type": {$in: [7, 8]}, // Tiền mặt và Ngân hàng
                         "company": {$in: listCompany.data.map(item=> ObjectID(item._id.company._id))},
-                        "account": { $exists: true, $ne: null }, // Sổ quỹ
+                        "account": { $exists: true, $ne: null },
                         "year": Number(year),
                     }
     
@@ -1260,7 +1259,7 @@ class Model extends BaseModel {
                         "status": 5,
                         "type": {$in: [7, 8]}, // Tiền mặt và Ngân hàng
                         "company": {$in: listCompany.data.map(item=> ObjectID(item._id.company._id))},
-                        "account": { $exists: true, $ne: null }, // Sổ quỹ
+                        "account": { $exists: true, $ne: null },
                         "year": Number(year),
                     }
 
@@ -1328,345 +1327,469 @@ class Model extends BaseModel {
                         listCompany.data[i].totalIn1 = 0
                         listCompany.data[i].totalIn2 = 0
                     }
+                    // console.log(listCompany.data)
 
                     listCompany.data.forEach((item, index)=>{
                         let key = item._id.company._id
                         // console.log(key)
 
                         if(arrO[key]){
-                            // console.log('111111111111111111111')
                             listCompany.data[index].totalO1 = listCompany.data[index].totalO1 + Number(arrO[key][0].total1)
                             listCompany.data[index].totalO2 = listCompany.data[index].totalO2 + Number(arrO[key][0].total2)
                         }
 
                         if(arrIn[key]){
-                            // console.log('2222222222222222222222222')
                             listCompany.data[index].totalIn1 = listCompany.data[index].totalIn1 + Number(arrIn[key][0].total1)
                             listCompany.data[index].totalIn2 = listCompany.data[index].totalIn2 + Number(arrIn[key][0].total2)
                         }
                     })
 
                     return resolve({ error: false, data: listCompany?.data})
-                }
+                }else{
+                    // Tổng hợp theo các tài khoản của công ty
+                    if(Number(option) === 1){
+                        // Lấy theo dữ liệu của năm hiện tại
+                        let date = new Date()
+                        let year = date.getFullYear()
 
-                // Báo cáo Biểu đồ theo năm, tháng: QUỸ
-                else if(Number(option) === 2){
-                    let yearFilter = new Date().getFullYear()
-                    let monthFilter = new Date().getMonth() + 1
-                    // console.log({yearFilter})
-                    // console.log({monthFilter})
+                        conditionProject = {
+                            forward: 1,
+                            status: 1,
+                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                            type: 1,
+                            outin: 1,
+                            company: 1,
+                            account: 1,
+                            amount: 1,
+                        }
 
-                    if(!month){
-                        let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                        // Kết chuyển cuối kỳ năm trước sang đầu kỳ năm sau (Original)
+                        conditionMatchO = {
+                            "forward": 1,
+                            "status": 5,
+                            "type": {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                            "company": ObjectID(companyID),
+                            "account": { $exists: true, $ne: null },
+                            "year": Number(year),
+                        }
+        
+                        // Từ đầu năm tới đầu kỳ (áp dụng lấy dữ liệu 1 mạch)
+                        conditionMatchIn = {
+                            "forward": 0,
+                            "status": 5,
+                            "type": {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                            "company": ObjectID(companyID),
+                            "account": { $exists: true, $ne: null },
+                            "year": Number(year),
+                        }
+
+                        conditionGroup = {
+                            _id: { account: "$account" },
+                            total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } }, // Chi ra
+                            total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }, // Thu vào
+                        }
+
+                        // Số dư đầu năm
+                        let listDataO = await STORE_ORDER_PRODUCT_COLL.aggregate([
                             {
-                                $match: {
-                                    status: 5, // Đã hoàn thành
-                                    type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                                    company: ObjectID(companyID),
-                                    account: { $exists: true, $ne: null }, // Sổ quỹ
-                                }
+                                $project: conditionProject
                             },
                             {
-                                $project: {
-                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    outin: 1,
-                                    amount: 1,
-                                }
+                                $match: conditionMatchO
                             },
                             {
-                                $match: {
-                                    year: Number(yearFilter),
-                                    month: Number(monthFilter),
-                                }
+                                $group: conditionGroup
+                            }
+                        ])
+
+                        let listDataIn = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                $project: conditionProject
+                            },
+                            {
+                                $match: conditionMatchIn
+                            },
+                            {
+                                $group: conditionGroup
+                            }
+                        ])
+
+                        // Bước 1: Trích xuất tất cả các ID từ listDataO và listDataIn
+                        let allAccountIdsO = listDataO.map(item => item._id.account);
+                        let allAccountIdsIn = listDataIn.map(item => item._id.account);
+
+                        // Bước 2: Gộp hai mảng ID lại
+                        let combinedIds = [...allAccountIdsO, ...allAccountIdsIn];
+
+                        // Bước 3: Sử dụng Set để lọc bỏ các ID trùng lặp và chuyển lại thành mảng
+                        let uniqueAccountIds = [...new Set(combinedIds)];
+
+                        let listAccount = await ITEM__ACCOUNT_COLL.find({_id: {$in: uniqueAccountIds}}).select('_id name description')
+                       
+                        let arrO = [], arrIn = []
+
+                        listDataO.forEach(element=>{
+                            let key = element._id.account;
+                            if (!Array.isArray(arrO[key])) {
+                                arrO[key] = [];
+                            }
+                            arrO[key].push(element)
+                        })
+
+                        listDataIn.forEach(element=>{
+                            let key = element._id.account;
+                            if (!Array.isArray(arrIn[key])) {
+                                arrIn[key] = [];
+                            }
+                            arrIn[key].push(element)
+                        })
+
+                        // Thêm các biến giá trị vào mảng (khác với trường hợp company)
+                        const plainListAccount = listAccount.map(doc => doc.toObject ? doc.toObject() : doc);
+                        const newListAcc = plainListAccount.map(item => {
+                            return {
+                                ...item,
+                                totalO1: 0, 
+                                totalO2: 0,
+                                totalIn1: 0,
+                                totalIn2: 0,
+                            };
+                        })
+
+                        newListAcc.forEach((item, index)=>{
+                            let key = item._id
+                            if(arrO[key]){
+                                newListAcc[index].totalO1 = newListAcc[index].totalO1 + Number(arrO[key][0].total1)
+                                newListAcc[index].totalO2 = newListAcc[index].totalO2 + Number(arrO[key][0].total2)
+                            }
+
+                            if(arrIn[key]){
+                                newListAcc[index].totalIn1 = newListAcc[index].totalIn1 + Number(arrIn[key][0].total1)
+                                newListAcc[index].totalIn2 = newListAcc[index].totalIn2 + Number(arrIn[key][0].total2)
+                            }
+                        })
+
+                        return resolve({ error: false, data: newListAcc })
+                    }
+
+                    // Báo cáo Biểu đồ theo năm, tháng: QUỸ
+                    else if(Number(option) === 2){
+                        let yearFilter = new Date().getFullYear()
+                        let monthFilter = new Date().getMonth() + 1
+                        // console.log({yearFilter})
+                        // console.log({monthFilter})
+
+                        if(!month){
+                            let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                                {
+                                    $match: {
+                                        status: 5, // Đã hoàn thành
+                                        type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                        company: ObjectID(companyID),
+                                        account: { $exists: true, $ne: null }, // Sổ quỹ
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        outin: 1,
+                                        amount: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(yearFilter),
+                                        month: Number(monthFilter),
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { month: "$month" },
+                                        total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                        total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                                    }
+                                },
+                            ])
+        
+                            return resolve({ error: false, data: listData })
+                        }else{
+                            let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                                {
+                                    $match: {
+                                        status: 5, // Đã hoàn thành
+                                        type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                        company: ObjectID(companyID),
+                                        account: { $exists: true, $ne: null }, // Sổ quỹ
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                                        amount: 1,
+                                        outin: 1,
+                                    }
+                                },
+                                {
+                                    $match: {
+                                        year: Number(yearFilter),
+                                        month: Number(monthFilter),
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: { day: "$day" },
+                                        total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                        total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                                    }
+                                },
+                            ])
+        
+                            return resolve({ error: false, data: listData })
+                        }
+                    }
+
+                    // Báo cáo Khoản mục phí
+                    else if(Number(option) === 3){
+                        // Kế hoạch
+                        if (checkObjectIDs(subtypeID)) {
+                            conditionPlanObj = {
+                                status: 5, // Đã hoàn thành
+                                type: 1,
+                                // company: ObjectID(companyID),
+                                subtype: ObjectID(subtypeID),
+                                project: { $exists: true, $ne: null },
+                            }
+                        }else{
+                            conditionPlanObj = {
+                                status: 5, // Đã hoàn thành
+                                type: 1,
+                                company: ObjectID(companyID),
+                                project: { $exists: true, $ne: null },
+                            }
+                        }
+
+                        // Thực tế
+                        if (checkObjectIDs(subtypeID)) {
+                            conditionObj = {
+                                status: 5, // Đã hoàn thành
+                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                // company: ObjectID(companyID),
+                                subtype: ObjectID(subtypeID),
+                                account: { $exists: true, $ne: null }, // Sổ quỹ
+                                project: { $exists: true, $ne: null },
+                            }
+                        }else{
+                            conditionObj = {
+                                status: 5, // Đã hoàn thành
+                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                company: ObjectID(companyID),
+                                account: { $exists: true, $ne: null }, // Sổ quỹ
+                                project: { $exists: true, $ne: null },
+                            }
+                        }
+
+                        let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                $match: conditionPlanObj
                             },
                             {
                                 $group: {
-                                    _id: { month: "$month" },
+                                    _id: { project: "$project" },
                                     total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
                                     total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
                                 }
                             },
                         ])
-    
-                        return resolve({ error: false, data: listData })
-                    }else{
-                        let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+
+                        let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
                             {
-                                $match: {
-                                    status: 5, // Đã hoàn thành
-                                    type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                                    company: ObjectID(companyID),
-                                    account: { $exists: true, $ne: null }, // Sổ quỹ
-                                }
-                            },
-                            {
-                                $project: {
-                                    year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    day: { $dayOfMonth: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                                    amount: 1,
-                                    outin: 1,
-                                }
-                            },
-                            {
-                                $match: {
-                                    year: Number(yearFilter),
-                                    month: Number(monthFilter),
-                                }
+                                $match: conditionObj
                             },
                             {
                                 $group: {
-                                    _id: { day: "$day" },
+                                    _id: { project: "$project" },
                                     total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
                                     total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
                                 }
                             },
                         ])
-    
-                        return resolve({ error: false, data: listData })
-                    }
-                }
 
-                // Báo cáo Khoản mục phí
-                else if(Number(option) === 3){
-                    // Kế hoạch
-                    if (checkObjectIDs(subtypeID)) {
-                        conditionPlanObj = {
-                            status: 5, // Đã hoàn thành
-                            type: 1,
-                            // company: ObjectID(companyID),
-                            subtype: ObjectID(subtypeID),
-                            project: { $exists: true, $ne: null },
-                        }
-                    }else{
-                        conditionPlanObj = {
-                            status: 5, // Đã hoàn thành
-                            type: 1,
-                            company: ObjectID(companyID),
-                            project: { $exists: true, $ne: null },
-                        }
-                    }
-
-                     // Thực tế
-                    if (checkObjectIDs(subtypeID)) {
-                        conditionObj = {
-                            status: 5, // Đã hoàn thành
-                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            // company: ObjectID(companyID),
-                            subtype: ObjectID(subtypeID),
-                            account: { $exists: true, $ne: null }, // Sổ quỹ
-                            project: { $exists: true, $ne: null },
-                        }
-                    }else{
-                        conditionObj = {
-                            status: 5, // Đã hoàn thành
-                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            company: ObjectID(companyID),
-                            account: { $exists: true, $ne: null }, // Sổ quỹ
-                            project: { $exists: true, $ne: null },
-                        }
-                    }
-
-                    let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: conditionPlanObj
-                        },
-                        {
-                            $group: {
-                                _id: { project: "$project" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-
-                    let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: { project: "$project" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
-                            }
-                        },
-                    ])
-
-                    let arr = [...listData1,...listData2]
-                    let arrCombine = [], arr1 = [], arr2 = []
-                    
-                    listData1.forEach(item=>{
-                        let key = item._id.project;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
-                        }
-                        arr1[key].push(item)
-                    })
-    
-                    listData2.forEach(item=>{
-                        let key = item._id.project;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
-
-                    let listItem = await ITEM__DEPARTMENT_COLL.find({_id: {$in: arr.map(item => item._id.project)}})
-                    .select('name sign description unit')
-
-                    listItem.forEach(item =>{
-                        let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
-    
-                        if(arr1[item._id]){
-                            planIncome = arr1[item._id][0].total1
-                            planExpense = arr1[item._id][0].total2
-                        }
+                        let arr = [...listData1,...listData2]
+                        let arrCombine = [], arr1 = [], arr2 = []
                         
-                        if(arr2[item._id]){
-                            realIncome = arr2[item._id][0].total1
-                            realExpense = arr2[item._id][0].total2
-                        }
-    
-                        arrCombine.push({
-                            _id: item._id,
-                            name: item.name,
-                            sign: item.sign,
-                            description: item.description,
-                            unit: item.unit,
-                            planIncome: Number(planIncome),
-                            planExpense: Number(planExpense),
-                            realIncome: Number(realIncome),
-                            realExpense: Number(realExpense),
+                        listData1.forEach(item=>{
+                            let key = item._id.project;
+                            if (!Array.isArray(arr1[key])) {
+                                arr1[key] = [];
+                            }
+                            arr1[key].push(item)
                         })
-                    })
+        
+                        listData2.forEach(item=>{
+                            let key = item._id.project;
+                            if (!Array.isArray(arr2[key])) {
+                                arr2[key] = [];
+                            }
+                            arr2[key].push(item)
+                        })
 
-                    return resolve({ error: false, data: arrCombine })
-                }
+                        let listItem = await ITEM__DEPARTMENT_COLL.find({_id: {$in: arr.map(item => item._id.project)}})
+                        .select('name sign description unit')
 
-                // Báo cáo Khoản mục của dự án cụ thể
-                else if(Number(option) === 4){
+                        listItem.forEach(item =>{
+                            let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
+        
+                            if(arr1[item._id]){
+                                planIncome = arr1[item._id][0].total1
+                                planExpense = arr1[item._id][0].total2
+                            }
+                            
+                            if(arr2[item._id]){
+                                realIncome = arr2[item._id][0].total1
+                                realExpense = arr2[item._id][0].total2
+                            }
+        
+                            arrCombine.push({
+                                _id: item._id,
+                                name: item.name,
+                                sign: item.sign,
+                                description: item.description,
+                                unit: item.unit,
+                                planIncome: Number(planIncome),
+                                planExpense: Number(planExpense),
+                                realIncome: Number(realIncome),
+                                realExpense: Number(realExpense),
+                            })
+                        })
 
-                    // Kế hoạch
-                    if (checkObjectIDs(projectID)) {
-                        conditionPlanObj = {
-                            status: 5, // Đã hoàn thành
-                            type: 1,
-                            outin: 2, // Chi phí
-                            // company: ObjectID(companyID),
-                            project: ObjectID(projectID),
-                            subtype: { $exists: true, $ne: null },
-                        }
-                    }else{
-                        conditionPlanObj = {
-                            status: 5, // Đã hoàn thành
-                            type: 1,
-                            outin: 2, // Chi phí
-                            company: ObjectID(companyID),
-                            subtype: { $exists: true, $ne: null },
-                        }
+                        return resolve({ error: false, data: arrCombine })
                     }
 
-                    // Thực tế
-                    if (checkObjectIDs(projectID)) {
-                        conditionObj = {
-                            status: 5, // Đã hoàn thành
-                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            outin: 2, // Chi phí
-                            // company: ObjectID(companyID),
-                            project: ObjectID(projectID),
-                            account: { $exists: true, $ne: null }, // Sổ quỹ
-                            subtype: { $exists: true, $ne: null },
-                        }
-                    }else{
-                        conditionObj = {
-                            status: 5, // Đã hoàn thành
-                            type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
-                            outin: 2, // Chi phí
-                            company: ObjectID(companyID),
-                            account: { $exists: true, $ne: null }, // Sổ quỹ
-                            subtype: { $exists: true, $ne: null },
-                        }
-                    }
+                    // Báo cáo Khoản mục của dự án cụ thể
+                    else if(Number(option) === 4){
 
-                    let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: conditionPlanObj
-                        },
-                        {
-                            $group: {
-                                _id: { subtype: "$subtype" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                        // Kế hoạch
+                        if (checkObjectIDs(projectID)) {
+                            conditionPlanObj = {
+                                status: 5, // Đã hoàn thành
+                                type: 1,
+                                outin: 2, // Chi phí
+                                // company: ObjectID(companyID),
+                                project: ObjectID(projectID),
+                                subtype: { $exists: true, $ne: null },
                             }
-                        },
-                    ])
-
-                    let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: { subtype: "$subtype" },
-                                total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
-                                total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                        }else{
+                            conditionPlanObj = {
+                                status: 5, // Đã hoàn thành
+                                type: 1,
+                                outin: 2, // Chi phí
+                                company: ObjectID(companyID),
+                                subtype: { $exists: true, $ne: null },
                             }
-                        },
-                    ])
-
-                    let arr = [...listData1,...listData2]
-                    let arrCombine = [], arr1 = [], arr2 = []
-                    
-                    listData1.forEach(item=>{
-                        let key = item._id.subtype;
-                        if (!Array.isArray(arr1[key])) {
-                            arr1[key] = [];
                         }
-                        arr1[key].push(item)
-                    })
-    
-                    listData2.forEach(item=>{
-                        let key = item._id.subtype;
-                        if (!Array.isArray(arr2[key])) {
-                            arr2[key] = [];
-                        }
-                        arr2[key].push(item)
-                    })
 
-                    let listItem = await ITEM__DOCTYPE_COLL.find({_id: {$in: arr.map(item => item._id.subtype)}})
-                    .select('name sign description unit')
-
-                    listItem.forEach(item =>{
-                        let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
-    
-                        if(arr1[item._id]){
-                            planIncome = arr1[item._id][0].total1
-                            planExpense = arr1[item._id][0].total2
+                        // Thực tế
+                        if (checkObjectIDs(projectID)) {
+                            conditionObj = {
+                                status: 5, // Đã hoàn thành
+                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                outin: 2, // Chi phí
+                                // company: ObjectID(companyID),
+                                project: ObjectID(projectID),
+                                account: { $exists: true, $ne: null }, // Sổ quỹ
+                                subtype: { $exists: true, $ne: null },
+                            }
+                        }else{
+                            conditionObj = {
+                                status: 5, // Đã hoàn thành
+                                type: {$in: [7, 8]}, // Tiền mặt và Ngân hàng
+                                outin: 2, // Chi phí
+                                company: ObjectID(companyID),
+                                account: { $exists: true, $ne: null }, // Sổ quỹ
+                                subtype: { $exists: true, $ne: null },
+                            }
                         }
+
+                        let listData1 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                $match: conditionPlanObj
+                            },
+                            {
+                                $group: {
+                                    _id: { subtype: "$subtype" },
+                                    total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                    total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                                }
+                            },
+                        ])
+
+                        let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                $match: conditionObj
+                            },
+                            {
+                                $group: {
+                                    _id: { subtype: "$subtype" },
+                                    total1: { $sum: { $cond: [{ $eq: ["$outin", 1] }, "$amount", 0] } },
+                                    total2: { $sum: { $cond: [{ $eq: ["$outin", 2] }, "$amount", 0] } }
+                                }
+                            },
+                        ])
+
+                        let arr = [...listData1,...listData2]
+                        let arrCombine = [], arr1 = [], arr2 = []
                         
-                        if(arr2[item._id]){
-                            realIncome = arr2[item._id][0].total1
-                            realExpense = arr2[item._id][0].total2
-                        }
-    
-                        arrCombine.push({
-                            _id: item._id,
-                            name: item.name,
-                            sign: item.sign,
-                            description: item.description,
-                            unit: item.unit,
-                            planIncome: Number(planIncome),
-                            planExpense: Number(planExpense),
-                            realIncome: Number(realIncome),
-                            realExpense: Number(realExpense),
+                        listData1.forEach(item=>{
+                            let key = item._id.subtype;
+                            if (!Array.isArray(arr1[key])) {
+                                arr1[key] = [];
+                            }
+                            arr1[key].push(item)
                         })
-                    })
+        
+                        listData2.forEach(item=>{
+                            let key = item._id.subtype;
+                            if (!Array.isArray(arr2[key])) {
+                                arr2[key] = [];
+                            }
+                            arr2[key].push(item)
+                        })
 
-                    return resolve({ error: false, data: arrCombine })
+                        let listItem = await ITEM__DOCTYPE_COLL.find({_id: {$in: arr.map(item => item._id.subtype)}})
+                        .select('name sign description unit')
+
+                        listItem.forEach(item =>{
+                            let planIncome = 0, planExpense = 0, realIncome = 0, realExpense = 0
+        
+                            if(arr1[item._id]){
+                                planIncome = arr1[item._id][0].total1
+                                planExpense = arr1[item._id][0].total2
+                            }
+                            
+                            if(arr2[item._id]){
+                                realIncome = arr2[item._id][0].total1
+                                realExpense = arr2[item._id][0].total2
+                            }
+        
+                            arrCombine.push({
+                                _id: item._id,
+                                name: item.name,
+                                sign: item.sign,
+                                description: item.description,
+                                unit: item.unit,
+                                planIncome: Number(planIncome),
+                                planExpense: Number(planExpense),
+                                realIncome: Number(realIncome),
+                                realExpense: Number(realExpense),
+                            })
+                        })
+
+                        return resolve({ error: false, data: arrCombine })
+                    }
                 }
-
             } catch (error) {
                 return resolve({ error: true, message: error.message })
             }
