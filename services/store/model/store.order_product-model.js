@@ -57,36 +57,57 @@ class Model extends BaseModel {
                  * 4. Quản lý đơn hàng bán ra
                  * 5. Đồng bộ doanh thu, nhập xuất với Kế toán
                  */
-                const infoParent = await STORE_ORDER_COLL
-                .findById(orderID)
-                .select('company funda project package toPackage warehouse customer contract outin type date toDate')
-                .lean();
-                if(!infoParent)
-                    return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID});
-
                 if (!name)
                     return resolve({error: true, message: "name invalid", keyError: KEY_ERROR.PARAMS_INVALID});
+                
+                let dataInsert = {}
 
-                let dataInsert = { 
-                    order: orderID,
-                    company: infoParent.company,
-                    funda: infoParent.funda,
-                    project: infoParent.project,
-                    package: infoParent.package,
-                    toPackage: infoParent.toPackage,
-                    warehouse: infoParent.warehouse,
-                    toWarehouse: infoParent.toWarehouse,
-                    customer: infoParent.customer,
-                    contract: infoParent.contract,
-                    outin: infoParent.outin,
-                    type: infoParent.type,
-                    date: infoParent.date,
-                    toDate: infoParent.toDate,
-                    userCreate: userID, 
-                    admins: [userID], 
-                    members: [userID],
-                    name,
+                if (checkObjectIDs(orderID)) {
+                    console.log('1111111')
+                    const infoParent = await STORE_ORDER_COLL
+                    .findById(orderID)
+                    .select('company funda project package toPackage warehouse customer contract outin type date toDate')
+                    .lean();
+                    if(!infoParent)
+                        return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID})
+
+                    dataInsert = { 
+                        order: orderID,
+                        company: infoParent.company,
+                        funda: infoParent.funda,
+                        project: infoParent.project,
+                        package: infoParent.package,
+                        toPackage: infoParent.toPackage,
+                        warehouse: infoParent.warehouse,
+                        toWarehouse: infoParent.toWarehouse,
+                        customer: infoParent.customer,
+                        contract: infoParent.contract,
+                        outin: infoParent.outin,
+                        type: infoParent.type,
+                        date: infoParent.date,
+                        toDate: infoParent.toDate,
+                        userCreate: userID, 
+                        admins: [userID], 
+                        members: [userID],
+                        name,
+                    }
                 }
+                
+                if (checkObjectIDs(accountID)) {
+                    console.log('22222222')
+                    let infoAcc = await ITEM__ACCOUNT_COLL.findById(accountID)
+                    if(!infoAcc)
+                        return resolve({error: true, message: "Tài khoản không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID})
+                    
+                    dataInsert = { 
+                        userCreate: userID, 
+                        admins: [userID], 
+                        members: [userID],
+                        company: infoAcc.company,
+                        name,
+                    }
+                }
+
 
                 if(listedUnitprice >= 0){
                     dataInsert.listedUnitprice = listedUnitprice
@@ -99,9 +120,9 @@ class Model extends BaseModel {
                 if (checkObjectIDs(fundaID)) {
                     dataInsert.funda = fundaID;
                 }
-                if (checkObjectIDs(accountID)) {
-                    dataInsert.account = accountID;
-                }
+                // if (checkObjectIDs(accountID)) {
+                //     dataInsert.account = accountID;
+                // }
                 if (checkObjectIDs(contraID)) {
                     dataInsert.contra = contraID;
                 }
@@ -185,15 +206,17 @@ class Model extends BaseModel {
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Thêm thất bại", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
-                await STORE_ORDER_COLL.findByIdAndUpdate(orderID, { 
-                    $addToSet: { products: infoAfterInsert._id } 
-                }, { new: true });
+                if (checkObjectIDs(orderID)) {
+                    await STORE_ORDER_COLL.findByIdAndUpdate(orderID, { 
+                        $addToSet: { products: infoAfterInsert._id } 
+                    }, { new: true })
 
-                // Cập nhật Giá trị cho Order
-                if(!option){
-                    await that.updateValue({orderID, userID})
+                    // Cập nhật Giá trị cho Order
+                    if(!option){
+                        await that.updateValue({orderID, userID})
+                    }
                 }
 
                 return resolve({ error: false, data: infoAfterInsert });

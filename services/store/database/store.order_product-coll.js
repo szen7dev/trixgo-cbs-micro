@@ -163,12 +163,8 @@ module.exports  = DATABASE_MIDDLEWARE("store_order_product", {
     dateInvoice: { type: Date, default: Date.now }, 
     //_________Có phải là phiếu kết chuyển số dư chuyển cuối kỳ hay không
     forward: { type: Number, default: 0 },
-    //_________Có phải là phiếu kết chuyển doanh thu chi phí cuối kỳ hay không (Income Statement)
-    forwardIs: { type: Number, default: 0 },
-    //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
-    returning: { type: Number, default: 0 },
     /**
-     * Trạng thái đơn
+     * Trạng thái
      * 1-Khởi tạo
      * 2-Chờ Ship lấy hàng/Mang hàng tới Ship
      * 3-Đang vận chuyển/giao hàng

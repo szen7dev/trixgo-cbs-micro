@@ -17,8 +17,8 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            orderID             : { type: "string" },
-            goodsID             : { type: "string", optional: true  },
+            orderID             : { type: "string", optional: true },
+            goodsID             : { type: "string", optional: true },
             subGoodsID          : { type: "string", optional: true },
             size                : { type: "number", optional: true },
             sugar               : { type: "number", optional: true },
