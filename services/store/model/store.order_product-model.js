@@ -2580,43 +2580,64 @@ class Model extends BaseModel {
 
                 // Sổ quỹ
                 else if (Number(option) === 3) {
+                    let year = new Date().getFullYear()
                     let conditionObj = { company: companyID, status: 5 }
+
+                    conditionObj.$where = `return this.date.getFullYear() === ${Number(year)}`
 
                     if (checkObjectIDs(filterParams.accountID)) {
                         conditionObj.account = filterParams.accountID;
                     }
 
                     let listData = await STORE_ORDER_PRODUCT_COLL.find(conditionObj)
-                    .select('outin amount date account customer')
+                    .select('name outin amount date account customer')
                     .populate({
-                        path: 'account customer',
+                        path: 'account customer subtype',
                         select: 'name phone description'
                     })
-                    .sort({date: 1})
+                    .sort({date: -1})
                     // console.log(listData)
+
+                    let listDoctye = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData.map(item => item?.subtype?._id)}}).select('name')
+                    // console.log(listDoctye)
 
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cash_detail_report.xlsx')))
                     .then(async workbook => {
 
-                        let i = 3, tonQuy = 0
+                        var i = 3, tonQuy = 0
                         if(listData && listData.length){
                             listData?.forEach((item, index) => {
                                 workbook.sheet("Data").row(i).cell(1).value(item.date);
                                 workbook.sheet("Data").row(i).cell(2).value(`${item?.account?.name}-${item?.account?.description}`);
-                                workbook.sheet("Data").row(i).cell(3).value(`${item?.customer?.name}-${item?.customer?.phone}`);
+                                workbook.sheet("Data").row(i).cell(3).value(item?.name);
+                                workbook.sheet("Data").row(i).cell(4).value(`${item?.customer?.name}-${item?.customer?.phone}`);
+
                                 if(item.outin == 2){
-                                    tonQuy = Number(tonQuy) + Number(item?.amount)
-                                    workbook.sheet("Data").row(i).cell(4).value(Number(item?.amount));
-                                }else{
-                                    tonQuy = Number(tonQuy) - Number(item?.amount)
+                                    // tonQuy = Number(tonQuy) + Number(item?.amount)
                                     workbook.sheet("Data").row(i).cell(5).value(Number(item?.amount));
+                                }else{
+                                    // tonQuy = Number(tonQuy) - Number(item?.amount)
+                                    workbook.sheet("Data").row(i).cell(6).value(Number(item?.amount));
                                 }
 
-                                workbook.sheet("Data").row(i).cell(6).value(Number(tonQuy));
+                                workbook.sheet("Data").row(i).cell(7).value(item?.subtype?.name);
+
+                                workbook.sheet("Data").row(i).cell(8).value(`T${Number(item.date.getMonth() + 1)}_${item.date.getFullYear()}`);
                         
                                 i++
                             })
                         }
+
+                        var i = 3
+                        workbook.sheet("BaoCao").row(1).cell(2).value(year);
+                        if(listDoctye && listDoctye.length){
+                            listDoctye?.forEach((item, index) => {
+                                // workbook.sheet("Data").row(i).cell(1).value(index + 1)
+                                workbook.sheet("BaoCao").row(i).cell(2).value(item?.name)
+                        
+                                i++
+                            })
+                        }                
 
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
