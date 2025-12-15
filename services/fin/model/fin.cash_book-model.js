@@ -1514,7 +1514,7 @@ class Model extends BaseModel {
 
                             if (checkObjectIDs(templateID)) {
                                 let infoTemplate = await PCM_FILE__COLL.findById(templateID)
-                                console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`)
+                                // console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`)
 
                                 const response = await axios({
                                     url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
@@ -1525,7 +1525,7 @@ class Model extends BaseModel {
 
                                 templateFile1 = response.data
                             }
-                            console.log(`[1528] templateFile1: ${templateFile1}`)
+                            // console.log(`[1528] templateFile1: ${templateFile1}`)
 
                             // Modify the workbook.
                             //  XlsxPopulate.fromFileAsync(templateFile)
