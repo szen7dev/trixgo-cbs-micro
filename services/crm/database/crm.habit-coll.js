@@ -10,7 +10,7 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Phần tử cha
+    //_________Phần tử cha: sử dụng cho các Habit phân loại từ hệ thống
     parent: {
         type: Schema.Types.ObjectId,
         ref: "crm_habit"
