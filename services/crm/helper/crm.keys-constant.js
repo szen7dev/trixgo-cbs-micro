@@ -1,5 +1,5 @@
 exports.CRM_XP = [
-    {xp: 10}, // Thối thiểu
-    {xp: 15}, // Tối ưu
-    {xp: 30} // Tối thượng
+    {xp: 1}, // Thối thiểu
+    {xp: 2}, // Tối ưu
+    {xp: 3} // Tối thượng - Siêu cấp
 ]   
