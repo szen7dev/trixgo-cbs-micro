@@ -64,6 +64,8 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
     startTime: Date,
     //_________Giờ bắn bài (sẽ tính từ startTime -> ra giờ bắn bài để tiện cho cron và noti)
     alert: Date,
+    //_______Ngày bắt đầu
+    startDate: Date,
     //_______Ngày hoàn thành
     finishDate: Date,
     //_________currentStreak
