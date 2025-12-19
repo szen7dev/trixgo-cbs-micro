@@ -183,7 +183,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Update (hàm quan trọng nhất và hay dùng)
+     * Name: Update (hàm quan trọng nhất và hay dùng) ***
      * Author: HiepNH
      * Code: 22/11/2023
      */
@@ -554,7 +554,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ option, companyID, contactID, habitID, startDate, endDate }){
+    getListByProperty({ option, tab, companyID, contactID, habitID, startDate, endDate }){
         return new Promise(async resolve => {
             try {
                 // Tổng hợp theo Tuần
@@ -643,7 +643,7 @@ class Model extends BaseModel {
                           }
                         },
                         // { $sort: { year: 1, week: 1 } }
-                      ])
+                    ])
 
                     return resolve({ error: false, data: listData })
                 }
@@ -695,7 +695,7 @@ class Model extends BaseModel {
                 }
 
                 /**
-                 * getDailyStreakProgress
+                 * getDailyStreakProgress: Show streak
                  * https://chatgpt.com/c/685f1a72-0b14-8001-b530-65d1acebc25b
                  */
                 else if(option == 2){
@@ -742,7 +742,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: result })
                 }
 
-                // Xếp hạng theo tuần
+                // Báo cáo Xếp hạng theo tuần
                 else if(option == 3){
                     let conditionObj = {
                         company: ObjectID(companyID),
@@ -791,7 +791,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
-                // Báo cáo thực hiện Habit
+                // Báo cáo thực hiện Habit: cho việc quản trị
                 else if(option == 4){
                     let conditionObj = {
                         company: ObjectID(companyID),
@@ -923,6 +923,53 @@ class Model extends BaseModel {
                     }).select('name phone')
 
                     return resolve({ error: false, data: listData1 })
+                }
+
+                /**
+                 * DÀNH CHO PHẦN GAME MỚI
+                 */
+                else if(option == 7){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        status: 2, // Hoàn thành
+                    }
+
+                    if(startDate && endDate){
+                        conditionObj.date =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+                    // console.log(conditionObj)
+
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: conditionObj
+                        },
+                        {
+                            $group: {
+                                _id: '$contact',
+                                totalXP: { $sum: '$xp' },
+                            },
+                        },
+                        { 
+                            $sort: { totalXP: -1 } 
+                        }
+                    ])
+                    // console.log(listData)
+
+                    await ITEM__CONTACT_COLL.populate(listData, {  
+                        path: '_id',
+                        select: 'name image parent createAt birthday',
+                        model: 'contact',
+                        populate: {
+                            path: 'parent',
+                            select: 'name address',
+                            model: 'contact',
+                        }
+                    })
+
+                    return resolve({ error: false, data: listData })
                 }
 
             } catch (error) {

@@ -76,6 +76,22 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
     note: String,
     //________Màu nền
     color: String,
+    /**
+     * GAME
+     */
+    //_________Cấp 1
+    condition1 : { type: Number, default: 0 },
+    total1 : { type: Number, default: 0 },
+    bonus1 : { type: Number, default: 0 },
+    //_________Cấp 2
+    condition2 : { type: Number, default: 0 },
+    total2 : { type: Number, default: 0 },
+    bonus2 : { type: Number, default: 0 },
+    //_________Cấp 3
+    condition3 : { type: Number, default: 0 },
+    total3 : { type: Number, default: 0 },
+    bonus3 : { type: Number, default: 0 },
+
     //_________Hình ảnh
     images: [{
         type: Schema.Types.ObjectId,

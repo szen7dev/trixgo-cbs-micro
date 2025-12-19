@@ -44,7 +44,7 @@ class Model extends BaseModel {
     /**
      * Name: Insert
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 19/12/2025
      */
     insert({
         userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note,
@@ -147,7 +147,7 @@ class Model extends BaseModel {
     /**
      * Name: Update
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 19/12/2025
      */
     update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, imagesID }){
         return new Promise(async (resolve) => {
@@ -233,9 +233,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: get info expert timesheet
-     * Author: Depv
-     * Code:
+     * Name: get info
+     * Author: HiepNH
+     * Code: 19/12/2025
      */
     getInfo({ habitID, select, populates }) {
         return new Promise(async (resolve) => {
@@ -267,9 +267,9 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : Danh sách expert timesheet
-     * Author: Depv
-     * Code  :
+     * Name  : Danh sách
+     * Author: HiepNH
+     * Code  : 19/12/2025
      */
     getList({ companyID, option, contactID, status, userCreateID, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
@@ -377,10 +377,19 @@ class Model extends BaseModel {
             }
         })
     }
-    
+
+    /**
+     * Name  : Danh sách Habit kèm theo trạng thái từ ngày tới ngày
+     * Author: HiepNH
+     * Code  : 19/12/2025
+     */
     getListWithTrack({ companyID, contactID, userCreateID, startDate, endDate, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
+                /**
+                 * BA
+                 * Phục vụ cho việc cập nhật trạng thái Habbit mỗi ngày
+                 */
                 if(Number(limit) > 50){
                     limit = 50;
                 } else{
