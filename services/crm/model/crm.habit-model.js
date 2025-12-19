@@ -48,7 +48,7 @@ class Model extends BaseModel {
      */
     insert({
         userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note,
-        startTime, dayOfChallenge, finishDate, color, resultType, ctx,
+        startTime, dayOfChallenge, finishDate, color, resultType, startDate, condition1, total1, bonus1, condition2, total2, bonus2, condition3, total3, bonus3, ctx
     }) {
         return new Promise(async resolve => {
             try {
@@ -96,6 +96,34 @@ class Model extends BaseModel {
                     dataInsert.duration = Number(duration)
                 }
 
+                if (!isNaN(condition1)) {
+                    dataInsert.condition1 = Number(condition1)
+                }
+                if (!isNaN(total1)) {
+                    dataInsert.total1 = Number(total1)
+                }
+                if (!isNaN(bonus1)) {
+                    dataInsert.bonus1 = Number(bonus1)
+                }
+                if (!isNaN(condition2)) {
+                    dataInsert.condition2 = Number(condition2)
+                }
+                if (!isNaN(total2)) {
+                    dataInsert.total2 = Number(total2)
+                }
+                if (!isNaN(bonus2)) {
+                    dataInsert.bonus2 = Number(bonus2)
+                }
+                if (!isNaN(condition3)) {
+                    dataInsert.condition3 = Number(condition3)
+                }
+                if (!isNaN(total3)) {
+                    dataInsert.total3 = Number(total3)
+                }
+                if (!isNaN(bonus3)) {
+                    dataInsert.bonus3 = Number(bonus3)
+                }
+
                 if(name && name != ""){
                     dataInsert.name = name;
                 }
@@ -106,6 +134,10 @@ class Model extends BaseModel {
 
                 if(startTime && startTime != ""){
                     dataInsert.startTime = startTime;
+                }
+
+                if(startDate && startDate != ""){
+                    dataInsert.startDate = startDate;
                 }
 
                 if(finishDate && finishDate != ""){
@@ -149,7 +181,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/12/2025
      */
-    update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, imagesID }){
+    update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, imagesID, startDate, condition1, total1, bonus1, condition2, total2, bonus2, condition3, total3, bonus3 }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -187,6 +219,10 @@ class Model extends BaseModel {
                     dataUpdate.dayOfChallenge = dayOfChallenge;
                 }
 
+                if(startDate && startDate != ""){
+                    dataUpdate.startDate = startDate;
+                }
+
                 if(finishDate && finishDate != ""){
                     dataUpdate.finishDate = finishDate;
                 }
@@ -197,6 +233,34 @@ class Model extends BaseModel {
 
                 if (!isNaN(resultType)) {
                     dataUpdate.resultType = Number(resultType)
+                }
+
+                if (!isNaN(condition1)) {
+                    dataUpdate.condition1 = Number(condition1)
+                }
+                if (!isNaN(total1)) {
+                    dataUpdate.total1 = Number(total1)
+                }
+                if (!isNaN(bonus1)) {
+                    dataUpdate.bonus1 = Number(bonus1)
+                }
+                if (!isNaN(condition2)) {
+                    dataUpdate.condition2 = Number(condition2)
+                }
+                if (!isNaN(total2)) {
+                    dataUpdate.total2 = Number(total2)
+                }
+                if (!isNaN(bonus2)) {
+                    dataUpdate.bonus2 = Number(bonus2)
+                }
+                if (!isNaN(condition3)) {
+                    dataUpdate.condition3 = Number(condition3)
+                }
+                if (!isNaN(total3)) {
+                    dataUpdate.total3 = Number(total3)
+                }
+                if (!isNaN(bonus3)) {
+                    dataUpdate.bonus3 = Number(bonus3)
                 }
 
                 let infoAfterUpdate = await CRM_HABIT_COLL.findByIdAndUpdate(habitID, dataUpdate, { new: true })

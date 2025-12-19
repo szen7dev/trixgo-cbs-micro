@@ -26,7 +26,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType } = ctx.params;
+                let { optionSeller, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, startDate, condition1, total1, bonus1, condition2, total2, bonus2, condition3, total3, bonus3 } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -38,7 +38,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, ctx })
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.insert({ userID, companyID, parentID, contactID, habitCateID, type, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, startDate, condition1, total1, bonus1, condition2, total2, bonus2, condition3, total3, bonus3, ctx })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -54,18 +54,18 @@ module.exports = {
      */
     update: {
         params: {
-            habitID             : { type: "string" },
+            habitID: { type: "string" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, imagesID } = ctx.params;
+                let { habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, imagesID, startDate, condition1, total1, bonus1, condition2, total2, bonus2, condition3, total3, bonus3 } = ctx.params;
 
                 // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, imagesID });
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.update({ userID, habitID, status, duration, name, note, startTime, dayOfChallenge, finishDate, color, resultType, imagesID, startDate, condition1, total1, bonus1, condition2, total2, bonus2, condition3, total3, bonus3 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
