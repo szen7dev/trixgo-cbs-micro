@@ -179,7 +179,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, habitID, contactID, startDate, endDate } = ctx.params;
+                let { optionSeller, option, tab, habitID, contactID, startDate, endDate } = ctx.params;
                 
                 // console.log(ctx.params)
 
