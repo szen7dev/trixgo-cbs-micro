@@ -193,7 +193,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getListByProperty({
-                    option, tab, companyID, contactID, habitID, startDate, endDate
+                    option, tab, userID, companyID, contactID, habitID, startDate, endDate
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -554,7 +554,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ option, tab, companyID, contactID, habitID, startDate, endDate }){
+    getListByProperty({ option, tab, companyID, userID, contactID, habitID, startDate, endDate }){
         return new Promise(async resolve => {
             try {
                 // Tổng hợp theo Tuần
@@ -930,9 +930,18 @@ class Model extends BaseModel {
                  * DÀNH CHO PHẦN GAME MỚI
                  */
                 else if(option == 7){
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        status: 2, // Hoàn thành
+                    let conditionObj = {}
+                    if(!tab){
+                        conditionObj = {
+                            company: ObjectID(companyID),
+                            userCreate: ObjectID(userID),
+                            status: 2, // Hoàn thành
+                        }
+                    }else{
+                        conditionObj = {
+                            company: ObjectID(companyID),
+                            status: 2, // Hoàn thành
+                        }
                     }
 
                     if(startDate && endDate){
