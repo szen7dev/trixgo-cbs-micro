@@ -45,7 +45,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice, classification, outin }) {
+    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice, classification, outin, date }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -204,7 +204,10 @@ class Model extends BaseModel {
                     dataInsert.unitPrice = unitPrice2
                     dataInsert.amount = amount
                 }
-                // console.log(dataInsert)
+
+                if(date){
+                    dataInsert.date = date
+                }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
                 if (!infoAfterInsert)
@@ -237,36 +240,39 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {    
                 let info = await STORE_ORDER_COLL.findById(orderID)
-                if(info){
-                    let dataUpdate = { 
-                        userUpdate: userID, 
-                        modifyAt: new Date() 
-                    }
-    
-                    let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                order: ObjectID(orderID),
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { },
-                                amount: { $sum: "$amount" },
-                            }
-                        },
-                    ])
-                    if(listData && listData.length){
-                        dataUpdate.amount = Number(listData[0].amount)
-                        dataUpdate.history = `${info?.history} | ${new Date()}, U_${userID}, Thành tiền: ${Number(listData[0].amount)}`
-                    }
-    
-                    let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
-                    if(!infoAfterUpdate)
-                        return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
-    
-                    return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+
+                if (!info) {
+                    return resolve({ error: true, message: 'Không tìm thấy thông tin', keyError: KEY_ERROR.GET_INFO_FAILED });
                 }
+
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                }
+    
+                let listData = await STORE_ORDER_PRODUCT_COLL.aggregate([
+                    {
+                        $match: {
+                            order: ObjectID(orderID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            amount: { $sum: "$amount" },
+                        }
+                    },
+                ])
+                if(listData && listData.length){
+                    dataUpdate.amount = Number(listData[0].amount)
+                    dataUpdate.history = `${info?.history} | ${new Date()}, U_${userID}, Thành tiền: ${Number(listData[0].amount)}`
+                }
+
+                let infoAfterUpdate = await STORE_ORDER_COLL.findByIdAndUpdate(orderID, dataUpdate, { new: true });
+                if(!infoAfterUpdate)
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
+
+                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -278,147 +284,156 @@ class Model extends BaseModel {
      * Code  : HiepNH
      * Date  : 28/1/2025
      */
-    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice }) {
+    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, date }) {
         const that = this
         return new Promise(async resolve => {
             try {
                 let infoJournal = await STORE_ORDER_PRODUCT_COLL.findById(orderProductID)
-                if(infoJournal){
-                    let dataUpdate = { 
-                        userUpdate: userID, 
-                        modifyAt: new Date() 
-                    };
-    
-                    if (checkObjectIDs(filesID)) {
-                        dataUpdate.$addToSet = { files: filesID };
-                    }
-    
-                    if (checkObjectIDs(fundaID)) {
-                        dataUpdate.funda = fundaID;
-                    }
-                    if (checkObjectIDs(accountID)) {
-                        dataUpdate.account = accountID;
-                    }
-                    if (checkObjectIDs(contraID)) {
-                        dataUpdate.contra = contraID;
-                    }
-                    if (checkObjectIDs(customerID)) {
-                        dataUpdate.customer = customerID;
-                    }
-                    if (checkObjectIDs(contractID)) {
-                        dataUpdate.contract = contractID;
-                    }
-    
-                    if (checkObjectIDs(goodsID)) {
-                        let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
-                        dataUpdate.goods = goodsID;
-    
-                        if(infoGoods && infoGoods.parent){
-                            dataUpdate.parentGoods = infoGoods.parent;
-                        }else{
-                            dataUpdate.parentGoods = null;
-                        }
-                    }
-    
-                    if (checkObjectIDs(assetsID)) {
-                        dataUpdate.assets = assetsID;
-                    }
-    
-                    if (checkObjectIDs(subtypeID)) {
-                        dataUpdate.subtype = subtypeID;
-    
-                        // Lấy thông tin phần tử cha để đưa sang
-                        let infoDoctype = await ITEM__DOCTYPE_COLL.findById(subtypeID)
-                        if(infoDoctype){
-                            if(infoDoctype.parent){
-                                dataUpdate.parentSubtype = infoDoctype.parent;
-                            }
-                        }
-                    }
-                    
-                    if (checked && !isNaN(checked) && Number(checked) > 0) {
-                        dataUpdate.checked = checked;
-                    }
-    
-                    let convertStr = ''
-                    if (name && name != '') {
-                        dataUpdate.name = name;
-                        convertStr = convertStr + " " + stringUtils.removeAccents(name)
-                    }
-                    if (note && note != '') {
-                        dataUpdate.note = note;
-                        convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                    }
-                    if(convertStr != ""){
-                        dataUpdate.namecv = convertStr
-                    }
-    
-                    let unitPrice2 = 0
-                    if (unitPrice != 0) {
-                        unitPrice2 = Number(unitPrice)
-                    }
-                    if (quantity && !isNaN(quantity)) {
-                        dataUpdate.quantity = Number(quantity)
-                    }
-    
-                    if (weight && !isNaN(weight)) {
-                        dataUpdate.weight = weight
-                    }
-    
-                    // Gán ngân sách
-                    if (checkObjectIDs(workID)) {
-                        dataUpdate.budgetWork = workID;
-    
-                        // Lấy thông tin phần tử cha để đưa sang
-                        let infoWork = await BUDGET_WORK_COLL.findById(workID).select('unitPrice budget item group')
-                        if(infoWork){
-                            unitPrice2 = Number(infoWork.unitPrice) // Bỏ đi để không bị ảnh hưởng: vì đơn giá đôi khi theo thực tế
-    
-                            dataUpdate.budget = infoWork.budget;
-                            dataUpdate.budgetItem = infoWork.item;
-                            dataUpdate.budgetGroup = infoWork.group;``
-                        }
-                    }
-    
-                    if(unitPrice2 >= 0){
-                        let amount  = Number(quantity * unitPrice2).toFixed(0)
-    
-                        dataUpdate.unitPrice = unitPrice2
-                        dataUpdate.amount = amount
-    
-                        dataUpdate.history = `${infoJournal.history} | ${new Date()}, U_${userID}, Khối lượng: ${quantity}, Đơn giá: ${unitPrice2}, Thành tiền: ${amount}, Ghi chú: ${note}`
-                    }
-                    // console.log({ dataUpdate })
-    
-                    let infoAfterUpdate = await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(orderProductID, dataUpdate, { new: true })
-                    if (!infoAfterUpdate)
-                        return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
-    
-                    // Cập nhật ngân sách đã thực hiện
-                    if(checkObjectIDs(infoAfterUpdate.budgetWork)){
-                        if(checkObjectIDs(workID)){
-                            // console.log('11111111111111111111111111111111111')
-                            // Cập nhật với Công việc cũ
-                            let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
-                            // console.log(infoBudget2)
-        
-                            // Cập nhật với Công việc mới
-                            let infoBudget = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID, userID})
-                            // console.log(infoBudget)
-                        }else{
-                            // console.log('222222222222222222')
-                            // Cập nhật với Công việc cũ: áp dụng cho thay đổi Khối lượng, đơn giá
-                            let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
-                            // console.log(infoBudget2)
-                        }
-                    }
-    
-                    // Cập nhật lại thông tin Order
-                    await that.updateValue({orderID: infoAfterUpdate.order, userID})
-    
-                    return resolve({ error: false, data: infoAfterUpdate });
+
+                if (!infoJournal) {
+                    return resolve({ error: true, message: 'Không tìm thấy thông tin', keyError: KEY_ERROR.GET_INFO_FAILED });
                 }
+                
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                };
+
+                if (checkObjectIDs(filesID)) {
+                    dataUpdate.$addToSet = { files: filesID };
+                }
+
+                if (checkObjectIDs(fundaID)) {
+                    dataUpdate.funda = fundaID;
+                }
+                if (checkObjectIDs(accountID)) {
+                    dataUpdate.account = accountID;
+                }
+                if (checkObjectIDs(contraID)) {
+                    dataUpdate.contra = contraID;
+                }
+                if (checkObjectIDs(customerID)) {
+                    dataUpdate.customer = customerID;
+                }
+                if (checkObjectIDs(contractID)) {
+                    dataUpdate.contract = contractID;
+                }
+
+                if (checkObjectIDs(goodsID)) {
+                    let infoGoods = await ITEM__GOODS_COLL.findById(goodsID)
+                    dataUpdate.goods = goodsID;
+
+                    if(infoGoods && infoGoods.parent){
+                        dataUpdate.parentGoods = infoGoods.parent;
+                    }else{
+                        dataUpdate.parentGoods = null;
+                    }
+                }
+
+                if (checkObjectIDs(assetsID)) {
+                    dataUpdate.assets = assetsID;
+                }
+
+                if (checkObjectIDs(subtypeID)) {
+                    dataUpdate.subtype = subtypeID;
+
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoDoctype = await ITEM__DOCTYPE_COLL.findById(subtypeID)
+                    if(infoDoctype){
+                        if(infoDoctype.parent){
+                            dataUpdate.parentSubtype = infoDoctype.parent;
+                        }
+                    }
+                }
+                
+                if (checked && !isNaN(checked) && Number(checked) > 0) {
+                    dataUpdate.checked = checked;
+                }
+
+                let convertStr = ''
+                if (name && name != '') {
+                    dataUpdate.name = name;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(name)
+                }
+                if (note && note != '') {
+                    dataUpdate.note = note;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                }
+                if(convertStr != ""){
+                    dataUpdate.namecv = convertStr
+                }
+
+                let unitPrice2 = 0
+                if (unitPrice != 0) {
+                    unitPrice2 = Number(unitPrice)
+                }
+                if (quantity && !isNaN(quantity)) {
+                    dataUpdate.quantity = Number(quantity)
+                }
+
+                if (weight && !isNaN(weight)) {
+                    dataUpdate.weight = weight
+                }
+
+                if (date && !isNaN(date)) {
+                    dataUpdate.date = date
+                }
+
+                // Gán ngân sách
+                if (checkObjectIDs(workID)) {
+                    dataUpdate.budgetWork = workID;
+
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoWork = await BUDGET_WORK_COLL.findById(workID).select('unitPrice budget item group')
+                    if(infoWork){
+                        unitPrice2 = Number(infoWork.unitPrice) // Bỏ đi để không bị ảnh hưởng: vì đơn giá đôi khi theo thực tế
+
+                        dataUpdate.budget = infoWork.budget;
+                        dataUpdate.budgetItem = infoWork.item;
+                        dataUpdate.budgetGroup = infoWork.group;``
+                    }
+                }
+
+                if(unitPrice2 >= 0){
+                    let amount  = Number(quantity * unitPrice2).toFixed(0)
+
+                    dataUpdate.unitPrice = unitPrice2
+                    dataUpdate.amount = amount
+
+                    dataUpdate.history = `${infoJournal.history} | ${new Date()}, U_${userID}, Khối lượng: ${quantity}, Đơn giá: ${unitPrice2}, Thành tiền: ${amount}, Ghi chú: ${note}`
+                }
+                // console.log({ dataUpdate })
+
+                let infoAfterUpdate = await STORE_ORDER_PRODUCT_COLL.findByIdAndUpdate(orderProductID, dataUpdate, { new: true })
+                
+                if (!infoAfterUpdate)
+                    return resolve({ error: true, message: 'Cập nhật thất bại', keyError: KEY_ERROR.UPDATE_FAILED })
+
+                // Cập nhật ngân sách đã thực hiện
+                if(checkObjectIDs(infoAfterUpdate.budgetWork)){
+                    if(checkObjectIDs(workID)){
+                        // console.log('11111111111111111111111111111111111')
+                        // Cập nhật với Công việc cũ
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
+                        // console.log(infoBudget2)
+    
+                        // Cập nhật với Công việc mới
+                        let infoBudget = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID, userID})
+                        // console.log(infoBudget)
+                    }else{
+                        // console.log('222222222222222222')
+                        // Cập nhật với Công việc cũ: áp dụng cho thay đổi Khối lượng, đơn giá
+                        let infoBudget2 = await BUDGET__WORK_MODEL.updateValueFromTimeSheetStore({option: 1, workID: infoAfterUpdate.budgetWork, userID})
+                        // console.log(infoBudget2)
+                    }
+                }
+
+                // Cập nhật lại thông tin Order
+                await that.updateValue({orderID: infoAfterUpdate.order, userID})
+
+                return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
+                console.error({ error });
                 return resolve({ error: true, message: error.message })
             }
         });
