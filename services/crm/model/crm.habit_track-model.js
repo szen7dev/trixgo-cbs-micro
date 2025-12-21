@@ -187,20 +187,18 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    updateByDay({ companyID, userID, habitID, date, status, resultType, percentage }){
+    updateByDay({ companyID, userID, habitID, date, status, resultType }){
         return new Promise(async (resolve) => {
             try {
                 /**
                  * BA
-                 * 1. Hoàn thành tối thiểu: XP = 10
-                 * 2. Hoàn thành tối Ưu: XP = 15
-                 * 3. Hoàn thành tối thượng: XP = 30
+                 * 1. Hoàn thành tối thiểu: XP = 1
+                 * 2. Hoàn thành tối Ưu: XP = 2
+                 * 3. Hoàn thành tối thượng: XP = 3
                  * Cần lưu ý: khi chuyển tối thiểu -> ưu -> thượng và ngược lại
                  * Về membershipLevel:
                  * - Tăng khi mua hàng
                  * - Tăng khi tham gia game hàng ngày
-                 * db.contacts.updateMany({},{$set:{"streak": 0,"xp":0,"badges":1,"hearts":0,"gems":0}})
-                * db.crm_habits.updateMany({},{$set:{"currentStreak": 0,"maxStreak":0,"percentage":0}})
                  */
                 let infoHabit = await CRM_HABIT_COLL.findById(habitID)
                 if(!infoHabit)
@@ -212,6 +210,21 @@ class Model extends BaseModel {
                     contact: infoHabit.contact,
                     date: formattedDate,
                 }
+
+                let xp = 0
+                let xpHabit = infoHabit.xp || 0
+                let condition1 = infoHabit.condition1 || 0
+                let total1 = infoHabit.total1 || 0
+                let bonus1 = infoHabit.bonus1 || 0
+                let condition2 = infoHabit.condition2 || 0
+                let total2 = infoHabit.total2 || 0
+                let bonus2 = infoHabit.bonus2 || 0
+                let condition3 = infoHabit.condition3 || 0
+                let total3 = infoHabit.total3 || 0
+                let bonus3 = infoHabit.bonus3 || 0
+                let realityBonus1 = infoHabit.realityBonus1 || 0
+                let realityBonus2 = infoHabit.realityBonus2 || 0
+                let realityBonus3 = infoHabit.realityBonus3 || 0
 
                 let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
                 // console.log(infoTrack)
@@ -231,72 +244,56 @@ class Model extends BaseModel {
                         habitCate: infoHabit.habitCate
                     }
 
-                    // Trạng thái hoàn thành
-                    let xp = 0
-
                     if(resultType == 1){
-                        xp = CRM_XP[0].xp
+                        xp = Number(xp) + CRM_XP[0].xp
+                        xpHabit = Number(xpHabit) + CRM_XP[0].xp
+                        total1 = Number(total1) + 1
                     }else if(resultType == 2){
-                        xp = CRM_XP[1].xp
+                        xp = Number(xp) + CRM_XP[1].xp
+                        xpHabit = Number(xpHabit) + CRM_XP[1].xp
+                        total2 = Number(total2) + 1
                     }else{
-                        xp = CRM_XP[2].xp
+                        xp = Number(xp) + CRM_XP[2].xp
+                        xpHabit = Number(xpHabit) + CRM_XP[2].xp
+                        total3 = Number(total3) + 1
                     }
 
-                    if(status == 2){
-                        dataInsert.percentage = 100
-                        dataInsert.xp = xp
-                        dataInsert.streak = 1
-
-                        // XỬ LÝ XP & STREAK
-                        // Cập nhật vào Habit
-                        await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
-                            percentage: 100, // Cần tính toán toán lại theo tổng số ngày hoàn thành???
-                            $inc: {
-                                xp: xp,
-                                currentStreak: 1,
-                                maxStreak: 1
-                            }
-                        }, { new: true })
-
-                        // Cập nhật vào Contact
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
-                            $inc: {
-                                xp: xp,
-                                streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
-                                hearts: 1, // Tính toán đảm bảo max 5 điểm máu
-                                gems: 1, // Tính toán đảm bảo max 5 điểm máu
-                            }
-                        }, { new: true })
-                    }else{
-                        dataInsert.percentage = 0
-                        dataInsert.xp = 0
-                        dataInsert.streak = 0
-
-                        // XỬ LÝ XP & STREAK
-                        // Cập nhật vào Habit
-                        await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
-                            percentage: 0,
-                            $inc: {
-                                xp: -xp,
-                                currentStreak: -1,
-                                maxStreak: -1
-                            }
-                        }, { new: true })
-
-                        // Cập nhật vào Contact
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
-                            $inc: {
-                                xp: -xp, // Mỗi ngày hoàn thành được 15 điểm, 7 ngày được 105 điểm
-                                streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
-                                hearts: -1, // Tính toán đảm bảo max 5 điểm máu
-                                gems: -1, // Tính toán đảm bảo max 5 điểm máu
-                            }
-                        }, { new: true })
-                    }
+                    dataInsert.status = 2
+                    dataInsert.percentage = 100
+                    dataInsert.xp = xp
 
                     let infoAfterInsert = await this.insertData(dataInsert)
                     if(!infoAfterInsert)
                         return resolve({ error: true, message: "cannot_insert" })
+
+                    if(total1 == condition1){
+                        realityBonus1 = bonus1
+                    }else{
+                        realityBonus1 = 0
+                    }
+                    if(total2 == condition2){
+                        realityBonus2 = bonus2
+                    }else{
+                        realityBonus2 = 0
+                    }
+                    if(total3 == condition3){
+                        realityBonus3 = bonus3
+                    }else{
+                        realityBonus3 = 0
+                    }
+
+                    // Cập nhật vào Habit
+                    await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
+                        xp: xpHabit,
+                        total1,
+                        total2,
+                        total3,
+                        realityBonus1,
+                        realityBonus2,
+                        realityBonus3,
+                    }, { new: true })
+
+                    // Cập nhật vào Contact: Xử lý sau
 
                     return resolve({ error: false, data: infoAfterInsert })
                 }
@@ -313,76 +310,39 @@ class Model extends BaseModel {
                     }
 
                     if(status == 2){
-                        let xp = 0, xpVal = 0
                         if(resultType == 1){
-                            xp = Number(CRM_XP[0].xp)
-                            xpVal = Number(CRM_XP[0].xp - infoTrack.xp)
+                            xp = Number(xp) + Number(CRM_XP[0].xp)
+                            xpHabit = Number(xpHabit) + CRM_XP[0].xp
+                            total1 = Number(total1) + 1
                         }else if(resultType == 2){
-                            xp = Number(CRM_XP[1].xp)
-                            xpVal = Number(CRM_XP[1].xp - infoTrack.xp)
+                            xp = Number(xp) + Number(CRM_XP[1].xp)
+                            xpHabit = Number(xpHabit) + CRM_XP[1].xp
+                            total2 = Number(total2) + 1
                         }else{
-                            xp = Number(CRM_XP[2].xp)
-                            xpVal = Number(CRM_XP[2].xp - infoTrack.xp)
+                            xp = Number(xp) + Number(CRM_XP[2].xp)
+                            xpHabit = Number(xpHabit) + CRM_XP[2].xp
+                            total3 = Number(total3) + 1
                         }
 
+                        dataUpdate.status = 2
                         dataUpdate.percentage = 100
                         dataUpdate.xp = xp
-                        dataUpdate.streak = 1
-
-                        // XỬ LÝ XP & STREAK
-                        // Cập nhật vào Habit
-                        await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
-                            percentage: 100, // Cần tính toán toán lại theo tổng số ngày hoàn thành???
-                            $inc: {
-                                xp: xpVal,
-                                currentStreak: 1,
-                                maxStreak: 1
-                            }
-                        }, { new: true })
-
-                        // Cập nhật vào Contact
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
-                            $inc: {
-                                xp: xpVal,
-                                streak: 1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
-                                hearts: 1, // Tính toán đảm bảo max 5 điểm máu
-                                gems: 1, // Tính toán đảm bảo max 5 điểm máu
-                            }
-                        }, { new: true })
                     }else{
                         let xp = 0
                         if(resultType == 1){
                             xp = Number(CRM_XP[0].xp)
+                            total1 = Number(total1) - 1
                         }else if(resultType == 2){
                             xp = Number(CRM_XP[1].xp)
+                            total2 = Number(total2) - 1
                         }else{
                             xp = Number(CRM_XP[2].xp)
+                            total3 = Number(total3) - 1
                         }
 
+                        dataUpdate.status = 0
                         dataUpdate.percentage = 0
                         dataUpdate.xp = 0
-                        dataUpdate.streak = 0
-
-                        // XỬ LÝ XP & STREAK
-                        // Cập nhật vào Habit
-                        await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
-                            percentage: 0,
-                            $inc: {
-                                xp: -xp,
-                                currentStreak: -1,
-                                maxStreak: -1
-                            }
-                        }, { new: true })
-
-                        // Cập nhật vào Contact
-                        await ITEM__CONTACT_COLL.findByIdAndUpdate(infoHabit.contact, {
-                            $inc: {
-                                xp: -xp,
-                                streak: -1, // Cần tính toán lại để đảm bảo đúng Streak. Nếu đứt Streak sẽ về lại từ đầu
-                                hearts: -1, // Tính toán đảm bảo max 5 điểm máu
-                                gems: -1, // Tính toán đảm bảo max 5 điểm máu
-                            }
-                        }, { new: true })
                     }
 
                     let infoAfterUpdate = await CRM_HABIT_TRACK_COLL.findByIdAndUpdate(infoTrack._id, dataUpdate, { new: true })
@@ -393,6 +353,35 @@ class Model extends BaseModel {
                             keyError: "cannot_update",
                         })
                     }
+
+                    if(total1 == condition1){
+                        realityBonus1 = bonus1
+                    }else{
+                        realityBonus1 = 0
+                    }
+                    if(total2 == condition2){
+                        realityBonus2 = bonus2
+                    }else{
+                        realityBonus2 = 0
+                    }
+                    if(total3 == condition3){
+                        realityBonus3 = bonus3
+                    }else{
+                        realityBonus3 = 0
+                    }
+
+                    // Cập nhật vào Habit
+                    await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
+                        xp: xpHabit,
+                        total1,
+                        total2,
+                        total3,
+                        realityBonus1,
+                        realityBonus2,
+                        realityBonus3,
+                    }, { new: true })
+
+                    // Cập nhật vào Contact: Xử lý sau
 
                     return resolve({ error: false, data: infoAfterUpdate })
                 }
