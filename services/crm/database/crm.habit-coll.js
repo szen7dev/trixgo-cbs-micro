@@ -74,6 +74,8 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
     maxStreak : { type: Number, default: 0 },
     //_________% hoàn thành (max = 100)
     percentage: { type: Number, default: 0, max: 100 },
+    //______Điểm thành tích
+    xp: { type: Number, default: 0 },
     //________Ghi chú
     note: String,
     //________Màu nền

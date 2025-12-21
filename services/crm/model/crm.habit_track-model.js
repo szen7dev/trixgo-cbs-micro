@@ -252,6 +252,7 @@ class Model extends BaseModel {
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
                             percentage: 100, // Cần tính toán toán lại theo tổng số ngày hoàn thành???
                             $inc: {
+                                xp: xp,
                                 currentStreak: 1,
                                 maxStreak: 1
                             }
@@ -276,6 +277,7 @@ class Model extends BaseModel {
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
                             percentage: 0,
                             $inc: {
+                                xp: -xp,
                                 currentStreak: -1,
                                 maxStreak: -1
                             }
@@ -332,6 +334,7 @@ class Model extends BaseModel {
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
                             percentage: 100, // Cần tính toán toán lại theo tổng số ngày hoàn thành???
                             $inc: {
+                                xp: xpVal,
                                 currentStreak: 1,
                                 maxStreak: 1
                             }
@@ -365,6 +368,7 @@ class Model extends BaseModel {
                         await CRM_HABIT_COLL.findByIdAndUpdate(habitID, {
                             percentage: 0,
                             $inc: {
+                                xp: -xp,
                                 currentStreak: -1,
                                 maxStreak: -1
                             }
