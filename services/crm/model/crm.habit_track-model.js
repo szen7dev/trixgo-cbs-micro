@@ -211,17 +211,21 @@ class Model extends BaseModel {
                     date: formattedDate,
                 }
 
-                let xp = 0
-                let xpHabit = infoHabit.xp || 0
+                let xp = 0 // Track
+                let xpHabit = infoHabit.xp || 0 // Habit
+
                 let condition1 = infoHabit.condition1 || 0
                 let total1 = infoHabit.total1 || 0
                 let bonus1 = infoHabit.bonus1 || 0
+
                 let condition2 = infoHabit.condition2 || 0
                 let total2 = infoHabit.total2 || 0
                 let bonus2 = infoHabit.bonus2 || 0
+
                 let condition3 = infoHabit.condition3 || 0
                 let total3 = infoHabit.total3 || 0
                 let bonus3 = infoHabit.bonus3 || 0
+
                 let realityBonus1 = infoHabit.realityBonus1 || 0
                 let realityBonus2 = infoHabit.realityBonus2 || 0
                 let realityBonus3 = infoHabit.realityBonus3 || 0
@@ -238,7 +242,6 @@ class Model extends BaseModel {
                         habit: habitID,
                         contact: infoHabit.contact,
                         date: formattedDate,
-                        status, 
                         resultType, 
                         duration: infoHabit.duration,
                         habitCate: infoHabit.habitCate
@@ -328,16 +331,15 @@ class Model extends BaseModel {
                         dataUpdate.percentage = 100
                         dataUpdate.xp = xp
                     }else{
-                        let xp = 0
                         if(resultType == 1){
-                            xp = Number(CRM_XP[0].xp)
                             total1 = Number(total1) - 1
+                            xpHabit = Number(xpHabit) - CRM_XP[0].xp
                         }else if(resultType == 2){
-                            xp = Number(CRM_XP[1].xp)
                             total2 = Number(total2) - 1
+                            xpHabit = Number(xpHabit) - CRM_XP[1].xp
                         }else{
-                            xp = Number(CRM_XP[2].xp)
                             total3 = Number(total3) - 1
+                            xpHabit = Number(xpHabit) - CRM_XP[2].xp
                         }
 
                         dataUpdate.status = 0
