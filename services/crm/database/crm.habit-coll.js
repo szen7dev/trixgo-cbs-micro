@@ -74,6 +74,8 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
     maxStreak : { type: Number, default: 0 },
     //_________% hoàn thành (max = 100)
     percentage: { type: Number, default: 0, max: 100 },
+    //______Điểm thành tích
+    xp: { type: Number, default: 0 },
     //________Ghi chú
     note: String,
     //________Màu nền
@@ -82,17 +84,18 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
      * GAME
      */
     //_________Cấp 1
-    condition1 : { type: Number, default: 0 },
-    total1 : { type: Number, default: 0 },
-    bonus1 : { type: Number, default: 0 },
+    condition1 : { type: Number, default: 0 }, // Điều kiện thưởng
+    total1 : { type: Number, default: 0 }, // Thực tế đạt được
+    bonus1 : { type: Number, default: 0 }, // Kế hoạch Giá trị thưởng
+    realityBonus1 : { type: Number, default: 0 }, // Thực tế đạt Giá thưởng
     //_________Cấp 2
     condition2 : { type: Number, default: 0 },
     total2 : { type: Number, default: 0 },
-    bonus2 : { type: Number, default: 0 },
+    realityBonus2 : { type: Number, default: 0 },
     //_________Cấp 3
     condition3 : { type: Number, default: 0 },
     total3 : { type: Number, default: 0 },
-    bonus3 : { type: Number, default: 0 },
+    realityBonus3 : { type: Number, default: 0 },
 
     //_________Hình ảnh
     images: [{
