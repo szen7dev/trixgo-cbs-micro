@@ -482,7 +482,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates, sortKey }) {
-        //  populates = '{"path":"account contra goods assets funda customer work budgetWork userCreate userUpdate order project package toPackage contract subtype parentSubtype","select":"name sign phone unit note fullname description image"}'
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) >= 500){
@@ -493,7 +492,7 @@ class Model extends BaseModel {
 
                 let conditionObj = { company: companyID }
                 let sortBy;
-                let keys	 = ['createAt__1', '_id__1'];
+                let keys	 = ['createAt__-1', '_id__-1'];
 
                 if(orderID ){
                     conditionObj.order = ObjectID(orderID)
