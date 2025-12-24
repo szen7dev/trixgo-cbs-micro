@@ -56,20 +56,6 @@ const FNB_ORDER_VOUCHER_MODEL = require('../../fnb/model/fnb.voucher-model').MOD
 const CONTACT_DOCUMENT_MODEL = require('../../human/model/human.contact_document-model').MODEL
 const ANALYSIS__HISTORY_DATA_MODEL = require('../.../../../analysis/model/analysis.history_data').MODEL;
 
-let dataTF = {
-    appID: "61e049c9fdebf77b072d1b13", // HUMAN
-    menuID: "623f1f0de998e94feda0cd72", //
-    type: 1,
-    action: 1, // Xem
-}
-
-let dataTF2 = {
-    appID: "61e049c9fdebf77b072d1b13", // HUMAN
-    menuID: "623f1f0de998e94feda0cd72", //
-    type: 1,
-    action: 2, // Thêm
-}
-
 class Model extends BaseModel {
     constructor() {
         super(ITEM__CONTACT_COLL);
@@ -80,7 +66,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours, pubertyOnsetDate, boneAge 
+    insert({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours, pubertyOnsetDate, boneAge, support
     }) {
         return new Promise(async resolve => {
             try {
@@ -230,6 +216,11 @@ class Model extends BaseModel {
                 if (position && checkObjectIDs(position)) {
                     dataInsert.position = position;
                 }
+
+                if (support && checkObjectIDs(support)) {
+                    dataInsert.support = support;
+                }
+
                 if (linkUser && checkObjectIDs(linkUser)) {
                     // Kiểm tra xem đã tồn tại hay chưa, nếu tồn tại rồi thì không cho link nữa
                     let checkExist = await ITEM__CONTACT_COLL.findOne({ linkUser: linkUser, company: infoFunda.company })
@@ -539,7 +530,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, annualWorkingHours, pubertyOnsetDate, boneAge }) {
+    update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, annualWorkingHours, pubertyOnsetDate, boneAge, support }) {
         return new Promise(async (resolve) => {
             try {
                 //___________Xác thực số điện thoại
@@ -694,6 +685,10 @@ class Model extends BaseModel {
                 }
                 if (saleID && checkObjectIDs(saleID)) {
                     dataUpdate.sale = saleID;
+                }
+
+                if (support && checkObjectIDs(support)) {
+                    dataUpdate.support = support;
                 }
 
                 if (linkUser && checkObjectIDs(linkUser)) {
@@ -935,6 +930,7 @@ class Model extends BaseModel {
 
                     // Chỉ admin ứng dụng mới được thêm phần tử cha con
                     if (!infoAppUser.error && infoAppUser.data.level == 0) {
+                        // Sẽ có lúc bị lỗi vì gọi nhiều Model bên ANALYSIS__HISTORY_DATA_MODEL
                         await ANALYSIS__HISTORY_DATA_MODEL.convertData({
                             option: 8,
                             companyID: company,

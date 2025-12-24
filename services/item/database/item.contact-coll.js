@@ -129,8 +129,8 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
-    //_________Link với nhân viên sale
-    linkSale: {
+    //_________Người support, chăm sóc
+    support: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },

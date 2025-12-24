@@ -39,7 +39,7 @@ module.exports = {
             status           : { type: "string", optional: true },
             field            : { type: "string", optional: true },
             property         : { type: "string", optional: true },
-            linkSale         : { type: "string", optional: true },
+            support         : { type: "string", optional: true },
             workingStatus    : { type: "string", optional: true },
             realStatus       : { type: "string", optional: true },
             insuranceStatus  : { type: "string", optional: true },
@@ -75,7 +75,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource, annualWorkingHours, pubertyOnsetDate, boneAge } = ctx.params;
+                let { optionSeller, option, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email, department, position, linkUser, status, field, property, support, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID, bankAccount, bank, dataSource, annualWorkingHours, pubertyOnsetDate, boneAge } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -98,7 +98,7 @@ module.exports = {
 
                 let resultAfterCallHandler = await ITEM__CONTACT_MODEL.insert({ companyID,
                 option, authorID: userID, parent, type, name, description, note, sign, address, taxid, birthday, province, gender, phone, email,
-                  department, position, linkUser, status, field, property, linkSale, workingStatus, realStatus,
+                  department, position, linkUser, status, field, property, support, workingStatus, realStatus,
                   insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2,
                   insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff,
                   appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, referrerID, saleID,
@@ -140,7 +140,7 @@ module.exports = {
             status           : { type: "string", optional: true },
             field            : { type: "string", optional: true },
             property         : { type: "string", optional: true },
-            linkSale         : { type: "string", optional: true },
+            support         : { type: "string", optional: true },
             workingStatus    : { type: "string", optional: true },
             realStatus       : { type: "string", optional: true },
             insuranceStatus  : { type: "string", optional: true },
