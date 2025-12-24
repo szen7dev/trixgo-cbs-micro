@@ -19,15 +19,20 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         type: Number,
         default: 1 
     },
-    //_________Mã khách
-    contact: {
-        type: Schema.Types.ObjectId,
-        ref : "contact"
-    },
     //_________Phân nhóm habit
     habitCate: {
         type: Schema.Types.ObjectId,
         ref : "crm_habit"
+    },
+    //_________Người support, chăm sóc
+    support: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+    //_________Mã khách
+    contact: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
     },
     /**
      * Phân loại

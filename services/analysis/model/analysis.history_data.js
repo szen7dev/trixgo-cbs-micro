@@ -54,14 +54,14 @@ const FIN__CASH_BOOK_COLL                       = require('../../fin/database/fi
 // const STORE_ORDER_PRODUCT_COLL                  = require('../../store/database/store.order_product-coll');
 // const STORE_ORDER_COLL                          = require("../../store/database/store.order-coll");
 const MEDIA_COLL					        	= require('../../media/database/media-coll');
-const { type } = require('os');
 
-const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/model/subject_pcm.pcm_plan_group').MODEL
-const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
-const STORE_ORDER_PRODUCT_MODEL                 = require('../../store/model/store.order_product-model.js').MODEL;
-const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model.js').MODEL;
-const ITEM__ACCOUNT_MODEL                       = require('../../item/model/item.account-model').MODEL;
 const ITEM__FUNDA_MODEL                         = require('../../item/model/item.funda-model').MODEL;
+
+// const PCM_PLAN_GROUP_MODEL                      = require('../../subject_pcm/model/subject_pcm.pcm_plan_group').MODEL
+// const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
+// const STORE_ORDER_PRODUCT_MODEL                 = require('../../store/model/store.order_product-model.js').MODEL;
+// // const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model.js').MODEL;
+// const ITEM__ACCOUNT_MODEL                       = require('../../item/model/item.account-model').MODEL;
 
 class Model extends BaseModel {
 
@@ -590,6 +590,7 @@ class Model extends BaseModel {
 
                 // Convert Contact Parent
                 else if(option == 8){
+                    console.log('=================3333333333333333')
                     /**
                      * B1. XỬ LÝ VỚI OLD_PARENT VÀ CÁC CẤP TRÊN CŨ
                      * B2. XỬ LÝ VỚI NEW_PARENT VÀ CÁC CẤP TRÊN MỚI
@@ -599,7 +600,6 @@ class Model extends BaseModel {
 
                         let infoContact = await ITEM__CONTACT_COLL.findById(docID)
                         let infoParent = await ITEM__CONTACT_COLL.findById(parentID)
-                        // console.log(infoParent.nestedParents)
 
                         /**
                          * B1. XỬ LÝ VỚI OLD_PARENT VÀ CÁC CẤP TRÊN CŨ
@@ -2019,265 +2019,6 @@ class Model extends BaseModel {
             }
         })
     }
-
-    // Tham khảo cũ
-    // resetAllData({ option, email, password, userID, fundaID, companyID, page, arrCustomers }) {
-    //     const that = this
-    //     // console.log({ option, email, password, userID, fundaID, companyID, arrCustomers })
-    //     return new Promise(async (resolve) => {
-    //         try {
-    //             if(password.toString() != `noPass12345${email}`)
-    //                 return resolve({ error: true, message: 'Mật hiệu không chính xác', status: 403 })
-    //             /**
-    //              * CẬP NHẬT TÍCH ĐIỂM
-    //              * Convert dữ liệu cũ, mới
-    //              * Từ đơn hàng sẽ tính ra được Credit mà khách đã sử dụng -> Tổng hợp theo mã khách -> Cập nhật vào danh bạ
-    //              */
-    //             // if(option == 1){
-    //             //     await FNB_ORDER_COLL.updateMany(
-    //             //         {
-    //             //             company: companyID,
-    //             //             status: 5, // Chỉ đơn hoàn thành
-    //             //             salesChannel: 1, // Kênh offline
-    //             //          },
-    //             //         [{
-    //             //             $set: {loyaltyPoints: {$multiply: [FNB_FACTOR.credit.level1.factor/100, "$amount"]}}
-    //             //         }],
-    //             //         {"multi": true}
-    //             //     )
-
-    //             //     // Reset về 0 -> Bắt đầu từ đầu
-    //             //     await ITEM__CONTACT_COLL.updateMany({ company: companyID },
-    //             //         [{
-    //             //             $set: {
-    //             //                 purchasedOffValue: 0,
-    //             //                 totalLoyaltyPoints: 0,
-    //             //                 usedLoyaltyPoints: 0,
-    //             //                 remainLoyaltyPoints: 0,
-    //             //             }
-    //             //         }],
-    //             //         {"multi": true}
-    //             //     )
-    //             // }
-
-    //             /**
-    //              * CẬP NHẬT TÍCH ĐIỂM THEO TỪNG CƠ SỞ
-    //              * Convert dữ liệu cũ, mới
-    //              */
-    //             // if(option == 2 && fundaID){
-    //             //     // Chỉ lấy các khách hàng đã mua hàng
-    //             //     let listData = await ITEM__CONTACT_COLL.find({ funda: fundaID, purchasedValue: {$gt: 0} }).select('_id').sort({_id: 1})
-    //             //     var i = 1
-    //             //     for(const item of listData){
-    //             //         if(page && Number(page)>0){
-    //             //             if(page == 1){
-    //             //                 if(i<=500){
-    //             //                     await that.convertDataCustomer({ customerID: item._id, userID })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 2){
-    //             //                 if(i>500 && i<=1000){
-    //             //                     await that.convertDataCustomer({ customerID: item._id, userID })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 3){
-    //             //                 if(i>1000 && i<=1500){
-    //             //                     await that.convertDataCustomer({ customerID: item._id, userID })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 4){
-    //             //                 if(i>1500 && i<=2000){
-    //             //                     await that.convertDataCustomer({ customerID: item._id, userID })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 5){
-    //             //                 if(i>2000 && i<=2500){
-    //             //                     await that.convertDataCustomer({ customerID: item._id, userID })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 6){
-    //             //                 if(i>2500){
-    //             //                     await that.convertDataCustomer({ customerID: item._id, userID })
-    //             //                 }
-    //             //             }
-
-    //             //             i++
-    //             //         }else{
-    //             //             await that.convertDataCustomer({ customerID: item._id, userID })
-    //             //         }
-    //             //     }
-    //             // }
-
-    //              /**
-    //              * CẬP NHẬT LỖI
-    //              */
-    //             // if(option == 3){
-    //             //     // Cập nhật cho Điểm bán
-    //             //     await ITEM__FUNDA_COLL.updateMany(
-    //             //         {
-    //             //             company: ObjectID(companyID),
-    //             //         },
-    //             //         {$set: {numberOfMistakes: 0 } }
-    //             //      )
-    //             //     let listData = await FNB_MISTAKE_COLL.aggregate([
-    //             //         {
-    //             //             $match: {
-    //             //                 company: ObjectID(companyID)
-    //             //             }
-    //             //         },
-    //             //         {
-    //             //             $group: {
-    //             //                 _id: { funda: "$funda" },
-    //             //                 quantity: { $sum: 1 },
-    //             //             }
-    //             //         }
-    //             //     ])
-    //             //     for(const item of listData){
-    //             //         let infoFunda = await ITEM__FUNDA_COLL.findByIdAndUpdate(item._id.funda, {
-    //             //             numberOfMistakes: Number(item.quantity)
-    //             //         })
-    //             //     }
-    //             // }
-
-    //             /**
-    //              * CẬP NHẬT LƯƠNG CĂN BẢN
-    //              */
-    //             // if(option == 4){
-    //             //     // Cập nhật cho Điểm bán
-    //             //     await ITEM__FUNDA_COLL.updateMany(
-    //             //         {
-    //             //             company: ObjectID(companyID),
-    //             //         },
-    //             //         {$set: {
-    //             //             trainStaffSalar: 10000,
-    //             //             trialStaffSalary: 15000,
-    //             //             officialStaffSalar: 20000,
-    //             //             lunchStaffAllowance: 30000,
-    //             //         } }
-    //             //      )
-    //             // }
-
-    //             /**
-    //              * CẬP NHẬT DANH BẠ => BỔ SUNG SUID
-    //              */
-    //             // if(option == 5){
-    //             //     /**
-    //             //      * db.contacts.updateMany({company: {$ne: ObjectId("6046bedeb55525368b11c5c3")}},{$set:{email:"",phone:""}})
-    //             //      */
-    //             //     let listContacts = await ITEM__CONTACT_COLL.find({funda: fundaID}).select('_id').sort({_id: 1})
-
-    //             //     var i = 1
-    //             //     for(const item of listContacts){
-    //             //         let suid = await stringUtils.randomAndCheckExists(ITEM__CONTACT_COLL, 'suid')
-
-    //             //         if(page && Number(page)>0){
-    //             //             if(page == 1){
-    //             //                 if(i<=500){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 2){
-    //             //                 if(i>500 && i<=1000){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 3){
-    //             //                 if(i>1000 && i<=1500){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 4){
-    //             //                 if(i>1500 && i<=2000){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 5){
-    //             //                 if(i>2000 && i<=2500){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 6){
-    //             //                 if(i>2500 && i<=3000){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 7){
-    //             //                 if(i>3000 && i<=3500){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 8){
-    //             //                 if(i>3500 && i<=4000){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-    //             //             if(page == 9){
-    //             //                 if(i>4000 && i<=4500){
-    //             //                     await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //                 }
-    //             //             }
-
-    //             //             i++
-    //             //         }else{
-    //             //             await ITEM__CONTACT_COLL.findByIdAndUpdate(item._id, { suid: suid })
-    //             //         }
-    //             //     }
-
-    //             //     return resolve({ error: false, message: 'Reset thành công', data: listContacts.length });
-    //             // }
-
-    //             /**
-    //              * UPDATE CÁC SỐ ĐIỆN THOẠI TRÙNG
-    //              */
-    //             // if(option == 6){
-    //             //     let listDataPhone = await ITEM__CONTACT_COLL.aggregate([
-    //             //         {"$match": {company: ObjectID(companyID)} },
-    //             //         {"$group" : { "_id": "$phone", "count": { "$sum": 1 } } },
-    //             //         {"$match": {"_id" :{ "$ne" : null } , "count" : {"$gt": 1} } },
-    //             //         {"$project": {"phone" : "$_id", "_id" : 0} }
-    //             //     ])
-    //             //     return resolve({ error: false, listDataPhone })
-    //             // }
-
-    //             // if(option == 7){
-    //             //     await ITEM__CONTACT_COLL.updateMany(
-    //             //         { _id: {$in: arrCustomers }},
-    //             //         { $set: {type: 2} }
-    //             //      );
-
-    //             //      return resolve({ error: false, message: 'Reset thành công'})
-    //             // }
-
-    //             // Update Người thực hiện bảng chấm công
-    //             if(option == 8){
-    //                 let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
-    //                     company: ObjectID(companyID),
-    //                     parent: { $exists: true, $ne: null },
-    //                     assignee: { $exists: false } // Chưa gán người thực hiện
-    //                 })
-    //                 // console.log(listData)
-                    
-    //                 for(const item of listData){
-    //                     let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(item)
-    //                     .select('parent')
-    //                     .populate('parent')
-    //                     // console.log(info)
-
-    //                     await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(item, {
-    //                             assignee: info.parent.assignee
-    //                         }, { new: true });
-    //                 }
-
-    //                 return resolve({ error: false })
-    //             }
-
-
-    //             // return resolve({ error: false, message: 'Reset thành công'})
-    //         } catch (error) {
-    //             return resolve({ error: true, message: error.message, status: 500 });
-    //         }
-    //     })
-    // }
 
     sendZns({ option, companyID, userID, templateId, appId, start_date, expire, voucher_code, note, salesChannel, fromDate, toDate, min, max, quantity, isTest, phoneTest, page=1, limit=500, ctx }){
         return new Promise(async resolve => { 

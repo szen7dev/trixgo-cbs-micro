@@ -284,7 +284,7 @@ class Model extends BaseModel {
      * Code  : HiepNH
      * Date  : 28/1/2025
      */
-    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, date }) {
+    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, date, status }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -345,6 +345,10 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                if (status && !isNaN(status) && Number(status) > 0) {
+                    dataUpdate.status = status;
+                } 
                 
                 if (checked && !isNaN(checked) && Number(checked) > 0) {
                     dataUpdate.checked = checked;
