@@ -353,7 +353,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 1
     },
-    //_________Ngày bắt đầu tham gia mua hàng
+    //_________Ngày bắt đầu tham gia
     joinedDate: { type: Date, default: Date.now },
     //_________Số đơn hàng đã Mua
     numberOfOrders: {

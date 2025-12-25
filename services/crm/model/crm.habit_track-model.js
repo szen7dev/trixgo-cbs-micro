@@ -24,12 +24,14 @@ const stringUtils					    = require('../../../tools/utils/string_utils.js')
 /**
  * COLLECTIONS
  */
-// const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
+const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
 
 const { CRM_XP } = require("../helper/crm.keys-constant");
+
+const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
 
 class Model extends BaseModel {
 
@@ -552,7 +554,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ option, tab, companyID, userID, contactID, habitID, startDate, endDate, supportID }){
+    getListByProperty({ option, tab, companyID, userID, contactID, habitID, startDate, endDate, supportID, year }){
         return new Promise(async resolve => {
             try {
                 // Tổng hợp theo Tuần
@@ -983,14 +985,48 @@ class Model extends BaseModel {
 
                 // Tổng hợp theo Người support/CSKH
                 else if(option == 8){
-                    let conditionObj = {company: ObjectID(companyID)}
+                    let conditionObj = { company: ObjectID(companyID) }
+
+                    let conditionContactObj = {
+                        company: ObjectID(companyID),
+                        status: 1
+                    }
+
                     if(startDate && endDate){
                         conditionObj.date =  { 
                             $gte: moment(startDate).toDate(),
                             $lte: moment(endDate).toDate() 
                         }
                     }
+
+                    let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e04a0dfdebf77b072d1b18", // App Habit
+                        userID
+                    })
+
+                    if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
+                        // console.log('1111111111')
+                        conditionObj.company = ObjectID(companyID)
+                        conditionContactObj.support = { $exists: true, $ne: null }
+                    }else{
+                        let infoContact = await ITEM__CONTACT_COLL.findOne({
+                            company: ObjectID(companyID), 
+                            linkUser: userID
+                        }).select('name linkUser support')
+                        // console.log(infoContact)
+
+                        if(infoContact){
+                            // console.log('222222222222')
+                            conditionObj.support = infoContact._id
+                            conditionContactObj.support = infoContact._id
+                        }else{
+                            // console.log('333333333333333')
+                            conditionObj.support = { $exists: false }
+                            conditionContactObj.support = { $exists: false }
+                        }
+                    }                    
                     // console.log(conditionObj)
+                    // console.log(conditionContactObj)
 
                     // // Danh sách Gom nhóm khách hàng theo support
                     // let listData = await ITEM__CONTACT_COLL.aggregate([
@@ -1047,11 +1083,7 @@ class Model extends BaseModel {
                     // Cách tối ưu dùng $facet
                     let listData = await ITEM__CONTACT_COLL.aggregate([
                         {
-                            $match: {
-                                company: ObjectID(companyID),
-                                status: 1,
-                                support: { $exists: true, $ne: null }
-                            }
+                            $match: conditionContactObj
                         },
                         {
                             $group: {
@@ -1111,6 +1143,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
+                // Chi tiết theo contact của Support
                 else if(option == 9){
                     let conditionObj = {
                         company: ObjectID(companyID),
@@ -1188,6 +1221,33 @@ class Model extends BaseModel {
                         select: 'name phone',
                         model: 'contact',
                     })
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Tổng hợp thành viên mới theo tháng
+                else if(option == 10){
+                    const targetYear = parseInt(year); 
+                    const startOfYear = moment().year(targetYear).startOf('year').toDate();
+                    const endOfYear = moment().year(targetYear).endOf('year').toDate();
+
+                    let listData = await ITEM__CONTACT_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                joinedDate: { $gte: startOfYear, $lte: endOfYear } // Lọc trực tiếp trên Index
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { $month: { date: "$joinedDate", timezone: "Asia/Ho_Chi_Minh" } }, // Trích xuất tháng tại đây
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $sort: { "_id": 1 } // Sắp xếp từ tháng 1 đến tháng 12
+                        }
+                    ]);
 
                     return resolve({ error: false, data: listData })
                 }
