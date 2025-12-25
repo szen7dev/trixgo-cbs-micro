@@ -77,7 +77,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref : "doctype"
     },
-    //_________Trạng thái giao dịch (Chưa GD-1, Đang GD-2, Ngừng GD-3)
+    //_________Trạng thái: 1-Đang hoạt động, 2-Không hoạt động
     status: { type: Number, default: 1 },
     //_________Tên/họ và tên
     name: String,
@@ -401,7 +401,7 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         default : 0
     },
     //_______Ngày dậy thì
-    pubertyOnsetDate: { type: Date },
+    pubertyOnsetDate: { type: Date, default: null },
     //_______Tuổi xương thực (dạng số - Đo bằng máy)
     boneAge: { type: Number },
     /**
