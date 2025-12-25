@@ -554,7 +554,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ option, tab, companyID, userID, contactID, habitID, startDate, endDate, supportID }){
+    getListByProperty({ option, tab, companyID, userID, contactID, habitID, startDate, endDate, supportID, year }){
         return new Promise(async resolve => {
             try {
                 // Tổng hợp theo Tuần
@@ -1221,6 +1221,33 @@ class Model extends BaseModel {
                         select: 'name phone',
                         model: 'contact',
                     })
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Tổng hợp thành viên mới theo tháng
+                else if(option == 10){
+                    const targetYear = parseInt(year); 
+                    const startOfYear = moment().year(targetYear).startOf('year').toDate();
+                    const endOfYear = moment().year(targetYear).endOf('year').toDate();
+
+                    let listData = await ITEM__CONTACT_COLL.aggregate([
+                        {
+                            $match: {
+                                company: ObjectID(companyID),
+                                joinedDate: { $gte: startOfYear, $lte: endOfYear } // Lọc trực tiếp trên Index
+                            }
+                        },
+                        {
+                            $group: {
+                                _id: { $month: { date: "$joinedDate", timezone: "Asia/Ho_Chi_Minh" } }, // Trích xuất tháng tại đây
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            $sort: { "_id": 1 } // Sắp xếp từ tháng 1 đến tháng 12
+                        }
+                    ]);
 
                     return resolve({ error: false, data: listData })
                 }

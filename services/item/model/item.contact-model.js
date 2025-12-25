@@ -531,7 +531,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, annualWorkingHours, pubertyOnsetDate, boneAge, support }) {
+    update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, annualWorkingHours, pubertyOnsetDate, boneAge, support, joinedDate }) {
         return new Promise(async (resolve) => {
             try {
                 //___________Xác thực số điện thoại
@@ -611,6 +611,10 @@ class Model extends BaseModel {
 
                 if (taxid) {
                     dataUpdate.taxid = taxid;
+                }
+
+                if (joinedDate) {
+                    dataUpdate.joinedDate = joinedDate;
                 }
 
                 if (birthday) {
