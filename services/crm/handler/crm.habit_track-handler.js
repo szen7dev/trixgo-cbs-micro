@@ -179,7 +179,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, tab, habitID, contactID, startDate, endDate } = ctx.params;
+                let { optionSeller, option, tab, habitID, contactID, startDate, endDate, supportID } = ctx.params;
                 
                 // console.log(ctx.params)
 
@@ -193,7 +193,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await CRM_HABIT_TRACK_MODEL.getListByProperty({
-                    option, tab, userID, companyID, contactID, habitID, startDate, endDate
+                    option, tab, userID, companyID, contactID, habitID, startDate, endDate, supportID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

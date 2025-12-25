@@ -552,7 +552,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ option, tab, companyID, userID, contactID, habitID, startDate, endDate }){
+    getListByProperty({ option, tab, companyID, userID, contactID, habitID, startDate, endDate, supportID }){
         return new Promise(async resolve => {
             try {
                 // Tổng hợp theo Tuần
@@ -927,6 +927,7 @@ class Model extends BaseModel {
                 /**
                  * DÀNH CHO PHẦN GAME MỚI
                  */
+                // Tổng hợp Kết quả game theo người chơi
                 else if(option == 7){
                     let conditionObj = {}
                     if(!tab){
@@ -980,6 +981,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
+                // Tổng hợp theo Người support/CSKH
                 else if(option == 8){
                     let conditionObj = {company: ObjectID(companyID)}
                     if(startDate && endDate){
@@ -1104,6 +1106,87 @@ class Model extends BaseModel {
                                 }
                             }
                         }
+                    })
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                else if(option == 9){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                        status: 2,
+                    }
+
+                    if(supportID){
+                        conditionObj.support = ObjectID(supportID)
+                    }
+                    
+                    if(startDate && endDate){
+                        conditionObj.date =  { 
+                            $gte: moment(startDate).toDate(),
+                            $lte: moment(endDate).toDate() 
+                        }
+                    }
+                    
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                            $match: conditionObj // Bao gồm lọc theo date nếu có
+                        },
+                        {
+                            // Bước 1: Gom nhóm theo bộ đôi Contact và HabitCate để đếm
+                            $group: {
+                                _id: {
+                                    contact: '$contact',
+                                    habitCate: '$habitCate'
+                                },
+                                count: { $sum: 1 }
+                            }
+                        },
+                        {
+                            // Bước 2: Gom tất cả các HabitCate về lại một Contact duy nhất
+                            $group: {
+                                _id: '$_id.contact',
+                                details: {
+                                    $push: {
+                                        habitCate: '$_id.habitCate',
+                                        total: '$count'
+                                    }
+                                }
+                            }
+                        }
+                    ]);
+
+                    await ITEM__CONTACT_COLL.populate(listData, {  
+                        path: '_id',
+                        select: '_id name phone area image support parent birthday gender',
+                        model: 'contact',
+                        populate: {
+                            path: 'area',
+                            select: 'name parent',
+                            model: 'area',
+                            populate: {
+                                path: 'parent',
+                                select: 'name',
+                                model: 'area',
+                                populate: {
+                                    path: 'parent',
+                                    select: 'name',
+                                    model: 'area',
+                                }
+                            }
+                        }
+                    })
+
+                    await ITEM__CONTACT_COLL.populate(listData, {  
+                        path: '_id.support',
+                        select: 'name phone',
+                        model: 'contact',
+                    })
+
+                    await ITEM__CONTACT_COLL.populate(listData, {  
+                        path: '_id.parent',
+                        select: 'name phone',
+                        model: 'contact',
                     })
 
                     return resolve({ error: false, data: listData })
