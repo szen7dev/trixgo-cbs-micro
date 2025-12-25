@@ -1052,6 +1052,7 @@ class Model extends BaseModel {
                         {
                             $match: {
                                 company: ObjectID(companyID),
+                                status: 1,
                                 support: { $exists: true, $ne: null }
                             }
                         },
