@@ -26,6 +26,7 @@ const {
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
 // const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
 
+const { TEMPLATE_NOTIFICATION } = require('../../../tools/constants/index.js');
 
 /**
  * COLLECTIONS
@@ -33,7 +34,7 @@ const stringUtils					    = require('../../../tools/utils/string_utils.js')
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll');
-const { TEMPLATE_NOTIFICATION } = require('../../../tools/constants/index.js');
+const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 
 class Model extends BaseModel {
 
@@ -62,6 +63,12 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(contactID)){
                     dataInsert.contact = contactID
+
+                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
+                    if(infoContact){
+                        dataInsert.support = infoContact.support
+                    }
+                    
                 }
                 
                 if(checkObjectIDs(habitCateID)){
