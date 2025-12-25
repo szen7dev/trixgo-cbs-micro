@@ -981,12 +981,7 @@ class Model extends BaseModel {
                 }
 
                 else if(option == 8){
-                    let conditionObj = {}
-                    conditionObj = {
-                        company: ObjectID(companyID),
-                        status: 2, // Hoàn thành
-                    }
-
+                    let conditionObj = {company: ObjectID(companyID)}
                     if(startDate && endDate){
                         conditionObj.date =  { 
                             $gte: moment(startDate).toDate(),
@@ -1071,7 +1066,7 @@ class Model extends BaseModel {
                                     { 
                                         $match: { 
                                             $expr: { $eq: ['$support', '$$supportId'] },
-                                            // Thêm các điều kiện từ conditionObj của bạn vào đây
+                                            ...conditionObj // Thêm các điều kiện từ conditionObj của bạn vào đây
                                         } 
                                     },
                                     { $group: { _id: '$contact' } }, // Gom nhóm contact để đếm duy nhất
