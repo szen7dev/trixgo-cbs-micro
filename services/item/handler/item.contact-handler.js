@@ -267,7 +267,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let {
                     optionSeller, companyID, option, uplineID, fundaID, voucherID, contactID, type, isBirthday, parentID, month,
-                    keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID, userCreateID, genders, statuss,departmentsID, supportsID
+                    keyword, limit, lastestID, select, populates, fromDate, toDate, linkUserID, userCreateID, genders, statuss, departmentsID, supportsID
                 } = ctx.params;
 				const { _id: userID, contacts, company } = ctx.meta.infoUser;
 
