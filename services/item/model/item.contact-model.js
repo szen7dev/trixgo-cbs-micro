@@ -34,27 +34,28 @@ const stringUtils = require('../../../tools/utils/string_utils')
 /**
  * COLLECTIONS
  */
-const COMPANY_COLL                      = require('../../auth/database/auth.company-coll')
-const USER_COLL = require('../../auth/database/auth.user-coll')
-const ITEM__FUNDA_COLL = require('../database/item.funda-coll')
-const ITEM__DEPARTMENT_COLL = require('../database/item.department-coll')
-const ITEM__POSITION_COLL = require('../database/item.position-coll')
-const ITEM__DOCTYPE_COLL = require('../database/item.doctype-coll')
-const ITEM__CONTRACT_COLL = require('../database/item.contract-coll')
-const ITEM__CONTACT_COLL = require('../database/item.contact-coll')
-const ITEM__AREA_COLL = require('../database/item.area-coll')
-const STORE_VOUCHER_COLL = require('../../store/database/store.voucher-coll')
-const FNB_VOUCHER_COLL = require('../../fnb/database/fnb.voucher-coll')
-const FNB_ORDER_COLL = require('../../fnb/database/fnb.order-coll')
-const HUMAN__CONTACT_DOCUMENT_COLL = require('../../human/database/human.contact_document-coll')
+const COMPANY_COLL                              = require('../../auth/database/auth.company-coll')
+const USER_COLL                                 = require('../../auth/database/auth.user-coll')
+const ITEM__FUNDA_COLL                          = require('../database/item.funda-coll')
+const ITEM__DEPARTMENT_COLL                     = require('../database/item.department-coll')
+const ITEM__POSITION_COLL                       = require('../database/item.position-coll')
+const ITEM__DOCTYPE_COLL                        = require('../database/item.doctype-coll')
+const ITEM__CONTRACT_COLL                       = require('../database/item.contract-coll')
+const ITEM__CONTACT_COLL                        = require('../database/item.contact-coll')
+const ITEM__AREA_COLL                           = require('../database/item.area-coll')
+const STORE_VOUCHER_COLL                        = require('../../store/database/store.voucher-coll')
+const FNB_VOUCHER_COLL                          = require('../../fnb/database/fnb.voucher-coll')
+const FNB_ORDER_COLL                            = require('../../fnb/database/fnb.order-coll')
+const HUMAN__CONTACT_DOCUMENT_COLL              = require('../../human/database/human.contact_document-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
+const CRM_HABIT_COLL                            = require('../../crm/database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL                      = require('../../crm/database/crm.habit_track-coll')
 
 // const AUTH__USER = require('../../auth/model/auth.user-model').MODEL // Gọi ở đây -> không chạy được bên user-model
-const AUTH__APP_USER = require('../.../../../auth/model/auth.app_users').MODEL
-const FNB_ORDER_VOUCHER_MODEL = require('../../fnb/model/fnb.voucher-model').MODEL
-const CONTACT_DOCUMENT_MODEL = require('../../human/model/human.contact_document-model').MODEL
-const ANALYSIS__HISTORY_DATA_MODEL = require('../.../../../analysis/model/analysis.history_data').MODEL;
+const AUTH__APP_USER                            = require('../.../../../auth/model/auth.app_users').MODEL
+const FNB_ORDER_VOUCHER_MODEL                   = require('../../fnb/model/fnb.voucher-model').MODEL
+const CONTACT_DOCUMENT_MODEL                    = require('../../human/model/human.contact_document-model').MODEL
+const ANALYSIS__HISTORY_DATA_MODEL              = require('../.../../../analysis/model/analysis.history_data').MODEL;
 
 class Model extends BaseModel {
     constructor() {
@@ -938,23 +939,53 @@ class Model extends BaseModel {
                             docID: contactID,
                             parentID: parent
                         })
+
+                        // Cập nhật cho Habit và Track
+                        await CRM_HABIT_COLL.updateMany(
+                            { contact: ObjectID(contactID)},
+                            { $set: {
+                                parent: parent
+                            } }
+                        )
+                        await CRM_HABIT_TRACK_COLL.updateMany(
+                            { contact: ObjectID(contactID)},
+                            { $set: {
+                                parent: parent
+                            } }
+                        )
                     }
                 }
 
                 // Cập nhật lại số lượng document cho contact
-                await this.updateValue({ contactID, userID: authorID })
+                // await this.updateValue({ contactID, userID: authorID })
 
-                if (department && checkObjectIDs(department)) {
-                    await HUMAN__CONTACT_DOCUMENT_COLL.updateMany(
+                // if (department && checkObjectIDs(department)) {
+                //     await HUMAN__CONTACT_DOCUMENT_COLL.updateMany(
+                //         { contact: ObjectID(contactID)},
+                //         { $set: {
+                //             department: department
+                //         } }
+                //      );
+                // }
+
+                // Cập nhật cho Habit và Track
+                if(support && checkObjectIDs(support)){
+                    await CRM_HABIT_COLL.updateMany(
                         { contact: ObjectID(contactID)},
                         { $set: {
-                            department: department
+                            support: support
                         } }
-                     );
+                    )
+                    await CRM_HABIT_TRACK_COLL.updateMany(
+                        { contact: ObjectID(contactID)},
+                        { $set: {
+                            support: support
+                        } }
+                    )
                 }
 
-                // Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
                 /**
+                 * Cập nhật linkUser với tài khoản: chỉ cho phép 1 user link với 1 danh bạ trong 1 phân vùng
                  * Xử lý lại BA cho chuẩn????
                  */
                 if (linkUser && checkObjectIDs(linkUser)) {

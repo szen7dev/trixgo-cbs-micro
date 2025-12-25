@@ -29,6 +29,11 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
+    //_________Ba mẹ
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
     //_________Mã khách
     contact: {
         type: Schema.Types.ObjectId,
