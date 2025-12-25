@@ -72,6 +72,7 @@ class Model extends BaseModel {
                         type: infoHabit.type,
                         contact: infoHabit.contact,
                         habitCate: infoHabit.habitCate,
+                        support: infoHabit.support,
                     }
 
                     if(checkObjectIDs(contactID)){
@@ -994,58 +995,119 @@ class Model extends BaseModel {
                     }
                     // console.log(conditionObj)
 
-                    // Danh sách gom nhóm track theo support
-                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                          $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: '$support',
-                                count: { $sum: 1 },
-                            },
-                        },
-                        // { 
-                        //     $sort: { totalXP: -1 } 
-                        // }
-                    ])
-                    // console.log(listData)
+                    // // Danh sách Gom nhóm khách hàng theo support
+                    // let listData = await ITEM__CONTACT_COLL.aggregate([
+                    //     {
+                    //       $match: {
+                    //         company: ObjectID(companyID),
+                    //         support: { $exists: true, $ne: null },
+                    //       }
+                    //     },
+                    //     {
+                    //         $group: {
+                    //             _id: '$support',
+                    //             total: { $sum: 1 },
+                    //         },
+                    //     },
+                    // ])
+                    // // console.log(listData)
 
-                    // Danh sách Gom nhóm khách hàng theo support
-                    let listData1 = await ITEM__CONTACT_COLL.aggregate([
+                    // let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
+                    //     {
+                    //         $match: conditionObj
+                    //     },
+                    //     {
+                    //         $group: {
+                    //             _id: '$support',
+                    //             // Tạo một mảng chứa các contact duy nhất, sau đó đếm kích thước mảng đó
+                    //             uniqueContacts: { $addToSet: '$contact' } 
+                    //         }
+                    //     },
+                    //     {
+                    //         $project: {
+                    //             _id: 1,
+                    //             active: { $size: '$uniqueContacts' }
+                    //         }
+                    //     }
+                    // ]);
+                    // console.log(listData1)
+
+                    // Cách tối ưu nhưng không dùng $facet
+                    // // Tạo một lookup object
+                    // let activeLookup = {};
+                    // listData1.forEach(item => {
+                    //     activeLookup[item._id.toString()] = item.active;
+                    // });
+
+                    // // Gộp mảng
+                    // let result = listData.map(item => ({
+                    //     _id: item._id,
+                    //     total: item.total,
+                    //     active: activeLookup[item._id.toString()] || 0
+                    // }));
+                    // // console.log(result)
+
+                    // Cách tối ưu dùng $facet
+                    let listData = await ITEM__CONTACT_COLL.aggregate([
                         {
-                          $match: conditionObj
+                            $match: {
+                                company: ObjectID(companyID),
+                                support: { $exists: true, $ne: null }
+                            }
                         },
                         {
                             $group: {
                                 _id: '$support',
-                                count: { $sum: 1 },
-                            },
+                                total: { $sum: 1 }
+                            }
                         },
-                        // { 
-                        //     $sort: { totalXP: -1 } 
-                        // }
-                    ])
+                        // Lookup sang bảng habit track để đếm số contact active
+                        {
+                            $lookup: {
+                                from: 'crm_habit_tracks', // Tên collection trong DB của CRM_HABIT_TRACK_COLL
+                                let: { supportId: '$_id' }, // Khai báo biến để khác với biến support bên bảng Contact
+                                pipeline: [
+                                    { 
+                                        $match: { 
+                                            $expr: { $eq: ['$support', '$$supportId'] },
+                                            // Thêm các điều kiện từ conditionObj của bạn vào đây
+                                        } 
+                                    },
+                                    { $group: { _id: '$contact' } }, // Gom nhóm contact để đếm duy nhất
+                                    { $count: 'count' }
+                                ],
+                                as: 'activeStatus'
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 1,
+                                total: 1,
+                                // Lấy kết quả count từ mảng lookup, nếu không có thì mặc định 0
+                                active: { $ifNull: [{ $arrayElemAt: ['$activeStatus.count', 0] }, 0] }
+                            }
+                        }
+                    ]);
 
                     await ITEM__CONTACT_COLL.populate(listData, {  
                         path: '_id',
                         select: 'name phone area',
                         model: 'contact',
-                        // populate: {
-                        //     path: 'area',
-                        //     select: 'name parent',
-                        //     model: 'area',
-                        //     populate: {
-                        //         path: 'parent',
-                        //         select: 'name',
-                        //         model: 'area',
-                        //         populate: {
-                        //             path: 'parent',
-                        //             select: 'name',
-                        //             model: 'area',
-                        //         }
-                        //     }
-                        // }
+                        populate: {
+                            path: 'area',
+                            select: 'name parent',
+                            model: 'area',
+                            populate: {
+                                path: 'parent',
+                                select: 'name',
+                                model: 'area',
+                                populate: {
+                                    path: 'parent',
+                                    select: 'name',
+                                    model: 'area',
+                                }
+                            }
+                        }
                     })
 
                     return resolve({ error: false, data: listData })
