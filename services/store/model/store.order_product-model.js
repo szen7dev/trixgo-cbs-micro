@@ -45,7 +45,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice, classification, outin, date }) {
+    insert({ option, userID, fundaID, orderID, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, listedUnitprice, classification, outin, date, type }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -65,7 +65,7 @@ class Model extends BaseModel {
                 if (checkObjectIDs(orderID)) {
                     const infoParent = await STORE_ORDER_COLL
                     .findById(orderID)
-                    .select('company funda project package toPackage warehouse customer contract outin type date toDate')
+                    .select('company funda project package toPackage warehouse customer contract outin type date toDate forward')
                     .lean();
                     if(!infoParent)
                         return resolve({error: true, message: "Phiếu không tồn tại", keyError: KEY_ERROR.PARAMS_INVALID})
@@ -81,6 +81,7 @@ class Model extends BaseModel {
                         toWarehouse: infoParent.toWarehouse,
                         customer: infoParent.customer,
                         contract: infoParent.contract,
+                        forward: infoParent.forward,
                         outin: infoParent.outin,
                         type: infoParent.type,
                         date: infoParent.date,
@@ -105,6 +106,10 @@ class Model extends BaseModel {
                         account: accountID,
                         name,
                     }
+                }
+
+                if (type && !isNaN(type)) {
+                    dataInsert.type = Number(type)
                 }
 
                 if (outin && !isNaN(outin)) {
@@ -284,7 +289,7 @@ class Model extends BaseModel {
      * Code  : HiepNH
      * Date  : 28/1/2025
      */
-    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, date, status }) {
+    update({ userID, orderProductID, fundaID, filesID, checked, accountID, contraID, customerID, contractID, goodsID, assetsID, workID, subtypeID, name, note, quantity, weight, unitPrice, date, status, forward }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -345,6 +350,11 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                if (forward && !isNaN(forward)) {
+                    console.log('--------------------------')
+                    dataUpdate.forward = forward;
+                } 
 
                 if (status && !isNaN(status) && Number(status) > 0) {
                     dataUpdate.status = status;
