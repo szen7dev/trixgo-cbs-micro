@@ -19,23 +19,16 @@ const { template } = require('lodash');
  */
 const USER_COLL                                = require('../../auth/database/auth.user-coll');
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll');
-const ITEM__CONTACT_COLL            		   = require('../../item/database/item.contact-coll'); 
 const FNB_ORDER_COLL                           = require('../database/fnb.order-coll');
 const FNB_SHIFT_COLL                           = require('../database/fnb.shift-coll');
 const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
-const TIMESHEET__EXPERT_TIMESHEET_COLL          = require('../../timesheet/database/timesheet.expert_timesheet-coll')
-
-const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model').MODEL;
+const ITEM__CONFIG_COLL                        = require("../../item/database/item.config-coll");
 
 const XlsxPopulate                      = require('xlsx-populate');
 const fs                                = require('fs');
 const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3')
 const moment                            = require('moment')
-
-const { 
-    FNB_ACC,
- } = require('../helper/fnb.keys-constant')
 
 /**
  * Import inter-model, exter-model
@@ -167,7 +160,7 @@ class Model extends BaseModel {
      * Author: 
      * Code:
      */
-    update({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID }) {
+    update({ shiftID, email, name, note, campaign, seasons, shiftType, paidStatus, workingHours, staffsID, subWorkingHours, subStaffsID, openingCash, incurredCash, closingCash, numberOfOpeningSizeM, numberOfOpeningSizeL, numberOfEotSizeM, numberOfEotSizeL, userID, companyID }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(shiftID))
@@ -217,7 +210,26 @@ class Model extends BaseModel {
                     dataUpdate.closingCash = Number(closingCash)
                 }
 
-                if(FNB_ACC.man.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
+                let configEmails = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    let arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                    if(infoCF.email1){
+                        arr1 = infoCF.email1.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email2){
+                        arr2 = infoCF.email2.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email3){
+                        arr3 = infoCF.email3.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email4){
+                        arr4 = infoCF.email4.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr3,...arr4]
+                }
+
+                if (configEmails.includes(email.toString())) {
                     if(staffsID && checkObjectIDs(staffsID)){
                         dataUpdate.staffs = staffsID;
                     }
@@ -295,7 +307,7 @@ class Model extends BaseModel {
                  * CẬP NHẬT LẠI DOANH SỐ CỦA NHÂN VIÊN
                  * CẬP NHẬT LẠI CHI PHÍ GIỜ LÀM CỦA NHÂN VIÊN
                  */
-                if(FNB_ACC.man.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString())){
+                if (configEmails.includes(email.toString())) {
                     // Doanh số nhân viên
                     let listOrders = await FNB_ORDER_COLL.find({ shift: shiftID })
                     for(const item of listOrders){
@@ -388,7 +400,6 @@ class Model extends BaseModel {
      * Code  :
      */
      getList({ companyID, fundaID, staffID, keyword, limit = 10, lastestID, select, populates, sortKey, fromDate, toDate, userID }) {
-        // console.log({ companyID, fundaID, staffID, keyword, limit, lastestID, select, populates, sortKey, fromDate, toDate, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -725,10 +736,27 @@ class Model extends BaseModel {
      * Date: 15/1/2023
      */
     exportExcel({ companyID, email, fundaID, fromDate, toDate, month, year, userID }) {
-        console.log({ companyID, fundaID, fromDate, toDate, month, year, userID })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
+                let configEmails = [], arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    if(infoCF.email1){
+                        arr1 = infoCF.email1.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email2){
+                        arr2 = infoCF.email2.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email3){
+                        arr3 = infoCF.email3.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email4){
+                        arr4 = infoCF.email4.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr3,...arr4]
+                }
+
+                if (configEmails.includes(email.toString())) {
                     let yearFilter
                     let currentYear = new Date().getFullYear()
                     let currentMonth = new Date().getMonth() + 1
@@ -959,7 +987,7 @@ class Model extends BaseModel {
                      * BẢNG CHẤM CÔNG TOÀN BỘ NHÂN SỰ
                      */
                     else{
-                        if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
+                        if(arr1.includes(email.toString()) || arr3.includes(email.toString()) ){
                             let conditionObj = { 
                                 company: ObjectID(companyID)
                             }
@@ -1322,7 +1350,26 @@ class Model extends BaseModel {
     exportExcel2({ option, email, companyID, fundaID, fromDate, toDate, month, year, userID }) {
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString()) || FNB_ACC.man.includes(email.toString())){
+                let configEmails = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    let arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                    if(infoCF.email1){
+                        arr1 = infoCF.email1.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email2){
+                        arr2 = infoCF.email2.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email3){
+                        arr3 = infoCF.email3.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email4){
+                        arr4 = infoCF.email4.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr3,...arr4]
+                }
+
+                if (configEmails.includes(email.toString())) {
                     if(!option){
                         if(fundaID){
                             let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)

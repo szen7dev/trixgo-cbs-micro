@@ -60,12 +60,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { cashPaymentID, name, note, amount, payment, active } = ctx.params;
-                const { _id: userID, email } = ctx.meta.infoUser;
+                const { _id: userID, email, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await FIN__CASH_PAYMENT_MODEL.update({
-                    cashPaymentID, userID, email, name, note, amount, payment, active
+                    companyID: company._id, cashPaymentID, userID, email, name, note, amount, payment, active
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

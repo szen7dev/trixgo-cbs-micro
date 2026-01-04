@@ -44,9 +44,6 @@ const {
     FNB_STATUS
  } = require('../helper/fnb.keys-constant')
 
- const { 
-    FNB_ACC,
- } = require('../helper/fnb.keys-constant')
 class Model extends BaseModel {
 
     constructor() {
@@ -471,9 +468,27 @@ class Model extends BaseModel {
     exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
         return new Promise(async resolve => {
             try {
+                let configEmails = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    let arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                    if(infoCF.email1){
+                        arr1 = infoCF.email1.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email2){
+                        arr2 = infoCF.email2.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email3){
+                        arr3 = infoCF.email3.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email4){
+                        arr4 = infoCF.email4.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr2]
+                }
                 // Danh sách sản phẩm
                 if(Number(option) == 1){
-                    if(FNB_ACC.taichinh.includes(email.toString())){
+                    if (configEmails.includes(email.toString())) {
                         let conditionObj = { company: companyID }
     
                         let obj = JSON.parse(filterParams);
@@ -732,7 +747,7 @@ class Model extends BaseModel {
 
                 // Định mức Sản phẩm
                 else if(Number(option) == 2){
-                    if(FNB_ACC.taichinh.includes(email.toString())){
+                    if (configEmails.includes(email.toString())) {
                         let conditionObj = { company: ObjectID(companyID), status: 5 }
     
                         let obj = JSON.parse(filterParams);
@@ -853,7 +868,7 @@ class Model extends BaseModel {
 
                 // Định mức Topping
                 else if(Number(option) == 3){
-                    if(FNB_ACC.taichinh.includes(email.toString())){
+                    if (configEmails.includes(email.toString())) {
                         let conditionObj = { company: ObjectID(companyID), status: 5 }
     
                         let obj = JSON.parse(filterParams);

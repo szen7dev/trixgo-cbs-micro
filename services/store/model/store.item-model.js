@@ -26,9 +26,7 @@ const STORE_ITEM_COLL                   = require('../database/store.item-coll')
 /**
  * import inter-model, exter-model
  */
-const { 
-    FNB_ACC,
- } = require('../../fnb/helper/fnb.keys-constant')
+const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 
 class Model extends BaseModel {
 
@@ -556,11 +554,26 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.bod.includes(email.toString()) || FNB_ACC.cskh.includes(email.toString()) ){
-                    // console.log('=============Có quyền===================')
+                let configEmails = [], arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    if(infoCF.email1){
+                        arr1 = infoCF.email1.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email2){
+                        arr2 = infoCF.email2.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email3){
+                        arr3 = infoCF.email3.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email4){
+                        arr4 = infoCF.email4.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr1,...arr3]
+                }
+                
+                if (configEmails.includes(email.toString())) {
                     const dataImportJSON = JSON.parse(dataImport);
-                    // console.log('=============Log data===================');
-                    // console.log({ dataImportJSON });
                     let index = 0;
 
                     let option = Number(dataImportJSON[0].__EMPTY_9)
