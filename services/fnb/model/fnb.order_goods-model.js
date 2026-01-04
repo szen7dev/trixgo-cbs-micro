@@ -23,6 +23,7 @@ const FNB_ORDER_COLL                           = require('../database/fnb.order-
 const ITEM__FUNDA_COLL            			   = require('../../item/database/item.funda-coll'); 
 // const FNB_PRODUCT_COLL                         = require('../database/fnb.product-coll');
 const FNB_ORDER_GOODS_COLL                     = require('../database/fnb.order_goods-coll');
+const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
 
 /**
  * import inter-model, exter-model
@@ -40,9 +41,6 @@ const {
     FNB_STATUS
  } = require('../helper/fnb.keys-constant')
 
- const { 
-    FNB_ACC,
- } = require('../helper/fnb.keys-constant')
 class Model extends BaseModel {
 
     constructor() {
@@ -463,10 +461,28 @@ class Model extends BaseModel {
      * Date: 4/2/2023
      */
     exportExcel2({ companyID, option, year, month, filterParams, email, userID }) {
-        // console.log({ companyID, option, year, month, filterParams, userID })
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.taichinh.includes(email.toString())){
+                let configEmails = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    let arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                    if(infoCF.email1){
+                    arr1 = infoCF.email1.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email2){
+                    arr2 = infoCF.email2.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email3){
+                    arr3 = infoCF.email3.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email4){
+                    arr4 = infoCF.email4.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr2]
+                }
+
+                if (configEmails.includes(email.toString())) {
                     let conditionObj = { company: companyID }
 
                     let obj = JSON.parse(filterParams);

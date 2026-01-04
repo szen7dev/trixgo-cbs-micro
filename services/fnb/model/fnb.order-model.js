@@ -48,8 +48,6 @@ const fs = require("fs");
 const path = require("path");
 const { uploadFileS3 } = require("../../../tools/s3");
 
-const { FNB_ACC } = require("../helper/fnb.keys-constant");
-
 const {
   FNB_FACTOR,
   FNB_SHIFT_TYPES,
@@ -4512,11 +4510,26 @@ class Model extends BaseModel {
     // console.log({ companyID, option, month, year, fromDate, toDate, filterParams, email, userID })
     return new Promise(async (resolve) => {
       try {
-        if (
-          FNB_ACC.cskh.includes(email.toString()) ||
-          FNB_ACC.man.includes(email.toString()) ||
-          FNB_ACC.taichinh.includes(email.toString())
-        ) {
+        let configEmails = [], arr1 = [], arr2 = [], arr3 = [], arr4 = []
+        let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+        if(infoCF){
+          if(infoCF.email1){
+            arr1 = infoCF.email1.split(',').map(item => item.trim());
+          }
+          if(infoCF.email2){
+            arr2 = infoCF.email2.split(',').map(item => item.trim());
+          }
+          if(infoCF.email3){
+            arr3 = infoCF.email3.split(',').map(item => item.trim());
+          }
+          if(infoCF.email4){
+            arr4 = infoCF.email4.split(',').map(item => item.trim());
+          }
+          configEmails = [...arr1,...arr2,...arr3,...arr4]
+        }
+
+        if (configEmails.includes(email.toString())) {
+          
           // DANH SÁCH ĐƠN HÀNG
           if (!option || option == undefined) {
             let conditionObj = { company: companyID };
@@ -5195,10 +5208,26 @@ class Model extends BaseModel {
 
             // SỐ LIỆU KHÁCH HÀNG
             if (option == 2) {
-              if (
-                FNB_ACC.bod.includes(email.toString()) ||
-                FNB_ACC.cskh.includes(email.toString())
-              ) {
+              let configEmails = []
+              let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+              if(infoCF){
+                let arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                if(infoCF.email1){
+                  arr1 = infoCF.email1.split(',').map(item => item.trim());
+                }
+                if(infoCF.email2){
+                  arr2 = infoCF.email2.split(',').map(item => item.trim());
+                }
+                if(infoCF.email3){
+                  arr3 = infoCF.email3.split(',').map(item => item.trim());
+                }
+                if(infoCF.email4){
+                  arr4 = infoCF.email4.split(',').map(item => item.trim());
+                }
+                configEmails = [...arr1,...arr3]
+              }
+
+              if (configEmails.includes(email.toString())) {
                 /**
                  * Mốc thời gian
                  */

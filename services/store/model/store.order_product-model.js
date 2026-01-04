@@ -15,14 +15,15 @@ const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-co
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll'); 
-const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll'); 
+// const ITEM__FUNDA_COLL            		= require('../../item/database/item.funda-coll'); 
 const STORE_ORDER_COLL                  = require('../database/store.order-coll');
 const STORE_ORDER_PRODUCT_COLL          = require('../database/store.order_product-coll');
 const ITEM__GOODS_COLL            		= require('../../item/database/item.goods-coll')
 const ITEM__ACCOUNT_COLL            	= require('../../item/database/item.account-coll')
-const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll')
+// const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll')
 const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll')
 const BUDGET_WORK_COLL                  = require('../../budget/database/budget.work-coll')
+const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 
 /**
  * import inter-model, exter-model
@@ -2269,258 +2270,26 @@ class Model extends BaseModel {
     exportExcel({ companyID, option, year, month, filterParams, email, userID }) {
         return new Promise(async resolve => {
             try {
-                if(FNB_ACC.taichinh.includes(email.toString())){
-                    let conditionObj = { company: companyID }
-
-                    let obj = JSON.parse(filterParams);
-
-                    let fundasID = obj.fundasID
-                    let shiftTypes = obj.shiftTypes
-                    let fromDate = obj.fromDate
-                    let toDate = obj.toDate
-                    let keyword = obj.keyword
-                    let salesChannels = obj.salesChannels
-                    let statuss = obj.statuss
-                    let isMistake = obj.isMistake
-                    let isDiscount = obj.isDiscount
-                    let isSalesoff = obj.isSalesoff
-                    let isCredit = obj.isCredit
-                    let isOffer = obj.isOffer
-                    let isNonResident = obj.isNonResident
-                    let isCustomerType = obj.isCustomerType
-
-                    if(fundasID && fundasID.length ){
-                        let arrFun = fundasID.map(item=>ObjectID(item))
-
-                        if(arrFun.length) {
-                            conditionObj.funda = { $in: arrFun };
-                        }
-                    }else{
-                        let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
-                        let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
-                        if(fundasIDIsMember.length) {
-                            conditionObj.funda = { $in: fundasIDIsMember };
-                        }else{
-                            conditionObj.funda = { $in: [] }
-                        }
+                let configEmails = [], arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    if(infoCF.email1){
+                    arr1 = infoCF.email1.split(',').map(item => item.trim());
                     }
-
-                    shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
-                    salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
-                    statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
-
-                    // Phân loại khác
-                    if(isMistake && isMistake == 1){
-                        conditionObj.numberOfMistakes = { $gt: 0 }
+                    if(infoCF.email2){
+                    arr2 = infoCF.email2.split(',').map(item => item.trim());
                     }
-
-                    if(isNonResident && isNonResident == 1){
-                        conditionObj.nonResident = 2
+                    if(infoCF.email3){
+                    arr3 = infoCF.email3.split(',').map(item => item.trim());
                     }
-
-                    if(isDiscount && isDiscount == 1){
-                        conditionObj.discount = { $gt: 0 }
+                    if(infoCF.email4){
+                    arr4 = infoCF.email4.split(',').map(item => item.trim());
                     }
+                    configEmails = [...arr1,...arr2,...arr3,...arr4]
+                }
 
-                    if(isSalesoff && isSalesoff == 1){
-                        conditionObj.salesoff = { $gt: 0 }
-                    }
-
-                    if(isCredit && isCredit == 1){
-                        conditionObj.credit = { $gt: 0 }
-                    }
-
-                    if(isOffer && isOffer == 1){
-                        conditionObj.offer = { $gt: 0 }
-                    }
-
-                    if(isCustomerType && isCustomerType == 1){
-                        conditionObj.customerType = 1
-                    }
-                    if(isCustomerType && isCustomerType == 2){
-                        conditionObj.customerType = 2
-                    }
-                    // console.log(conditionObj)
-
-                    // Phân loại theo thời khoảng
-                    if(fromDate && toDate){
-                        conditionObj.createAt = {
-                            $gte: new Date(fromDate),
-                            $lte: new Date(toDate),
-                        }
-                    }
-
-                    if(keyword){
-                        keyword = keyword.split(" ");
-                        keyword = '.*' + keyword.join(".*") + '.*';
-                        const regSearch = new RegExp(keyword, 'i');
-
-                        conditionObj.$or = [
-                            { name: regSearch },
-                            { sign: regSearch },
-                        ]
-                    }
-                    // console.log(conditionObj)
-
-                    let listData  = await STORE_ORDER_COLL.find(conditionObj)
-                    .populate({
-                        path: "campaignType",
-                        select: "name",
-                    })
-                    .populate({
-                        path: "referrer",
-                        select: "name phone",
-                    })
-                    .populate({
-                        path: "customer",
-                        select: "name phone",
-                    })
-                    .populate({
-                        path: "funda",
-                        select: "name sign",
-                    })
-                    .populate({
-                        path: "shift",
-                        select: "name sign",
-                    })
-                    .limit(2000)
-                    .sort({createAt: -1})
-                    // console.log(listData)
-
-                    let listData2 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                            {
-                                $match: {
-                                    order: {$in: listData.map(item => ObjectID(item._id))}
-                                }
-                            },
-                            {
-                                $group: {
-                                    _id: { funda: '$funda', product: '$product' },
-                                    quantity: { $sum: "$quantity" }
-                                }
-                            },
-                            {
-                                $sort: {
-                                    '_id.product': 1
-                                }
-                            }
-                        ])
-
-                    let conditionPopulate1 = {
-                        path: '_id.product',
-                        select: '_id name',
-                        model: 'fnb_product'
-                    }
-
-                    let conditionPopulate2 = {
-                        path: '_id.funda',
-                        select: '_id name',
-                        model: 'funda'
-                    }
-
-                    await STORE_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate1)
-                    await STORE_ORDER_PRODUCT_COLL.populate(listData2, conditionPopulate2)
-                    // console.log(listData2)
-
-                    let listData3 = await STORE_ORDER_PRODUCT_COLL.aggregate([
-                        {
-                            $match: {
-                                order: {$in: listData.map(item => ObjectID(item._id))}
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: { product: '$product' },
-                                quantity: { $sum: "$quantity" }
-                            }
-                        },
-                        {
-                            $sort: {
-                                '_id.product': 1
-                            }
-                        }
-                    ])
-                    await STORE_ORDER_PRODUCT_COLL.populate(listData3, conditionPopulate1)
-
-                    // Modify the workbook.
-                    XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
-                    .then(async workbook => {
-                        var i = 3;
-                        listData?.forEach((item, index) => {
-                            workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                            workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                            workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-                            workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(6).value(item.name);
-                            workbook.sheet("Order").row(i).cell(7).value(item.sign);
-                            workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-                            workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-                            workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-                            workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                            workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
-                            workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
-                            workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
-                            workbook.sheet("Order").row(i).cell(18).value(Number(item?.shippingFeeTotal));
-                            workbook.sheet("Order").row(i).cell(19).value(Number(item?.shippingFee));
-                            workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfSizeM));
-                            workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfSizeL));
-                            workbook.sheet("Order").row(i).cell(22).value(Number(item.numberOfProducts));
-                            workbook.sheet("Order").row(i).cell(23).value(Number(item.numberOfMistakes));
-                            workbook.sheet("Order").row(i).cell(24).value(item.note);
-                            workbook.sheet("Order").row(i).cell(25).value(Number(item.loyaltyPoints));
-                            workbook.sheet("Order").row(i).cell(26).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
-                            workbook.sheet("Order").row(i).cell(27).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
-                            if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
-                                workbook.sheet("Order").row(i).cell(28).value('Đơn nhân viên');
-                            }
-                            if(Number(item.nonResident) === 2){
-                                workbook.sheet("Order").row(i).cell(29).value('Khách vãng lai');
-                            }
-                            workbook.sheet("Order").row(i).cell(30).value(`${item?.customer?._id}`);
-                            workbook.sheet("Order").row(i).cell(31).value(item?.customer?.phone);
-                            workbook.sheet("Order").row(i).cell(32).value(item?.customer?.name);
-                            workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? `${item?.referrer?._id}` : "");
-                            workbook.sheet("Order").row(i).cell(34).value(item?.referrer ? item?.referrer?.phone : "");
-                            workbook.sheet("Order").row(i).cell(35).value(item?.referrer ? item?.referrer?.name : "");
-                            workbook.sheet("Order").row(i).cell(36).value(item?.campaignType ? item?.campaignType?.name : "");
-
-                            i++
-                        });
-
-                        var i = 3;
-                        listData2?.forEach((item, index) => {
-                            workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Product").row(i).cell(2).value(`${item._id.product.name}`);
-                            workbook.sheet("Product").row(i).cell(3).value(`${item._id.funda.name}`);
-                            workbook.sheet("Product").row(i).cell(4).value(Number(item?.quantity));
-
-                            i++
-                        });
-
-                        var i = 3;
-                        listData3?.forEach((item, index) => {
-                            workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Report").row(i).cell(2).value(`${item._id.product.name}`);
-                            workbook.sheet("Report").row(i).cell(3).value(Number(item?.quantity));
-
-                            i++
-                        });
-
-                        const now = new Date();
-                        const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;
-                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                        await workbook.toFileAsync(pathWriteFile);
-                        const result = await uploadFileS3(pathWriteFile, fileName);
-
-                        fs.unlinkSync(pathWriteFile);
-                        return resolve({ error: false, data: result?.Location, status: 200 });
-                    })
+                if (configEmails.includes(email.toString())) {
+                    
                 }else{
                     return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
                 }

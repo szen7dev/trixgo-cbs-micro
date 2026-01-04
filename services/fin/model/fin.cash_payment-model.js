@@ -13,15 +13,13 @@ const path                              = require('path');
 const { uploadFileS3 }                  = require('../../../tools/s3');
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index');
 const { KEY_ERROR } = require('../../../tools/keys/index');
-const { 
-    FNB_ACC,
- } = require('../../fnb/helper/fnb.keys-constant')
 
 /**
  * import inter-coll, exter-coll
  */
 const FIN__CASH_PAYMENT_COLL             = require('../database/fin.cash_payment-coll');
-const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
+// const CONTACT_COLL                       = require('../../item/database/item.contact-coll')
+const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
 
 /**
  * import inter-model, exter-model
@@ -43,7 +41,25 @@ class Model extends BaseModel {
         // const that = this
         return new Promise(async (resolve) => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString())){
+                let configEmails = [], arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    if(infoCF.email1){
+                    arr1 = infoCF.email1.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email2){
+                    arr2 = infoCF.email2.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email3){
+                    arr3 = infoCF.email3.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email4){
+                    arr4 = infoCF.email4.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr3]
+                }
+
+                if (configEmails.includes(email.toString())) {
                     /**
                      * BA
                      * 1. Tạo data Ví payment
@@ -100,12 +116,28 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    update({ cashPaymentID, userID, email, name, note, amount, payment, active }) {
-        // console.log({ cashPaymentID, userID, email, name, note, amount, payment })
-        // const that = this
+    update({ companyID, cashPaymentID, userID, email, name, note, amount, payment, active }) {
         return new Promise(async (resolve) => {
             try {
-                if(FNB_ACC.cskh.includes(email.toString())){
+                let configEmails = [], arr1 = [], arr2 = [], arr3 = [], arr4 = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    if(infoCF.email1){
+                    arr1 = infoCF.email1.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email2){
+                    arr2 = infoCF.email2.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email3){
+                    arr3 = infoCF.email3.split(',').map(item => item.trim());
+                    }
+                    if(infoCF.email4){
+                    arr4 = infoCF.email4.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr3]
+                }
+
+                if (configEmails.includes(email.toString())) {
                     if(!name || !checkObjectIDs(userID) || !checkObjectIDs(cashPaymentID))
                         return resolve({ error: true, message: 'param_not_valid' })
 
