@@ -27,6 +27,7 @@ const FNB_ORDER_PRODUCT_COLL                   = require('../database/fnb.order_
 // const FNB_MISTAKE_COLL                         = require('../database/fnb.mistake-coll');
 // const FNB_QUOTA_COLL                           = require('../database/fnb.quota-coll');
 // const FNB_ORDER_MATERIAL_COLL                  = require('../database/fnb.order_material-coll');
+const ITEM__CONFIG_COLL                        = require("../../item/database/item.config-coll");
 
 /**
  * import inter-model, exter-model
