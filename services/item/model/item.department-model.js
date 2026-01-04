@@ -149,20 +149,6 @@ class Model extends BaseModel {
         receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
         numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs, inspectionTasks, completedInspectionTasks, ctx
     }) {
-        // console.log('++++++++++++++++++++++++++++++++++++')
-        // console.log('======================Update thông tin')
-        // console.log({
-        //     departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
-        //     description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
-        //     pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
-        //     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
-        //     realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
-        //     contractProduce, contractPlusAcceptance, contractVatAcceptance, contractRetainedValue, contractAdvancePaymentDeduction,
-        //     contractOtherDeduction, contractRecommendedPayment, contractAdvancePaymentPaid, contractAmountPaid, contractRemainingPayment, contractAdvancePaymentOverage, openTime,
-        //     closedTime, numberOfAgent, numberOfBooking, totalBookingValue, numberOfDeposit, totalDepositValue, numberOfContract, totalContractValue,
-        //     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
-        //     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs, inspectionTasks, completedInspectionTasks
-        // })
         return new Promise(async resolve => {
             try {
                 let dataUpdate   = {};
@@ -827,16 +813,6 @@ class Model extends BaseModel {
         select, populates={}}) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -851,12 +827,6 @@ class Model extends BaseModel {
 
                 if(!checkObjectIDs(departmentID))
                     return resolve({ error: true, message: 'Request params departmentID invalid', status: 400 });
-
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
 
                 let infoDepartment = await ITEM__DEPARTMENT_COLL
                     .findById(departmentID)
@@ -881,8 +851,6 @@ class Model extends BaseModel {
      * Code  : F00402
      */
     getList({ companyID, keyword, type, userID, isMember, isBudget, limit = 20, lastestID, select, populates={} }) {
-        // console.log('==============Danh mục dự án=>DÙNG CHUNG')
-        console.log({ companyID, keyword, type, userID, isMember, isBudget, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 let conditionObj  = {};
