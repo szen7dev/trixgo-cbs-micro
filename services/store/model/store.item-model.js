@@ -22,11 +22,11 @@ const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact
 const ITEM__AREA_COLL            	    = require('../../item/database/item.area-coll'); 
 const STORE_LOT_COLL                    = require('../database/store.lot-coll');
 const STORE_ITEM_COLL                   = require('../database/store.item-coll');
+const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 
 /**
  * import inter-model, exter-model
  */
-const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 
 class Model extends BaseModel {
 

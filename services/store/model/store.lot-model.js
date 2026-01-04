@@ -21,7 +21,7 @@ const { uploadFileS3 }                  = require('../../../tools/s3');
 const ITEM__CONTACT_COLL            	= require('../../item/database/item.contact-coll'); 
 const STORE_LOT_COLL                    = require('../database/store.lot-coll');
 const STORE_ITEM_COLL                   = require('../database/store.item-coll');
-const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
+const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
 
 /**
  * import inter-model, exter-model
