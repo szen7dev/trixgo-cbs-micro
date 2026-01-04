@@ -34,7 +34,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    insert({ companyID, userID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note, email1, email2, email3, email4 }) {
+    insert({ companyID, userID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note, email1, email2, email3, email4, email5 }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -138,6 +138,10 @@ class Model extends BaseModel {
                     dataInsert.email4 = email4
                 }
 
+                if(email5 && email5 != ""){
+                    dataInsert.email5 = email5
+                }
+
                 if(content && content != ""){
                     dataInsert.content = content
                 }
@@ -184,7 +188,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    update({ userID, configID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note, email1, email2, email3, email4 }){
+    update({ userID, configID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note, email1, email2, email3, email4, email5 }){
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(configID) )
@@ -285,6 +289,10 @@ class Model extends BaseModel {
                 
                 if(email4 && email4 != ""){
                     dataUpdate.email4 = email4
+                }
+
+                if(email5 && email5 != ""){
+                    dataUpdate.email5 = email5
                 }
 
                 if(content && content != ""){

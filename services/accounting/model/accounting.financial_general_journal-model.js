@@ -35,6 +35,7 @@ const ITEM__CONTACT_COLL            			        = require('../../item/database/it
 const FINANCIAL_VOUCHER_COLL                            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
+const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
 
 /**
  * MODELS
@@ -3210,6 +3211,15 @@ class Model extends BaseModel {
     exportExcelByFilter({ userID, email, companyID, type, filterParams, voucherID, fromDate, toDate, ctx }) {
         return new Promise(async resolve => {
             try {
+                let configEmails = [], arr5 = []
+                let infoCF = await ITEM__CONFIG_COLL.findOne({company: companyID, type: 4})
+                if(infoCF){
+                    if(infoCF.arr5){
+                        arr5 = infoCF.arr5.split(',').map(item => item.trim());
+                    }
+                    configEmails = [...arr5]
+                }
+
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
                     appID: "61e049aefdebf77b072d1b12", 
                     userID
@@ -3300,10 +3310,10 @@ class Model extends BaseModel {
                         });
                     }
     
-                    const result = await this.downloadExcelFile({ userID, email, infoAppUser, data: listData, type, voucherID })
+                    const result = await this.downloadExcelFile({ userID, email, infoAppUser, configEmails, data: listData, type, voucherID })
                     return resolve(result);
                 }else{
-                    const result = await this.downloadExcelFile({ userID, email, infoAppUser, data: resultGetList.data, type })
+                    const result = await this.downloadExcelFile({ userID, email, infoAppUser, configEmails, data: resultGetList.data, type })
                     return resolve(result);
                 }
             } catch (error) {
@@ -3313,9 +3323,9 @@ class Model extends BaseModel {
         })
     }
 
-    downloadExcelFile({ userID, email, infoAppUser, data, type, voucherID }) {
+    downloadExcelFile({ userID, email, infoAppUser, configEmails, data, type, voucherID }) {
         return new Promise(resolve => {
-            let template, arrPriceAccess = ['quangtv1993@gmail.com','quangtv.wg@gmail.com','hangnt.wg@gmail.com']
+            let template
 
             if(type == 1){
                 template = '../../../files/templates/excels/accounting_journal_export.xlsx'
@@ -3328,7 +3338,7 @@ class Model extends BaseModel {
             else if(type == 3){
                 template = '../../../files/templates/excels/accounting_voucher_detail_2.xlsx'
 
-                if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || arrPriceAccess.includes(email.toString())){
+                if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
                     template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
                 }
             }
@@ -3441,7 +3451,7 @@ class Model extends BaseModel {
                             workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity));
 
                             // Show giá với Admin ứng dụng
-                            if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || arrPriceAccess.includes(email.toString())){
+                            if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
                                 workbook.sheet("Data").row(i).cell(5).value(Number(item?.unitprice));
                                 workbook.sheet("Data").row(i).cell(6).value(Number(item?.amount));
                                 workbook.sheet("Data").row(i).cell(7).value(item?.note);
@@ -3452,7 +3462,7 @@ class Model extends BaseModel {
                             i++
                         })
 
-                        if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || arrPriceAccess.includes(email.toString())){
+                        if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
                             const range = workbook.sheet('Data').range(`A15:G${data.length + 14}`);
 
                             range.style({
