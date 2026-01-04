@@ -81,6 +81,14 @@ module.exports  = DATABASE_MIDDLEWARE("config", {
     phone: String,
     //_________email
     email: String,
+    //_________email bod
+    email1: String,
+    //_________email taichinh
+    email2: String,
+    //_________email cskh
+    email3: String,
+    //_________email man
+    email4: String,
     //_________content
     content: String,
     //_________registration

@@ -34,7 +34,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    insert({ companyID, userID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note }) {
+    insert({ companyID, userID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note, email1, email2, email3, email4 }) {
         return new Promise(async resolve => {
             try {
                 if(!name || !checkObjectIDs(userID))
@@ -121,6 +121,22 @@ class Model extends BaseModel {
                 if(email && email != ""){
                     dataInsert.email = email
                 }
+                
+                if(email1 && email1 != ""){
+                    dataInsert.email1 = email1
+                }
+
+                if(email2 && email2 != ""){
+                    dataInsert.email2 = email2
+                }
+
+                if(email3 && email3 != ""){
+                    dataInsert.email3 = email3
+                }
+                
+                if(email4 && email4 != ""){
+                    dataInsert.email4 = email4
+                }
 
                 if(content && content != ""){
                     dataInsert.content = content
@@ -168,7 +184,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/9/2022
      */
-    update({ userID, configID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note }){
+    update({ userID, configID, name, type, status, active, channel, template, secretKey, tokenKey, metadata, hotline1, hotline2, hotline3, qrcode1, qrcode2, youtube, facebook, zalo, tiktok, shopee, address, phone, email, content, registration, note, email1, email2, email3, email4 }){
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs(userID) || !checkObjectIDs(configID) )
@@ -253,6 +269,22 @@ class Model extends BaseModel {
 
                 if(email && email != ""){
                     dataUpdate.email = email
+                }
+                
+                if(email1 && email1 != ""){
+                    dataUpdate.email1 = email1
+                }
+
+                if(email2 && email2 != ""){
+                    dataUpdate.email2 = email2
+                }
+
+                if(email3 && email3 != ""){
+                    dataUpdate.email3 = email3
+                }
+                
+                if(email4 && email4 != ""){
+                    dataUpdate.email4 = email4
                 }
 
                 if(content && content != ""){
