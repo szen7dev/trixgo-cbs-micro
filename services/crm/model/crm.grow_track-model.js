@@ -38,10 +38,13 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge }) {
+    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge }) {
         const that = this;
         return new Promise(async resolve => {
             try {
+                if(emailUser.toString() == 'guest.lamin@gmail.com')
+                    return resolve({ error: true, message: "Bạn không có quyền" })
+
                 if(phone){
                     // Hàm kiểm tra Phone
                     const strValid = phone.toLowerCase().trim();
@@ -776,9 +779,9 @@ class Model extends BaseModel {
                             const agemosCheck = sheet.cell(`B${i}`).value();
 
                             if (agemosCheck >= ageInMonths) {
-                                console.log('==================Theo ngày sinh 22222222222')
-                                console.log({i})
-                                console.log({agemosCheck, age: Number(agemosCheck/12).toFixed(2)})
+                                // console.log('==================Theo ngày sinh 22222222222')
+                                // console.log({i})
+                                // console.log({agemosCheck, age: Number(agemosCheck/12).toFixed(2)})
 
                                 // Tính đường phân vị
                                 L = sheet.cell(`C${i}`).value();
