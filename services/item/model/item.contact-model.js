@@ -1204,7 +1204,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ option, companyID, uplineID, contacts, genders, statuss, departmentsID, supportsID, voucherID, parentID, type, fromDate, toDate, userCreateID, keyword, limit = 5, lastestID, select, populates }) {
+    getList({ option, companyID, uplineID, contacts, genders, statuss, departmentsID, supportsID, voucherID, parentID, type, fromDate, toDate, userCreateID, isFamily, keyword, limit = 5, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if (Number(limit) > 10) {
@@ -1216,81 +1216,6 @@ class Model extends BaseModel {
                 let sortBy
                 let conditionObj = { company: companyID }
                 let keys = ['createAt__-1', '_id__-1']
-
-                // Theo user đang truy cập
-                // if(option){
-                //     if (option == 1 && contacts && contacts.length) {
-                //         let listContacts = contacts.map(item => ObjectID(item._id))
-
-                //         conditionObj.nestedParents = { $in: listContacts }
-                //     }
-                    
-                //     else if (option == 2) {
-                //         conditionObj.nestedParents = { $in: [ObjectID(uplineID)] }
-                //     }
-
-                //     // Đã cập nhật Habit_track
-                //     else if(option == 3){
-                //         let conditionTempObj = {
-                //             company: ObjectID(companyID),
-                //         }
-
-                //         if(fromDate && toDate){
-                //             conditionTempObj.date =  { 
-                //                 $gte: moment(fromDate).toDate(),
-                //                 $lte: moment(toDate).toDate() 
-                //             }
-                //         }
-                //         // console.log(conditionTempObj)
-
-                //         let listDataTemp = await CRM_HABIT_TRACK_COLL.aggregate([
-                //             {
-                //                 $match: conditionTempObj
-                //             },
-                //             {
-                //                 $group: {
-                //                     _id: '$contact',
-                //                 },
-                //             },
-                //         ])
-                //         // console.log(listDataTemp)
-
-                //         if(listDataTemp && listDataTemp.length){
-                //             conditionObj._id = {$in: listDataTemp.map(item => item._id)}
-                //         }
-                //     }
-
-                //     // Chưa cập nhật Habit_track
-                //     else if(option == 4){
-                //         let conditionTempObj = {
-                //             company: ObjectID(companyID),
-                //         }
-
-                //         if(fromDate && toDate){
-                //             conditionTempObj.date =  { 
-                //                 $gte: moment(fromDate).toDate(),
-                //                 $lte: moment(toDate).toDate() 
-                //             }
-                //         }
-                //         // console.log(conditionTempObj)
-
-                //         let listDataTemp = await CRM_HABIT_TRACK_COLL.aggregate([
-                //             {
-                //                 $match: conditionTempObj
-                //             },
-                //             {
-                //                 $group: {
-                //                     _id: '$contact',
-                //                 },
-                //             },
-                //         ])
-                //         // console.log(listDataTemp)
-
-                //         if(listDataTemp && listDataTemp.length){
-                //             conditionObj._id = {$nin: listDataTemp.map(item => item._id)}
-                //         }
-                //     }
-                // }        
 
                 genders && genders.length && (conditionObj.gender = { $in: genders });
                 statuss && statuss.length && (conditionObj.status = { $in: statuss });
@@ -1311,7 +1236,14 @@ class Model extends BaseModel {
 
                 // Lấy theo contact cha
                 if (parentID && checkObjectIDs(parentID)) {
-                    conditionObj.parent = parentID
+                    if(!isFamily){
+                        conditionObj.parent = parentID
+                    }else{
+                        conditionObj.$or = [
+                            { parent: parentID },
+                            { _id: parentID }
+                        ]
+                    }
                 }
 
                 // Lấy theo Voucher
