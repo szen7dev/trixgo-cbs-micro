@@ -976,13 +976,13 @@ class Model extends BaseModel {
 
                     await ITEM__CONTACT_COLL.populate(listData, {  
                         path: '_id',
-                        select: 'name image parent createAt birthday',
+                        select: 'name image parent createAt birthday address gender',
                         model: 'contact',
-                        populate: {
-                            path: 'parent',
-                            select: 'name',
-                            model: 'contact',
-                        }
+                        // populate: {
+                        //     path: 'parent',
+                        //     select: 'name',
+                        //     model: 'contact',
+                        // }
                     })
 
                     return resolve({ error: false, data: listData })
