@@ -70,6 +70,11 @@ const CF_ROUTINGS_CRM = {
     CRM_CUSTOMER_SERVICE_DOWNLOAD_TEMPLATE_EXCEL         : `${BASE_ROUTE}/customer_service/download-template-excel`,
     CRM_CUSTOMER_SERVICE_IMPORT_FROM_EXCEL               : `${BASE_ROUTE}/customer_service/import-from-excel`,
     CRM_CUSTOMER_SERVICE_EXPORT_EXCEL                    : `${BASE_ROUTE}/customer_service/export-excel`,
+
+    // ==================== CRM_AWARD ======================== //
+    CRM_AWARD                                   : `${BASE_ROUTE}/award`,
+    CRM_AWARD_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}/award/get-list-by-property`,
+    CRM_AWARD_EXPORT_EXCEL                      : `${BASE_ROUTE}/award/export-excel`,
 }
 
 exports.CF_ROUTINGS_CRM = CF_ROUTINGS_CRM;
