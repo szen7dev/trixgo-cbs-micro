@@ -198,7 +198,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { companyID, month, option, projectID, subtypeID, fromDate, toDate } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -362,8 +362,8 @@ module.exports = {
 
                 let { option, filterParams } = ctx.params;
                 
-                console.log('===========================')
-                console.log(ctx.params)
+                // console.log('===========================')
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await STORE_ORDER_PRODUCT_MODEL.exportExcelByFilter({
                     userID, companyID: company._id, option, filterParams, ctx

@@ -24,12 +24,12 @@ const stringUtils					    = require('../../../tools/utils/string_utils.js')
 /**
  * COLLECTIONS
  */
-const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
+// const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
 
-const { CRM_XP } = require("../helper/crm.keys-constant");
+const { CRM_XP }                        = require("../helper/crm.keys-constant");
 
 const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
 
@@ -207,12 +207,8 @@ class Model extends BaseModel {
                 if(!infoHabit)
                     return resolve({ error: true, message: "Habit không hợp lệ", keyError: "Request params name invalid" })
 
-                const formattedDate = new Date(date);
-                let condition = {
-                    habit: habitID,
-                    contact: infoHabit.contact,
-                    date: formattedDate,
-                }
+                if(!infoHabit.support)
+                    return resolve({ error: true, message: "Danh bạ chưa có người Support", keyError: "Request params name invalid" })
 
                 let xp = 0 // Track
                 let xpHabit = infoHabit.xp || 0 // Habit
@@ -233,8 +229,17 @@ class Model extends BaseModel {
                 let realityBonus2 = infoHabit.realityBonus2 || 0
                 let realityBonus3 = infoHabit.realityBonus3 || 0
 
+                /**
+                 * Thông tin về Habit Track
+                 */
+                const formattedDate = new Date(date);
+                let condition = {
+                    habit: habitID,
+                    contact: infoHabit.contact,
+                    date: formattedDate,
+                }
+
                 let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
-                // console.log(infoTrack)
 
                 // Tạo mới
                 if(!infoTrack){
@@ -337,14 +342,14 @@ class Model extends BaseModel {
                         dataUpdate.xp = xp
                     }else{
                         if(resultType == 1){
-                            total1 = Number(total1) - 1
                             xpHabit = Number(xpHabit) - CRM_XP[0].xp
+                            total1 = Number(total1) - 1
                         }else if(resultType == 2){
-                            total2 = Number(total2) - 1
                             xpHabit = Number(xpHabit) - CRM_XP[1].xp
+                            total2 = Number(total2) - 1
                         }else{
-                            total3 = Number(total3) - 1
                             xpHabit = Number(xpHabit) - CRM_XP[2].xp
+                            total3 = Number(total3) - 1
                         }
 
                         dataUpdate.status = 0

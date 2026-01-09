@@ -1287,6 +1287,10 @@ class Model extends BaseModel {
                     // Lấy theo dữ liệu của năm hiện tại
                     let date = new Date()
                     let year = date.getFullYear()
+                    if(fromDate){
+                        let startDate = new Date(fromDate)
+                        year = startDate.getFullYear()
+                    }
 
                     conditionProject = {
                         forward: 1,
