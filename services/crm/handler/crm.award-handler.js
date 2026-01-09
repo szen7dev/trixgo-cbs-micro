@@ -26,7 +26,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, parentID, contactID, type, score } = ctx.params;
+                let { optionSeller, parentID, contactID, awardType, periodType, score } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
@@ -38,7 +38,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_AWARD_MODEL.insert({ userID, companyID, parentID, contactID, type, score })
+                let resultAfterCallHandler = await CRM_AWARD_MODEL.insert({ userID, companyID, parentID, contactID, awardType, periodType, score })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -59,13 +59,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { awardID, parentID, contactID, type, score } = ctx.params;
+                let { awardID, parentID, contactID, awardType, periodType, score } = ctx.params;
 
                 // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_AWARD_MODEL.update({ userID, awardID, parentID, contactID, type, score });
+                let resultAfterCallHandler = await CRM_AWARD_MODEL.update({ userID, awardID, parentID, contactID, awardType, periodType, score });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -119,7 +119,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, parentID, contactID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, awardID, parentID, contactID, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
@@ -168,6 +168,8 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { option, companyID, parentID, contactID } = ctx.params;
                 const { _id: userID, company } = ctx.meta.infoUser;
+
+                // console.log(ctx.params)
 
                 if(!companyID){
                     companyID = company._id

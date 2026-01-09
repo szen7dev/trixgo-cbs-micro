@@ -46,7 +46,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/12/2025
      */
-    insert({ userID, companyID, parentID, contactID, type, score }) {
+    insert({ userID, companyID, parentID, contactID, awardType, periodType, score }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(contactID))
@@ -62,8 +62,12 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID
                 }
 
-                if (!isNaN(type)) {
-                    dataInsert.type = Number(type)
+                if (!isNaN(awardType)) {
+                    dataInsert.awardType = Number(awardType)
+                }
+
+                if (!isNaN(periodType)) {
+                    dataInsert.periodType = Number(periodType)
                 }
 
                 if (!isNaN(score)) {
@@ -86,7 +90,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/12/2025
      */
-    update({ userID, awardID, parentID, contactID, type, score }){
+    update({ userID, awardID, parentID, contactID, awardType, periodType, score }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -102,8 +106,12 @@ class Model extends BaseModel {
                     dataUpdate.parent = parentID
                 }
 
-                if (!isNaN(type)) {
-                    dataUpdate.type = Number(type)
+                if (!isNaN(awardType)) {
+                    dataUpdate.awardType = Number(awardType)
+                }
+
+                if (!isNaN(periodType)) {
+                    dataUpdate.periodType = Number(periodType)
                 }
 
                 if (!isNaN(score)) {
@@ -272,63 +280,87 @@ class Model extends BaseModel {
     getListByProperty({ option, userID, companyID, parentID, contactID }){
         return new Promise(async resolve => {
             try {
-                let yearFilter
-                let currentYear = new Date().getFullYear()
-                if(year && !isNaN(year)){
-                    yearFilter = Number(year)
-                }else{
-                    yearFilter = Number(currentYear)
-                }
+                // let yearFilter
+                // let currentYear = new Date().getFullYear()
+                // if(year && !isNaN(year)){
+                //     yearFilter = Number(year)
+                // }else{
+                //     yearFilter = Number(currentYear)
+                // }
 
                 let conditionObj = {
                     company: ObjectID(companyID),
-                    parent: { $exists: true, $ne: null },
-                    contact: { $exists: true, $ne: null },
+                    
+                }
+
+                if(checkObjectIDs(parentID)){
+                    conditionObj.$or = [
+                        { parent: ObjectID(parentID) },
+                        { contact: ObjectID(parentID) }
+                    ]
+                }
+
+                if(checkObjectIDs(contactID)){
+                    conditionObj.contact = ObjectID(contactID)
                 }
 
                 let listData = await CRM_AWARD_COLL.aggregate([
                     {
-                        $match: conditionObj
+                        $match: conditionObj // Điều kiện lọc của bạn
                     },
                     {
-                        $project: {
-                            year : {$year: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            month : {$month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
-                            salary: 1,
-                            onLeaveSalary: 1,
-                            overtimeSalary: 1,
-                            revenueBonus: 1,
-                            reward: 1,
-                            mealAllowance: 1,
-                            punishment: 1,
-                            insurance: 1,
-                            pitax: 1,
-                            union: 1,
-                            share: 1,
-                            other: 1,
-                            advance: 1,
-                            paid: 1,
-                            remaining: 1,
-                        }
-                    },
-                    {
-                        $match: {
-                            year: Number(yearFilter)
-                        }
-                    },
-                    {
+                        // Bước 1: Gom theo bộ ba: Contact + Kỳ (periodType) + Loại giải (awardType)
                         $group: {
-                            _id: { month: '$month' },
-                            salary: { $sum: { $subtract: [ { $add: ["$salary","$onLeaveSalary","$overtimeSalary","$revenueBonus","$reward","$mealAllowance"] }, {$add: ["$punishment","$insurance","$pitax","$union","$share","$other"]} ] } },
-                            paid: { $sum: {$add: [ "$paid", "$advance" ]} },
+                        _id: {
+                            contact: '$contact',
+                            period: '$periodType',
+                            award: '$awardType'
+                        },
+                            count: { $sum: 1 }
                         }
                     },
                     {
-                        $sort: {
-                            "_id.month": 1
+                        // Bước 2: Gom theo Contact và Kỳ (để nhóm các giải thưởng vào mảng awards)
+                        $group: {
+                        _id: {
+                            contact: '$_id.contact',
+                            period: '$_id.period'
+                        },
+                        awards: {
+                            $push: {
+                            awardType: '$_id.award',
+                            count: '$count'
+                            }
+                        }
+                        }
+                    },
+                    {
+                        // Bước 3: Gom theo Contact (để nhóm các kỳ vào mảng periods)
+                        $group: {
+                            _id: '$_id.contact',
+                            detailsByPeriod: {
+                                $push: {
+                                periodType: '$_id.period',
+                                awards: '$awards'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        // Bước 4: Làm đẹp output
+                        $project: {
+                            _id: 0,
+                            contact: '$_id',
+                            detailsByPeriod: 1
                         }
                     }
-                ])
+                ]);
+
+                await ITEM__CONTACT_COLL.populate(listData, {  
+                    path: 'contact',
+                    select: 'name image gender birthday address',
+                    model: 'contact',
+                })
 
                 return resolve({ error: false, data: listData })
             } catch (error) {

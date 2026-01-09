@@ -11,12 +11,22 @@ module.exports  = DATABASE_MIDDLEWARE("crm_award", {
         ref : "company"
     },
     /**
-     * Phân loại
-     * 1-Giải tuần
-     * 2-Giải tháng
-     * 3-Giải năm
+     * Phân loại giải
+     * 1-Giải 1
+     * 2-Giải 2
+     * 3-Giải 3
      */
-    type: {
+    awardType: {
+        type: Number,
+        default: 1
+    },
+    /**
+     * Phân loại Tuần/Tháng/Năm
+     * 1-Tuần
+     * 2-Tháng
+     * 3-Năm
+     */
+    periodType: {
         type: Number,
         default: 1
     },
