@@ -98,11 +98,13 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
     total1 : { type: Number, default: 0 }, // Thực tế đạt được
     bonus1 : { type: Number, default: 0 }, // Kế hoạch Giá trị thưởng
     realityBonus1 : { type: Number, default: 0 }, // Thực tế đạt Giá thưởng
+    
     //_________Cấp 2
     condition2 : { type: Number, default: 0 },
     total2 : { type: Number, default: 0 },
     bonus2 : { type: Number, default: 0 }, 
     realityBonus2 : { type: Number, default: 0 },
+    
     //_________Cấp 3
     condition3 : { type: Number, default: 0 },
     total3 : { type: Number, default: 0 },
