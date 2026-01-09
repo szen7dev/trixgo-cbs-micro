@@ -48,7 +48,7 @@ module.exports  = DATABASE_MIDDLEWARE("crm_award", {
         ref : "contact"
     },
     //_______Ngày ghi nhận
-    date: Date,
+    date: { type: Date, default: Date.now },
     //_________Hình ảnh
     images: [{
         type: Schema.Types.ObjectId,
