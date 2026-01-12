@@ -322,18 +322,20 @@ class Model extends BaseModel {
                         resultType,
                     }
 
+                    let resultTypeTrack = infoTrack.resultType
+
                     if(status == 2){
                         if(resultType == 1){
                             xp = Number(xp) + Number(CRM_XP[0].xp)
-                            xpHabit = Number(xpHabit) + CRM_XP[0].xp
+                            xpHabit = Number(xpHabit) + CRM_XP[0].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
                             total1 = Number(total1) + 1
                         }else if(resultType == 2){
                             xp = Number(xp) + Number(CRM_XP[1].xp)
-                            xpHabit = Number(xpHabit) + CRM_XP[1].xp
+                            xpHabit = Number(xpHabit) + CRM_XP[1].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
                             total2 = Number(total2) + 1
                         }else{
                             xp = Number(xp) + Number(CRM_XP[2].xp)
-                            xpHabit = Number(xpHabit) + CRM_XP[2].xp
+                            xpHabit = Number(xpHabit) + CRM_XP[2].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
                             total3 = Number(total3) + 1
                         }
 
