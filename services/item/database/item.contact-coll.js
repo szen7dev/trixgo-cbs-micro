@@ -53,7 +53,14 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Schema.Types.ObjectId,
         ref: "contact_document"
     }],
-    //_________Phân loại (1-Nhân viên/2-Khách hàng/3-Chuyên gia)
+    /**
+     * Phân loại
+     * 1-Nhân viên
+     * 2-Khách hàng
+     * 3-Cộng tác viên, chuyên gia
+     * 4-Ba mẹ
+     * 5-Các bé
+     */
     type: { type: Number, default: 1 },
     //_________Phân loại nhân sự (1-Nhân viên, 2-Cộng tác viên, 3-Chuyên gia)
     subtype: { type: Number, default: 1 },
