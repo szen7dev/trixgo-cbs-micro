@@ -67,8 +67,12 @@ class Model extends BaseModel {
                     let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
                     if(infoContact){
                         dataInsert.support = infoContact.support
+
+                        // Gán Parent
+                        if(infoContact.parent){
+                            dataInsert.parentContact = parent
+                        }
                     }
-                    
                 }
                 
                 if(checkObjectIDs(habitCateID)){
