@@ -1204,7 +1204,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ option, companyID, uplineID, contacts, genders, statuss, departmentsID, supportsID, voucherID, parentID, type, fromDate, toDate, userCreateID, isFamily, keyword, limit = 5, lastestID, select, populates }) {
+    getList({ option, companyID, genders, statuss, departmentsID, supportsID, voucherID, parentID, type, fromDate, toDate, userCreateID, isFamily, keyword, limit = 5, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
                 if (Number(limit) > 10) {
