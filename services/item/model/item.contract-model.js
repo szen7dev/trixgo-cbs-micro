@@ -1039,10 +1039,7 @@ class Model extends BaseModel {
     getList({
         companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel = false,
         startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isExpiredInsurance, isMember,
-        keyword, limit = 10, lastestID, select, populates= {}, ctx }) {
-            // console.log({companyID, projectID, parentID, draft, outin, status, real, subType, type, field, dependentUnit, chair, personInCharge, debtStatus, warehouse, isExportExcel,
-            //     startTime, endTime, buyerInfo, sellerInfo, lock, userID, isExpiredAg, isExpiredCg, isMember,
-            //     keyword})
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 // Record Traffic
