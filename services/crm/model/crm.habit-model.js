@@ -187,6 +187,44 @@ class Model extends BaseModel {
         })
     }
 
+    addMany({
+        userID, companyID, contactID
+    }) {
+        return new Promise(async resolve => {
+            try {
+                if(!checkObjectIDs(contactID))
+                    return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params contactID invalid" })
+
+                let dataInsert = {
+                    userCreate: userID,
+                    company: companyID,
+                }
+
+                // if(checkObjectIDs(contactID)){
+                //     dataInsert.contact = contactID
+
+                //     let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
+                //     if(infoContact){
+                //         dataInsert.support = infoContact.support
+
+                //         // Gán Parent
+                //         if(infoContact.parent){
+                //             dataInsert.parentContact = parent
+                //         }
+                //     }
+                // }
+
+                let infoAfterInsert = await this.insertData(dataInsert)
+                if(!infoAfterInsert)
+                    return resolve({ error: true, message: "cannot_insert" })
+
+                return resolve({ error: false, data: infoAfterInsert });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
     /**
      * Name: Update
      * Author: HiepNH
