@@ -57,9 +57,10 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
      * Phân loại
      * 1-Nhân viên
      * 2-Khách hàng
-     * 3-Cộng tác viên, chuyên gia
-     * 4-Ba mẹ
-     * 5-Các bé
+     * 3-Cộng tác, chuyên gia
+     * 4-Đơn vị cơ sở
+     * 5-Ba mẹ
+     * 6-Các bé
      */
     type: { type: Number, default: 1 },
     //_________Phân loại nhân sự (1-Nhân viên, 2-Cộng tác viên, 3-Chuyên gia)
