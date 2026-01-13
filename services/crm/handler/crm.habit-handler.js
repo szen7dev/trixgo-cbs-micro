@@ -57,7 +57,7 @@ module.exports = {
                 let { optionSeller, contactID } = ctx.params;
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -66,7 +66,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM_HABIT_MODEL.addMany({ userID, companyID, contactID })
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.addMany({ userID, companyID, contactID, ctx })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {

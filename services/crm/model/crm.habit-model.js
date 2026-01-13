@@ -70,7 +70,7 @@ class Model extends BaseModel {
 
                         // Gán Parent
                         if(infoContact.parent){
-                            dataInsert.parentContact = parent
+                            dataInsert.parentContact = infoContact.parent
                         }
                     }
                 }
@@ -163,22 +163,23 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
-                if (startTime) {
-                    const template = TEMPLATE_NOTIFICATION.find(item => item.key === 'sleep_reminder');
+                // console.log(startTime)
+                // if (startTime) {
+                //     const template = TEMPLATE_NOTIFICATION.find(item => item.key === 'sleep_reminder');
 
-                    if (template) {
-                        const { messages } = template;
-                        const { title, description } = messages.vi;
+                //     if (template) {
+                //         const { messages } = template;
+                //         const { title, description } = messages.vi;
 
-                        ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_HABIT}`, {
-                            title,
-                            description: description.replace('{minute}', duration),
-                            startTime,
-                            receiverID: userID,
-                            habitID: infoAfterInsert._id?.toString(),
-                        })
-                    }
-                }
+                //         ctx.call(`${CF_DOMAIN_SERVICES.REMINDER}.${CF_ACTIONS_REMINDER.ADD_JOB_REMINDER_HABIT}`, {
+                //             title,
+                //             description: description.replace('{minute}', duration),
+                //             startTime,
+                //             receiverID: userID,
+                //             habitID: infoAfterInsert._id?.toString(),
+                //         })
+                //     }
+                // }
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
@@ -188,37 +189,72 @@ class Model extends BaseModel {
     }
 
     addMany({
-        userID, companyID, contactID
+        companyID, contactID, ctx
     }) {
+        const that = this
         return new Promise(async resolve => {
             try {
-                if(!checkObjectIDs(contactID))
-                    return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params contactID invalid" })
+                let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('linkUser')
+                if(!infoContact || !checkObjectIDs(infoContact.linkUser))
+                    return resolve({ error: true, message: "Dữ liệu không hợp lệ/Danh bạ chưa linkUser", keyError: "Request params contactID invalid" })
 
-                let dataInsert = {
-                    userCreate: userID,
-                    company: companyID,
+                const now = new Date(); // Lấy thời gian hiện tại: Thứ 3, 13/01/2026
+                const dayOfWeek = now.getDay(); // 0 (CN) đến 6 (T7)
+
+                // Tính khoảng cách đến Thứ 2 (giả sử Thứ 2 là ngày đầu tuần)
+                // Nếu hôm nay là CN (0), ta lùi lại 6 ngày. Nếu là ngày khác, lùi lại (day - 1) ngày.
+                const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                const monday = new Date(now);
+                monday.setDate(now.getDate() + diffToMonday);
+                monday.setHours(0, 0, 0, 0); // Đặt về 00:00:00
+
+                // Tính khoảng cách đến Chủ nhật
+                const diffToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+                const sunday = new Date(now);
+                sunday.setDate(now.getDate() + diffToSunday);
+                sunday.setHours(23, 59, 59, 999); // Đặt về cuối ngày 23:59:59
+
+                let userID = infoContact.linkUser
+
+                let arrHabitCate = [
+                    {key: '67f3638edba06a0012faf28b', name: 'Ngủ 21h45-22h-22h15'},
+                    {key: '67f363a2254cd50012f2a04d', name: 'Vận động 15-30 phút'},
+                    {key: '67f363be2e00c80011d7aeb0', name: 'Uống Cốm LaminGrow'},
+                    {key: '69452b1172e6080013bbe708', name: 'Ăn Đạm thịt cá trứng sữa'},
+                ]
+                let colors = ['#FF0000','#00FF00','#0000FF','#FFFF00','#FFA500','#00CDE1','#2196F3','#4CAF50','#800080','#A52A2A','#808080']
+
+                let listData = await ITEM__CONTACT_COLL.find({ parent: contactID, status: 1 }).select('name address parent')
+                for(const item of listData){
+                    let i = 0
+                    for(const cate of arrHabitCate){
+                        await that.insert({
+                            userID, 
+                            companyID, 
+                            contactID: item._id, // Thành viên
+                            habitCateID: cate.key, 
+                            duration: 30, 
+                            name: `${item.name} ${cate.name}`, 
+                            note: 'Tạo từ hệ thống',
+                            startTime: `${now}`, 
+                            dayOfChallenge: 6, 
+                            startDate: monday,
+                            finishDate: sunday, 
+                            color: colors[i], 
+                            condition1: 7, 
+                            bonus1: 2, 
+                            condition2: 5, 
+                            bonus2: 1, 
+                            condition3: 2, 
+                            bonus3: 1, 
+                            ctx
+                        })
+
+                        i++
+                    }
                 }
 
-                // if(checkObjectIDs(contactID)){
-                //     dataInsert.contact = contactID
-
-                //     let infoContact = await ITEM__CONTACT_COLL.findById(contactID)
-                //     if(infoContact){
-                //         dataInsert.support = infoContact.support
-
-                //         // Gán Parent
-                //         if(infoContact.parent){
-                //             dataInsert.parentContact = parent
-                //         }
-                //     }
-                // }
-
-                let infoAfterInsert = await this.insertData(dataInsert)
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert" })
-
-                return resolve({ error: false, data: infoAfterInsert });
+                return resolve({ error: false, message: 'Khởi tạo thành công' });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
