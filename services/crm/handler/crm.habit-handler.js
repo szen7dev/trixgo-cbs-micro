@@ -47,6 +47,34 @@ module.exports = {
         }
     },
 
+    addMany: {
+        params: {
+            contactID           : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { optionSeller, contactID } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                // console.log(ctx.params)
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
+
+                let resultAfterCallHandler = await CRM_HABIT_MODEL.addMany({ userID, companyID, contactID, ctx })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
     /**
      * Name: Update
      * Author: HiepNH
