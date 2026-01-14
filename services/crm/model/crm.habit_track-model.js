@@ -292,7 +292,8 @@ class Model extends BaseModel {
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         {
                           $match: {
-                            habit: ObjectID(habitID)
+                            habit: ObjectID(habitID),
+                            status: 2,
                           }
                         },
                         {
@@ -429,7 +430,8 @@ class Model extends BaseModel {
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         {
                           $match: {
-                            habit: ObjectID(habitID)
+                            habit: ObjectID(habitID),
+                            status: 2,
                           }
                         },
                         {
