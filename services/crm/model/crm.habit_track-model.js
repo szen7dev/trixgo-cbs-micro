@@ -1296,23 +1296,8 @@ class Model extends BaseModel {
 
                     await ITEM__CONTACT_COLL.populate(listData, {  
                         path: '_id',
-                        select: '_id name phone area image support parent birthday gender',
+                        select: '_id name phone image support parent birthday gender address',
                         model: 'contact',
-                        populate: {
-                            path: 'area',
-                            select: 'name parent',
-                            model: 'area',
-                            populate: {
-                                path: 'parent',
-                                select: 'name',
-                                model: 'area',
-                                populate: {
-                                    path: 'parent',
-                                    select: 'name',
-                                    model: 'area',
-                                }
-                            }
-                        }
                     })
 
                     await ITEM__CONTACT_COLL.populate(listData, {  
