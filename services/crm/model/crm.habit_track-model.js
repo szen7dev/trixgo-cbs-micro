@@ -256,13 +256,10 @@ class Model extends BaseModel {
 
                     if(resultType == 1){
                         xp = Number(xp) + CRM_XP[0].xp
-                        xpHabit = Number(xpHabit) + CRM_XP[0].xp
                     }else if(resultType == 2){
                         xp = Number(xp) + CRM_XP[1].xp
-                        xpHabit = Number(xpHabit) + CRM_XP[1].xp
                     }else{
                         xp = Number(xp) + CRM_XP[2].xp
-                        xpHabit = Number(xpHabit) + CRM_XP[2].xp
                     }
 
                     dataInsert.status = 2
@@ -272,6 +269,24 @@ class Model extends BaseModel {
                     let infoAfterInsert = await this.insertData(dataInsert)
                     if(!infoAfterInsert)
                         return resolve({ error: true, message: "cannot_insert" })
+
+                    let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: {
+                            habit: ObjectID(habitID)
+                          }
+                        },
+                        {
+                            $group: {
+                                _id: '$habit',
+                                total: { $sum: "$xp" },
+                            },
+                        },
+                    ])
+                    // console.log(listData1)
+                    if(listData1 && listData1.length){
+                        xpHabit = Number(listData1[0].total)
+                    }
 
                     //Tính tối thiểu, tối ưu, tối thượng
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
@@ -343,8 +358,6 @@ class Model extends BaseModel {
                         realityBonus3,
                     }, { new: true })
 
-                    // Cập nhật vào Contact: Xử lý sau
-
                     return resolve({ error: false, data: infoAfterInsert })
                 }
                 
@@ -359,18 +372,13 @@ class Model extends BaseModel {
                         resultType,
                     }
 
-                    let resultTypeTrack = infoTrack.resultType
-
                     if(status == 2){
                         if(resultType == 1){
                             xp = Number(xp) + Number(CRM_XP[0].xp)
-                            xpHabit = Number(xpHabit) + CRM_XP[0].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
                         }else if(resultType == 2){
                             xp = Number(xp) + Number(CRM_XP[1].xp)
-                            xpHabit = Number(xpHabit) + CRM_XP[1].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
                         }else{
                             xp = Number(xp) + Number(CRM_XP[2].xp)
-                            xpHabit = Number(xpHabit) + CRM_XP[2].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
                         }
 
                         dataUpdate.status = 2
@@ -397,6 +405,24 @@ class Model extends BaseModel {
                             message: "Cannot update",
                             keyError: "cannot_update",
                         })
+                    }
+
+                    let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: {
+                            habit: ObjectID(habitID)
+                          }
+                        },
+                        {
+                            $group: {
+                                _id: '$habit',
+                                total: { $sum: "$xp" },
+                            },
+                        },
+                    ])
+                    // console.log(listData1)
+                    if(listData1 && listData1.length){
+                        xpHabit = Number(listData1[0].total)
                     }
 
                     //Tính tối thiểu, tối ưu, tối thượng
@@ -468,8 +494,6 @@ class Model extends BaseModel {
                         realityBonus2,
                         realityBonus3,
                     }, { new: true })
-
-                    // Cập nhật vào Contact: Xử lý sau
 
                     return resolve({ error: false, data: infoAfterUpdate })
                 }
