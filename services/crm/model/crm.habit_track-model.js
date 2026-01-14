@@ -113,7 +113,7 @@ class Model extends BaseModel {
                     let infoAfterInsert = await this.insertData(dataInsert)
                     if(!infoAfterInsert)
                         return resolve({ error: true, message: "cannot_insert" })
-    
+
                     return resolve({ error: false, data: infoAfterInsert })
                 }else{
                     return resolve({ error: true, message: "Mẫu tin đã tồn tại" })
@@ -214,15 +214,12 @@ class Model extends BaseModel {
                 let xpHabit = infoHabit.xp || 0 // Habit
 
                 let condition1 = infoHabit.condition1 || 0
-                let total1 = infoHabit.total1 || 0
                 let bonus1 = infoHabit.bonus1 || 0
 
                 let condition2 = infoHabit.condition2 || 0
-                let total2 = infoHabit.total2 || 0
                 let bonus2 = infoHabit.bonus2 || 0
 
                 let condition3 = infoHabit.condition3 || 0
-                let total3 = infoHabit.total3 || 0
                 let bonus3 = infoHabit.bonus3 || 0
 
                 let realityBonus1 = infoHabit.realityBonus1 || 0
@@ -260,15 +257,12 @@ class Model extends BaseModel {
                     if(resultType == 1){
                         xp = Number(xp) + CRM_XP[0].xp
                         xpHabit = Number(xpHabit) + CRM_XP[0].xp
-                        total1 = Number(total1) + 1
                     }else if(resultType == 2){
                         xp = Number(xp) + CRM_XP[1].xp
                         xpHabit = Number(xpHabit) + CRM_XP[1].xp
-                        total2 = Number(total2) + 1
                     }else{
                         xp = Number(xp) + CRM_XP[2].xp
                         xpHabit = Number(xpHabit) + CRM_XP[2].xp
-                        total3 = Number(total3) + 1
                     }
 
                     dataInsert.status = 2
@@ -278,6 +272,49 @@ class Model extends BaseModel {
                     let infoAfterInsert = await this.insertData(dataInsert)
                     if(!infoAfterInsert)
                         return resolve({ error: true, message: "cannot_insert" })
+
+                    //Tính tối thiểu, tối ưu, tối thượng
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: {
+                            habit: ObjectID(habitID)
+                          }
+                        },
+                        {
+                            $group: {
+                                _id: '$resultType',
+                                total: { $sum: 1 },
+                            },
+                        },
+                    ])
+                    // console.log(listData)
+
+                    // Khởi tạo các giá trị mặc định là 0
+                    let t1 = 0, t2 = 0, t3 = 0;
+
+                    // Duyệt qua mảng kết quả từ aggregate
+                    listData.forEach(item => {
+                        const id = parseInt(item._id);
+                        const val = item.total || 0;
+
+                        // Total1 = tổng của _id 1, 2, 3
+                        if ([1, 2, 3].includes(id)) {
+                            t1 += val;
+                        }
+                        // Total2 = tổng của _id 2, 3
+                        if ([2, 3].includes(id)) {
+                            t2 += val;
+                        }
+                        // Total3 = giá trị của _id 3
+                        if (id === 3) {
+                            t3 = val;
+                        }
+                    });
+
+                    // Gán lại vào biến bạn cần
+                    const total1 = t1;
+                    const total2 = t2;
+                    const total3 = t3;
 
                     if(total1 == condition1){
                         realityBonus1 = bonus1
@@ -328,15 +365,12 @@ class Model extends BaseModel {
                         if(resultType == 1){
                             xp = Number(xp) + Number(CRM_XP[0].xp)
                             xpHabit = Number(xpHabit) + CRM_XP[0].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
-                            total1 = Number(total1) + 1
                         }else if(resultType == 2){
                             xp = Number(xp) + Number(CRM_XP[1].xp)
                             xpHabit = Number(xpHabit) + CRM_XP[1].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
-                            total2 = Number(total2) + 1
                         }else{
                             xp = Number(xp) + Number(CRM_XP[2].xp)
                             xpHabit = Number(xpHabit) + CRM_XP[2].xp - CRM_XP[Number(resultTypeTrack - 1)].xp
-                            total3 = Number(total3) + 1
                         }
 
                         dataUpdate.status = 2
@@ -345,13 +379,10 @@ class Model extends BaseModel {
                     }else{
                         if(resultType == 1){
                             xpHabit = Number(xpHabit) - CRM_XP[0].xp
-                            total1 = Number(total1) - 1
                         }else if(resultType == 2){
                             xpHabit = Number(xpHabit) - CRM_XP[1].xp
-                            total2 = Number(total2) - 1
                         }else{
                             xpHabit = Number(xpHabit) - CRM_XP[2].xp
-                            total3 = Number(total3) - 1
                         }
 
                         dataUpdate.status = 0
@@ -367,6 +398,49 @@ class Model extends BaseModel {
                             keyError: "cannot_update",
                         })
                     }
+
+                    //Tính tối thiểu, tối ưu, tối thượng
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: {
+                            habit: ObjectID(habitID)
+                          }
+                        },
+                        {
+                            $group: {
+                                _id: '$resultType',
+                                total: { $sum: 1 },
+                            },
+                        },
+                    ])
+                    // console.log(listData)
+                    
+                    // Khởi tạo các giá trị mặc định là 0
+                    let t1 = 0, t2 = 0, t3 = 0;
+
+                    // Duyệt qua mảng kết quả từ aggregate
+                    listData.forEach(item => {
+                        const id = parseInt(item._id);
+                        const val = item.total || 0;
+
+                        // Total1 = tổng của _id 1, 2, 3
+                        if ([1, 2, 3].includes(id)) {
+                            t1 += val;
+                        }
+                        // Total2 = tổng của _id 2, 3
+                        if ([2, 3].includes(id)) {
+                            t2 += val;
+                        }
+                        // Total3 = giá trị của _id 3
+                        if (id === 3) {
+                            t3 = val;
+                        }
+                    });
+
+                    // Gán lại vào biến bạn cần
+                    const total1 = t1;
+                    const total2 = t2;
+                    const total3 = t3;
 
                     if(total1 == condition1){
                         realityBonus1 = bonus1
