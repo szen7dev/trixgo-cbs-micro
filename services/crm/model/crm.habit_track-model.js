@@ -358,8 +358,6 @@ class Model extends BaseModel {
                         realityBonus3,
                     }, { new: true })
 
-                    // Cập nhật vào Contact: Xử lý sau
-
                     return resolve({ error: false, data: infoAfterInsert })
                 }
                 
@@ -373,8 +371,6 @@ class Model extends BaseModel {
                         status, 
                         resultType,
                     }
-
-                    let resultTypeTrack = infoTrack.resultType
 
                     if(status == 2){
                         if(resultType == 1){
