@@ -1226,23 +1226,8 @@ class Model extends BaseModel {
 
                     await ITEM__CONTACT_COLL.populate(listData, {  
                         path: '_id',
-                        select: 'name phone area',
+                        select: 'name phone area address',
                         model: 'contact',
-                        populate: {
-                            path: 'area',
-                            select: 'name parent',
-                            model: 'area',
-                            populate: {
-                                path: 'parent',
-                                select: 'name',
-                                model: 'area',
-                                populate: {
-                                    path: 'parent',
-                                    select: 'name',
-                                    model: 'area',
-                                }
-                            }
-                        }
                     })
 
                     return resolve({ error: false, data: listData })
