@@ -1783,6 +1783,9 @@ module.exports = {
 		[`GET ${CF_ROUTINGS_CRM.CRM_AWARD_EXPORT_EXCEL}`] :
 		[`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_AWARD_EXPORT_EXCEL}`],
 
+		[`POST ${CF_ROUTINGS_CRM.CRM_AWARD_CAPTURE}`] :
+		[`${CF_DOMAIN_SERVICES.CRM}.${CF_ACTIONS_CRM.CRM_AWARD_CAPTURE}`],
+
 		//---------------------------🏁 END SERVICE CRM 🏁---------------------------//
 
 		//---------------------------🏁 BEGIN SERVICE TIMESHEET 🏁---------------------------//

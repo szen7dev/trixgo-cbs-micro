@@ -188,6 +188,11 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name: addMany
+     * Author: HiepNH
+     * Code: 14/1/2026
+     */
     addMany({
         companyID, contactID, ctx
     }) {
@@ -226,31 +231,36 @@ class Model extends BaseModel {
 
                 let listData = await ITEM__CONTACT_COLL.find({ parent: contactID, status: 1 }).select('name address parent')
                 for(const item of listData){
-                    let i = 0
-                    for(const cate of arrHabitCate){
-                        await that.insert({
-                            userID, 
-                            companyID, 
-                            contactID: item._id, // Thành viên
-                            habitCateID: cate.key, 
-                            duration: 30, 
-                            name: `${item.name} ${cate.name}`, 
-                            note: 'Tạo từ hệ thống',
-                            startTime: `${now}`, 
-                            dayOfChallenge: 6, 
-                            startDate: monday,
-                            finishDate: sunday, 
-                            color: colors[i], 
-                            condition1: 7, 
-                            bonus1: 2, 
-                            condition2: 5, 
-                            bonus2: 1, 
-                            condition3: 2, 
-                            bonus3: 1, 
-                            ctx
-                        })
+                    let checkExists = await CRM_HABIT_COLL.findOne({contact: item._id, company: companyID})
+                    if(!checkExists){
+                        let i = 0
+                        for(const cate of arrHabitCate){
+                            await that.insert({
+                                userID, 
+                                companyID, 
+                                contactID: item._id, // Thành viên
+                                habitCateID: cate.key, 
+                                duration: 30, 
+                                name: `${item.name} ${cate.name}`, 
+                                note: 'Tạo từ hệ thống',
+                                startTime: `${now}`, 
+                                dayOfChallenge: 6, 
+                                startDate: monday,
+                                finishDate: sunday, 
+                                color: colors[i], 
+                                condition1: 7, 
+                                bonus1: 2, 
+                                condition2: 5, 
+                                bonus2: 1, 
+                                condition3: 2, 
+                                bonus3: 1, 
+                                ctx
+                            })
 
-                        i++
+                            i++
+                        }
+                    }else{
+                        console.log('Thành viên đã tạo Habit')
                     }
                 }
 

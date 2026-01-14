@@ -86,6 +86,50 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: capture
+     * Author: HiepNH
+     * Code: 19/12/2025
+     */
+    capture({ userID, companyID, date, periodType }) {
+        return new Promise(async resolve => {
+            try {
+                // if(!checkObjectIDs(contactID))
+                //     return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
+
+                // let dataInsert = {
+                //     userCreate: userID,
+                //     company: companyID,
+                //     contact: contactID,
+                // }
+
+                // if(checkObjectIDs(parentID)){
+                //     dataInsert.parent = parentID
+                // }
+
+                // if (!isNaN(awardType)) {
+                //     dataInsert.awardType = Number(awardType)
+                // }
+
+                // if (!isNaN(periodType)) {
+                //     dataInsert.periodType = Number(periodType)
+                // }
+
+                // if (!isNaN(score)) {
+                //     dataInsert.score = Number(score)
+                // }
+
+                // let infoAfterInsert = await this.insertData(dataInsert)
+                // if(!infoAfterInsert)
+                //     return resolve({ error: true, message: "cannot_insert" })
+
+                return resolve({ error: false, message: 'Ghi nhận thành công' });
+            } catch (error) {
+                return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
      * Name: Update
      * Author: HiepNH
      * Code: 19/12/2025

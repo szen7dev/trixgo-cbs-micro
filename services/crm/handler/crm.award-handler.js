@@ -15,7 +15,7 @@ module.exports = {
     /**
      * Name: Insert
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 14/1/2026
      */
     insert: {
         params: {
@@ -48,9 +48,42 @@ module.exports = {
     },
 
     /**
+     * Name: capture ghi nhận kết quả
+     * Author: HiepNH
+     * Code: 14/1/2026
+     */
+    capture: {
+        params: {
+            date                : { type: "string" },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { optionSeller, date, periodType } = ctx.params;
+				const { _id: userID, company } = ctx.meta.infoUser;
+
+                console.log(ctx.params)
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
+
+                let resultAfterCallHandler = await CRM_AWARD_MODEL.capture({ userID, companyID, date, periodType })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Name: Update
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 14/1/2026
      */
     update: {
         params: {
@@ -103,7 +136,7 @@ module.exports = {
     /**
      * Name: Get list
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 14/1/2026
      */
     getInfoAndGetList: {
         params: {
@@ -153,7 +186,7 @@ module.exports = {
     /**
      * Name: Get
      * Author: HiepNH
-     * Code: 22/11/2023
+     * Code: 14/1/2026
      */
     getListByProperty: {
         auth: "required",
