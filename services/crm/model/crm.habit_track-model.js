@@ -1340,7 +1340,7 @@ class Model extends BaseModel {
                         {
                             $match: {
                                 company: ObjectID(companyID),
-                                type: 5,
+                                type: 6, // Các bé
                                 status: 1, // Chỉ các danh bạ còn đang hoạt động
                                 joinedDate: { $gte: startOfYear, $lte: endOfYear } // Lọc trực tiếp trên Index
                             }
