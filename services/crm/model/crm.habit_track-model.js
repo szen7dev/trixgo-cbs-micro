@@ -771,11 +771,14 @@ class Model extends BaseModel {
                     if(checkObjectIDs(habitID)){
                         conditionObj.habit = ObjectID(habitID)
                     }
-
+                    
                     if(startDate && endDate){
+                        let endDateCheck = moment(endDate).format("YYYY-MM-DD")
+
                         conditionObj.date =  { 
                             $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
+                            // $lte: moment(endDate).toDate(),
+                            $lte: new Date(endDateCheck), // Chuẩn hóa với giờ được Record trong DB
                         }
                     }
 
@@ -795,9 +798,6 @@ class Model extends BaseModel {
                               percentage: 1,
                             }
                         },
-                        // { 
-                        //     $sort: { dayOfWeek: 1 } 
-                        // }
                     ])
 
                     // console.log(listData)
