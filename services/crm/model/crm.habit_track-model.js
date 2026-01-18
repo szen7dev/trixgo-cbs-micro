@@ -191,6 +191,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     updateByDay({ companyID, userID, habitID, date, status, resultType }){
+        // console.log({ companyID, userID, habitID, date, status, resultType })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -235,8 +236,10 @@ class Model extends BaseModel {
                     contact: infoHabit.contact,
                     date: formattedDate,
                 }
+                // console.log(condition)
 
                 let infoTrack = await CRM_HABIT_TRACK_COLL.findOne(condition)
+                // console.log(infoTrack)
 
                 // Tạo mới
                 if(!infoTrack){
