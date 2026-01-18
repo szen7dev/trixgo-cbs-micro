@@ -853,188 +853,188 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: result })
                 }
 
-                // Báo cáo Xếp hạng theo tuần
-                else if(option == 3){
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        status: 2, // Hoàn thành
-                    }
+                // // Báo cáo Xếp hạng theo tuần
+                // else if(option == 3){
+                //     let conditionObj = {
+                //         company: ObjectID(companyID),
+                //         status: 2, // Hoàn thành
+                //     }
 
-                    if(startDate && endDate){
-                        conditionObj.date =  { 
-                            $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
-                        }
-                    }
+                //     if(startDate && endDate){
+                //         conditionObj.date =  { 
+                //             $gte: moment(startDate).toDate(),
+                //             $lte: moment(endDate).toDate() 
+                //         }
+                //     }
 
-                    // console.log(conditionObj)
+                //     // console.log(conditionObj)
 
-                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                          $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: '$contact',
-                                // score:       { $sum: 1 },           // số lần hoàn thành
-                                totalXP:     { $sum: '$xp' },       // tổng điểm XP
-                                totalStreak: { $sum: '$streak' },   // tổng streak
-                            },
-                        },
-                        { 
-                            $sort: { totalXP: -1 } 
-                        }
-                    ])
+                //     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                //         {
+                //           $match: conditionObj
+                //         },
+                //         {
+                //             $group: {
+                //                 _id: '$contact',
+                //                 // score:       { $sum: 1 },           // số lần hoàn thành
+                //                 totalXP:     { $sum: '$xp' },       // tổng điểm XP
+                //                 totalStreak: { $sum: '$streak' },   // tổng streak
+                //             },
+                //         },
+                //         { 
+                //             $sort: { totalXP: -1 } 
+                //         }
+                //     ])
 
-                    // console.log(listData)
+                //     // console.log(listData)
 
-                    await ITEM__CONTACT_COLL.populate(listData, {  
-                        path: '_id',
-                        select: 'name image parent createAt',
-                        model: 'contact',
-                        populate: {
-                            path: 'parent',
-                            select: 'name address',
-                            model: 'contact',
-                        }
-                    })
+                //     await ITEM__CONTACT_COLL.populate(listData, {  
+                //         path: '_id',
+                //         select: 'name image parent createAt',
+                //         model: 'contact',
+                //         populate: {
+                //             path: 'parent',
+                //             select: 'name address',
+                //             model: 'contact',
+                //         }
+                //     })
 
-                    return resolve({ error: false, data: listData })
-                }
+                //     return resolve({ error: false, data: listData })
+                // }
 
-                // Báo cáo thực hiện Habit: cho việc quản trị
-                else if(option == 4){
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        // status: 2, // Hoàn thành
-                    }
+                // // Báo cáo thực hiện Habit: cho việc quản trị
+                // else if(option == 4){
+                //     let conditionObj = {
+                //         company: ObjectID(companyID),
+                //         // status: 2, // Hoàn thành
+                //     }
 
-                    if(startDate && endDate){
-                        conditionObj.date =  { 
-                            $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
-                        }
-                    }
-                    // console.log(conditionObj)
+                //     if(startDate && endDate){
+                //         conditionObj.date =  { 
+                //             $gte: moment(startDate).toDate(),
+                //             $lte: moment(endDate).toDate() 
+                //         }
+                //     }
+                //     // console.log(conditionObj)
 
-                    let listData = await ITEM__CONTACT_COLL.aggregate([
-                        {
-                          $match: {
-                            company: ObjectID(companyID)
-                          }
-                        },
-                        {
-                            $group: {
-                                _id: '$_id',
-                            },
-                        },
-                        {
-                            $count: 'total',
-                        },
-                    ])
+                //     let listData = await ITEM__CONTACT_COLL.aggregate([
+                //         {
+                //           $match: {
+                //             company: ObjectID(companyID)
+                //           }
+                //         },
+                //         {
+                //             $group: {
+                //                 _id: '$_id',
+                //             },
+                //         },
+                //         {
+                //             $count: 'total',
+                //         },
+                //     ])
 
-                    let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                          $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: '$contact',
-                            },
-                        },
-                        {
-                            $count: 'total',
-                        },
-                    ])
+                //     let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
+                //         {
+                //           $match: conditionObj
+                //         },
+                //         {
+                //             $group: {
+                //                 _id: '$contact',
+                //             },
+                //         },
+                //         {
+                //             $count: 'total',
+                //         },
+                //     ])
 
-                    let total = 0, active = 0
-                    if(listData && listData.length){
-                        total = listData[0].total
-                    }
+                //     let total = 0, active = 0
+                //     if(listData && listData.length){
+                //         total = listData[0].total
+                //     }
 
-                    if(listData1 && listData1.length){
-                        active = listData1[0].total
-                    }
+                //     if(listData1 && listData1.length){
+                //         active = listData1[0].total
+                //     }
 
-                    return resolve({ error: false, data: {total, active } })
-                }
+                //     return resolve({ error: false, data: {total, active } })
+                // }
 
-                // Chi tiết Nhân sự cập nhật dữ liệu
-                else if(option == 5){
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        // status: 2, // Hoàn thành
-                    }
+                // // Chi tiết Nhân sự cập nhật dữ liệu
+                // else if(option == 5){
+                //     let conditionObj = {
+                //         company: ObjectID(companyID),
+                //         // status: 2, // Hoàn thành
+                //     }
 
-                    if(startDate && endDate){
-                        conditionObj.date =  { 
-                            $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
-                        }
-                    }
+                //     if(startDate && endDate){
+                //         conditionObj.date =  { 
+                //             $gte: moment(startDate).toDate(),
+                //             $lte: moment(endDate).toDate() 
+                //         }
+                //     }
 
-                    // console.log(conditionObj)
+                //     // console.log(conditionObj)
 
-                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                          $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: '$contact',
-                            },
-                        },
-                    ])
+                //     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                //         {
+                //           $match: conditionObj
+                //         },
+                //         {
+                //             $group: {
+                //                 _id: '$contact',
+                //             },
+                //         },
+                //     ])
 
-                    // console.log(listData)
+                //     // console.log(listData)
 
-                    await ITEM__CONTACT_COLL.populate(listData, {  
-                        path: '_id',
-                        select: 'name birthday image userCreate createAt',
-                        model: 'contact',
-                        populate: {
-                            path: 'userCreate',
-                            select: 'fullname address',
-                            model: 'user',
-                        }
-                    })
+                //     await ITEM__CONTACT_COLL.populate(listData, {  
+                //         path: '_id',
+                //         select: 'name birthday image userCreate createAt',
+                //         model: 'contact',
+                //         populate: {
+                //             path: 'userCreate',
+                //             select: 'fullname address',
+                //             model: 'user',
+                //         }
+                //     })
 
-                    return resolve({ error: false, data: listData })
-                }
+                //     return resolve({ error: false, data: listData })
+                // }
 
-                else if(option == 6){
-                    let conditionObj = {
-                        company: ObjectID(companyID),
-                        // status: 2, // Hoàn thành
-                    }
+                // else if(option == 6){
+                //     let conditionObj = {
+                //         company: ObjectID(companyID),
+                //         // status: 2, // Hoàn thành
+                //     }
 
-                    if(startDate && endDate){
-                        conditionObj.date =  { 
-                            $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
-                        }
-                    }
+                //     if(startDate && endDate){
+                //         conditionObj.date =  { 
+                //             $gte: moment(startDate).toDate(),
+                //             $lte: moment(endDate).toDate() 
+                //         }
+                //     }
 
-                    // console.log(conditionObj)
+                //     // console.log(conditionObj)
 
-                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
-                        {
-                          $match: conditionObj
-                        },
-                        {
-                            $group: {
-                                _id: '$contact',
-                            },
-                        },
-                    ])
+                //     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                //         {
+                //           $match: conditionObj
+                //         },
+                //         {
+                //             $group: {
+                //                 _id: '$contact',
+                //             },
+                //         },
+                //     ])
 
-                    let listData1 = await ITEM__CONTACT_COLL.find({
-                            company: ObjectID(companyID),
-                            _id: {$nin: listData.map(item => item._id)}
-                    }).select('name phone')
+                //     let listData1 = await ITEM__CONTACT_COLL.find({
+                //             company: ObjectID(companyID),
+                //             _id: {$nin: listData.map(item => item._id)}
+                //     }).select('name phone')
 
-                    return resolve({ error: false, data: listData1 })
-                }
+                //     return resolve({ error: false, data: listData1 })
+                // }
 
                 /**
                  * DÀNH CHO PHẦN GAME MỚI
@@ -1102,9 +1102,12 @@ class Model extends BaseModel {
                     }
 
                     if(startDate && endDate){
+                        let endDateCheck = moment(endDate).format("YYYY-MM-DD")
+
                         conditionObj.date =  { 
                             $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
+                            // $lte: moment(endDate).toDate() ,
+                            $lte: new Date(endDateCheck), // Chuẩn hóa với giờ được Record trong DB
                         }
                     }
 
@@ -1133,61 +1136,7 @@ class Model extends BaseModel {
                             conditionObj.support = { $exists: false }
                             conditionContactObj.support = { $exists: false }
                         }
-                    }                    
-                    // console.log(conditionObj)
-                    // console.log(conditionContactObj)
-
-                    // // Danh sách Gom nhóm khách hàng theo support
-                    // let listData = await ITEM__CONTACT_COLL.aggregate([
-                    //     {
-                    //       $match: {
-                    //         company: ObjectID(companyID),
-                    //         support: { $exists: true, $ne: null },
-                    //       }
-                    //     },
-                    //     {
-                    //         $group: {
-                    //             _id: '$support',
-                    //             total: { $sum: 1 },
-                    //         },
-                    //     },
-                    // ])
-                    // // console.log(listData)
-
-                    // let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
-                    //     {
-                    //         $match: conditionObj
-                    //     },
-                    //     {
-                    //         $group: {
-                    //             _id: '$support',
-                    //             // Tạo một mảng chứa các contact duy nhất, sau đó đếm kích thước mảng đó
-                    //             uniqueContacts: { $addToSet: '$contact' } 
-                    //         }
-                    //     },
-                    //     {
-                    //         $project: {
-                    //             _id: 1,
-                    //             active: { $size: '$uniqueContacts' }
-                    //         }
-                    //     }
-                    // ]);
-                    // console.log(listData1)
-
-                    // Cách tối ưu nhưng không dùng $facet
-                    // // Tạo một lookup object
-                    // let activeLookup = {};
-                    // listData1.forEach(item => {
-                    //     activeLookup[item._id.toString()] = item.active;
-                    // });
-
-                    // // Gộp mảng
-                    // let result = listData.map(item => ({
-                    //     _id: item._id,
-                    //     total: item.total,
-                    //     active: activeLookup[item._id.toString()] || 0
-                    // }));
-                    // // console.log(result)
+                    }
 
                     // Cách tối ưu dùng $facet
                     let listData = await ITEM__CONTACT_COLL.aggregate([
@@ -1249,9 +1198,12 @@ class Model extends BaseModel {
                     }
                     
                     if(startDate && endDate){
+                        let endDateCheck = moment(endDate).format("YYYY-MM-DD")
+
                         conditionObj.date =  { 
                             $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
+                            $lte: new Date(endDateCheck), // Chuẩn hóa với giờ được Record trong DB
+                            // $lte: moment(endDate).toDate() 
                         }
                     }
                     
