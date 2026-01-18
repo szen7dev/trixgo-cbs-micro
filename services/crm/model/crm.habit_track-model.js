@@ -335,17 +335,17 @@ class Model extends BaseModel {
                     const total2 = t2;
                     const total3 = t3;
 
-                    if(total1 == condition1){
+                    if(total1 >= condition1){
                         realityBonus1 = bonus1
                     }else{
                         realityBonus1 = 0
                     }
-                    if(total2 == condition2){
+                    if(total2 >= condition2){
                         realityBonus2 = bonus2
                     }else{
                         realityBonus2 = 0
                     }
-                    if(total3 == condition3){
+                    if(total3 >= condition3){
                         realityBonus3 = bonus3
                     }else{
                         realityBonus3 = 0
@@ -473,17 +473,17 @@ class Model extends BaseModel {
                     const total2 = t2;
                     const total3 = t3;
 
-                    if(total1 == condition1){
+                    if(total1 >= condition1){
                         realityBonus1 = bonus1
                     }else{
                         realityBonus1 = 0
                     }
-                    if(total2 == condition2){
+                    if(total2 >= condition2){
                         realityBonus2 = bonus2
                     }else{
                         realityBonus2 = 0
                     }
-                    if(total3 == condition3){
+                    if(total3 >= condition3){
                         realityBonus3 = bonus3
                     }else{
                         realityBonus3 = 0
