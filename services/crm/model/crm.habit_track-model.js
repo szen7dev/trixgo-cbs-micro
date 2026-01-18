@@ -1102,9 +1102,12 @@ class Model extends BaseModel {
                     }
 
                     if(startDate && endDate){
+                        let endDateCheck = moment(endDate).format("YYYY-MM-DD")
+
                         conditionObj.date =  { 
                             $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
+                            // $lte: moment(endDate).toDate() ,
+                            $lte: new Date(endDateCheck), // Chuẩn hóa với giờ được Record trong DB
                         }
                     }
 
@@ -1133,61 +1136,7 @@ class Model extends BaseModel {
                             conditionObj.support = { $exists: false }
                             conditionContactObj.support = { $exists: false }
                         }
-                    }                    
-                    // console.log(conditionObj)
-                    // console.log(conditionContactObj)
-
-                    // // Danh sách Gom nhóm khách hàng theo support
-                    // let listData = await ITEM__CONTACT_COLL.aggregate([
-                    //     {
-                    //       $match: {
-                    //         company: ObjectID(companyID),
-                    //         support: { $exists: true, $ne: null },
-                    //       }
-                    //     },
-                    //     {
-                    //         $group: {
-                    //             _id: '$support',
-                    //             total: { $sum: 1 },
-                    //         },
-                    //     },
-                    // ])
-                    // // console.log(listData)
-
-                    // let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
-                    //     {
-                    //         $match: conditionObj
-                    //     },
-                    //     {
-                    //         $group: {
-                    //             _id: '$support',
-                    //             // Tạo một mảng chứa các contact duy nhất, sau đó đếm kích thước mảng đó
-                    //             uniqueContacts: { $addToSet: '$contact' } 
-                    //         }
-                    //     },
-                    //     {
-                    //         $project: {
-                    //             _id: 1,
-                    //             active: { $size: '$uniqueContacts' }
-                    //         }
-                    //     }
-                    // ]);
-                    // console.log(listData1)
-
-                    // Cách tối ưu nhưng không dùng $facet
-                    // // Tạo một lookup object
-                    // let activeLookup = {};
-                    // listData1.forEach(item => {
-                    //     activeLookup[item._id.toString()] = item.active;
-                    // });
-
-                    // // Gộp mảng
-                    // let result = listData.map(item => ({
-                    //     _id: item._id,
-                    //     total: item.total,
-                    //     active: activeLookup[item._id.toString()] || 0
-                    // }));
-                    // // console.log(result)
+                    }
 
                     // Cách tối ưu dùng $facet
                     let listData = await ITEM__CONTACT_COLL.aggregate([
@@ -1249,9 +1198,12 @@ class Model extends BaseModel {
                     }
                     
                     if(startDate && endDate){
+                        let endDateCheck = moment(endDate).format("YYYY-MM-DD")
+
                         conditionObj.date =  { 
                             $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
+                            $lte: new Date(endDateCheck), // Chuẩn hóa với giờ được Record trong DB
+                            // $lte: moment(endDate).toDate() 
                         }
                     }
                     
