@@ -170,7 +170,7 @@ class Model extends BaseModel {
                 })
                 // console.log(listData)
 
-                let i = 3
+                let i = 1
                 for(const item of listData){
                     await that.insert({ 
                         userID, 
@@ -183,7 +183,7 @@ class Model extends BaseModel {
                         date: endDateCheck //
                     })
 
-                    i--
+                    i++
                 }
 
                 return resolve({ error: false, message: 'Ghi nhận thành công' });

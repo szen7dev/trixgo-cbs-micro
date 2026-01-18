@@ -12,9 +12,9 @@ module.exports  = DATABASE_MIDDLEWARE("crm_award", {
     },
     /**
      * Phân loại giải
-     * 1-Giải 1
-     * 2-Giải 2
-     * 3-Giải 3
+     * 1-Giải 1: vàng
+     * 2-Giải 2: bạc
+     * 3-Giải 3: đồng
      */
     awardType: {
         type: Number,
