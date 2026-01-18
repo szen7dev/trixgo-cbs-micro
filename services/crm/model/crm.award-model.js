@@ -34,6 +34,7 @@ const { TEMPLATE_NOTIFICATION } = require('../../../tools/constants/index.js');
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_AWARD_COLL                    = require('../database/crm.award-coll')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
+const CRM_HABIT_TRACK_COLL              = require('../../crm/database/crm.habit_track-coll')
 
 class Model extends BaseModel {
 
@@ -91,36 +92,69 @@ class Model extends BaseModel {
      * Code: 19/12/2025
      */
     capture({ userID, companyID, date, periodType }) {
+        const that = this
         return new Promise(async resolve => {
             try {
-                // if(!checkObjectIDs(contactID))
-                //     return resolve({ error: true, message: "Dữ liệu không hợp lệ", keyError: "Request params name invalid" })
+                let startDate, endDate;
+                const mDate = moment(date); // Ngày người dùng truyền vào
 
-                // let dataInsert = {
-                //     userCreate: userID,
-                //     company: companyID,
-                //     contact: contactID,
-                // }
+                // Xác định khoảng thời gian dựa trên periodType
+                if (periodType == 1) { // Tuần
+                    startDate = mDate.clone().startOf('isoWeek').toDate(); // Thứ 2
+                    endDate = mDate.clone().endOf('isoWeek').toDate();   // Chủ Nhật
+                } else if (periodType == 2) { // Tháng
+                    startDate = mDate.clone().startOf('month').toDate();
+                    endDate = mDate.clone().endOf('month').toDate();
+                } else if (periodType == 3) { // Năm
+                    startDate = mDate.clone().startOf('year').toDate();
+                    endDate = mDate.clone().endOf('year').toDate();
+                }
 
-                // if(checkObjectIDs(parentID)){
-                //     dataInsert.parent = parentID
-                // }
+                let conditionObj = {
+                        company: ObjectID(companyID),
+                        status: 2, // Hoàn thành
+                        date: {
+                            $gte: startDate,
+                            $lte: endDate
+                        }
+                };
 
-                // if (!isNaN(awardType)) {
-                //     dataInsert.awardType = Number(awardType)
-                // }
+                let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                    {
+                        $match: conditionObj
+                    },
+                    {
+                        $group: {
+                            _id: '$contact',
+                            totalXP: { $sum: '$xp' },
+                        },
+                    },
+                    { $sort: { totalXP: -1 } }, // Sắp xếp XP giảm dần
+                    { $limit: 3 } // Lấy 3 người cao nhất
+                ])
+                
+                // console.log(listData)
+                await CRM_HABIT_TRACK_COLL.populate(listData, {  
+                    path: '_id',
+                    select: 'name parent',
+                    model: 'contact',
+                })
+                // console.log(listData)
 
-                // if (!isNaN(periodType)) {
-                //     dataInsert.periodType = Number(periodType)
-                // }
+                let i = 3
+                for(const item of listData){
+                    await that.insert({ 
+                        userID, 
+                        companyID, 
+                        parentID: item._id.parent, 
+                        contactID: item._id._id, 
+                        awardType: i, 
+                        periodType, 
+                        score: item.totalXP  
+                    })
 
-                // if (!isNaN(score)) {
-                //     dataInsert.score = Number(score)
-                // }
-
-                // let infoAfterInsert = await this.insertData(dataInsert)
-                // if(!infoAfterInsert)
-                //     return resolve({ error: true, message: "cannot_insert" })
+                    i--
+                }
 
                 return resolve({ error: false, message: 'Ghi nhận thành công' });
             } catch (error) {
