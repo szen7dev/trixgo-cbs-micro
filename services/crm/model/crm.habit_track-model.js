@@ -1055,10 +1055,14 @@ class Model extends BaseModel {
                         }
                     }
 
+                    let endDateCheck = moment(endDate).format("YYYY-MM-DD")
+                    // console.log(endDateCheck)
+
                     if(startDate && endDate){
                         conditionObj.date =  { 
                             $gte: moment(startDate).toDate(),
-                            $lte: moment(endDate).toDate() 
+                            // $lte: moment(endDate).toDate(), 
+                            $lte: new Date(endDateCheck), // Chuẩn hóa với giờ được Record trong DB
                         }
                     }
                     // console.log(conditionObj)
@@ -1083,11 +1087,6 @@ class Model extends BaseModel {
                         path: '_id',
                         select: 'name image parent createAt birthday address gender',
                         model: 'contact',
-                        // populate: {
-                        //     path: 'parent',
-                        //     select: 'name',
-                        //     model: 'contact',
-                        // }
                     })
 
                     return resolve({ error: false, data: listData })
