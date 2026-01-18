@@ -47,7 +47,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/12/2025
      */
-    insert({ userID, companyID, parentID, contactID, awardType, periodType, score }) {
+    insert({ userID, companyID, parentID, contactID, awardType, periodType, score, date }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(contactID))
@@ -75,6 +75,10 @@ class Model extends BaseModel {
                     dataInsert.score = Number(score)
                 }
 
+                if(date && date != ""){
+                    dataInsert.date = date
+                }
+
                 let infoAfterInsert = await this.insertData(dataInsert)
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
@@ -100,23 +104,48 @@ class Model extends BaseModel {
 
                 // Xác định khoảng thời gian dựa trên periodType
                 if (periodType == 1) { // Tuần
-                    startDate = mDate.clone().startOf('isoWeek').toDate(); // Thứ 2
-                    endDate = mDate.clone().endOf('isoWeek').toDate();   // Chủ Nhật
+                    startDate = mDate.clone().startOf('isoWeek').toDate(); 
+                    // CHỈNH TẠI ĐÂY: Lấy Chủ Nhật nhưng đưa về đầu ngày (00:00:00)
+                    endDate = mDate.clone().endOf('isoWeek').toDate()
                 } else if (periodType == 2) { // Tháng
                     startDate = mDate.clone().startOf('month').toDate();
-                    endDate = mDate.clone().endOf('month').toDate();
+                    // CHỈNH TẠI ĐÂY: Lấy ngày cuối tháng nhưng đưa về đầu ngày
+                    endDate = mDate.clone().endOf('month').toDate()
                 } else if (periodType == 3) { // Năm
                     startDate = mDate.clone().startOf('year').toDate();
-                    endDate = mDate.clone().endOf('year').toDate();
+                    endDate = mDate.clone().endOf('year').toDate()
                 }
 
+                let endDateCheck = moment(endDate).format("YYYY-MM-DD")
+
+                // 3. Kiểm tra xem đã tồn tại bản ghi trong ngày đó chưa
+                let checkCondition = {
+                    company: ObjectID(companyID),
+                    periodType: Number(periodType),
+                    date: new Date(endDateCheck),
+                };
+
+                // console.log({startDate,endDate})
+                // console.log(checkCondition)
+
+                let existingAward = await CRM_AWARD_COLL.findOne(checkCondition);
+                // console.log(existingAward)
+
+                // 2. Thực hiện truy vấn tìm bản ghi đã tồn tại trong collection CRM_AWARD
+                
+                if (existingAward) 
+                    return resolve({ 
+                        error: true, 
+                        message: `Đã tồn tại dữ liệu trao giải cho kỳ này (ngày kết thúc: ${moment(endDate).format('DD/MM/YYYY')})` 
+                    })
+
                 let conditionObj = {
-                        company: ObjectID(companyID),
-                        status: 2, // Hoàn thành
-                        date: {
-                            $gte: startDate,
-                            $lte: endDate
-                        }
+                    company: ObjectID(companyID),
+                    status: 2, // Hoàn thành
+                    date: {
+                        $gte: startDate,
+                        $lte: endDate
+                    }
                 };
 
                 let listData = await CRM_HABIT_TRACK_COLL.aggregate([
@@ -150,7 +179,8 @@ class Model extends BaseModel {
                         contactID: item._id._id, 
                         awardType: i, 
                         periodType, 
-                        score: item.totalXP  
+                        score: item.totalXP,
+                        date: endDateCheck //
                     })
 
                     i--
