@@ -54,6 +54,7 @@ const FIN__CASH_BOOK_COLL                       = require('../../fin/database/fi
 // const STORE_ORDER_PRODUCT_COLL                  = require('../../store/database/store.order_product-coll');
 // const STORE_ORDER_COLL                          = require("../../store/database/store.order-coll");
 const MEDIA_COLL					        	= require('../../media/database/media-coll');
+const CRM_HABIT_COLL                            = require('../../crm/database/crm.habit-coll');
 
 const ITEM__FUNDA_MODEL                         = require('../../item/model/item.funda-model').MODEL;
 
@@ -422,7 +423,33 @@ class Model extends BaseModel {
                         }
                         return resolve({ error: false, data: 'Reset thành công' })
                     }
-                     
+                     // Reset Habit
+                    else if(option == 8){
+                        const moment = require('moment');
+
+                        // Thiết kế ngày Thứ 2 (start of week) và Chủ Nhật (end of week)
+                        // .startOf('isoWeek') sẽ trả về Thứ 2 đầu tuần theo chuẩn ISO
+                        const startOfWeek = moment().startOf('isoWeek').toDate(); 
+                        const endOfWeek = moment().endOf('isoWeek').toDate();
+                        // console.log(startOfWeek)
+                        // console.log(endOfWeek)
+
+                        await CRM_HABIT_COLL.updateMany(
+                            {},
+                            {$set: {
+                                startDate: startOfWeek,
+                                finishDate: endOfWeek,
+                                total1: 0,
+                                realityBonus1: 0,
+                                total2: 0,
+                                realityBonus2: 0,
+                                total3: 0,
+                                realityBonus3: 0,
+                            }}
+                        )
+
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
                 }else{
                     return resolve({ error: false, data: 'Pass không đúng, Reset thất bại' })
                 }

@@ -54,7 +54,7 @@ module.exports  = DATABASE_MIDDLEWARE("crm_habit", {
         default: 1
     },
     /**
-     * Phân loại hoàn thành
+     * Phân loại hoàn thành => Sau không dùng
      * 1-Tối thiểu
      * 2-Tối ưu
      * 3-Tối thượng
