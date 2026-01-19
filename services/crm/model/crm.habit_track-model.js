@@ -191,7 +191,6 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     updateByDay({ companyID, userID, habitID, date, status, resultType }){
-        // console.log({ companyID, userID, habitID, date, status, resultType })
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -210,6 +209,9 @@ class Model extends BaseModel {
 
                 if(!infoHabit.support)
                     return resolve({ error: true, message: "Danh bạ chưa có người Support", keyError: "Request params name invalid" })
+
+                let startDate = moment(infoHabit.startDate).format("YYYY-MM-DD")
+                let finishDate = moment(infoHabit.finishDate).format("YYYY-MM-DD")
 
                 let xp = 0 // Track
                 let xpHabit = infoHabit.xp || 0 // Habit
@@ -276,7 +278,7 @@ class Model extends BaseModel {
                     let listData1 = await CRM_HABIT_TRACK_COLL.aggregate([
                         {
                           $match: {
-                            habit: ObjectID(habitID)
+                            habit: ObjectID(habitID),
                           }
                         },
                         {
@@ -297,6 +299,10 @@ class Model extends BaseModel {
                           $match: {
                             habit: ObjectID(habitID),
                             status: 2,
+                            date: {
+                                $gte: new Date(startDate),
+                                $lte: new Date(finishDate),
+                            }
                           }
                         },
                         {
@@ -435,6 +441,10 @@ class Model extends BaseModel {
                           $match: {
                             habit: ObjectID(habitID),
                             status: 2,
+                            date: {
+                                $gte: new Date(startDate),
+                                $lte: new Date(finishDate),
+                            }
                           }
                         },
                         {
