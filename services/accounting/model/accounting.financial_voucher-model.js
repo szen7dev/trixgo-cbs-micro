@@ -75,8 +75,12 @@ class Model extends BaseModel {
         linkVoucherID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
-        forward, forwardIs, returning, advancePayment, cancel, 
+        forward, forwardIs, returning, cancel, 
         fcuExRate, 
+        paymentDeadline,
+        gift,
+        referrerID,
+        salesD,
         selectedJournals,
         ctx
      }) {
@@ -117,8 +121,10 @@ class Model extends BaseModel {
                     signInvoice, 
                     dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
-                    forward, forwardIs, returning, advancePayment, cancel, 
-                    fcuExRate
+                    forward, forwardIs, returning, cancel, 
+                    fcuExRate,
+                    paymentDeadline,
+                    gift
                 }
 
                 let convertStr = ''
@@ -158,6 +164,14 @@ class Model extends BaseModel {
                     dataInsertVoucher.parentSubtype = parentSubtypeID;
                 }
 
+                if (referrerID && checkObjectIDs(referrerID)) {
+                    dataInsertVoucher.referrer = referrerID;
+                }
+
+                if (salesD && checkObjectIDs(salesD)) {
+                    dataInsertVoucher.sales = salesD;
+                }
+
                 if (warehouseID && checkObjectIDs(warehouseID)) {
                     dataInsertVoucher.warehouse = warehouseID;
                 }
@@ -189,14 +203,12 @@ class Model extends BaseModel {
 
                     var i = 0
                     for (const subitem of selectedJournals) {
-                        // console.log(subitem)
-
                         const dataInsert = {
                             authorID, 
                             companyID, 
                             fundaID, 
                             voucherID, 
-                            date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
+                            date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
                             updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
                             quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                             amount: subitem.amount ? Number(subitem.amount) : 0,
@@ -204,6 +216,10 @@ class Model extends BaseModel {
                             fcuExRate,
                             fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                             note: subitem.note,
+                            paymentDeadline, // Lấy theo phiếu
+                            gift,
+                            referrerID,
+                            salesD,
                             ctx
                         }
 
@@ -290,23 +306,23 @@ class Model extends BaseModel {
                         }
 
                         /**
-                         * Cập nhật ngân sách thực hiện
+                         * Cập nhật ngân sách thực hiện: tạm thời bỏ lại
                          */
-                        if(subitem.budgetWork && _isValid(subitem.budgetWork)){
-                            dataInsert.budgetWork = subitem.budgetWork
-                        }
+                        // if(subitem.budgetWork && _isValid(subitem.budgetWork)){
+                        //     dataInsert.budgetWork = subitem.budgetWork
+                        // }
                         
                         //_________Tiến hành tạo chi tiết_________//
-                        let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert)
+                        await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert)
 
                         i++
-                        // console.log({__________i:i})
                     }
 
-                    //_________Cập nhật giá trị phiếu
+                    /**
+                     * CẬP NHẬT LẠI GIÁ TRỊ PHIẾU
+                     * - Xem lại phần này: với các phiếu nhập xuất hàng thì chỉ ghi nhận doanh thu!!!
+                     */
                     if(Number(i) == Number(selectedJournals.length)){
-                        // console.log('=================')
-                        // console.log({__________i:i})
                         await that.updateValue({ voucherID, userID: authorID })
                     }
                 }
@@ -341,25 +357,19 @@ class Model extends BaseModel {
         warehouseID,
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
-        forward, forwardIs, returning, advancePayment, cancel, 
+        forward, forwardIs, returning, cancel, 
         fcuExRate, 
-        selectedJournals, 
-        deletedJournals,
+        selectedJournals,
+        paymentDeadline,
         filesID,
+        gift,
+        referrerID,
+        salesD,
         ctx
      }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
-               
-                /**
-                 * BA-Author: HiepNH - 23/4/2022
-                 * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
-                 * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
-                 * +++budgetWorkID cũ
-                 * +++budgetWorkID mới
-                */
-
                 //_________Kiểm tra dữ liệu đầu vào
                 if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
@@ -369,7 +379,6 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: 'cannot_get_info_voucher', status: 400 })
 
                 let companyID = info.company
-                // let fundaID = info.funda
 
                 //_________Kiểm tra trùng số hiệu
                 if(sign && sign != ""){
@@ -396,8 +405,10 @@ class Model extends BaseModel {
                     customer: customerID,
                     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
-                    forward, forwardIs, returning, advancePayment, cancel, 
-                    fcuExRate
+                    forward, forwardIs, returning, cancel, 
+                    fcuExRate,
+                    paymentDeadline,
+                    gift,
                 }
 
                 let dataAddToset = {};
@@ -438,6 +449,18 @@ class Model extends BaseModel {
                     dataUpdateVoucher.storage = null
                 }
 
+                if (referrerID && checkObjectIDs(referrerID)) {
+                    dataUpdateVoucher.referrer = referrerID;
+                }else{
+                    dataUpdateVoucher.referrer = null
+                }
+
+                if (salesD && checkObjectIDs(salesD)) {
+                    dataUpdateVoucher.sales = salesD;
+                }else{
+                    dataUpdateVoucher.sales = null
+                }
+
                 // Khoản mục phí
                 let parentSubtypeID
                 if (subtypeID && checkObjectIDs(subtypeID)) {
@@ -451,7 +474,10 @@ class Model extends BaseModel {
                     }
 
                     dataUpdateVoucher.parentSubtype = parentSubtypeID;  
-                }else{
+                }
+
+                // Xem lại phần này!!!
+                else{
                     dataUpdateVoucher.subtype = null
                     dataUpdateVoucher.parentSubtype = null
                 }
@@ -481,7 +507,7 @@ class Model extends BaseModel {
                                 companyID, 
                                 fundaID, 
                                 voucherID, 
-                                date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
+                                date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
                                 updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
                                 quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
@@ -489,6 +515,10 @@ class Model extends BaseModel {
                                 fcuExRate,
                                 fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                                 note: subitem.note,
+                                paymentDeadline,
+                                gift,
+                                referrerID,
+                                salesD,
                                 ctx
                             }
     
@@ -575,14 +605,14 @@ class Model extends BaseModel {
                             }         
     
                             /**
-                             * Cập nhật ngân sách thực hiện
+                             * Cập nhật ngân sách thực hiện: để lại sau
                              */
-                            if(subitem.budgetWork && _isValid(subitem.budgetWork)){
-                                dataInsert.budgetWork = subitem.budgetWork
-                            }
+                            // if(subitem.budgetWork && _isValid(subitem.budgetWork)){
+                            //     dataInsert.budgetWork = subitem.budgetWork
+                            // }
                             
                             //_________Tiến hành tạo chi tiết_________//
-                            let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
+                            await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
                         }
 
                         // Cập nhật
@@ -593,7 +623,7 @@ class Model extends BaseModel {
                                 authorID, 
                                 fundaID, 
                                 journalID: subitem.journalID, 
-                                date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
+                                date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
                                 updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
                                 quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
@@ -601,6 +631,10 @@ class Model extends BaseModel {
                                 fcuExRate,
                                 fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                                 note: subitem.note,
+                                paymentDeadline,
+                                gift,
+                                referrerID,
+                                salesD,
                                 ctx
                             }
     
@@ -700,12 +734,12 @@ class Model extends BaseModel {
                             /**
                              * Cập nhật ngân sách thực hiện
                              */
-                            if(subitem.budgetWork && _isValid(subitem.budgetWork)){
-                                dataUpdate.budgetWork = subitem.budgetWork
-                            }
+                            // if(subitem.budgetWork && _isValid(subitem.budgetWork)){
+                            //     dataUpdate.budgetWork = subitem.budgetWork
+                            // }
                             
-                            //_________Tiến hành tạo chi tiết_________//
-                            let infoJournal = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update(dataUpdate);
+                            //_________Tiến hành cập nhật chi tiết_________//
+                            await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update(dataUpdate);
                         }
 
                         i++
@@ -793,7 +827,6 @@ class Model extends BaseModel {
      * Date: 6/1/2024
      */
     convertVoucher({ companyID, docID, userID, ctx }){
-        // console.log({ companyID, docID, userID })
         const that = this
         return new Promise(async (resolve, reject) => {
             try {
@@ -801,14 +834,11 @@ class Model extends BaseModel {
                     path: 'linkFunda',
                     select: '_id name warehouse contact'
                 })
-                // console.log(infoVoucher)
 
                 if(infoVoucher.type == 5 && infoVoucher.linkFunda && checkObjectIDs(infoVoucher.linkFunda._id)){
-                    // console.log(infoVoucher)
 
                     let listAccount = await ITEM__ACCOUNT_MODEL.getListRecursive({ companyID, arrAccNames: ['152','156'] })
                     listAccount = listAccount.data.map(item=>item._id.toString())
-                    // console.log(listAccount)
 
                     // Phải trả nội bộ khác
                     let info3368 = await ITEM__ACCOUNT_COLL.findOne({company: companyID, name: '3368'})                    
@@ -867,13 +897,11 @@ class Model extends BaseModel {
                             forward: infoVoucher.forward, 
                             forwardIs: infoVoucher.forwardIs, 
                             returning: infoVoucher.returning, 
-                            advancePayment: infoVoucher.advancePayment, 
                             cancel: infoVoucher.cancel, 
                             fcuExRate: infoVoucher.fcuExRate, 
                             selectedJournals: selectedJournals,
                             ctx
                         })
-                        // console.log(infoNewVoucher)
     
                         return resolve({ erorr: false, data: infoNewVoucher, status: 200 })
                     }
@@ -907,7 +935,6 @@ class Model extends BaseModel {
                                 forward: !isNaN(item.forward) ? item.forward : 0,
                                 forwardIs: !isNaN(item.forwardIs) ? item.forwardIs : 0,
                                 returning: !isNaN(item.returning) ? item.returning : 0,
-                                advancePayment: !isNaN(item.advancePayment) ? item.advancePayment : 0,
                                 cancel: !isNaN(item.cancel) ? item.cancel : 0,
                                 type: !isNaN(item.type) ? item.type : 1,
                                 vat: !isNaN(item.vat) ? item.vat : 0,
