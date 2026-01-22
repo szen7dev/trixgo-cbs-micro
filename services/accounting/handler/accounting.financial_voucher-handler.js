@@ -314,7 +314,7 @@ module.exports = {
                 } else {
                     resultAfterCallHandler = await ACCOUNTING__FINANCIAL_VOUCHER_MODEL.getList({
                         userID, companyID, fundaID, projectID, customerID, contractID, fromDate, toDate, type, vat, userCreateID, 
-                        keyword, limit, lastestID, select, populates, sortKey, ctx
+                        keyword, limit, lastestID, select, populates, sortKey
                     })
 
                     // console.log(resultAfterCallHandler)
