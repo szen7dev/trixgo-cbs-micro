@@ -371,16 +371,16 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 //_________Kiểm tra dữ liệu đầu vào
-                // if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
-                //     return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
+                    return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
 
-                if(!filesID){
-                    if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
-                        return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
-                }else{
-                    if(!checkObjectIDs(voucherID))
-                        return resolve({ error: true, message: 'voucherID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
-                }
+                // if(!filesID){
+                //     if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
+                //         return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                // }else{
+                //     if(!checkObjectIDs(voucherID))
+                //         return resolve({ error: true, message: 'voucherID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                // }
 
                 let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
                 if (!info) 
