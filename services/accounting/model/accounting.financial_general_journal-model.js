@@ -3243,10 +3243,20 @@ class Model extends BaseModel {
                  * 2. Công nợ theo accountID
                  * 3. Công nợ của từng Mã khách
                  */
-                let conditionObj = {company: ObjectID(companyID)}
+                let conditionObj = {company: ObjectID(companyID), forward: 0}
                 let arrObjectID = [accountID]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
                 // console.log(infoAccount)
+                const listMatch = ['1', '2', '6', '8']; // Nên để dạng chuỗi để so sánh chính xác
+                const name = infoAccount.name; // Ví dụ mã tài khoản
+                const description = infoAccount.description; // Ví dụ mã tài khoản
+                let isAssets
+
+                if (listMatch.includes(String(name)[0])) {
+                    isAssets = 1
+                }else{
+                    isAssets = 2
+                }
 
                 arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
 
@@ -3261,7 +3271,6 @@ class Model extends BaseModel {
                         { credit: { $in: arrObjectID }, customerCredit: ObjectID(contactID) },
                     ]
                 }
-
                 // console.log(conditionObj)
 
                 let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
@@ -3273,7 +3282,7 @@ class Model extends BaseModel {
                 .sort({date: 1})
                 // console.log(listData)
 
-                return resolve({ error: false, data: {listData, arrObjectID} })
+                return resolve({ error: false, data: {listData, arrObjectID, isAssets, name, description} })
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -3615,18 +3624,33 @@ class Model extends BaseModel {
                     }
 
                     else if(type == 5){
-                        // console.log(data)
-                        var i = 3
+                        workbook.sheet("Data").row(2).cell(1).value(`Tài khoản: ${data?.name} - ${data?.description}`);
+
+                        var i = 4
                         data?.listData?.forEach((item, index) => {
+                            // console.log(item.amount)
                             workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
                             workbook.sheet("Data").row(i).cell(2).value(item?.date);
                             workbook.sheet("Data").row(i).cell(3).value(item?.voucher.name);
                             workbook.sheet("Data").row(i).cell(4).value(item?.customerDebit.name);
-                            if(data?.arrObjectID.includes(item.debit.toString())){
-                                workbook.sheet("Data").row(i).cell(5).value(Number(item.amount));
+                            if(item?.debit && item?.debit != null && data?.arrObjectID.includes(item?.debit.toString())){
+                                // if(data?.arrObjectID.includes(item?.debit.toString())){
+                                //     workbook.sheet("Data").row(i).cell(5).value(Number(item.amount));
+                                // }
+                                if(data?.isAssets == 1){
+                                    workbook.sheet("Data").row(i).cell(5).value(Number(item.amount));
+                                }else{
+                                    workbook.sheet("Data").row(i).cell(6).value(Number(item.amount));
+                                }
+                                
                             }else{
-                                 workbook.sheet("Data").row(i).cell(6).value(Number(item.amount));
+                                if(data?.isAssets == 1){
+                                    workbook.sheet("Data").row(i).cell(6).value(Number(item.amount));
+                                }else{
+                                    workbook.sheet("Data").row(i).cell(5).value(Number(item.amount));
+                                }
                             }
+                            
                             workbook.sheet("Data").row(i).cell(8).value(item?.paymentDeadline);
                             workbook.sheet("Data").row(i).cell(9).value(item?.note);
 
