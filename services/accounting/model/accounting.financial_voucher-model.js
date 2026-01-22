@@ -1019,13 +1019,9 @@ class Model extends BaseModel {
      * Date: 30/4/2022
      */
     getList({ userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, vat, userCreateID,
-        keyword, limit = 20, lastestID, select, populates = {}, sortKey, ctx }) {
-        // console.log({userID, companyID, fundaID, projectID, contractID, customerID, fromDate, toDate, type, vat, userCreateID, keyword})
+        keyword, limit = 20, lastestID, select, populates = {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 if (limit > 20) {
                     limit = 20
                 } else {
