@@ -3246,6 +3246,7 @@ class Model extends BaseModel {
                 let conditionObj = {company: ObjectID(companyID)}
                 let arrObjectID = [accountID]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                // console.log(infoAccount)
 
                 arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
                 // console.log(arrObjectID)
