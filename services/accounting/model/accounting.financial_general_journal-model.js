@@ -943,7 +943,7 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name  : getListByProperty
+     * Name  : getAccountBalance
      * Code: Hiepnh
      * Date  : 9/2/2025
      */
@@ -3170,6 +3170,11 @@ class Model extends BaseModel {
 		})
 	}
 
+    /**
+     * Name: Danh sách phân loại theo người nhập liệu
+     * Code: HiepNH
+     * Date: 22/1/2026
+     */
     getListByAuthor({ companyID, fromDate, toDate, userID }) {
         return new Promise(async resolve => {
             try {
@@ -3224,6 +3229,54 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name: Tổng hợp công nợ
+     * Code: HiepNH
+     * Date: 22/1/2026
+     */
+    getListDebt({ companyID, fromDate, toDate, userID, accountID }) {
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1. Tổng hợp công nợ
+                 * 2. Công nợ theo accountID
+                 * 3. Công nợ của từng Mã khách
+                 */
+                let conditionObj = {company: ObjectID(companyID)}
+                let arrObjectID = [accountID]
+                let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+
+                arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
+                // console.log(arrObjectID)
+
+                // conditionObj.$or = [
+                //     { debit: { $in: arrObjectID }, customerDebit: contactID },
+                //     { credit: { $in: arrObjectID }, customerCredit: contactID },
+                // ]
+
+                conditionObj.$or = [
+                    { debit: { $in: arrObjectID }},
+                    { credit: { $in: arrObjectID }},
+                ]
+
+                let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
+                .select('name note amount voucher date debit credit customerDebit customerCredit paymentDeadline')
+                .populate({
+                    path:'customerDebit customerCredit voucher',
+                    select: 'name phone sign'
+                })
+                .sort({date: 1})
+                // console.log(listData)
+
+                return resolve({ error: false, data: {listData, arrObjectID} })
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
     exportExcelByFilter({ userID, email, companyID, type, filterParams, voucherID, fromDate, toDate, ctx }) {
         return new Promise(async resolve => {
             try {
@@ -3254,6 +3307,7 @@ class Model extends BaseModel {
                 })
 
                 switch (type) {
+                    // Danh sách Filter
                     case 1:
                         resultGetList = await this.getListByFilter({
                             ...filterParams,
@@ -3264,7 +3318,8 @@ class Model extends BaseModel {
                             ctx
                         });
                         break;
-
+                    
+                    // Danh sách Filter
                     case 2:
                         resultGetList = await this.getListByFilter({
                              ...filterParams,
@@ -3274,7 +3329,8 @@ class Model extends BaseModel {
                             isExportExcel: true, ctx
                         });
                         break;
-
+                    
+                    // Danh sách Filter
                     case 3:
                         resultGetList = await this.getListByFilter({
                                 ...filterParams,
@@ -3284,13 +3340,23 @@ class Model extends BaseModel {
                             isExportExcel: true, ctx
                         });
                         break;
-                        
+                    
+                    // Danh sách Filter
                     case 4:
                         resultGetList = await this.getListByAuthor({
                             companyID, fromDate, toDate, userID
                         });
                         break;
-                        
+
+                    case 5:
+                        resultGetList = await this.getListDebt({
+                                ...filterParams,
+                            userID,
+                            companyID,
+                        });
+                        break;
+                    
+                    // Danh sách Filter
                     default:
                         resultGetList = await this.getListByFilter({
                             ...filterParams,
@@ -3302,7 +3368,7 @@ class Model extends BaseModel {
                         break;
                 }
   
-                if(type != 4){
+                if([1,2,3].includes(type)){
                     if(!resultGetList.error) {
                         conditionObj = resultGetList.data;
                     }
@@ -3339,7 +3405,7 @@ class Model extends BaseModel {
         })
     }
 
-    downloadExcelFile({ userID, email, infoAppUser, configEmails, data, type, voucherID }) {
+    downloadExcelFile({ userID, email, infoAppUser, configEmails, data, arrObjectID, type, voucherID }) {
         return new Promise(resolve => {
             let template
 
@@ -3361,10 +3427,18 @@ class Model extends BaseModel {
             
             else if(type == 4){
                 template = '../../../files/templates/excels/accounting_journal_report.xlsx'
-            }            
+            }    
+            
+            else if(type == 5){
+                template = '../../../files/templates/excels/accounting_export_debt.xlsx'
+            }    
 
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
                 .then(async workbook => {
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    let fileName = `report_${now.getTime()}.xlsx`;
+
                     if(type == 1){
                         var i = 3
                         data?.forEach((item, index) => {
@@ -3523,7 +3597,6 @@ class Model extends BaseModel {
                     }
 
                     else if(type == 4){
-
                         var i = 3
                         data?.forEach((item, index) => {
                             workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
@@ -3537,9 +3610,28 @@ class Model extends BaseModel {
                         })
                     }
 
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    const fileName = `report_${now.getTime()}.xlsx`;
+                    else if(type == 5){
+                        // console.log(data)
+                        var i = 3
+                        data?.listData?.forEach((item, index) => {
+                            workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("Data").row(i).cell(2).value(item?.date);
+                            workbook.sheet("Data").row(i).cell(3).value(item?.voucher.name);
+                            workbook.sheet("Data").row(i).cell(4).value(item?.customerDebit.name);
+                            if(data?.arrObjectID.includes(item.debit.toString())){
+                                workbook.sheet("Data").row(i).cell(5).value(Number(item.amount));
+                            }else{
+                                 workbook.sheet("Data").row(i).cell(6).value(Number(item.amount));
+                            }
+                            workbook.sheet("Data").row(i).cell(8).value(item?.paymentDeadline);
+                            workbook.sheet("Data").row(i).cell(9).value(item?.note);
+
+                            i++
+                        })
+
+                        fileName = `BaoCaoCongNo_${now.getTime()}.xlsx`;
+                    }
+
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
                     await workbook.toFileAsync(pathWriteFile);
