@@ -35,9 +35,13 @@ module.exports = {
                     date, name, sign, signInvoice, dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note, 
                     forward, forwardIs, returning, advancePayment, cancel, 
-                    fcuExRate, 
+                    fcuExRate,
+                    paymentDeadline, 
                     selectedJournals, 
                     isImport,
+                    gift,
+                    referrerID,
+                    salesD,
                 } = ctx.params;
                 // console.log(ctx.params)
                 //  return
@@ -79,6 +83,10 @@ module.exports = {
                     fcuExRate: !isNaN(fcuExRate) ? Number(fcuExRate) : 0,
                     selectedJournals, 
                     isImport,
+                    paymentDeadline,
+                    gift,
+                    referrerID,
+                    salesD,
                     ctx,
                 }) 
 
@@ -115,8 +123,11 @@ module.exports = {
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate, 
                     selectedJournals, 
-                    deletedJournals,
-                    filesID
+                    filesID,
+                    paymentDeadline,
+                    gift,
+                    referrerID,
+                    salesD,
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -137,9 +148,12 @@ module.exports = {
                     receiver, note,
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate, 
-                    selectedJournals, 
-                    deletedJournals,
+                    selectedJournals,
                     filesID,
+                    paymentDeadline,
+                    gift,
+                    referrerID,
+                    salesD,
                     ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

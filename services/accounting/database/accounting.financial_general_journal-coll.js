@@ -75,7 +75,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
      * 1-Ghi nhận tăng ngân sách thực hiện
      * 2-Ghi nhận giảm ngân sách thực hiện (hoàn ứng,...)
      */
-    updown: { type: Number, default: 1 }, 
+    // updown: { type: Number, default: 1 }, 
     /**
      * LINK TỪ PHIẾU
      */
@@ -96,27 +96,29 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     forwardIs: { type: Number, default: 0 },
     //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
     returning: { type: Number, default: 0 },
-     /**
-     * Phân biệt phiếu tạm ứng hay thanh toán
-     * 0-Thanh toán
-     * 1-Tạm ứng
-     */
-    advancePayment: { type: Number, default: 0 },
+    //_________Hạn thanh toán
+    paymentDeadline: Date,
     //_________Phiếu có hủy hay không
     cancel: { type: Number, default: 0 },
     /**
-     * Có phải là hóa đơn dịch vụ hay không
-     * 0-Không phải
-     * 1-Mua vào
-     * 2-Bán ra
-     */
-    vat: { type: Number, default: 0 }, 
-    //_________Nguồn đến của khách hàng (Facebook, website, zalo, khác)
-    source: { type: Number, default: 1 }, 
+     * DÀNH RIÊNG CHO BÁN HÀNG
+     */    
+    //_________Trạng thái đơn hàng
+    status: { type: Number, default: 1 }, 
     //_________Đơn hàng cũ/mới (cũ là đã từng bán cho khách 1 lần rồi)
     orderNew: { type: Number, default: 1 }, 
-    //_________Chính sách giá bán (buôn/lẻ)
-    pricePolicy: { type: Number, default: 1 }, 
+    //_________Người giới thiệu
+    referrer: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    }, 
+    //_________Sale
+    sales: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
+    //_________Có phải là hàng tặng không
+    gift: { type: Number, default: 0 },
     /**
      * KẾ TOÁN
      */
@@ -155,18 +157,7 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     //_________Thành tiền
     amount: { type: Number, default: 0 }, 
     //_________Có in ra trên phiếu để tính giá trị hay không
-    cash: { type: Number, default: 1 },  
-    //_________Tiền về thực tế (áp dụng theo dõi cho các hoá đơn VAT)
-    amountPayment: { type: Number, default: 0 }, 
-    /**
-     * USD-NGOẠI TỆ
-     */ 
-    //_________Loại ngoại tệ (1/USD)
-    fcuType: { type: Number, default: 1 },  
-    //_________Tỷ giá hối đoái
-    fcuExRate: { type: Number, default: 0 },
-    //_________Thành tiền ngoại tệ
-    fcuAmount: { type: Number, default: 0 }, 
+    cash: { type: Number, default: 1 },
     //_________Lịch sử thay đổi
     history: String,
     /**

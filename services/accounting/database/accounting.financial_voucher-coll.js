@@ -71,12 +71,6 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     forwardIs: { type: Number, default: 0 },
     //_________Có phải là phiếu xuất hàng đi mượn hay không (để không chạy giá vốn cho các phiếu này)
     returning: { type: Number, default: 0 },
-    /**
-     * Phân biệt phiếu tạm ứng hay thanh toán
-     * 0-Thanh toán
-     * 1-Tạm ứng
-     */
-    advancePayment: { type: Number, default: 0 },
     //_________Phiếu có hủy hay không
     cancel: { type: Number, default: 0 },
     /**
@@ -86,6 +80,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     type: { type: Number, default: 1 },  
     //_________Ngày hoạch toán
     date: { type: Date, default: Date.now },
+    //_________Hạn thanh toán
+    paymentDeadline: Date,
     /**
      * Có phải là hóa đơn VAT hay không
      * 0-Không phải
@@ -113,41 +109,25 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     note: String,
     //_________Thành tiền (NEW***)
     amount: { type: Number, default: 0 }, 
-    //_________Giá trị trước thuế
-    revenue: { type: Number, default: 0 },
-    //_________Giá trị thuế
-    tax: { type: Number, default: 0 },
     /**
-     * USD-NGOẠI TỆ
-     */ 
-    //_________Tỷ giá hối đoái
-    fcuExRate: { type: Number, default: 0 },
-    //_________Thành tiền ngoại tệ (NEW***)
-    fcuAmount: { type: Number, default: 0 }, 
-     /**
      * DÀNH RIÊNG CHO BÁN HÀNG
      */    
     //_________Trạng thái đơn hàng
-    status: { type: Number, default: 1 },  
-    //_________Nhân viên thực hiện đơn hàng
-    staff: [{
-        type: Schema.Types.ObjectId,
-        ref: 'contact'
-    }],
-    //_________Nguồn đến của khách hàng (Facebook, website, zalo, khác)
-    source: { type: Number, default: 1 }, 
+    status: { type: Number, default: 1 }, 
     //_________Đơn hàng cũ/mới (cũ là đã từng bán cho khách 1 lần rồi)
     orderNew: { type: Number, default: 1 }, 
-    //_________Chính sách giá bán (buôn/lẻ)
-    pricePolicy: { type: Number, default: 1 }, 
-    //_________Chiết khấu
-    discountCost: { type: Number, default: 0 }, 
-    //_________Chi phí khách phải trả khác (giao hàng, phụ phí)
-    otherCost: { type: Number, default: 0 }, 
-    //_________Đơn vị giao vận
-    shipperName: String, 
-    //_________Chi phí thuê giao vận
-    shipperCost: { type: Number, default: 0 }, 
+    //_________Người giới thiệu
+    referrer: {
+        type: Schema.Types.ObjectId,
+        ref : 'contact'
+    }, 
+    //_________Sale
+    sales: {
+        type: Schema.Types.ObjectId,
+        ref : "contact"
+    },
+    //_________Có phải là hàng tặng không
+    gift: { type: Number, default: 0 },
     //_________Danh sách bút toán
     journals: [{
         type: Schema.Types.ObjectId,
