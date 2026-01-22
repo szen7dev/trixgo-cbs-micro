@@ -3234,7 +3234,7 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 22/1/2026
      */
-    getListDebt({ companyID, fromDate, toDate, userID, accountID }) {
+    getListDebt({ companyID, fromDate, toDate, userID, accountID, contactID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -3249,17 +3249,20 @@ class Model extends BaseModel {
                 // console.log(infoAccount)
 
                 arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
-                // console.log(arrObjectID)
-
-                // conditionObj.$or = [
-                //     { debit: { $in: arrObjectID }, customerDebit: contactID },
-                //     { credit: { $in: arrObjectID }, customerCredit: contactID },
-                // ]
 
                 conditionObj.$or = [
                     { debit: { $in: arrObjectID }},
                     { credit: { $in: arrObjectID }},
                 ]
+
+                if(contactID && checkObjectIDs(contactID)){
+                    conditionObj.$or = [
+                        { debit: { $in: arrObjectID }, customerDebit: ObjectID(contactID) },
+                        { credit: { $in: arrObjectID }, customerCredit: ObjectID(contactID) },
+                    ]
+                }
+
+                // console.log(conditionObj)
 
                 let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
                 .select('name note amount voucher date debit credit customerDebit customerCredit paymentDeadline')
