@@ -29,13 +29,14 @@ const { uploadFileS3 }                                  = require('../../../tool
 /**
  * COLLECTIONS
  */
+const COMPANY_COLL                                      = require('../../auth/database/auth.company-coll')
 const ITEM_ACCOUNT_COLL                                 = require('../../item/database/item.account-coll')
 const ITEM__GOODS_COLL            			            = require('../../item/database/item.goods-coll')
 const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
 const FINANCIAL_VOUCHER_COLL                            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
-const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
+const ITEM__CONFIG_COLL                                 = require("../../item/database/item.config-coll");
 
 /**
  * MODELS
@@ -3247,11 +3248,13 @@ class Model extends BaseModel {
                 let conditionObj = {company: ObjectID(companyID), forward: 0}
                 let arrObjectID = [accountID]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                let infoCompany = await COMPANY_COLL.findById(companyID).select('name sign')
 
                 const listMatch = ['1', '2', '6', '8']; // Nên để dạng chuỗi để so sánh chính xác
                 const name = infoAccount.name; // Ví dụ mã tài khoản
                 const description = infoAccount.description; // Ví dụ mã tài khoản
-                let isAssets, contactName = '', companyName = '', companySign = ''
+                let isAssets, contactName = ''
+                let companyName = infoCompany.name, companySign = infoCompany.sign
 
                 if (listMatch.includes(String(name)[0])) {
                     isAssets = 1
@@ -3269,13 +3272,8 @@ class Model extends BaseModel {
                 if(contactID && checkObjectIDs(contactID)){
                     let infoContact = await ITEM__CONTACT_COLL
                     .findById(contactID)
-                    .select('sign taxid company')
-                    .populate({
-                        path: 'company',
-                        select: 'name sign'
-                    })
-
-                    console.log(infoContact)
+                    .select('sign taxid')
+                    // console.log(infoContact)
 
                     if(infoContact){
                         conditionObj.$or = [
@@ -3284,15 +3282,9 @@ class Model extends BaseModel {
                         ]
 
                         contactName = `${infoContact.sign}_${infoContact.taxid}`
-                        companyName = infoContact.company.name
-                        companySign = infoContact.company.sign
                     }
                 }
                 // console.log(conditionObj)
-                // console.log({contactName})
-                // console.log({companyName})
-                // console.log({companySign})
-
                 let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
                 .select('name note amount voucher date debit credit customerDebit customerCredit paymentDeadline')
                 .populate({
