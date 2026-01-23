@@ -83,7 +83,6 @@ class Model extends BaseModel {
         salesD,
         selectedJournals,
         isDocumented,
-        ctx
      }) {
         const that = this
         return new Promise(async (resolve) => {
@@ -215,7 +214,6 @@ class Model extends BaseModel {
                             referrerID,
                             salesD,
                             isDocumented,
-                            ctx
                         }
 
                         /**
@@ -353,8 +351,7 @@ class Model extends BaseModel {
         gift,
         referrerID,
         salesD,
-        isDocumented,
-        ctx
+        isDocumented
      }) {
         const that = this
         return new Promise(async (resolve) => {
@@ -517,7 +514,6 @@ class Model extends BaseModel {
                                 referrerID,
                                 salesD,
                                 isDocumented,
-                                ctx
                             }
     
                             /**
@@ -609,7 +605,6 @@ class Model extends BaseModel {
                         // Cập nhật
                         else{
                             // console.log('===================CẬP NHẬT BÚT TOÁN===================')
-                            // console.log(subitem)
                             const dataUpdate = {
                                 authorID, 
                                 fundaID, 
@@ -627,7 +622,6 @@ class Model extends BaseModel {
                                 referrerID,
                                 salesD,
                                 isDocumented,
-                                ctx
                             }
     
                             /**

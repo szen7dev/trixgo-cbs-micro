@@ -89,7 +89,6 @@ module.exports = {
                     referrerID,
                     salesD,
                     isDocumented,
-                    ctx,
                 }) 
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -158,7 +157,6 @@ module.exports = {
                     referrerID,
                     salesD,
                     isDocumented,
-                    ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
