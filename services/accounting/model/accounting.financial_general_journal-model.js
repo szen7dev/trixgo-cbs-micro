@@ -29,13 +29,14 @@ const { uploadFileS3 }                                  = require('../../../tool
 /**
  * COLLECTIONS
  */
+const COMPANY_COLL                                      = require('../../auth/database/auth.company-coll')
 const ITEM_ACCOUNT_COLL                                 = require('../../item/database/item.account-coll')
 const ITEM__GOODS_COLL            			            = require('../../item/database/item.goods-coll')
 const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
 const FINANCIAL_VOUCHER_COLL                            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
-const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
+const ITEM__CONFIG_COLL                                 = require("../../item/database/item.config-coll");
 
 /**
  * MODELS
@@ -3235,6 +3236,7 @@ class Model extends BaseModel {
      * Date: 22/1/2026
      */
     getListDebt({ companyID, fromDate, toDate, userID, accountID, contactID }) {
+        console.log({ companyID, fromDate, toDate, userID, accountID, contactID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3246,11 +3248,13 @@ class Model extends BaseModel {
                 let conditionObj = {company: ObjectID(companyID), forward: 0}
                 let arrObjectID = [accountID]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                let infoCompany = await COMPANY_COLL.findById(companyID).select('name sign')
 
                 const listMatch = ['1', '2', '6', '8']; // Nên để dạng chuỗi để so sánh chính xác
                 const name = infoAccount.name; // Ví dụ mã tài khoản
                 const description = infoAccount.description; // Ví dụ mã tài khoản
                 let isAssets, contactName = ''
+                let companyName = infoCompany.name, companySign = infoCompany.sign
 
                 if (listMatch.includes(String(name)[0])) {
                     isAssets = 1
@@ -3266,7 +3270,11 @@ class Model extends BaseModel {
                 ]
 
                 if(contactID && checkObjectIDs(contactID)){
-                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('sign taxid')
+                    let infoContact = await ITEM__CONTACT_COLL
+                    .findById(contactID)
+                    .select('sign taxid')
+                    // console.log(infoContact)
+
                     if(infoContact){
                         conditionObj.$or = [
                             { debit: { $in: arrObjectID }, customerDebit: ObjectID(contactID) },
@@ -3277,7 +3285,6 @@ class Model extends BaseModel {
                     }
                 }
                 // console.log(conditionObj)
-
                 let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
                 .select('name note amount voucher date debit credit customerDebit customerCredit paymentDeadline')
                 .populate({
@@ -3287,7 +3294,14 @@ class Model extends BaseModel {
                 .sort({date: 1})
                 // console.log(listData)
 
-                return resolve({ error: false, data: {listData, arrObjectID, isAssets, name, description, contactName} })
+                return resolve({ error: false, data: {
+                    listData, arrObjectID, isAssets, 
+                    name, 
+                    description, 
+                    contactName,
+                    companySign,
+                    companyName,
+                } })
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -3629,15 +3643,17 @@ class Model extends BaseModel {
                     }
 
                     else if(type == 5){
-                        workbook.sheet("Data").row(2).cell(1).value(`Tài khoản: ${data?.name} - ${data?.description}`);
+                        workbook.sheet("Data").row(2).cell(1).value(data?.companyName);
+                        workbook.sheet("Data").row(3).cell(1).value(`Tài khoản: ${data?.name} - ${data?.description}`);
 
-                        var i = 4
+                        var i = 5
                         data?.listData?.forEach((item, index) => {
-                            // console.log(item.amount)
+
                             workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
                             workbook.sheet("Data").row(i).cell(2).value(item?.date);
                             workbook.sheet("Data").row(i).cell(3).value(item?.voucher.name);
                             workbook.sheet("Data").row(i).cell(4).value(item?.customerDebit.name);
+
                             if(item?.debit && item?.debit != null && data?.arrObjectID.includes(item?.debit.toString())){
                                 // if(data?.arrObjectID.includes(item?.debit.toString())){
                                 //     workbook.sheet("Data").row(i).cell(5).value(Number(item.amount));
@@ -3662,7 +3678,7 @@ class Model extends BaseModel {
                             i++
                         })
 
-                        fileName = `BaoCaoCongNo_${data?.contactName}_${now.getTime()}.xlsx`;
+                        fileName = `${data?.companySign}_BaoCaoCongNo_${data?.contactName}_${now.getTime()}.xlsx`;
                     }
 
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
