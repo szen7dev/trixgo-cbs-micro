@@ -3246,11 +3246,11 @@ class Model extends BaseModel {
                 let conditionObj = {company: ObjectID(companyID), forward: 0}
                 let arrObjectID = [accountID]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
-                // console.log(infoAccount)
+
                 const listMatch = ['1', '2', '6', '8']; // Nên để dạng chuỗi để so sánh chính xác
                 const name = infoAccount.name; // Ví dụ mã tài khoản
                 const description = infoAccount.description; // Ví dụ mã tài khoản
-                let isAssets
+                let isAssets, contactName = ''
 
                 if (listMatch.includes(String(name)[0])) {
                     isAssets = 1
@@ -3266,10 +3266,15 @@ class Model extends BaseModel {
                 ]
 
                 if(contactID && checkObjectIDs(contactID)){
-                    conditionObj.$or = [
-                        { debit: { $in: arrObjectID }, customerDebit: ObjectID(contactID) },
-                        { credit: { $in: arrObjectID }, customerCredit: ObjectID(contactID) },
-                    ]
+                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).select('sign taxid')
+                    if(infoContact){
+                        conditionObj.$or = [
+                            { debit: { $in: arrObjectID }, customerDebit: ObjectID(contactID) },
+                            { credit: { $in: arrObjectID }, customerCredit: ObjectID(contactID) },
+                        ]
+
+                        contactName = `${infoContact.name}_${infoContact.taxid}`
+                    }
                 }
                 // console.log(conditionObj)
 
@@ -3282,7 +3287,7 @@ class Model extends BaseModel {
                 .sort({date: 1})
                 // console.log(listData)
 
-                return resolve({ error: false, data: {listData, arrObjectID, isAssets, name, description} })
+                return resolve({ error: false, data: {listData, arrObjectID, isAssets, name, description, contactName} })
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -3657,7 +3662,7 @@ class Model extends BaseModel {
                             i++
                         })
 
-                        fileName = `BaoCaoCongNo_${now.getTime()}.xlsx`;
+                        fileName = `BaoCaoCongNo_${data?.contactName}_${now.getTime()}.xlsx`;
                     }
 
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
