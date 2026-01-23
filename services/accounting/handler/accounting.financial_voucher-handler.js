@@ -42,7 +42,8 @@ module.exports = {
                     gift,
                     referrerID,
                     salesD,
-                    isDocumented
+                    isDocumented,
+                    isPaid
                 } = ctx.params;
                 // console.log(ctx.params)
                 //  return
@@ -89,6 +90,7 @@ module.exports = {
                     referrerID,
                     salesD,
                     isDocumented,
+                    isPaid
                 }) 
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
@@ -129,7 +131,8 @@ module.exports = {
                     gift,
                     referrerID,
                     salesD,
-                    isDocumented
+                    isDocumented,
+                    isPaid
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -157,6 +160,7 @@ module.exports = {
                     referrerID,
                     salesD,
                     isDocumented,
+                    isPaid
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
