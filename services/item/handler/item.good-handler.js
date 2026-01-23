@@ -31,12 +31,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                const { projectID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, duration, usage, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired } = ctx.params;
+                const { projectID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, parentID, convertID, convertQuantity, status, duration, usage, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, accountID } = ctx.params;
                 // console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ projectID, companyID: company._id, parentID, convertID, convertQuantity, status, duration, usage, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired  });
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.insert({ projectID, companyID: company._id, parentID, convertID, convertQuantity, status, duration, usage, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, accountID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -66,11 +66,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const { _id: userID } = ctx.meta.infoUser;
-                const { goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, convertID, convertQuantity, status, duration, usage, thumbnailID, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, removeImageID } = ctx.params;
+                const { goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, convertID, convertQuantity, status, duration, usage, thumbnailID, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, removeImageID, accountID } = ctx.params;
 
                 // console.log(ctx.params)
 
-                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, duration, usage, thumbnailID, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, removeImageID });
+                const resultAfterCallHandler = await ITEM__GOODS_MODEL.update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, duration, usage, thumbnailID, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, removeImageID, accountID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error: true, message: error.message };
@@ -100,7 +100,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { optionSeller, option, goodsID, projectID, parentID, categoryID, fundaID, type, isParent, status, usage, menuSlug, slug, keyword, limit, lastestID, select, populates, isListParentOfListChilds, forCustomer, sortDirection } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const infoUser = ctx?.meta?.infoUser;
 
