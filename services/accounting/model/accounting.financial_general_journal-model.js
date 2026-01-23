@@ -77,7 +77,7 @@ class Model extends BaseModel {
         gift,
         referrerID,
         salesD,
-        ctx
+        isDocumented,
     }) {
         const that = this
         return new Promise(async (resolve) => {
@@ -140,30 +140,8 @@ class Model extends BaseModel {
                     referrer: referrerID,
                     sales: salesD,
                     note,
+                    isDocumented
                 }
-
-                /**
-                 * GÁN MÃ NGÂN SÁCH
-                 */
-                // let budget, budgetItem, budgetGroup
-                // if(budgetWork && _isValid(budgetWork)){
-                //     let infoWork = await BUDGET_WORK_COLL.findById(budgetWork)
-
-                //     if(infoWork){
-                //         if(infoWork.budget){
-                //             budget = infoWork.budget;
-                //             dataInsert.budget = infoWork.budget;
-                //         }
-                //         if(infoWork.item){
-                //             budgetItem = infoWork.item;
-                //             dataInsert.budgetItem = infoWork.item;
-                //         }
-                //         if(infoWork.group){
-                //             budgetGroup = infoWork.group;
-                //             dataInsert.budgetGroup = infoWork.group;
-                //         }
-                //     }
-                // }
 
                 let infoAfterInsert = await that.insertData(dataInsert);
                 if(!infoAfterInsert)
@@ -175,57 +153,6 @@ class Model extends BaseModel {
                 await FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, {
                     $addToSet: { journals: infoAfterInsert._id } 
                 }, { new: true });
-
-                /**
-                 * CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH
-                 * (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
-                 * 1. Cập nhật ngân sách công việc
-                 * 2. Cập nhật ngân sách Nhóm
-                 * 3. Cập nhật ngân sách Hạng mục
-                 * 4. Cập nhật ngân sách Tổng
-                 */
-                // if(budgetWork && _isValid(budgetWork)){
-                //     // Cập nhật Công việc ngân sách đã thực hiện
-                //     let infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
-                //         option: 2,
-                //         workID: `${budgetWork}`
-                //     })
-                //     // console.log('1. Update Budget Work==========================>>>>>')
-                //     // console.log(infoBudgetWork)
-
-                //     if(infoBudgetWork){
-                //         // Cập nhật Nhóm ngân sách đã thực hiện
-                //         let infoBudgetGroup = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE}`, {
-                //             option: 2,
-                //             groupID: `${budgetGroup}`
-                //         })
-
-                //         // console.log('2. Update Budget Group==========================>>>>>')
-                //         // console.log(infoBudgetGroup)
-
-                //         if(infoBudgetGroup){
-                //             // Cập nhật Hạng mục ngân sách đã thực hiện
-                //             let infoBudgetItem = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE}`, {
-                //                 option: 2,
-                //                 itemID: `${budgetItem}`
-                //             })
-
-                //             // console.log('3. Update Budget Item==========================>>>>>')
-                //             // console.log(infoBudgetItem)
-
-                //             if(infoBudgetItem){
-                //                 // Cập nhật Ngân sách đã thực hiện
-                //                 let infoBudget = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
-                //                     option: 2,
-                //                     budgetID: `${budget}`
-                //                 })
-
-                //                 // console.log('4. Update Budget==========================>>>>>')
-                //                 // console.log(infoBudget)
-                //             }
-                //         }
-                //     }
-                // }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
             } catch (error) {
@@ -252,7 +179,7 @@ class Model extends BaseModel {
         referrerID,
         salesD,
         note,
-        ctx
+        isDocumented
      }) {
         return new Promise(async (resolve) => {
             try {
@@ -284,139 +211,13 @@ class Model extends BaseModel {
                     gift,
                     referrer: referrerID,
                     sales: salesD,
+                    isDocumented,
                     history: `${infoJournal.history} | ${new Date()}, U_${authorID}, Khối lượng: ${quantity}, Đơn giá: ${unitprice}, Thành tiền: ${amount}, Ghi chú: ${note}`
                 }
 
-                /**
-                 * LẤY THÔNG TIN NGÂN SÁCH CŨ
-                 */
-                // let budgetOld, budgetItemOld, budgetGroupOld, budgetWorkOld
-                // if(infoJournal.budgetWork){
-                //     budgetOld = infoJournal.budget
-                //     budgetItemOld = infoJournal.budgetItem
-                //     budgetGroupOld = infoJournal.budgetGroup
-                //     budgetWorkOld = infoJournal.budgetWork
-                // }
-
-                /**
-                 * GÁN MÃ NGÂN SÁCH: MỚI VÀ CŨ
-                 */
-                // let budget, budgetItem, budgetGroup
-                // if(budgetWork && _isValid(budgetWork)){
-                //     let infoWork = await BUDGET_WORK_COLL.findById(budgetWork)
-
-                //     if(infoWork){
-                //         if(infoWork.budget){
-                //             budget = infoWork.budget;
-                //             dataUpdate.budget = infoWork.budget;
-                //         }
-                //         if(infoWork.item){
-                //             budgetItem = infoWork.item;
-                //             dataUpdate.budgetItem = infoWork.item;
-                //         }
-                //         if(infoWork.group){
-                //             budgetGroup = infoWork.group;
-                //             dataUpdate.budgetGroup = infoWork.group;
-                //         }
-                //     }
-                // }
-
                 let infoAfterUpdate = await FINANCIAL_GENERAL_JOURNAL_COLL.findByIdAndUpdate(journalID, dataUpdate , { new: true });
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update", status: 400 });
-
-                /**
-                 * CẬP NHẬT LẠI THÔNG TIN NGÂN SÁCH
-                 * (CẦN PHẢI XÓA ĐI KHI UPDATE journals SANG JOB MỚI)
-                 * 1. Cập nhật ngân sách công việc
-                 * 2. Cập nhật ngân sách Nhóm
-                 * 3. Cập nhật ngân sách Hạng mục
-                 * 4. Cập nhật ngân sách Tổng
-                 */
-                // // Ngân sách mới
-                // if(budgetWork && _isValid(budgetWork)){
-                //     // console.log('===================CẬP NHẬT NGÂN SÁCH MỚI===================')
-                //     // console.log({ budgetWork, budgetGroup, budgetItem, budget })
-
-                //     let infoBudgetWork = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
-                //         option: 2,
-                //         workID: `${budgetWork}`
-                //     })
-                //     // console.log('1. Update Budget Work==========================>>>>>')
-                //     // console.log(infoBudgetWork)
-
-                //     if(infoBudgetWork){
-                //         let infoBudgetGroup = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE}`, {
-                //             option: 2,
-                //             groupID: `${budgetGroup}`
-                //         })
-
-                //         // console.log('2. Update Budget Group==========================>>>>>')
-                //         // console.log(infoBudgetGroup)
-
-                //         if(infoBudgetGroup){
-                //             let infoBudgetItem = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE}`, {
-                //                 option: 2,
-                //                 itemID: `${budgetItem}`
-                //             })
-
-                //             // console.log('3. Update Budget Item==========================>>>>>')
-                //             // console.log(infoBudgetItem)
-
-                //             if(infoBudgetItem){
-                //                 let infoBudget = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
-                //                     option: 2,
-                //                     budgetID: `${budget}`
-                //                 })
-
-                //                 // console.log('4. Update Budget==========================>>>>>')
-                //                 // console.log(infoBudget)
-                //             }
-                //         }
-                //     }
-                // }
-
-                // // Ngân sách cũ
-                // if(budgetWorkOld && _isValid(budgetWorkOld)){
-                //     // console.log('===================CẬP NHẬT NGÂN SÁCH CŨ===================')
-                //     // console.log({ budgetWorkOld, budgetGroupOld, budgetItemOld, budgetOld })
-                //     let infoBudgetWorkOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_WORK_UPDATE_VALUE}`, {
-                //         option: 2,
-                //         workID: `${budgetWorkOld}`
-                //     })
-                //     // console.log('1. Update Budget Work Old==========================>>>>>')
-                //     // console.log(infoBudgetWorkOld)
-
-                //     if(infoBudgetWorkOld){
-                //         let infoBudgetGroupOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_GROUP_UPDATE_VALUE}`, {
-                //             option: 2,
-                //             groupID: `${budgetGroupOld}`
-                //         })
-
-                //         // console.log('2. Update Budget Group Old==========================>>>>>')
-                //         // console.log(infoBudgetGroupOld)
-
-                //         if(infoBudgetGroupOld){
-                //             let infoBudgetItemOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_ITEM_UPDATE_VALUE}`, {
-                //                 option: 2,
-                //                 itemID: `${budgetItemOld}`
-                //             })
-
-                //             // console.log('3. Update Budget Item Old==========================>>>>>')
-                //             // console.log(infoBudgetItemOld)
-
-                //             if(infoBudgetItemOld){
-                //                 let infoBudgetOld = await ctx.call(`${CF_DOMAIN_SERVICES.BUDGET}.${CF_ACTIONS_BUDGET.BUDGET_UPDATE_VALUE}`, {
-                //                     option: 2,
-                //                     budgetID: `${budgetOld}`
-                //                 })
-
-                //                 // console.log('4. Update Budget Old==========================>>>>>')
-                //                 // console.log(infoBudgetOld)
-                //             }
-                //         }
-                //     }
-                // }
+                    return resolve({ error: true, message: "cannot_update", status: 400 })
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
