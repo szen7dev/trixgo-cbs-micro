@@ -78,6 +78,7 @@ class Model extends BaseModel {
         referrerID,
         salesD,
         isDocumented,
+        isPaid
     }) {
         const that = this
         return new Promise(async (resolve) => {
@@ -140,7 +141,8 @@ class Model extends BaseModel {
                     referrer: referrerID,
                     sales: salesD,
                     note,
-                    isDocumented
+                    isDocumented,
+                    isPaid
                 }
 
                 let infoAfterInsert = await that.insertData(dataInsert);
@@ -179,7 +181,8 @@ class Model extends BaseModel {
         referrerID,
         salesD,
         note,
-        isDocumented
+        isDocumented,
+        isPaid
      }) {
         return new Promise(async (resolve) => {
             try {
@@ -212,6 +215,7 @@ class Model extends BaseModel {
                     referrer: referrerID,
                     sales: salesD,
                     isDocumented,
+                    isPaid,
                     history: `${infoJournal.history} | ${new Date()}, U_${authorID}, Khối lượng: ${quantity}, Đơn giá: ${unitprice}, Thành tiền: ${amount}, Ghi chú: ${note}`
                 }
 

@@ -83,6 +83,7 @@ class Model extends BaseModel {
         salesD,
         selectedJournals,
         isDocumented,
+        isPaid
      }) {
         const that = this
         return new Promise(async (resolve) => {
@@ -214,6 +215,7 @@ class Model extends BaseModel {
                             referrerID,
                             salesD,
                             isDocumented,
+                            isPaid
                         }
 
                         /**
@@ -351,7 +353,8 @@ class Model extends BaseModel {
         gift,
         referrerID,
         salesD,
-        isDocumented
+        isDocumented,
+        isPaid
      }) {
         const that = this
         return new Promise(async (resolve) => {
@@ -403,7 +406,8 @@ class Model extends BaseModel {
                     fcuExRate,
                     paymentDeadline,
                     gift,
-                    isDocumented
+                    isDocumented,
+                    isPaid
                 }
 
                 let dataAddToset = {};
@@ -514,6 +518,7 @@ class Model extends BaseModel {
                                 referrerID,
                                 salesD,
                                 isDocumented,
+                                isPaid
                             }
     
                             /**
@@ -622,6 +627,7 @@ class Model extends BaseModel {
                                 referrerID,
                                 salesD,
                                 isDocumented,
+                                isPaid
                             }
     
                             /**

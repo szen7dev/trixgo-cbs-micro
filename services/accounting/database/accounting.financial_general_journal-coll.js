@@ -102,6 +102,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_general_journal", {
     cancel: { type: Number, default: 0 },
     //_________Có chứng từ hay không: 1-Có,0-Không
     isDocumented: { type: Number, default: 1 },
+    //_________Đã thanh toán hay chưa: 0-Chưa | 1-Có
+    isPaid: { type: Number, default: 0 },
     /**
      * DÀNH RIÊNG CHO BÁN HÀNG
      */    
