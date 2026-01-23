@@ -73,6 +73,8 @@ module.exports  = DATABASE_MIDDLEWARE("financial_voucher", {
     returning: { type: Number, default: 0 },
     //_________Phiếu có hủy hay không
     cancel: { type: Number, default: 0 },
+    //_________Có chứng từ hay không: 1-Có,0-Không
+    isDocumented: { type: Number, default: 1 },
     /**
      * THÔNG TIN CĂN BẢN
      */    

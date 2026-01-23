@@ -42,6 +42,7 @@ module.exports = {
                     gift,
                     referrerID,
                     salesD,
+                    isDocumented
                 } = ctx.params;
                 // console.log(ctx.params)
                 //  return
@@ -87,6 +88,7 @@ module.exports = {
                     gift,
                     referrerID,
                     salesD,
+                    isDocumented,
                     ctx,
                 }) 
 
@@ -128,6 +130,7 @@ module.exports = {
                     gift,
                     referrerID,
                     salesD,
+                    isDocumented
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -154,6 +157,7 @@ module.exports = {
                     gift,
                     referrerID,
                     salesD,
+                    isDocumented,
                     ctx
                 });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

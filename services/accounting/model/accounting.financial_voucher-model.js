@@ -82,18 +82,12 @@ class Model extends BaseModel {
         referrerID,
         salesD,
         selectedJournals,
+        isDocumented,
         ctx
      }) {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * BA-Author: HiepNH - 23/4/2022
-                 * 1. Khi thêm phiếu có gán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget
-                 * 2. Khi sửa bút toán budgetWorkID => Cập nhật Ngân sách thực hiện cho work, group, item, budget của:
-                 * +++budgetWorkID cũ
-                 * +++budgetWorkID mới
-                */
                 //_________Kiểm tra dữ liệu đầu vào
                 if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(customerID))
                     return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
@@ -220,6 +214,7 @@ class Model extends BaseModel {
                             gift,
                             referrerID,
                             salesD,
+                            isDocumented,
                             ctx
                         }
 
@@ -305,13 +300,6 @@ class Model extends BaseModel {
                             }
                         }
 
-                        /**
-                         * Cập nhật ngân sách thực hiện: tạm thời bỏ lại
-                         */
-                        // if(subitem.budgetWork && _isValid(subitem.budgetWork)){
-                        //     dataInsert.budgetWork = subitem.budgetWork
-                        // }
-                        
                         //_________Tiến hành tạo chi tiết_________//
                         await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert)
 
@@ -365,6 +353,7 @@ class Model extends BaseModel {
         gift,
         referrerID,
         salesD,
+        isDocumented,
         ctx
      }) {
         const that = this
@@ -417,6 +406,7 @@ class Model extends BaseModel {
                     fcuExRate,
                     paymentDeadline,
                     gift,
+                    isDocumented
                 }
 
                 let dataAddToset = {};
@@ -509,7 +499,6 @@ class Model extends BaseModel {
                         // Tạo mới
                         if(!subitem.journalID){
                             // console.log('===================TẠO BÚT TOÁN===================')
-                            // console.log(subitem)
                             const dataInsert = {
                                 authorID, 
                                 companyID, 
@@ -527,6 +516,7 @@ class Model extends BaseModel {
                                 gift,
                                 referrerID,
                                 salesD,
+                                isDocumented,
                                 ctx
                             }
     
@@ -612,13 +602,6 @@ class Model extends BaseModel {
                                 }
                             }         
     
-                            /**
-                             * Cập nhật ngân sách thực hiện: để lại sau
-                             */
-                            // if(subitem.budgetWork && _isValid(subitem.budgetWork)){
-                            //     dataInsert.budgetWork = subitem.budgetWork
-                            // }
-                            
                             //_________Tiến hành tạo chi tiết_________//
                             await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
                         }
@@ -643,6 +626,7 @@ class Model extends BaseModel {
                                 gift,
                                 referrerID,
                                 salesD,
+                                isDocumented,
                                 ctx
                             }
     
@@ -737,27 +721,13 @@ class Model extends BaseModel {
                                     dataUpdate.subtype = null
                                     dataUpdate.parentSubtype = null
                                 }  
-                            }     
-
-                            /**
-                             * Cập nhật ngân sách thực hiện
-                             */
-                            // if(subitem.budgetWork && _isValid(subitem.budgetWork)){
-                            //     dataUpdate.budgetWork = subitem.budgetWork
-                            // }
+                            }
                             
                             //_________Tiến hành cập nhật chi tiết_________//
                             await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update(dataUpdate);
                         }
 
                         i++
-
-                        /**
-                         * XÓA BÚT TOÁN
-                         * 1-Xóa bút toán
-                         * 2-Update lại giá trị phiếu
-                         * 3-Update lại ngân sách đã thực hiện (nếu có)
-                         */
                     }
                 }
 
