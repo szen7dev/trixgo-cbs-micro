@@ -3273,7 +3273,7 @@ class Model extends BaseModel {
                             { credit: { $in: arrObjectID }, customerCredit: ObjectID(contactID) },
                         ]
 
-                        contactName = `${infoContact.name}_${infoContact.taxid}`
+                        contactName = `${infoContact.sign}_${infoContact.taxid}`
                     }
                 }
                 // console.log(conditionObj)
