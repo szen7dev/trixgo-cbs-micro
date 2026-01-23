@@ -62,7 +62,7 @@ const ITEM__FUNDA_MODEL                         = require('../../item/model/item
 // const STORE_ORDER_MODEL                         = require('../../store/model/store.order-model.js').MODEL;
 // const STORE_ORDER_PRODUCT_MODEL                 = require('../../store/model/store.order_product-model.js').MODEL;
 // // const TIMESHEET__EXPERT_TIMESHEET_MODEL         = require('../../timesheet/model/timesheet.expert_timesheet-model.js').MODEL;
-// const ITEM__ACCOUNT_MODEL                       = require('../../item/model/item.account-model').MODEL;
+const ITEM__ACCOUNT_MODEL                       = require('../../item/model/item.account-model').MODEL;
 
 class Model extends BaseModel {
 
