@@ -96,31 +96,31 @@ class Model extends BaseModel {
                 
                 /**
                  * Lấy đơn giá sản phẩm (sau fix phía FE)
+                 * - Kiểm tra xem có cần thiết không !!!
                  */
-                let unitpriceNew = 0, amountNew = 0 
-                if(goods && Number(unitprice) == 0){
-                    // console.log('===========================')
-                    let infoWoods = await ITEM__GOODS_COLL.findById(goods).select('unitprice sellingUnitprice')
+                // let unitpriceNew = 0, amountNew = 0 
+                // if(goods && Number(unitprice) == 0){
+                //     let infoGoods = await ITEM__GOODS_COLL.findById(goods).select('unitprice sellingUnitprice')
 
-                    // Phiếu nhập
-                    if(type == 4){
-                        if(infoWoods && infoWoods.unitprice){
-                            unitpriceNew = Number(infoWoods.unitprice)
-                            amountNew = Number(quantity * unitpriceNew)
-                        }
-                    }
+                //     // Phiếu nhập
+                //     if(type == 4){
+                //         if(infoGoods && infoGoods.unitprice){
+                //             unitpriceNew = Number(infoGoods.unitprice)
+                //             amountNew = Number(quantity * unitpriceNew)
+                //         }
+                //     }
 
-                    // Phiếu xuất
-                    if(type == 5){
-                        if(infoWoods && infoWoods.sellingUnitprice){
-                            unitpriceNew = Number(infoWoods.sellingUnitprice)
-                            amountNew = Number(quantity * unitpriceNew)
-                        }
-                    }
-                }else{
-                    unitpriceNew = unitprice
-                    amountNew = amount
-                }
+                //     // Phiếu xuất
+                //     if(type == 5){
+                //         if(infoGoods && infoGoods.sellingUnitprice){
+                //             unitpriceNew = Number(infoGoods.sellingUnitprice)
+                //             amountNew = Number(quantity * unitpriceNew)
+                //         }
+                //     }
+                // }else{
+                //     unitpriceNew = unitprice
+                //     amountNew = amount
+                // }
 
                 // TẠO CHI TIẾT CHỨNG TỪ
                 const dataInsert = {
@@ -131,8 +131,10 @@ class Model extends BaseModel {
                     date, forward, forwardIs, returning, advancePayment, cancel, vat, type, source, orderNew, pricePolicy,
                     debit, credit, customerDebit, customerCredit, updown,
                     quantity, 
-                    unitprice: unitpriceNew, 
-                    amount: amountNew, 
+                    // unitprice: unitpriceNew, 
+                    // amount: amountNew, 
+                    unitprice, 
+                    amount, 
                     fcuExRate, fcuAmount,
                     goods, warehouse, 
                     contract, project, budgetWork, subtype, parentSubtype,

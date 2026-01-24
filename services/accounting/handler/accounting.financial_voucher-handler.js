@@ -126,6 +126,7 @@ module.exports = {
                     forward, forwardIs, returning, advancePayment, cancel, 
                     fcuExRate, 
                     selectedJournals, 
+                    deletedJournals, // Xử lý sau
                     filesID,
                     paymentDeadline,
                     gift,

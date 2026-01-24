@@ -30,6 +30,7 @@ const stringUtils					        = require('../../../tools/utils/string_utils')
 const ITEM__ACCOUNT_COLL                            = require('../../item/database/item.account-coll')
 const ITEM__DOCTYPE_COLL                            = require('../../item/database/item.doctype-coll')
 const ITEM_FUNDA_COLL                               = require('../../item/database/item.funda-coll')
+const ITEM_GOODS_COLL                               = require('../../item/database/item.goods-coll')
 const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
@@ -40,18 +41,18 @@ const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accou
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL   = require('./accounting.financial_general_journal-model').MODEL;
 const ITEM__ACCOUNT_MODEL                           = require('../../item/model/item.account-model').MODEL;
 
-let dataTF = {
-    appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
-    menuID: "623f1f49e998e94feda0cd74", //
-    type: 1, 
-    action: 1, // Xem
-}
-let dataTF2 = {
-    appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
-    menuID: "623f1f49e998e94feda0cd74", //
-    type: 1,
-    action: 2, // Thêm
-}
+// let dataTF = {
+//     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
+//     menuID: "623f1f49e998e94feda0cd74", //
+//     type: 1, 
+//     action: 1, // Xem
+// }
+// let dataTF2 = {
+//     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
+//     menuID: "623f1f49e998e94feda0cd74", //
+//     type: 1,
+//     action: 2, // Thêm
+// }
 
 class Model extends BaseModel {
     constructor() {
@@ -98,9 +99,9 @@ class Model extends BaseModel {
                 if(!infoFunda)
                     return resolve({ error: true, message: 'fundaID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
 
-                let companyID = infoFunda.company
-
-                let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
+                let companyID = infoFunda.company;
+                let voucherSign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`;
+                let info632;
 
                 /**
                  * B1. TẠO PHIẾU
@@ -190,6 +191,12 @@ class Model extends BaseModel {
                 /**
                  * B2. CẬP NHẬT BÚT TOÁN VÀO PHIẾU
                  */
+                // Tự động ghi nhận giá vốn và xuất kho
+                if(type == 5){
+                    info632 = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: '632' })
+                    // console.log(info632)
+                }
+
                 if(selectedJournals && selectedJournals.length >0){
 
                     //_________Get voucherID
@@ -302,6 +309,62 @@ class Model extends BaseModel {
 
                         //_________Tiến hành tạo chi tiết_________//
                         await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert)
+
+                        //_________Kiểm tra nếu là phiếu xuất thì tạo thêm Giá vốn/Giảm kho_________//
+                        if(type == 5 && checkObjectIDs(info632._id) && subitem.goods && checkObjectIDs(subitem.goods)){
+                            let infoGood = await ITEM_GOODS_COLL.findById(subitem.goods).select('account')
+                            if(infoGood && checkObjectIDs(infoGood.account)){
+                                let dataInsert632 = {
+                                    authorID, 
+                                    companyID, 
+                                    fundaID, 
+                                    voucherID, 
+                                    date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
+                                    updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
+                                    quantity: subitem.quantity ? Number(subitem.quantity) : 0,
+                                    amount: 0, // Chạy giá vốn sau
+                                    unitprice: 0, // Chạy giá vốn sau
+                                    fcuExRate,
+                                    fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
+                                    note: 'Tạo tự động',
+                                    paymentDeadline, // Lấy theo phiếu
+                                    gift,
+                                    referrerID,
+                                    salesD,
+                                    isDocumented,
+                                    isPaid,
+                                    debit: info632._id, // Giá vốn 632
+                                    credit: infoGood.account, // Tài khoản nguyên liệu, hàng hóa...
+                                }
+
+                                if(subitem.customerDebit && _isValid(subitem.customerDebit)){
+                                    dataInsert632.customerDebit = subitem.customerDebit
+                                }else{
+                                    dataInsert632.customerDebit = customerID
+                                }
+
+                                if(subitem.customerCredit && _isValid(subitem.customerCredit)){
+                                    dataInsert632.customerCredit = subitem.customerCredit
+                                }else{
+                                    dataInsert632.customerCredit = customerID
+                                }
+
+                                if(subitem.goods && _isValid(subitem.goods)){
+                                    if(subitem.warehouse && _isValid(subitem.warehouse)){
+                                        dataInsert632.goods = subitem.goods
+                                        dataInsert632.warehouse = subitem.warehouse
+                                    }else{
+                                        if(warehouseID && _isValid(warehouseID)){
+                                            dataInsert632.goods = subitem.goods
+                                            dataInsert632.warehouse = warehouseID
+                                        }
+                                    }
+                                }
+
+                                await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert632)
+                            }
+                            
+                        }
 
                         i++
                     }
