@@ -222,11 +222,6 @@ exports.ITEM_ACCOUNTS = [
     },
     { 
         name: 156, description: 'Hàng hóa',
-        // sub: [
-        //     { name: 1561, description: 'Giá mua hàng hóa' },
-        //     { name: 1562, description: 'Chi phí thu mua hàng hóa' },
-        //     { name: 1567, description: 'Hàng hóa bất động sản' },
-        // ]
     },
     { 
         name: 157, description: 'Hàng gửi đi bán',
@@ -449,10 +444,6 @@ exports.ITEM_ACCOUNTS = [
         sub: [
             {
                 name: 4111, description: 'Vốn góp của chủ sở hữu',
-                sub2: [
-                    { name: 41111, description: 'Cổ phiếu phổ thông có quyền biểu quyết' },
-                    { name: 41112, description: 'Cổ phiếu ưu đãi' }
-                ]
             },
             { name: 4112, description: 'Thặng dư vốn cổ phần' },
             { name: 4113, description: 'Quyền chọn chuyển đổi trái phiếu' },
