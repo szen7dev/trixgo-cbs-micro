@@ -77,7 +77,6 @@ class Model extends BaseModel {
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, cancel, 
-        fcuExRate, 
         paymentDeadline,
         gift,
         referrerID,
@@ -117,7 +116,6 @@ class Model extends BaseModel {
                     dateInvoice, vat, type, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, cancel, 
-                    fcuExRate,
                     paymentDeadline,
                     gift
                 }
@@ -214,8 +212,6 @@ class Model extends BaseModel {
                             quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                             amount: subitem.amount ? Number(subitem.amount) : 0,
                             unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0,
-                            fcuExRate,
-                            fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                             note: subitem.note,
                             paymentDeadline, // Lấy theo phiếu
                             gift,
@@ -324,8 +320,6 @@ class Model extends BaseModel {
                                     quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                                     amount: 0, // Chạy giá vốn sau
                                     unitprice: 0, // Chạy giá vốn sau
-                                    fcuExRate,
-                                    fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                                     note: 'Tạo tự động',
                                     paymentDeadline, // Lấy theo phiếu
                                     gift,
@@ -374,7 +368,7 @@ class Model extends BaseModel {
                      * - Xem lại phần này: với các phiếu nhập xuất hàng thì chỉ ghi nhận doanh thu!!!
                      */
                     if(Number(i) == Number(selectedJournals.length)){
-                        await that.updateValue({ voucherID, userID: authorID })
+                        await that.updateValue({ voucherID, userID: authorID, companyID })
                     }
                 }
 
@@ -409,7 +403,6 @@ class Model extends BaseModel {
         type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
         receiver, note,
         forward, forwardIs, returning, cancel, 
-        fcuExRate, 
         selectedJournals,
         paymentDeadline,
         filesID,
@@ -466,7 +459,6 @@ class Model extends BaseModel {
                     type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
                     receiver, note,
                     forward, forwardIs, returning, cancel, 
-                    fcuExRate,
                     paymentDeadline,
                     gift,
                     isDocumented,
@@ -573,8 +565,6 @@ class Model extends BaseModel {
                                 quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
                                 unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
-                                fcuExRate,
-                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                                 note: subitem.note,
                                 paymentDeadline,
                                 gift,
@@ -682,8 +672,6 @@ class Model extends BaseModel {
                                 quantity: subitem.quantity ? Number(subitem.quantity) : 0,
                                 amount: subitem.amount ? Number(subitem.amount) : 0,
                                 unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
-                                fcuExRate,
-                                fcuAmount: fcuExRate != 0 ? Number(subitem.amount/fcuExRate) : 0,
                                 note: subitem.note,
                                 paymentDeadline,
                                 gift,
@@ -798,7 +786,7 @@ class Model extends BaseModel {
                  * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
                  */
                 if(Number(i) == Number(selectedJournals.length)){
-                    await that.updateValue({ voucherID, userID: authorID })
+                    await that.updateValue({ voucherID, userID: authorID, companyID })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -813,50 +801,48 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 30/4/2022
      */
-    updateValue({ voucherID, userID }){
+    updateValue({ voucherID, userID, companyID }){
         return new Promise(async (resolve, reject) => {
             try {
-                let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
-                if(info){
-                    let dataUpdate = { 
-                        userUpdate: userID, 
-                        modifyAt: new Date(),
-                        amount: 0, 
-                        fcuAmount: 0, 
-                        revenue: 0, 
-                        tax: 0,
-                    }
-    
-                    // Tính tổng các bút toán của Phiếu
+                let dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date(),
+                    amount: 0,
+                }
+
+                let info632 = await ITEM__ACCOUNT_COLL.findOne({ company: companyID, name: '632' })
+
+                if(info632){
                     let listData = await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
                         {
                             $match: {
                                 voucher: ObjectID(voucherID),
+                                debit: { $ne: info632._id }
                             }
                         }, 
                         {
                             $group: {
                                 _id: { },
                                 amount: { $sum: "$amount" },
-                                fcuAmount: { $sum: "$fcuAmount" },
                             }
                         }, 
                     ])
                     
                     if(listData && listData.length){
                         dataUpdate.amount = Number(listData[0].amount)
-                        dataUpdate.fcuAmount = Number(listData[0].fcuAmount)
-                        dataUpdate.history = `${info?.history} | ${new Date()}, U_${userID}, Thành tiền: ${Number(listData[0].amount)}`
+                        // dataUpdate.history = `${new Date()}, U_${userID}, Thành tiền: ${Number(listData[0].amount)}`
                     }
-    
-                    const resultUpdateVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate)
-                    if(!resultUpdateVoucher)
-                        return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdateVoucher, status: 400})
+
+                    const resultUpdated = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdate)
+                    if(!resultUpdated)
+                        return resolve({ erorr: true, message: 'update_voucher_fail', data : resultUpdated, status: 400})
                 
-                    return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdateVoucher, status: 200 })
+                    return resolve({ erorr: false, message: 'successfully_update_voucher', data : resultUpdated, status: 200 })
+                }else{
+                    return resolve({ erorr: true, message: 'Chưa có tài khoản giá vốn 632', status: 400})
                 }
             } catch (error) {
-                console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`)
+                // console.log(`ERROR [ACCOUNTING][UPDATE_VOUCHER_WITH_NEW_JOURNAL]: ${error}`)
                 return resolve({ erorr: true, message: 'update_voucher_fail', status: 400})
             }
         });
@@ -938,8 +924,7 @@ class Model extends BaseModel {
                             forward: infoVoucher.forward, 
                             forwardIs: infoVoucher.forwardIs, 
                             returning: infoVoucher.returning, 
-                            cancel: infoVoucher.cancel, 
-                            fcuExRate: infoVoucher.fcuExRate, 
+                            cancel: infoVoucher.cancel,
                             selectedJournals: selectedJournals,
                             ctx
                         })
@@ -1006,7 +991,7 @@ class Model extends BaseModel {
             try {
                 let listVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({company: companyID}).select('_id name')
                 for (const item of listVoucher){
-                    await that.updateValue({ voucherID: item._id, userID })
+                    await that.updateValue({ voucherID: item._id, userID, companyID })
                 }
 
                 return resolve({ erorr: false, message: 'convert_successfull', status: 200 })
