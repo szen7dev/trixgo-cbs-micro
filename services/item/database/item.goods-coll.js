@@ -24,7 +24,7 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
         type: Schema.Types.ObjectId,
         ref: "department"
     },
-    //_________Đơn vị cơ sở/Cửa hàng được quyền truy cập
+    //_________Đơn vị cơ sở/Cửa hàng được quyền truy cập: Show sản phẩm khi lên đơn hàng
     fundas: [{
         type: Schema.Types.ObjectId,
         ref : "funda"
@@ -73,6 +73,11 @@ module.exports  = DATABASE_MIDDLEWARE("goods", {
     category: {
         type: Schema.Types.ObjectId,
         ref : 'media_menu'
+    },
+    //_________Link với tài khoản hạch toán
+    account: {
+        type: Schema.Types.ObjectId,
+        ref : 'account'
     },
     //_________Tên
     name: String,

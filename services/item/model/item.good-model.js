@@ -38,7 +38,7 @@ class Model extends BaseModel {
 	 * Func: Tạo goods
 	 * Date: 13/12/2021
 	 */
-	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired }){
+	insert({ projectID, companyID, parentID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, note, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, userID, convertID, convertQuantity, status, usage, duration, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, accountID }){
         return new Promise(async resolve => {
             try {
                 if(!name || name == "")
@@ -182,6 +182,10 @@ class Model extends BaseModel {
                     dataInsert.storage = storage;
                 }
 
+                if(accountID && checkObjectIDs(accountID)){
+                    dataInsert.account = accountID;
+                }
+
                 if(convertID && checkObjectIDs(convertID)){
                     dataInsert.convert = convertID;
                 }
@@ -226,7 +230,7 @@ class Model extends BaseModel {
 	 * Func: update goods
 	 * Date: 13/12/2021
 	 */
-	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, thumbnailID, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, removeImageID }){
+	update({ goodsID, name, sign, unit, quantity, weight, unitprice, listedUnitprice, sellingUnitprice, type, unitPrice, unitPrice2, unitPrice3, unitPrice4, note, userID, convertID, convertQuantity, status, usage, duration, thumbnailID, imagesID, authorID, categoryID, fundaID, nods, date, description, features, ingredients, benefits, instructions, sideEffects, warnings, storage, expired, removeImageID, accountID }){
         return new Promise(async resolve => {
             try {
 				let info = await ITEM__GOODS_COLL.findById(goodsID)
@@ -388,6 +392,10 @@ class Model extends BaseModel {
 
                 if(convertID && checkObjectIDs(convertID)){
                     dataUpdate.convert = convertID;
+                }
+
+                if(accountID && checkObjectIDs(accountID)){
+                    dataUpdate.account = accountID;
                 }
 
                 if(!isNaN(convertQuantity)){
