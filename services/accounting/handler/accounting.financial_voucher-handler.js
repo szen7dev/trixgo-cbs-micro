@@ -48,6 +48,8 @@ module.exports = {
                 // console.log(ctx.params)
                 //  return
 
+                // console.log(selectedJournals)
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 let  resultAfterCallHandler;
@@ -137,6 +139,7 @@ module.exports = {
                 } = ctx.params;
 
                 // console.log(ctx.params)
+                // console.log(selectedJournals)
                 //  return
 
                 const { _id: userID } = ctx.meta.infoUser;
