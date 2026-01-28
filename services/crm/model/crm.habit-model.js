@@ -143,7 +143,7 @@ class Model extends BaseModel {
     
                 if(note && note != ""){
                     dataInsert.note = note;
-                    convertStr = stringUtils.removeAccents(note)
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
                 if(convertStr != ""){
                     dataInsert.namecv = convertStr
@@ -312,7 +312,7 @@ class Model extends BaseModel {
     
                 if(note && note != ""){
                     dataUpdate.note = note;
-                    convertStr = stringUtils.removeAccents(note)
+                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
                 }
                 if(convertStr != ""){
                     dataUpdate.namecv = convertStr
