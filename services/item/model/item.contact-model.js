@@ -67,7 +67,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ companyID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours, pubertyOnsetDate, boneAge, support
+    insert({ companyID, fundaID, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, referrerID, bankAccount, bank, dataSource, insuranceFee, annualWorkingHours, pubertyOnsetDate, boneAge, support
     }) {
         return new Promise(async resolve => {
             try {
@@ -97,14 +97,10 @@ class Model extends BaseModel {
                         return resolve({ error: true, message: 'Số điện thoại phải đúng 10 ký tự' })
                 }
 
-                let infoFunda = await ITEM__FUNDA_COLL.findOne({company: companyID})
-                if (!infoFunda)
-                    return resolve({ error: true, message: 'can_not_get_funda_info' })
-
                 //___________Kiểm tra việc trùng mã hiệu
                 let conditionObj = {
-                    company: infoFunda.company
-                };
+                    company: companyID
+                }
 
                 if ((sign && sign != "") || (taxid && taxid != "") || (phone && phone != "")) {
                     conditionObj.$or = []
@@ -118,19 +114,12 @@ class Model extends BaseModel {
                 if ((phone && phone != "")) {
                     conditionObj.$or.push({ phone: phone.replace(/\s/g, "") })
                 }
-
                 // console.log(conditionObj)
 
                 let infoContact = await ITEM__CONTACT_COLL.findOne(conditionObj);
-                // if(infoContact){
-                //     return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
-                // }
                 if (conditionObj.$or && conditionObj.$or.length > 0 && infoContact) {
-                    // return resolve({ error: false, data: infoContact });
-                    return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` });
+                    return resolve({ error: true, message: `Mã hiệu/Mã số thuế/Điện thoại đã tồn tại - ${infoContact.name} - ${infoContact.phone}` })
                 }
-                
-                let fundaID = infoFunda._id
 
                 let suid = await stringUtils.randomAndCheckExists(ITEM__CONTACT_COLL, 'suid')
 
@@ -195,18 +184,6 @@ class Model extends BaseModel {
                     dataInsert.referrer = referrerID;
                 }
 
-                if (infoFunda.area1) {
-                    dataInsert.sector1 = infoFunda.area1
-                }
-
-                if (infoFunda.area2) {
-                    dataInsert.sector2 = infoFunda.area2
-                }
-
-                if (infoFunda.area3) {
-                    dataInsert.sector3 = infoFunda.area3
-                }
-
                 if (gender && !isNaN(gender)) {
                     dataInsert.gender = gender;
                 }
@@ -224,7 +201,7 @@ class Model extends BaseModel {
 
                 if (linkUser && checkObjectIDs(linkUser)) {
                     // Kiểm tra xem đã tồn tại hay chưa, nếu tồn tại rồi thì không cho link nữa
-                    let checkExist = await ITEM__CONTACT_COLL.findOne({ linkUser: linkUser, company: infoFunda.company })
+                    let checkExist = await ITEM__CONTACT_COLL.findOne({ linkUser: linkUser, company: companyID })
                     if (!checkExist) {
                         dataInsert.linkUser = linkUser;
                     }
@@ -404,7 +381,7 @@ class Model extends BaseModel {
                 if (nonResident) {
                     dataInsert.nonResident = Number(nonResident);
                 }
-                // console.log({dataInsert})
+                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert, authorID)
                 // console.log(infoAfterInsert)
@@ -453,70 +430,9 @@ class Model extends BaseModel {
                 if (linkUser && checkObjectIDs(linkUser)) {
                     await USER_COLL.findByIdAndUpdate(linkUser,
                         {
-                            $addToSet: { contacts: infoAfterInsert._id }
+                            contacts: [infoAfterInsert._id] // Mỗi user cũng chỉ chứa 1 danh bạ thôi
                         },
                         { new: true })
-                }
-
-                // Cập nhật vào đơn vị cơ sở
-                await ITEM__FUNDA_COLL.findByIdAndUpdate(fundaID, { $inc: { numberOfCustomers: 1 } }, { new: true })
-
-                /**
-                 * Người giới thiệu
-                 * Tạo Voucher cho người nhận giới thiệu
-                 * Chỉ áp dụng trong khoảng thời gian được khống chế
-                 */
-                if (referrerID && checkObjectIDs(referrerID)) {
-                    /**
-                     * Tạo voucher cho Nngười được giới thiệu (type=3)
-                     * 1-Phân loại Type = 3
-                     * 2-Còn thời hạn sử dụng
-                     * 3-Voucher tặng Giá trị
-                     */
-                    let infoVoucher1 = await FNB_VOUCHER_COLL.findOne({
-                        type: 3,
-                        company: infoFunda.company,
-                        expired: { $gt: new Date() },
-                        salesoffAmount: { $gt: 0 },
-                        salesoffRate: 0,
-                    })
-                        .sort({ expired: 1 })
-                        .select("_id name sign")
-                    // console.log({infoVoucher1})
-
-                    if (infoVoucher1) {
-                        await FNB_ORDER_VOUCHER_MODEL.update({
-                            companyID: infoFunda.company,
-                            userID: authorID,
-                            voucherID: infoVoucher1._id,
-                            receivers: [infoAfterInsert._id]
-                        })
-                    }
-
-                    /**
-                    * Tạo voucher cho Nngười được giới thiệu (type=3)
-                    * 1-Phân loại Type = 3
-                    * 2-Còn thời hạn sử dụng
-                    * 3-Voucher tặng Phần trăm
-                    */
-                    let infoVoucher2 = await FNB_VOUCHER_COLL.findOne({
-                        type: 3,
-                        company: infoFunda.company,
-                        expired: { $gt: new Date() },
-                        salesoffAmount: 0,
-                        salesoffRate: { $gt: 0 },
-                    })
-                        .sort({ expired: 1 })
-                        .select("_id name sign")
-
-                    if (infoVoucher2) {
-                        await FNB_ORDER_VOUCHER_MODEL.update({
-                            companyID: infoFunda.company,
-                            userID: authorID,
-                            voucherID: infoVoucher2._id,
-                            receivers: [infoAfterInsert._id]
-                        })
-                    }
                 }
 
                 return resolve({ error: false, data: infoAfterInsert })
@@ -864,24 +780,7 @@ class Model extends BaseModel {
                 }
 
                 if (fundaID) {
-                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                     dataUpdate.funda = fundaID;
-
-                    if (infoFunda.area1) {
-                        dataUpdate.sector1 = infoFunda.area1
-                    }
-
-                    if (infoFunda.area2) {
-                        dataUpdate.sector2 = infoFunda.area2
-                    }
-
-                    if (infoFunda.area3) {
-                        dataUpdate.sector3 = infoFunda.area3
-                    }
-
-                    if (infoFunda.company) {
-                        dataUpdate.company = infoFunda.company
-                    }
                 }
 
                 if (purchasedValue && !isNaN(purchasedValue)) {
@@ -946,18 +845,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Cập nhật lại số lượng document cho contact
-                // await this.updateValue({ contactID, userID: authorID })
-
-                // if (department && checkObjectIDs(department)) {
-                //     await HUMAN__CONTACT_DOCUMENT_COLL.updateMany(
-                //         { contact: ObjectID(contactID)},
-                //         { $set: {
-                //             department: department
-                //         } }
-                //      );
-                // }
-
                 // Cập nhật cho Habit và Track
                 if(support && checkObjectIDs(support)){
                     await CRM_HABIT_COLL.updateMany(
@@ -981,7 +868,7 @@ class Model extends BaseModel {
                 if (linkUser && checkObjectIDs(linkUser)) {
                     await USER_COLL.findByIdAndUpdate(linkUser,
                         {
-                            contacts: [contactID]
+                            contacts: [contactID] // Mỗi user cũng chỉ chứa 1 danh bạ thôi
                         },
                         { new: true })
                 }
@@ -1894,7 +1781,7 @@ class Model extends BaseModel {
                     }
                 }
 
-                // IMPORT HỒ SƠ
+                // IMPORT HỒ SƠ NHÂN SỰ
                 else if (option == 2) {
                     for (const data of dataImportJSON) {
                         // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
@@ -1939,21 +1826,27 @@ class Model extends BaseModel {
                     }
                 }
 
+                // IMPORT NHANH DANH BẠ
                 else if(option == 3){
                     for (const data of dataImportJSON) {
                         // Chỉ lấy dữ liệu từ mẩu tin thứ 2 trở đi
                         if (index > 0 && index < 51) {
-                            console.log(data)
 
                             let prepareData = {
+                                companyID,
                                 authorID: userID,
-                                fundaID: data?.__EMPTY_2,
                                 name: data?.__EMPTY,
                                 phone: data?.__EMPTY_1,
+                                fundaID: data?.__EMPTY_2,
                                 note: 'Import nhanh từ excel',
+                                parent: data?.__EMPTY_3,
+                                support: data?.__EMPTY_4,
+                                gender: data?.__EMPTY_5, 
+                                address: data?.__EMPTY_6,
+                                type: data?.__EMPTY_7,
+                                linkUser: data?.__EMPTY_8,
                                 
                             }
-                            // console.log(prepareData);
 
                             let infoAfterInsert = await this.insert(prepareData);
                             if (infoAfterInsert.error) {
@@ -1979,9 +1872,6 @@ class Model extends BaseModel {
     exportExcel({ userID, companyID, type, filterParams, ctx, queue }) {
         return new Promise(async resolve => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 let conditionObj = {};
                 let resultGetList = { error: true };
 
@@ -2029,38 +1919,6 @@ class Model extends BaseModel {
 
                 return resolve({ error: false })
 
-                // let keys	     = ['createAt__-1', '_id__-1'];
-                // let dataPagingAndSort = await RANGE_BASE_PAGINATION_V2({ keys, latestRecord: null, objectQuery: conditionObj });
-                // let sortBy            = dataPagingAndSort?.data?.sort;
-                // const listData = await ITEM__CONTACT_COLL
-                //     .find(conditionObj)
-                //     .populate({
-                //         path: 'department position field property area area1 area2 linkUser workingStatus contractType',
-                //         select: 'name sign',
-                //         populate:{
-                //             path: 'parent',
-                //             select: 'name',
-                //             populate:{
-                //                 path: 'parent',
-                //                 select: 'name',
-                //             }
-                //         }
-                //     })
-                //     .sort(sortBy)
-                //     .limit(500)
-                //     .lean();
-
-                // if(!listData) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Không tìm thấy dữ liệu',
-                //         keyError: 'data_not_exists',
-                //         status: 400
-                //     });
-                // }
-
-                // const result = await this.downloadExcelFile(listData)
-                // return resolve(result);
             } catch (error) {
                 console.log({ error })
                 return resolve({ error: true, message: error.message, status: 500 });
@@ -2069,7 +1927,6 @@ class Model extends BaseModel {
     }
 
     exportExcelByFilter({ option, year, userID, companyID, filterParams, fromDate, toDate, page, unit, validatePhone, validateMail, ctx }) {
-        // console.log({ option, userID, companyID, filterParams, year, fromDate, toDate, page, unit, validatePhone, validateMail })
         return new Promise(async resolve => {
             try {
                 // Tải danh sách theo điều kiện lọc
