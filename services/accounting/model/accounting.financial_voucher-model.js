@@ -416,380 +416,398 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 //_________Kiểm tra dữ liệu đầu vào
-                if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
-                    return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+                if(!filesID){
+                    if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
+                        return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
 
-                // if(!filesID){
-                //     if(!date || !name || Number.isNaN(Number(type)) || !checkObjectIDs(fundaID) || !checkObjectIDs(voucherID) || !checkObjectIDs(customerID))
-                //         return resolve({ error: true, message: 'date|name|type|fundaID|customerID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
-                // }else{
-                //     if(!checkObjectIDs(voucherID))
-                //         return resolve({ error: true, message: 'voucherID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
-                // }
+                    let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
+                    if (!info) 
+                        return resolve({ error: true, message: 'cannot_get_info_voucher', status: 400 })
 
-                let info = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findById(voucherID)
-                if (!info) 
-                    return resolve({ error: true, message: 'cannot_get_info_voucher', status: 400 })
+                    let companyID = info.company
 
-                let companyID = info.company
-
-                //_________Kiểm tra trùng số hiệu
-                if(sign && sign != ""){
-                    let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
-                        funda: fundaID, 
-                        sign: sign,
-                        _id: {
-                            $ne: voucherID
-                        }
-                    }).select('_id')
-                    // console.log(infoVoucher)
-    
-                    if(infoVoucher)
-                        return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 })
-                }
-
-                /**
-                 * B1. CẬP NHẬT PHIẾU
-                 */
-                 const dataUpdateVoucher = {
-                    userUpdate: authorID, 
-                    modifyAt: Date.now(),
-                    funda: fundaID,
-                    customer: customerID,
-                    type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
-                    receiver, note,
-                    forward, forwardIs, returning, cancel, 
-                    paymentDeadline,
-                    gift,
-                    isDocumented,
-                    isPaid
-                }
-
-                let dataAddToset = {};
-                if (checkObjectIDs(filesID)) {
-                    dataAddToset = { files: filesID };
-                }
-                if(dataAddToset){
-                    dataUpdateVoucher.$addToSet = dataAddToset;
-                }
-
-                let convertStr = ''
-                if(name && name != ""){
-                    convertStr = stringUtils.removeAccents(name)
-                }
-                if(sign && sign != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(sign)
-                }
-                if(signInvoice && signInvoice != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(signInvoice)
-                }
-                if(receiver && receiver != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(receiver)
-                }
-                if(note && note != ""){
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
-                dataUpdateVoucher.namecv = convertStr
-
-                if (contractID && checkObjectIDs(contractID)) {
-                    dataUpdateVoucher.contract = contractID;
-                }else{
-                    dataUpdateVoucher.contract = null
-                }
-
-                if (storageID && checkObjectIDs(storageID)) {
-                    dataUpdateVoucher.storage = storageID;
-                }else{
-                    dataUpdateVoucher.storage = null
-                }
-
-                if (referrerID && checkObjectIDs(referrerID)) {
-                    dataUpdateVoucher.referrer = referrerID;
-                }else{
-                    dataUpdateVoucher.referrer = null
-                }
-
-                if (salesD && checkObjectIDs(salesD)) {
-                    dataUpdateVoucher.sales = salesD;
-                }else{
-                    dataUpdateVoucher.sales = null
-                }
-
-                // Khoản mục phí
-                let parentSubtypeID
-                if (subtypeID && checkObjectIDs(subtypeID)) {
-                    dataUpdateVoucher.subtype = subtypeID;
-
-                    let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subtypeID).select('parent')
-                    if(infoSubtype.parent && _isValid(infoSubtype.parent)){
-                        parentSubtypeID = infoSubtype.parent
-                    }else{
-                        parentSubtypeID = subtypeID
+                    //_________Kiểm tra trùng số hiệu
+                    if(sign && sign != ""){
+                        let infoVoucher = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findOne({
+                            funda: fundaID, 
+                            sign: sign,
+                            _id: {
+                                $ne: voucherID
+                            }
+                        }).select('_id')
+                        // console.log(infoVoucher)
+        
+                        if(infoVoucher)
+                            return resolve({ error: true, message: "Mã phiếu đã tồn tại", status: 400 })
                     }
 
-                    dataUpdateVoucher.parentSubtype = parentSubtypeID;  
-                }
+                    /**
+                     * B1. CẬP NHẬT PHIẾU
+                     */
+                    const dataUpdateVoucher = {
+                        userUpdate: authorID, 
+                        modifyAt: Date.now(),
+                        funda: fundaID,
+                        customer: customerID,
+                        type, date, name, sign, signInvoice, dateInvoice, vat, source, orderNew, pricePolicy,
+                        receiver, note,
+                        forward, forwardIs, returning, cancel, 
+                        paymentDeadline,
+                        gift,
+                        isDocumented,
+                        isPaid
+                    }
 
-                // Xem lại phần này!!!
-                else{
-                    dataUpdateVoucher.subtype = null
-                    dataUpdateVoucher.parentSubtype = null
-                }
+                    let dataAddToset = {};
+                    if (checkObjectIDs(filesID)) {
+                        dataAddToset = { files: filesID };
+                    }
+                    if(dataAddToset){
+                        dataUpdateVoucher.$addToSet = dataAddToset;
+                    }
 
-                if (warehouseID && checkObjectIDs(warehouseID)) {
-                    dataUpdateVoucher.warehouse = warehouseID;
-                }else{
-                    dataUpdateVoucher.warehouse = null
-                }
+                    let convertStr = ''
+                    if(name && name != ""){
+                        convertStr = stringUtils.removeAccents(name)
+                    }
+                    if(sign && sign != ""){
+                        convertStr = convertStr + " " + stringUtils.removeAccents(sign)
+                    }
+                    if(signInvoice && signInvoice != ""){
+                        convertStr = convertStr + " " + stringUtils.removeAccents(signInvoice)
+                    }
+                    if(receiver && receiver != ""){
+                        convertStr = convertStr + " " + stringUtils.removeAccents(receiver)
+                    }
+                    if(note && note != ""){
+                        convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                    }
+                    dataUpdateVoucher.namecv = convertStr
 
-                const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "cannot_update", status: 400 })
+                    if (contractID && checkObjectIDs(contractID)) {
+                        dataUpdateVoucher.contract = contractID;
+                    }else{
+                        dataUpdateVoucher.contract = null
+                    }
 
-                /**
-                 * B2. CẬP NHẬT BÚT TOÁN VÀO PHIẾU
-                 */
-                var i = 0
-                if(selectedJournals && selectedJournals.length >0){
-                    for (const subitem of selectedJournals) {
-                        // Tạo mới
-                        if(!subitem.journalID){
-                            // console.log('===================TẠO BÚT TOÁN===================')
-                            const dataInsert = {
-                                authorID, 
-                                companyID, 
-                                fundaID, 
-                                voucherID, 
-                                date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
-                                updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
-                                quantity: subitem.quantity ? Number(subitem.quantity) : 0,
-                                amount: subitem.amount ? Number(subitem.amount) : 0,
-                                unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
-                                note: subitem.note,
-                                paymentDeadline,
-                                gift,
-                                referrerID,
-                                salesD,
-                                isDocumented,
-                                isPaid
-                            }
-    
-                            /**
-                             * Kiểm tra xem có tài khoản nợ/có không
-                             * Nếu không thì lấy giá trị null
-                             */
-                            if(subitem.debit && _isValid(subitem.debit)){
-                                dataInsert.debit = subitem.debit
-                            }else{
-                                dataInsert.debit = null
-                            }
-    
-                            if(subitem.credit && _isValid(subitem.credit)){
-                                dataInsert.credit = subitem.credit
-                            }else{
-                                dataInsert.credit = null
-                            }
-    
-                            /**
-                             * Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
-                             * Nếu không  có thì lấy theo mã khách trên phiếu
-                             */
-                            if(subitem.customerDebit && _isValid(subitem.customerDebit)){
-                                dataInsert.customerDebit = subitem.customerDebit
-                            }else{
-                                dataInsert.customerDebit = customerID
-                            }
-    
-                            if(subitem.customerCredit && _isValid(subitem.customerCredit)){
-                                dataInsert.customerCredit = subitem.customerCredit
-                            }else{
-                                dataInsert.customerCredit = customerID
-                            }
-    
-                            /**
-                             * Kiểm tra xem có hàng hóa/kho hay không
-                             * Nếu không  có thì lấy theo mã khách trên phiếu
-                             * Chỉ insert khi có cả thông tin goods và warehouse
-                             */
-                            if(subitem.goods && _isValid(subitem.goods)){
-                                if(subitem.warehouse && _isValid(subitem.warehouse)){
-                                    dataInsert.goods = subitem.goods
-                                    dataInsert.warehouse = subitem.warehouse
-                                }else{
-                                    if(warehouseID && _isValid(warehouseID)){
-                                        dataInsert.goods = subitem.goods
-                                        dataInsert.warehouse = warehouseID
-                                    }
-                                }
-                            }
-    
-                            /**
-                             * Kiểm tra xem có Hợp đồng hay không
-                             * Nếu không  có thì lấy theo hợp đồng trên phiếu
-                             */
-                            if(subitem.contract && _isValid(subitem.contract)){
-                                dataInsert.contract = subitem.contract
-                            }else{
-                                if(contractID && _isValid(contractID)){
-                                    dataInsert.contract = contractID;
-                                }
-                            }
+                    if (storageID && checkObjectIDs(storageID)) {
+                        dataUpdateVoucher.storage = storageID;
+                    }else{
+                        dataUpdateVoucher.storage = null
+                    }
 
-                            /**
-                             * Khoản mục phí
-                             */
-                            if (subitem.subtype && checkObjectIDs(subitem.subtype)) {
+                    if (referrerID && checkObjectIDs(referrerID)) {
+                        dataUpdateVoucher.referrer = referrerID;
+                    }else{
+                        dataUpdateVoucher.referrer = null
+                    }
 
-                                let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subitem.subtype).select('parent')
-                                if(infoSubtype.parent && _isValid(infoSubtype.parent)){
-                                    parentSubtypeID = infoSubtype.parent
-                                }else{
-                                    parentSubtypeID = subtypeID
-                                }
-                                
-                                dataInsert.subtype = subitem.subtype;
-                                dataInsert.parentSubtype = parentSubtypeID;
-                            }else{
-                                if(subtypeID && _isValid(subtypeID)){
-                                    dataInsert.subtype = subtypeID;
-                                    dataInsert.parentSubtype = parentSubtypeID;
-                                }
-                            }         
-    
-                            //_________Tiến hành tạo chi tiết_________//
-                            await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
+                    if (salesD && checkObjectIDs(salesD)) {
+                        dataUpdateVoucher.sales = salesD;
+                    }else{
+                        dataUpdateVoucher.sales = null
+                    }
+
+                    // Khoản mục phí
+                    let parentSubtypeID
+                    if (subtypeID && checkObjectIDs(subtypeID)) {
+                        dataUpdateVoucher.subtype = subtypeID;
+
+                        let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subtypeID).select('parent')
+                        if(infoSubtype.parent && _isValid(infoSubtype.parent)){
+                            parentSubtypeID = infoSubtype.parent
+                        }else{
+                            parentSubtypeID = subtypeID
                         }
 
-                        // Cập nhật
-                        else{
-                            // console.log('===================CẬP NHẬT BÚT TOÁN===================')
-                            const dataUpdate = {
-                                authorID, 
-                                fundaID, 
-                                journalID: subitem.journalID, 
-                                date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
-                                updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
-                                quantity: subitem.quantity ? Number(subitem.quantity) : 0,
-                                amount: subitem.amount ? Number(subitem.amount) : 0,
-                                unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
-                                note: subitem.note,
-                                paymentDeadline,
-                                gift,
-                                referrerID,
-                                salesD,
-                                isDocumented,
-                                isPaid
-                            }
-    
-                            /**
-                             * Kiểm tra xem có tài khoản nợ/có không
-                             * Nếu không thì lấy giá trị null
-                             */
-                            if(subitem.debit && _isValid(subitem.debit)){
-                                dataUpdate.debit = subitem.debit
-                            }else{
-                                dataUpdate.debit = null
-                            }
-    
-                            if(subitem.credit && _isValid(subitem.credit)){
-                                dataUpdate.credit = subitem.credit
-                            }else{
-                                dataUpdate.credit = null
-                            }
-    
-                            /**
-                             * Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
-                             * Nếu không  có thì lấy theo mã khách trên phiếu
-                             */
-                            if(subitem.customerDebit && _isValid(subitem.customerDebit)){
-                                dataUpdate.customerDebit = subitem.customerDebit
-                            }else{
-                                dataUpdate.customerDebit = customerID
-                            }
-    
-                            if(subitem.customerCredit && _isValid(subitem.customerCredit)){
-                                dataUpdate.customerCredit = subitem.customerCredit
-                            }else{
-                                dataUpdate.customerCredit = customerID
-                            }
-    
-                            /**
-                             * Kiểm tra xem có hàng hóa/kho hay không
-                             * Nếu không  có thì lấy theo mã khách trên phiếu
-                             * Chỉ insert khi có cả thông tin goods và warehouse
-                             */
-                            if(subitem.goods && _isValid(subitem.goods)){
-                                if(subitem.warehouse && _isValid(subitem.warehouse)){
-                                    dataUpdate.goods = subitem.goods
-                                    dataUpdate.warehouse = subitem.warehouse
+                        dataUpdateVoucher.parentSubtype = parentSubtypeID;  
+                    }
+
+                    // Xem lại phần này!!!
+                    else{
+                        dataUpdateVoucher.subtype = null
+                        dataUpdateVoucher.parentSubtype = null
+                    }
+
+                    if (warehouseID && checkObjectIDs(warehouseID)) {
+                        dataUpdateVoucher.warehouse = warehouseID;
+                    }else{
+                        dataUpdateVoucher.warehouse = null
+                    }
+
+                    const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
+                    if(!infoAfterUpdate)
+                        return resolve({ error: true, message: "cannot_update", status: 400 })
+
+                    /**
+                     * B2. CẬP NHẬT BÚT TOÁN VÀO PHIẾU
+                     */
+                    var i = 0
+                    if(selectedJournals && selectedJournals.length >0){
+                        for (const subitem of selectedJournals) {
+                            // Tạo mới
+                            if(!subitem.journalID){
+                                // console.log('===================TẠO BÚT TOÁN===================')
+                                const dataInsert = {
+                                    authorID, 
+                                    companyID, 
+                                    fundaID, 
+                                    voucherID, 
+                                    date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
+                                    updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
+                                    quantity: subitem.quantity ? Number(subitem.quantity) : 0,
+                                    amount: subitem.amount ? Number(subitem.amount) : 0,
+                                    unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
+                                    note: subitem.note,
+                                    paymentDeadline,
+                                    gift,
+                                    referrerID,
+                                    salesD,
+                                    isDocumented,
+                                    isPaid
+                                }
+        
+                                /**
+                                 * Kiểm tra xem có tài khoản nợ/có không
+                                 * Nếu không thì lấy giá trị null
+                                 */
+                                if(subitem.debit && _isValid(subitem.debit)){
+                                    dataInsert.debit = subitem.debit
                                 }else{
-                                    if(warehouseID && _isValid(warehouseID)){
-                                        dataUpdate.goods = subitem.goods
-                                        dataUpdate.warehouse = warehouseID
+                                    dataInsert.debit = null
+                                }
+        
+                                if(subitem.credit && _isValid(subitem.credit)){
+                                    dataInsert.credit = subitem.credit
+                                }else{
+                                    dataInsert.credit = null
+                                }
+        
+                                /**
+                                 * Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
+                                 * Nếu không  có thì lấy theo mã khách trên phiếu
+                                 */
+                                if(subitem.customerDebit && _isValid(subitem.customerDebit)){
+                                    dataInsert.customerDebit = subitem.customerDebit
+                                }else{
+                                    dataInsert.customerDebit = customerID
+                                }
+        
+                                if(subitem.customerCredit && _isValid(subitem.customerCredit)){
+                                    dataInsert.customerCredit = subitem.customerCredit
+                                }else{
+                                    dataInsert.customerCredit = customerID
+                                }
+        
+                                /**
+                                 * Kiểm tra xem có hàng hóa/kho hay không
+                                 * Nếu không  có thì lấy theo mã khách trên phiếu
+                                 * Chỉ insert khi có cả thông tin goods và warehouse
+                                 */
+                                if(subitem.goods && _isValid(subitem.goods)){
+                                    if(subitem.warehouse && _isValid(subitem.warehouse)){
+                                        dataInsert.goods = subitem.goods
+                                        dataInsert.warehouse = subitem.warehouse
                                     }else{
-                                        dataUpdate.goods = null
-                                        dataUpdate.warehouse = null
+                                        if(warehouseID && _isValid(warehouseID)){
+                                            dataInsert.goods = subitem.goods
+                                            dataInsert.warehouse = warehouseID
+                                        }
                                     }
                                 }
-                            }else{
-                                dataUpdate.goods = null
-                                dataUpdate.warehouse = null
-                            }
-    
-                            /**
-                             * Kiểm tra xem có Hợp đồng hay không
-                             * Nếu không  có thì lấy theo hợp đồng trên phiếu
-                             */
-                            if(subitem.contract && _isValid(subitem.contract)){
-                                dataUpdate.contract = subitem.contract
-                            }else{
-                                if(contractID && _isValid(contractID)){
-                                    dataUpdate.contract = contractID;
+        
+                                /**
+                                 * Kiểm tra xem có Hợp đồng hay không
+                                 * Nếu không  có thì lấy theo hợp đồng trên phiếu
+                                 */
+                                if(subitem.contract && _isValid(subitem.contract)){
+                                    dataInsert.contract = subitem.contract
                                 }else{
-                                    dataUpdate.contract = null
+                                    if(contractID && _isValid(contractID)){
+                                        dataInsert.contract = contractID;
+                                    }
                                 }
+
+                                /**
+                                 * Khoản mục phí
+                                 */
+                                if (subitem.subtype && checkObjectIDs(subitem.subtype)) {
+
+                                    let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subitem.subtype).select('parent')
+                                    if(infoSubtype.parent && _isValid(infoSubtype.parent)){
+                                        parentSubtypeID = infoSubtype.parent
+                                    }else{
+                                        parentSubtypeID = subtypeID
+                                    }
+                                    
+                                    dataInsert.subtype = subitem.subtype;
+                                    dataInsert.parentSubtype = parentSubtypeID;
+                                }else{
+                                    if(subtypeID && _isValid(subtypeID)){
+                                        dataInsert.subtype = subtypeID;
+                                        dataInsert.parentSubtype = parentSubtypeID;
+                                    }
+                                }         
+        
+                                //_________Tiến hành tạo chi tiết_________//
+                                await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert);
                             }
 
-                            /**
-                             * Khoản mục phí
-                             */
-                            if (subitem.subtype && checkObjectIDs(subitem.subtype)) {
-
-                                let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subitem.subtype).select('parent')
-                                if(infoSubtype.parent && _isValid(infoSubtype.parent)){
-                                    parentSubtypeID = infoSubtype.parent
-                                }else{
-                                    parentSubtypeID = subtypeID
+                            // Cập nhật
+                            else{
+                                // console.log('===================CẬP NHẬT BÚT TOÁN===================')
+                                const dataUpdate = {
+                                    authorID, 
+                                    fundaID, 
+                                    journalID: subitem.journalID, 
+                                    date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
+                                    updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
+                                    quantity: subitem.quantity ? Number(subitem.quantity) : 0,
+                                    amount: subitem.amount ? Number(subitem.amount) : 0,
+                                    unitprice: subitem.quantity != 0 ? Number(Number(subitem.amount/subitem.quantity)) : 0, // Đơn giá tính theo thành tiền/khối lượng
+                                    note: subitem.note,
+                                    paymentDeadline,
+                                    gift,
+                                    referrerID,
+                                    salesD,
+                                    isDocumented,
+                                    isPaid
                                 }
-                                
-                                dataUpdate.subtype = subitem.subtype;
-                                dataUpdate.parentSubtype = parentSubtypeID;
-                            }else{
-                                if (subtypeID && checkObjectIDs(subtypeID)) {
-                                    dataUpdate.subtype = subtypeID;
+        
+                                /**
+                                 * Kiểm tra xem có tài khoản nợ/có không
+                                 * Nếu không thì lấy giá trị null
+                                 */
+                                if(subitem.debit && _isValid(subitem.debit)){
+                                    dataUpdate.debit = subitem.debit
+                                }else{
+                                    dataUpdate.debit = null
+                                }
+        
+                                if(subitem.credit && _isValid(subitem.credit)){
+                                    dataUpdate.credit = subitem.credit
+                                }else{
+                                    dataUpdate.credit = null
+                                }
+        
+                                /**
+                                 * Kiểm tra nếu có chi tiết mã khách nợ/có thì lấy theo chi tiết
+                                 * Nếu không  có thì lấy theo mã khách trên phiếu
+                                 */
+                                if(subitem.customerDebit && _isValid(subitem.customerDebit)){
+                                    dataUpdate.customerDebit = subitem.customerDebit
+                                }else{
+                                    dataUpdate.customerDebit = customerID
+                                }
+        
+                                if(subitem.customerCredit && _isValid(subitem.customerCredit)){
+                                    dataUpdate.customerCredit = subitem.customerCredit
+                                }else{
+                                    dataUpdate.customerCredit = customerID
+                                }
+        
+                                /**
+                                 * Kiểm tra xem có hàng hóa/kho hay không
+                                 * Nếu không  có thì lấy theo mã khách trên phiếu
+                                 * Chỉ insert khi có cả thông tin goods và warehouse
+                                 */
+                                if(subitem.goods && _isValid(subitem.goods)){
+                                    if(subitem.warehouse && _isValid(subitem.warehouse)){
+                                        dataUpdate.goods = subitem.goods
+                                        dataUpdate.warehouse = subitem.warehouse
+                                    }else{
+                                        if(warehouseID && _isValid(warehouseID)){
+                                            dataUpdate.goods = subitem.goods
+                                            dataUpdate.warehouse = warehouseID
+                                        }else{
+                                            dataUpdate.goods = null
+                                            dataUpdate.warehouse = null
+                                        }
+                                    }
+                                }else{
+                                    dataUpdate.goods = null
+                                    dataUpdate.warehouse = null
+                                }
+        
+                                /**
+                                 * Kiểm tra xem có Hợp đồng hay không
+                                 * Nếu không  có thì lấy theo hợp đồng trên phiếu
+                                 */
+                                if(subitem.contract && _isValid(subitem.contract)){
+                                    dataUpdate.contract = subitem.contract
+                                }else{
+                                    if(contractID && _isValid(contractID)){
+                                        dataUpdate.contract = contractID;
+                                    }else{
+                                        dataUpdate.contract = null
+                                    }
+                                }
+
+                                /**
+                                 * Khoản mục phí
+                                 */
+                                if (subitem.subtype && checkObjectIDs(subitem.subtype)) {
+
+                                    let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subitem.subtype).select('parent')
+                                    if(infoSubtype.parent && _isValid(infoSubtype.parent)){
+                                        parentSubtypeID = infoSubtype.parent
+                                    }else{
+                                        parentSubtypeID = subtypeID
+                                    }
+                                    
+                                    dataUpdate.subtype = subitem.subtype;
                                     dataUpdate.parentSubtype = parentSubtypeID;
                                 }else{
-                                    dataUpdate.subtype = null
-                                    dataUpdate.parentSubtype = null
-                                }  
+                                    if (subtypeID && checkObjectIDs(subtypeID)) {
+                                        dataUpdate.subtype = subtypeID;
+                                        dataUpdate.parentSubtype = parentSubtypeID;
+                                    }else{
+                                        dataUpdate.subtype = null
+                                        dataUpdate.parentSubtype = null
+                                    }  
+                                }
+                                
+                                //_________Tiến hành cập nhật chi tiết_________//
+                                await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update(dataUpdate);
                             }
-                            
-                            //_________Tiến hành cập nhật chi tiết_________//
-                            await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.update(dataUpdate);
+
+                            i++
                         }
-
-                        i++
                     }
-                }
 
-                /**
-                 * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
-                 */
-                if(Number(i) == Number(selectedJournals.length)){
-                    await that.updateValue({ voucherID, userID: authorID, companyID })
-                }
+                    /**
+                     * B3. CẬP NHẬT GIÁ TRỊ PHIẾU SAU KHI ĐÃ CẬP NHẬT XONG CÁC BÚT TOÁN
+                     */
+                    if(Number(i) == Number(selectedJournals.length)){
+                        await that.updateValue({ voucherID, userID: authorID, companyID })
+                    }
 
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+                    return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+                }else{
+                    if(!checkObjectIDs(voucherID))
+                        return resolve({ error: true, message: 'voucherID invalid', keyError: KEY_ERROR.PARAMS_INVALID, status: 400 })
+
+                    const dataUpdateVoucher = {
+                        userUpdate: authorID, 
+                        modifyAt: Date.now(),
+                    }
+
+                    let dataAddToset = {};
+                    if (checkObjectIDs(filesID)) {
+                        dataAddToset = { files: filesID };
+                    }
+
+                    if(dataAddToset){
+                        dataUpdateVoucher.$addToSet = dataAddToset;
+                    }
+
+                    const infoAfterUpdate = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(voucherID, dataUpdateVoucher, { new: true })
+
+                    if(!infoAfterUpdate)
+                        return resolve({ error: true, message: "cannot_update", status: 400 })
+
+                    return resolve({ error: false, data: infoAfterUpdate, status: 200 });
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
