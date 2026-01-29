@@ -268,6 +268,8 @@ class Model extends BaseModel {
                 }
                 if(pubertyOnsetDate && pubertyOnsetDate != ""){
                     dataUpdate.pubertyOnsetDate = pubertyOnsetDate;
+                }else{
+                    dataUpdate.pubertyOnsetDate = null;
                 }
                 if(date && date != ""){
                     dataUpdate.date = date;
