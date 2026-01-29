@@ -225,7 +225,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID }){
+    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, pubertyOnsetDate }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -266,7 +266,11 @@ class Model extends BaseModel {
                 if(birthday && birthday != ""){
                     dataUpdate.birthday = birthday;
                 }
-
+                if(pubertyOnsetDate && pubertyOnsetDate != ""){
+                    dataUpdate.pubertyOnsetDate = pubertyOnsetDate;
+                }else{
+                    dataUpdate.pubertyOnsetDate = null;
+                }
                 if(date && date != ""){
                     dataUpdate.date = date;
                 }
@@ -275,6 +279,10 @@ class Model extends BaseModel {
                 if(name && name != ""){
                     dataUpdate.name = name;
                     convertStr = stringUtils.removeAccents(name)
+                }
+                if(parentName && parentName != ""){
+                    dataUpdate.parentName = parentName;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(parentName)
                 }
                 if(phone && phone != ""){
                     dataUpdate.phone = phone;
