@@ -1845,7 +1845,7 @@ class Model extends BaseModel {
                                 address: data?.__EMPTY_6,
                                 type: data?.__EMPTY_7,
                                 linkUser: data?.__EMPTY_8,
-                                
+                                birthday: data?.__EMPTY_10,
                             }
 
                             let infoAfterInsert = await this.insert(prepareData);
