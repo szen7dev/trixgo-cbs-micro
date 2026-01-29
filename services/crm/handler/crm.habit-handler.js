@@ -220,9 +220,44 @@ module.exports = {
     },
 
     /**
+     * Code:  HiepNH
+     * Name Download Template Excel
+     * Date: 29/1/2026
+     */
+    importExcel: {
+        auth: 'required',
+        // params: {
+        //     dataImport: { type: 'string' }
+        // },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                const { optionSeller, dataImport } = ctx.params;
+                const { _id: userID, company } = ctx.meta.infoUser;
+                
+                // console.log(ctx.params)
+
+                let companyID
+                if(optionSeller){
+                    companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
+                }else{
+                    companyID = company?._id
+                }
+
+                const resultAfterCallHandler = await CRM_HABIT_MODEL.importFromExcel({
+                    companyID, userID, dataImport, ctx
+                })
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    },
+
+    /**
      * Name: Download Template Excel
      * Author: HiepNH
-     * Code: 25/11/2024
+     * Code: 29/1/2026
      */
     exportExcel: {
         auth: 'required',
@@ -236,7 +271,7 @@ module.exports = {
 				const { _id: userID, email, company } = ctx.meta.infoUser;
 
                 let { option, year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await CRM_HABIT_MODEL.exportExcel({
                     companyID: company._id, option, year, month, email, userID
