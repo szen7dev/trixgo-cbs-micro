@@ -751,10 +751,23 @@ class Model extends BaseModel {
      * Name: Download Template Excel
      * Date: 25/11/2024
      */
-    exportExcel({ option, companyID, year, month, email, userID }) {
+    exportExcel({ option, companyID, userID }) {
        return new Promise(async resolve => {
            try {
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/importHabit.xlsx')))
+                    .then(async workbook => {
+            
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `importHabit_${now.getTime()}.xlsm`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName)
 
+                        await workbook.toFileAsync(pathWriteFile)
+                        const result = await uploadFileS3(pathWriteFile, fileName)
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 })
+                })
            } catch (error) {
                return resolve({ error: true, message: error.message, status: 500 });
            }

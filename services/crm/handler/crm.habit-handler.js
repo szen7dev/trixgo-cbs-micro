@@ -270,11 +270,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, email, company } = ctx.meta.infoUser;
 
-                let { option, year, month } = ctx.params;
+                let { option } = ctx.params;
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await CRM_HABIT_MODEL.exportExcel({
-                    companyID: company._id, option, year, month, email, userID
+                    companyID: company._id, option, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
