@@ -10,6 +10,7 @@ const CF_ROUTINGS_CRM = {
     // ==================== CRM_HABIT ======================== //
     CRM_HABIT                                   : `${BASE_ROUTE}/habit`,
     CRM_HABIT_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}/habit/get-list-by-property`,
+    CRM_HABIT_IMPORT_EXCEL                      : `${BASE_ROUTE}/habit/import-from-excel`,
     CRM_HABIT_EXPORT_EXCEL                      : `${BASE_ROUTE}/habit/export-excel`,
     CRM_HABIT_ADD_MANY                          : `${BASE_ROUTE}/habit/add-many`,
 

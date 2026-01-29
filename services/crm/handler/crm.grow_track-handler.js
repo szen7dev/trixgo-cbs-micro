@@ -226,7 +226,7 @@ module.exports = {
     /**
      * Code:  HiepNH
      * Name Download Template Excel
-     * Date: 9/12/2022
+     * Date: 29/1/2026
      */
     importExcel: {
         auth: 'required',
@@ -260,7 +260,7 @@ module.exports = {
     /**
      * Name: Download Template Excel
      * Author: HiepNH
-     * Code: 25/11/2024
+     * Code: 29/1/2026
      */
     exportExcel: {
         auth: 'required',
