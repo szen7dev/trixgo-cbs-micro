@@ -759,7 +759,7 @@ class Model extends BaseModel {
             
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `importHabit_${now.getTime()}.xlsm`;
+                        const fileName = `importHabit_${now.getTime()}.xlsx`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName)
 
                         await workbook.toFileAsync(pathWriteFile)
