@@ -31,10 +31,12 @@ const { TEMPLATE_NOTIFICATION } = require('../../../tools/constants/index.js');
 /**
  * COLLECTIONS
  */
-const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
+// const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll');
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
+
+const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
 
 class Model extends BaseModel {
 
@@ -442,7 +444,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 19/12/2025
      */
-    getList({ companyID, option, contactID, status, userCreateID, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, userID, option, optionSupport, contactID, status, userCreateID, supportID, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -482,9 +484,33 @@ class Model extends BaseModel {
                 if (checkObjectIDs(userCreateID)) {
                     conditionObj.userCreate = userCreateID
                 }
+
+                if (checkObjectIDs(supportID)) {
+                    conditionObj.support = supportID
+                }
                 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     conditionObj.status = status;
+                }
+
+                if(optionSupport){
+                    let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e04a0dfdebf77b072d1b18", // App Habit
+                        userID
+                    })
+
+                    if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
+                        conditionObj.company = companyID
+                    }else{
+                        let infoContact = await ITEM__CONTACT_COLL.findOne({
+                            company: ObjectID(companyID), 
+                            linkUser: userID
+                        }).select('name linkUser support')
+
+                        if(infoContact){
+                            conditionObj.support = infoContact._id
+                        }
+                    }
                 }
 
                 if(keyword){

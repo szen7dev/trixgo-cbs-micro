@@ -147,7 +147,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { optionSeller, optionTrack, option, habitID, contactID, status, userCreateID, startDate, endDate, date, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, optionTrack, option, optionSupport, habitID, contactID, status, userCreateID, supportID, startDate, endDate, date, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
                 
@@ -168,7 +168,7 @@ module.exports = {
                 } else {
                     if(!optionTrack){
                         resultAfterCallHandler = await CRM_HABIT_MODEL.getList({
-                            companyID, option, contactID, status, userCreateID, keyword, limit, lastestID, select, populates
+                            companyID, userID, option, optionSupport, contactID, status, userCreateID, supportID, keyword, limit, lastestID, select, populates,
                         })
                     }else{
                         resultAfterCallHandler = await CRM_HABIT_MODEL.getListWithTrack({
