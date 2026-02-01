@@ -35,7 +35,7 @@ const ITEM__GOODS_COLL            			            = require('../../item/database/
 const ITEM__CONTACT_COLL            			        = require('../../item/database/item.contact-coll')
 const FINANCIAL_VOUCHER_COLL                            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
-const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
+// const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
 const ITEM__CONFIG_COLL                                 = require("../../item/database/item.config-coll");
 
 /**
@@ -43,19 +43,6 @@ const ITEM__CONFIG_COLL                                 = require("../../item/da
  */
 const ACCOUNT_MODEL                                     = require('../.../../../item/model/item.account-model').MODEL
 const AUTH__APP_USER                                    = require('../.../../../auth/model/auth.app_users').MODEL
-
-// let dataTF = {
-//     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
-//     menuID: "623f1f49e998e94feda0cd74", //
-//     type: 1, 
-//     action: 1, // Xem
-// }
-// let dataTF2 = {
-//     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
-//     menuID: "623f1f49e998e94feda0cd74", //
-//     type: 1,
-//     action: 2, // Thêm
-// }
 
 class Model extends BaseModel {
     constructor() {
@@ -3037,12 +3024,12 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Tổng hợp công nợ
+     * Name: Tải Tổng hợp công nợ
      * Code: HiepNH
-     * Date: 22/1/2026
+     * Date: 01/2/2026
      */
     getListDebt({ companyID, fromDate, toDate, userID, accountID, contactID }) {
-        console.log({ companyID, fromDate, toDate, userID, accountID, contactID })
+        // console.log({ companyID, fromDate, toDate, userID, accountID, contactID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3115,6 +3102,142 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name: Tải chi tiết phiếu
+     * Code: HiepNH
+     * Date: 01/2/2026
+     */
+    downloadExcelVoucher({ companyID, voucherID }) {
+        return new Promise(async resolve => {
+            try {
+                let info = await FINANCIAL_VOUCHER_COLL.findById(voucherID)
+                .populate({
+                    path: 'funda',
+                    select: 'name address'
+                })
+                // console.log(info)
+                if(!info)
+                    return { error: true, message: 'params_voucherID_invalid', status: 400 };
+
+                let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find({ voucher: voucherID })
+                .select('name amount debit credit')
+                .populate({
+                    path: 'debit credit',
+                    select: 'name'
+                })
+                // console.log(listData)
+
+                const docSoThanhChu = (number) => {
+                    const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+                    
+                    const docBlock = (so) => {
+                        let n = parseInt(so);
+                        let tram = Math.floor(n / 100);
+                        let chuc = Math.floor((n % 100) / 10);
+                        let donVi = n % 10;
+                        let res = chuSo[tram] + " trăm ";
+                        if (chuc === 0 && donVi !== 0) res += "linh ";
+                        else if (chuc === 1) res += "mười ";
+                        else if (chuc > 1) res += chuSo[chuc] + " mươi ";
+                        
+                        if (chuc > 0 && donVi === 5) res += "lăm";
+                        else if (chuc > 1 && donVi === 1) res += "mốt";
+                        else if (donVi !== 0 || (tram === 0 && chuc === 0)) res += chuSo[donVi];
+                        return res.trim();
+                    };
+
+                    if (number === 0) return "Không đồng";
+                    let str = Math.abs(number).toString();
+                    let units = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ"];
+                    let groups = [];
+                    while (str.length > 0) {
+                        groups.push(str.slice(Math.max(0, str.length - 3)));
+                        str = str.slice(0, Math.max(0, str.length - 3));
+                    }
+
+                    let result = groups.map((g, i) => {
+                        let text = docBlock(g);
+                        return text !== "không trăm" ? text + " " + units[i] : "";
+                    }).reverse().join(" ").trim();
+
+                    // Xử lý viết hoa và hậu tố
+                    result = result.replace(/^không trăm /g, "").trim();
+                    result = result.charAt(0).toUpperCase() + result.slice(1) + " đồng";
+                    return result;
+                };
+
+                const result = listData.reduce((acc, item) => {
+                    // 1. Cộng dồn tổng amount
+                    acc.totalAmount += item.amount || 0;
+
+                    // 2. Lấy debit.name (dùng Set để tránh trùng lặp nếu cần)
+                    if (item.debit?.name) {
+                        acc.debitNames.add(item.debit.name);
+                    }
+
+                    // 3. Lấy credit.name
+                    if (item.credit?.name) {
+                        acc.creditNames.add(item.credit.name);
+                    }
+
+                    return acc;
+                }, { 
+                    totalAmount: 0, 
+                    debitNames: new Set(), 
+                    creditNames: new Set() 
+                });
+
+                // Chuyển Set thành chuỗi văn bản (cách nhau bởi dấu phẩy)
+                const finalResult = {
+                    total: result.totalAmount,
+                    debitText: Array.from(result.debitNames).join(', '),
+                    creditText: Array.from(result.creditNames).join(', ')
+                };
+
+                const dateStr = info.date; // Ví dụ chuỗi date từ DB
+                const dateObj = moment(dateStr);
+
+                const day = dateObj.date();      // Ngày (1-31)
+                const month = dateObj.month() + 1; // Tháng (0-11 nên phải +1)
+                const year = dateObj.year();     // Năm (2026)
+
+                let template = '../../../files/templates/excels/tt99_mau_phieu_thu.xlsx'
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
+                .then(async workbook => {
+                    const now = new Date();
+                    const filePath = '../../../files/temporary_uploads/';
+                    let fileName = `${info?.sign}_${now.getTime()}.xlsx`;
+                    
+                    workbook.sheet("Data").row(1).cell(1).value(`Đơn vị: ${info.funda.name}`);
+                    workbook.sheet("Data").row(2).cell(1).value(`Địa chỉ: ${info.funda.address}`);
+                    workbook.sheet("Data").row(5).cell(3).value(`Ngày ${day} tháng ${month} năm ${year}`);
+                    workbook.sheet("Data").row(6).cell(5).value(`Số: ${info.sign}`);
+                    workbook.sheet("Data").row(7).cell(5).value(`Nợ: ${finalResult.debitText}`);
+                    workbook.sheet("Data").row(8).cell(5).value(`Có: ${finalResult.creditText}`);
+                    workbook.sheet("Data").row(9).cell(1).value(`Họ và tên người nộp tiền: ${info.receiver}`);
+                    workbook.sheet("Data").row(10).cell(1).value(`Địa chỉ: ${info.funda.address}`);
+                    workbook.sheet("Data").row(11).cell(1).value(`Lý do nộp: ${info.name}`);
+                    workbook.sheet("Data").row(12).cell(2).value(finalResult.total);
+
+                    workbook.sheet("Data").row(15).cell(5).value(`Ngày ${day} tháng ${month} năm ${year}`);
+                    workbook.sheet("Data").row(23).cell(1).value(`Đã nhận đủ số tiền (viết bằng chữ): ${docSoThanhChu(finalResult.total)}`);
+
+                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    await workbook.toFileAsync(pathWriteFile);
+                    const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    fs.unlinkSync(pathWriteFile);
+                    return resolve({ error: false, data: result?.Location, status: 200 });
+                });
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
     exportExcelByFilter({ userID, email, companyID, type, filterParams, voucherID, fromDate, toDate, ctx }) {
         return new Promise(async resolve => {
             try {
@@ -3168,14 +3291,12 @@ class Model extends BaseModel {
                         });
                         break;
                     
-                    // Danh sách Filter
+                    // Chi tiết phiếu
                     case 3:
-                        resultGetList = await this.getListByFilter({
-                                ...filterParams,
-                            populates,
+                        resultGetList = await this.downloadExcelVoucher({
+                            voucherID,
                             userID,
                             companyID,
-                            isExportExcel: true, ctx
                         });
                         break;
                     
@@ -3186,6 +3307,7 @@ class Model extends BaseModel {
                         });
                         break;
 
+                    // Danh sách công nợ
                     case 5:
                         resultGetList = await this.getListDebt({
                                 ...filterParams,
