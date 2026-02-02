@@ -3029,7 +3029,6 @@ class Model extends BaseModel {
      * Date: 01/2/2026
      */
     getListDebt({ companyID, fromDate, toDate, userID, accountID, contactID }) {
-        // console.log({ companyID, fromDate, toDate, userID, accountID, contactID })
         return new Promise(async resolve => {
             try {
                 /**
@@ -3107,7 +3106,7 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 01/2/2026
      */
-    downloadExcelVoucher({ companyID, voucherID }) {
+    getListByVoucher({ companyID, voucherID }) {
         return new Promise(async resolve => {
             try {
                 let info = await FINANCIAL_VOUCHER_COLL.findById(voucherID)
@@ -3126,42 +3125,6 @@ class Model extends BaseModel {
                     select: 'name'
                 })
                 // console.log(listData)
-
-                // const docSoVND = (soTien) => {
-                //     const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
-                //     const donVi = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"];
-
-                //     const docLop3So = (n, hasHuns) => {
-                //         let tram = Math.floor(n / 100);
-                //         let chuc = Math.floor((n % 100) / 10);
-                //         let dvi = n % 10;
-                //         let s = "";
-                //         if (hasHuns || tram > 0) s += chuSo[tram] + " trăm ";
-                //         if (chuc === 0 && dvi > 0) s += (hasHuns || tram > 0) ? "linh " : "";
-                //         else if (chuc === 1) s += "mười ";
-                //         else if (chuc > 1) s += chuSo[chuc] + " mươi ";
-                //         if (dvi === 1 && chuc > 1) s += "mốt";
-                //         else if (dvi === 5 && chuc > 0) s += "lăm";
-                //         else if (dvi > 0 || (tram === 0 && chuc === 0 && !hasHuns)) s += chuSo[dvi];
-                //         return s.trim();
-                //     };
-
-                //     if (soTien === 0) return "Không đồng";
-                //     let str = Math.abs(soTien).toString();
-                //     let lop = [];
-                //     while (str.length > 0) {
-                //         lop.push(str.slice(Math.max(0, str.length - 3)));
-                //         str = str.slice(0, Math.max(0, str.length - 3));
-                //     }
-
-                //     let kq = lop.map((v, i) => {
-                //         let tam = docLop3So(parseInt(v), i < lop.length - 1 || v.length === 3);
-                //         return tam ? tam + " " + donVi[i] : "";
-                //     }).reverse().join(" ").trim();
-
-                //     kq = kq.charAt(0).toUpperCase() + kq.slice(1) + " đồng";
-                //     return kq.replace(/\s+/g, ' '); // Xử lý khoảng trắng thừa
-                // };
 
                 const result = listData.reduce((acc, item) => {
                     // 1. Cộng dồn tổng amount
@@ -3189,45 +3152,9 @@ class Model extends BaseModel {
                     total: result.totalAmount,
                     debitText: Array.from(result.debitNames).join(', '),
                     creditText: Array.from(result.creditNames).join(', ')
-                };
+                }
 
-                const dateStr = info.date; // Ví dụ chuỗi date từ DB
-                const dateObj = moment(dateStr);
-
-                const day = dateObj.date();      // Ngày (1-31)
-                const month = dateObj.month() + 1; // Tháng (0-11 nên phải +1)
-                const year = dateObj.year();     // Năm (2026)
-
-                let template = '../../../files/templates/excels/tt99_mau_phieu_thu.xlsx'
-
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
-                .then(async workbook => {
-                    const now = new Date();
-                    const filePath = '../../../files/temporary_uploads/';
-                    let fileName = `${info?.sign}_${now.getTime()}.xlsx`;
-                    
-                    workbook.sheet("Data").row(1).cell(1).value(`Đơn vị: ${info.funda.name}`);
-                    workbook.sheet("Data").row(2).cell(1).value(`Địa chỉ: ${info.funda.address}`);
-                    workbook.sheet("Data").row(5).cell(3).value(`Ngày ${day} tháng ${month} năm ${year}`);
-                    workbook.sheet("Data").row(6).cell(5).value(`Số: ${info.sign}`);
-                    workbook.sheet("Data").row(7).cell(5).value(`Nợ: ${finalResult.debitText}`);
-                    workbook.sheet("Data").row(8).cell(5).value(`Có: ${finalResult.creditText}`);
-                    workbook.sheet("Data").row(9).cell(1).value(`Họ và tên người nộp tiền: ${info.receiver}`);
-                    workbook.sheet("Data").row(10).cell(1).value(`Địa chỉ: ${info.funda.address}`);
-                    workbook.sheet("Data").row(11).cell(1).value(`Lý do nộp: ${info.name}`);
-                    workbook.sheet("Data").row(12).cell(2).value(finalResult.total);
-
-                    workbook.sheet("Data").row(15).cell(5).value(`Ngày ${day} tháng ${month} năm ${year}`);
-                    // workbook.sheet("Data").row(23).cell(1).value(`Đã nhận đủ số tiền (viết bằng chữ): ${docSoVND(finalResult.total)}`);
-
-                    const pathWriteFile = path.resolve(__dirname, filePath, fileName);
-
-                    await workbook.toFileAsync(pathWriteFile);
-                    const result = await uploadFileS3(pathWriteFile, fileName);
-
-                    fs.unlinkSync(pathWriteFile);
-                    return resolve({ error: false, data: result?.Location, status: 200 });
-                });
+                return resolve({ error: false, data: { info, finalResult } })
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -3235,6 +3162,11 @@ class Model extends BaseModel {
         })
     }
 
+    /**
+     * Name: Tải Excel
+     * Code: HiepNH
+     * Date: 01/2/2026
+     */
     exportExcelByFilter({ userID, email, companyID, type, filterParams, voucherID, fromDate, toDate, ctx }) {
         return new Promise(async resolve => {
             try {
@@ -3290,7 +3222,7 @@ class Model extends BaseModel {
                     
                     // Chi tiết phiếu
                     case 3:
-                        resultGetList = await this.downloadExcelVoucher({
+                        resultGetList = await this.getListByVoucher({
                             voucherID,
                             userID,
                             companyID,
@@ -3325,7 +3257,7 @@ class Model extends BaseModel {
                         break;
                 }
   
-                if([1,2,3].includes(type)){
+                if([1,2].includes(type)){
                     if(!resultGetList.error) {
                         conditionObj = resultGetList.data;
                     }
@@ -3374,12 +3306,16 @@ class Model extends BaseModel {
                 template = '../../../files/templates/excels/accounting_journal_export.xlsx'
             }
             
-            else if(type == 3){
-                template = '../../../files/templates/excels/accounting_voucher_detail_2.xlsx'
+            // else if(type == 3){
+            //     template = '../../../files/templates/excels/accounting_voucher_detail_2.xlsx'
 
-                if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
-                    template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
-                }
+            //     if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
+            //         template = '../../../files/templates/excels/accounting_voucher_detail.xlsx'
+            //     }
+            // }
+
+            else if(type == 3){
+                template = '../../../files/templates/excels/tt99_mau_phieu_thu.xlsx'
             }
             
             else if(type == 4){
@@ -3471,86 +3407,150 @@ class Model extends BaseModel {
                         })
                     }
 
+                    // else if(type == 3){
+                    //     let infoVoucher = await FINANCIAL_VOUCHER_COLL.findById(voucherID)
+                    //     .populate({
+                    //         path: 'customer funda',
+                    //         select: 'name sign address phone'
+                    //     })
+
+                    //     workbook.sheet("Data").row(2).cell(1).value(`Mã hóa đơn: ${infoVoucher.sign}`);
+                    //     workbook.sheet("Data").row(3).cell(1).value(`Ngày: ${moment(infoVoucher.date).format('DD/MM/YYYY HH:mm')}`);
+                    //     workbook.sheet("Data").row(4).cell(1).value(`Ngày tạo phiếu: ${moment(infoVoucher.createAt).format('DD/MM/YYYY HH:mm')}`);
+
+                    //     workbook.sheet("Data").row(5).cell(1).value(`Người gửi: ${infoVoucher.funda?.name}`);
+                    //     workbook.sheet("Data").row(6).cell(1).value(`Ngày đóng hàng: ${moment(new Date()).format('DD/MM/YYYY HH:mm')}`);
+
+                    //     workbook.sheet("Data").row(8).cell(1).value(`Người nhận: ${infoVoucher.customer?.name}`);
+                    //     workbook.sheet("Data").row(9).cell(1).value(`${infoVoucher.customer?.address} - ${infoVoucher.customer?.phone}`);
+
+                    //     workbook.sheet("Data").row(12).cell(1).value(`Số sản phẩm: ${data?.length}`);
+
+                    //     var i = 15
+                    //     data?.forEach((item, index) => {
+                    //         workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
+                    //         workbook.sheet("Data").row(i).cell(2).value(item?.goods?.name);
+                    //         workbook.sheet("Data").row(i).cell(3).value(item?.goods?.unit);
+                    //         workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity));
+
+                    //         // Show giá với Admin ứng dụng
+                    //         if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
+                    //             workbook.sheet("Data").row(i).cell(5).value(Number(item?.unitprice));
+                    //             workbook.sheet("Data").row(i).cell(6).value(Number(item?.amount));
+                    //             workbook.sheet("Data").row(i).cell(7).value(item?.note);
+                    //         }else{
+                    //             workbook.sheet("Data").row(i).cell(5).value(item?.note);
+                    //         }  
+    
+                    //         i++
+                    //     })
+
+                    //     if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
+                    //         const range = workbook.sheet('Data').range(`A15:G${data.length + 14}`);
+
+                    //         range.style({
+                    //             fontFamily: 'Times New Roman',
+                    //             fontColor: 'black',
+                    //             fontSize: 13,
+                    //             bold: false,
+                    //             // horizontalAlignment: 'center',
+                    //             border: true,
+                    //             borderColor: 'black',
+                    //             wrapText: true,
+                    //         })
+    
+                    //         workbook.sheet("Data").row(i + 2).cell(2).value('NGƯỜI GIAO').style({
+                    //             bold: true,
+                    //         })
+                    //         workbook.sheet("Data").row(i + 2).cell(3).value('NGƯỜI NHẬN').style({
+                    //             bold: true,
+                    //         })
+                    //     }
+                    //     else{
+                    //         const range = workbook.sheet('Data').range(`A15:E${data.length + 14}`);
+
+                    //         range.style({
+                    //             fontFamily: 'Times New Roman',
+                    //             fontColor: 'black',
+                    //             fontSize: 13,
+                    //             bold: false,
+                    //             // horizontalAlignment: 'center',
+                    //             border: true,
+                    //             borderColor: 'black',
+                    //             wrapText: true,
+                    //         })
+    
+                    //         workbook.sheet("Data").row(i + 2).cell(2).value('NGƯỜI GIAO').style({
+                    //             bold: true,
+                    //         })
+                    //         workbook.sheet("Data").row(i + 2).cell(3).value('NGƯỜI NHẬN').style({
+                    //             bold: true,
+                    //         })
+                    //     }  
+                    // }
+
                     else if(type == 3){
-                        let infoVoucher = await FINANCIAL_VOUCHER_COLL.findById(voucherID)
-                        .populate({
-                            path: 'customer funda',
-                            select: 'name sign address phone'
-                        })
+                        // console.log(data.info)
+                        // console.log(data.finalResult)
+                        
+                        const docSoVND = (soTien) => {
+                            const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
+                            const donVi = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"];
 
-                        workbook.sheet("Data").row(2).cell(1).value(`Mã hóa đơn: ${infoVoucher.sign}`);
-                        workbook.sheet("Data").row(3).cell(1).value(`Ngày: ${moment(infoVoucher.date).format('DD/MM/YYYY HH:mm')}`);
-                        workbook.sheet("Data").row(4).cell(1).value(`Ngày tạo phiếu: ${moment(infoVoucher.createAt).format('DD/MM/YYYY HH:mm')}`);
+                            const docLop3So = (n, hasHuns) => {
+                                let tram = Math.floor(n / 100);
+                                let chuc = Math.floor((n % 100) / 10);
+                                let dvi = n % 10;
+                                let s = "";
+                                if (hasHuns || tram > 0) s += chuSo[tram] + " trăm ";
+                                if (chuc === 0 && dvi > 0) s += (hasHuns || tram > 0) ? "linh " : "";
+                                else if (chuc === 1) s += "mười ";
+                                else if (chuc > 1) s += chuSo[chuc] + " mươi ";
+                                if (dvi === 1 && chuc > 1) s += "mốt";
+                                else if (dvi === 5 && chuc > 0) s += "lăm";
+                                else if (dvi > 0 || (tram === 0 && chuc === 0 && !hasHuns)) s += chuSo[dvi];
+                                return s.trim();
+                            };
 
-                        workbook.sheet("Data").row(5).cell(1).value(`Người gửi: ${infoVoucher.funda?.name}`);
-                        workbook.sheet("Data").row(6).cell(1).value(`Ngày đóng hàng: ${moment(new Date()).format('DD/MM/YYYY HH:mm')}`);
+                            if (soTien === 0) return "Không đồng";
+                            let str = Math.abs(soTien).toString();
+                            let lop = [];
+                            while (str.length > 0) {
+                                lop.push(str.slice(Math.max(0, str.length - 3)));
+                                str = str.slice(0, Math.max(0, str.length - 3));
+                            }
 
-                        workbook.sheet("Data").row(8).cell(1).value(`Người nhận: ${infoVoucher.customer?.name}`);
-                        workbook.sheet("Data").row(9).cell(1).value(`${infoVoucher.customer?.address} - ${infoVoucher.customer?.phone}`);
+                            let kq = lop.map((v, i) => {
+                                let tam = docLop3So(parseInt(v), i < lop.length - 1 || v.length === 3);
+                                return tam ? tam + " " + donVi[i] : "";
+                            }).reverse().join(" ").trim();
 
-                        workbook.sheet("Data").row(12).cell(1).value(`Số sản phẩm: ${data?.length}`);
+                            kq = kq.charAt(0).toUpperCase() + kq.slice(1) + " đồng";
+                            return kq.replace(/\s+/g, ' '); // Xử lý khoảng trắng thừa
+                        };
 
-                        var i = 15
-                        data?.forEach((item, index) => {
-                            workbook.sheet("Data").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Data").row(i).cell(2).value(item?.goods?.name);
-                            workbook.sheet("Data").row(i).cell(3).value(item?.goods?.unit);
-                            workbook.sheet("Data").row(i).cell(4).value(Number(item?.quantity));
+                        const dateStr = data.info.date; // Ví dụ chuỗi date từ DB
+                        const dateObj = moment(dateStr);
 
-                            // Show giá với Admin ứng dụng
-                            if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
-                                workbook.sheet("Data").row(i).cell(5).value(Number(item?.unitprice));
-                                workbook.sheet("Data").row(i).cell(6).value(Number(item?.amount));
-                                workbook.sheet("Data").row(i).cell(7).value(item?.note);
-                            }else{
-                                workbook.sheet("Data").row(i).cell(5).value(item?.note);
-                            }  
-    
-                            i++
-                        })
+                        const day = dateObj.date();      // Ngày (1-31)
+                        const month = dateObj.month() + 1; // Tháng (0-11 nên phải +1)
+                        const year = dateObj.year();     // Năm (2026)
 
-                        if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0) || configEmails.includes(email.toString())){
-                            const range = workbook.sheet('Data').range(`A15:G${data.length + 14}`);
+                        workbook.sheet("Data").row(1).cell(1).value(`Đơn vị: ${data.info.funda.name}`);
+                        workbook.sheet("Data").row(2).cell(1).value(`Địa chỉ: ${data.info.funda.address}`);
+                        workbook.sheet("Data").row(5).cell(3).value(`Ngày ${day} tháng ${month} năm ${year}`);
+                        workbook.sheet("Data").row(6).cell(5).value(`Số: ${data.info.sign}`);
+                        workbook.sheet("Data").row(7).cell(5).value(`Nợ: ${data.finalResult.debitText}`);
+                        workbook.sheet("Data").row(8).cell(5).value(`Có: ${data.finalResult.creditText}`);
+                        workbook.sheet("Data").row(9).cell(1).value(`Họ và tên người nộp tiền: ${data.info.receiver}`);
+                        workbook.sheet("Data").row(10).cell(1).value(`Địa chỉ: ${data.info.funda.address}`);
+                        workbook.sheet("Data").row(11).cell(1).value(`Lý do nộp: ${data.info.name}`);
+                        workbook.sheet("Data").row(12).cell(2).value(data.finalResult.total);
 
-                            range.style({
-                                fontFamily: 'Times New Roman',
-                                fontColor: 'black',
-                                fontSize: 13,
-                                bold: false,
-                                // horizontalAlignment: 'center',
-                                border: true,
-                                borderColor: 'black',
-                                wrapText: true,
-                            })
-    
-                            workbook.sheet("Data").row(i + 2).cell(2).value('NGƯỜI GIAO').style({
-                                bold: true,
-                            })
-                            workbook.sheet("Data").row(i + 2).cell(3).value('NGƯỜI NHẬN').style({
-                                bold: true,
-                            })
-                        }
-                        else{
-                            const range = workbook.sheet('Data').range(`A15:E${data.length + 14}`);
+                        workbook.sheet("Data").row(15).cell(5).value(`Ngày ${day} tháng ${month} năm ${year}`);
+                        workbook.sheet("Data").row(23).cell(1).value(`Đã nhận đủ số tiền (viết bằng chữ): ${docSoVND(data.finalResult.total)}`);
 
-                            range.style({
-                                fontFamily: 'Times New Roman',
-                                fontColor: 'black',
-                                fontSize: 13,
-                                bold: false,
-                                // horizontalAlignment: 'center',
-                                border: true,
-                                borderColor: 'black',
-                                wrapText: true,
-                            })
-    
-                            workbook.sheet("Data").row(i + 2).cell(2).value('NGƯỜI GIAO').style({
-                                bold: true,
-                            })
-                            workbook.sheet("Data").row(i + 2).cell(3).value('NGƯỜI NHẬN').style({
-                                bold: true,
-                            })
-                        }  
+                        fileName = `${data.info?.sign}_${now.getTime()}.xlsx`;
                     }
 
                     else if(type == 4){
