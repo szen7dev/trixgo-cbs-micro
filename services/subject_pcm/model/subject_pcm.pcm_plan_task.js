@@ -33,7 +33,7 @@ const { ENV_DEVICE_WEB_CBS }                    = require('../../notification/he
 const { RANGE_BASE_PAGINATION_V2 } 	            = require('../../../tools/cursor_base/playground/index');
 const { PCM_STATUS_TASK }			            = require('../../../tools/constants');
 const { uploadFileS3 }                          = require('../../../tools/s3');
-const { PCM_STATUS }					            = require('../helper/subject_pcm.keys-constant.js')
+const { PCM_STATUS, PCM_LOCK_TEMP }				= require('../helper/subject_pcm.keys-constant.js')
 
 /**
  * import inter-coll, exter-coll
@@ -52,20 +52,6 @@ const BUDGET__SUBMITTAL_COLL            = require('../../budget/database/budget.
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL
-
-let dataTF = {
-    appID: "5eabfdc72171391e5f6a0468", // PCM
-    menuID: "623ef213e998e94feda0ccd8", //
-    type: 1,
-    action: 1, // Xem
-}
-let dataTF2 = {
-    appID: "5eabfdc72171391e5f6a0468", // PCM
-    menuID: "623ef213e998e94feda0ccd8", //
-    type: 1,
-    action: 2, // Thêm
-}
-// FE sử dụng: useHistoryTraffics
 
 class Model extends BaseModel {
 
@@ -141,10 +127,18 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx }) {
-        // console.log({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates })
+    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx, companyUserID }) {
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                if(PCM_LOCK_TEMP.includes(companyUserID.toString()))
+                    return resolve({
+                        error: true,
+                        message: "Tạo chủ đề thất bại do Công ty bạn chưa thanh toán ứng dụng này với hệ thống",
+                        keyError: KEY_ERROR.INSERT_FAILED,
+                        status: 403
+                    })
+
                 let dataInsert = {};
                 let accessUsers = [];
                 let infoGroup = null;
@@ -381,7 +375,6 @@ class Model extends BaseModel {
                 /**
                  * XỬ LÝ CÁC SỰ KIỆN SAU KHI TẠO TASK CHÍNH THỨC
                  */
-                // console.log({_____________checkAddNewTask:checkAddNewTask})
                 if(Number(checkAddNewTask) > 0){
                      /**
                      * Thêm reminder nhắc công việc đến hạn
@@ -556,9 +549,6 @@ class Model extends BaseModel {
                     }
                 }
 
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF2)
-
                 const infoTask = await PCM_PLAN_TASK_COLL
                     .findById(infoAfterInsert._id)
                     .select(select )
@@ -580,10 +570,19 @@ class Model extends BaseModel {
     update({ taskID, sign, name, description, actualStartTime, actualFinishTime, assigneeID, userID, progressType, fieldID, expiredHour, isUpdateNews, ontime, quality, judgement, overdue,
         contractID, draft, subType, approvalType, upcoming, usersDeleteID, related, relatedRemoves, priority, status, signatures, tasksLink, groupID, unit, unitPrice, quantity, vatAmount, amountoftime,
         links, linksDocs, authorAttachs, assigneeAttachs, percentage, isAddSignature, isOpenBidding, score,
-        openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, fullnameUpdate, descriptioncv, ctx
+        openedUsers, flags, flagsRemoves, bizfullname, companyOfUser, milestone, alert, senderMail, descriptioncv, ctx, companyID
     }){
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                if(PCM_LOCK_TEMP.includes(companyID.toString()))
+                    return resolve({
+                        error: true,
+                        message: "Tạo chủ đề thất bại do Công ty bạn chưa thanh toán ứng dụng này với hệ thống",
+                        keyError: KEY_ERROR.INSERT_FAILED,
+                        status: 403
+                    })
+
                 let dataUpdate   = {
                     userUpdate: userID,
                     modifyAt: Date.now(),
@@ -1980,9 +1979,14 @@ class Model extends BaseModel {
      * Code:
      */
     getInfo({ option, taskID, companyID, userID, select, populates }){
-        // console.log({ taskID, userID, select, populates })
         return new Promise(async resolve => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                if(PCM_LOCK_TEMP.includes(companyID.toString()))
+                    return resolve({ error: false, data: {
+                        listRecords: []
+                    }, status: 200 })
+
                 if (!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'param_invalid' });
 
@@ -2056,20 +2060,6 @@ class Model extends BaseModel {
 				if (!infoTask)
                     return resolve({ error: true, message: 'cannot_get', keyError: KEY_ERROR.GET_INFO_FAILED })
 
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
-                // // Ghi dữ liệu Hồ sơ thầu
-                // if(infoTask.subtype == 14){
-                //     let infoTF = await ANALYSIS__HISTORY_TRAFFIC_MODEL.insert({
-                //         appID: "60390cb12b367a1cdd9f3fb2", // DataHub
-                //         menuID: "623f239fe998e94feda0cd9f", // Hồ sơ mời thầu
-                //         type: 2,
-                //         companyOfAuthor: companyID,
-                //         userCreate: userID
-                //     })
-                // }
-
                 return resolve({ error: false, data: infoTask });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -2085,27 +2075,23 @@ class Model extends BaseModel {
      */
     getList({
         option, projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
+        subtype, isExpired, fromDate, toDate, isPassPermision, sortKey, isParent,
         userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited, upcoming, isMileStone, ctx
+        keyword, limit = 20, unlimit, lastestID, select, populates = {}, unlimited, upcoming, isMileStone, companyID
     }) {
-        // console.log('=============DANH SÁCH CHỦ ĐỀ==========>>>>>>>>>>>>>>')
-        // console.log({
-        //     option, projectID, groupID, assigneeID, authorID, status, statusNe, draft, type, level, typeStatus, collection,
-        //     subtype, isExpired, fromDate, toDate, signGroupOfTask, isChecklist, isChildTask, isPassPermision, sortKey, isParent,
-        //     userID, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isSortChildTask, milestone,
-        //     keyword, limit, unlimit, lastestID, select, populates, unlimited, isMileStone
-        // })
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                if(PCM_LOCK_TEMP.includes(companyID.toString()))
+                    return resolve({ error: false, data: {
+                        listRecords: []
+                    }, status: 200 })
+
                 if(Number(limit) > 20){
                     limit = 20;
                 } else{
                     limit = +Number(limit);
                 }
-
-                //__________Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
 
                 let conditionObj = {}, sortBy, keys = ['modifyAt__-1'], totalTaskDone = 0
 
@@ -2502,16 +2488,13 @@ class Model extends BaseModel {
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, approvalType, unlimited,
         limit = 20, lastestID, select, populates = '{"path":"assignee author userUpdate project group lastLog lastComment parent","select":"name fullname image sign content author createAt sign files","populate":{"path":"author files images","select":"fullname author image sign nameOrg path createAt","populate":{"path":"author","select":"bizfullname fullname image"}}}', userID, reportID, upcoming
     }) {
-        // console.log('=============TÌM KIẾM CHỦ ĐỀ TRANG CHỦ GET LIST BY FILTER==========>>>>>>>>>>>>>>')
-        // console.log({
-        //     option, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
-        // projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, unlimited,
-        // limit, lastestID, select, populates, userID, reportID, upcoming
-        // })
         return new Promise(async resolve => {
             try {
-                //__________Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                if(PCM_LOCK_TEMP.includes(companyID.toString()))
+                    return resolve({ error: false, data: {
+                        listRecords: []
+                    }, status: 200 })
 
                 const validation = validateParamsObjectID({
                     companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },
@@ -2772,12 +2755,8 @@ class Model extends BaseModel {
      * Date: 27/8/2023
      */
     getListByProperty({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword }){
-        // console.log({ option, userID, fromDate, toDate, projectID, companyID, year, outin, keyword })
         return new Promise(async resolve => {
             try {
-                //__________Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 let conditionObj = {}, conditionProject = {}
 
                 // //__________Danh sách các nhóm dữ liệu mà userID là members
@@ -3153,13 +3132,10 @@ class Model extends BaseModel {
      * Date: 22/8/2023
      */
     getAmountNotification({ userID, option, ctx }){
-        // console.log('=================THÔNG BÁO SỐ VIỆC TẠI TRANG CHỦ================>>>>>>>>>>>>>>')
-        // console.log({ userID, option })
         return new Promise(async resolve => {
             try {
                 let start = new Date()
                 start.setHours(0,0,0,0)
-                // console.log({start })
 
                 let end = new Date()
                 end.setHours(23,59,59,999)
@@ -3361,16 +3337,11 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Date: 29/10/2022
      */
-    getDynamicReport({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year, ctx }){
-        // console.log('========>>>>>>>>>>>>>>>>>>>')
-        // console.log({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year })
+    getDynamicReport({ userID, companyID, option, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
         return new Promise(async resolve => {
             try {
-                //__________Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
-
                 let conditionObj = {}, conditionProject = {}, conditionMatch = {}
-                let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy, sortProject, sortCompany
+                let objectGroup, conditionPopulateUser, conditionPopulateProject, conditionPopulateCompany, sortBy
 
                 conditionObj.usersDelete = { $nin: [ObjectID(userID)] }
 
@@ -3414,7 +3385,6 @@ class Model extends BaseModel {
                 }
 
                 if(upcoming && [1,2].includes(Number(upcoming))){
-                    // console.log('=============Truyền biến upcoming===============>>>>>>>>>>>>>>>')
                     conditionObj.upcoming = Number(upcoming)
                 }
 
@@ -3483,10 +3453,6 @@ class Model extends BaseModel {
                         priority: 3,
                         usersDelete: { $nin: [userID] }
                     })
-
-                    // console.log({amountMyTask1})
-                    // console.log({amountMyTask2})
-                    // console.log({amountMyTask3})
 
                     return resolve({ error: false, data: {
                         amountUnreadTask, amountMyTask, amountMyTask1, amountMyTask2, amountMyTask3, amountMyTask4
@@ -3934,20 +3900,6 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 /**
-                    { value: 0, text: 'Việc thông thường', sign: 'Tasks', key: 'task' },
-                    { value: 1, text: 'Yêu cầu thông tin', sign: 'RFis', key: 'rfi' },
-                    { value: 2, text: 'Yêu cầu phê duyệt', sign: 'RFa', key: 'rfa' },
-                    { value: 3, text: 'Thanh toán', sign: 'CRFa', key: 'crfa' },
-                    { value: 4, text: 'Lựa chọn nhà thầu', sign: 'BRFa', key: 'brfa' },
-                    { value: 5, text: 'Nghiệm thu chất lượng', sign: 'QRFa', key: 'inspection' },
-                    { value: 6, text: 'Yêu cầu sửa chữa', sign: 'Punch', key: 'punch' },
-                    { value: 7, text: 'Yêu cầu thay đổi', sign: 'RFc', key: 'rfc' },
-                    { value: 8, text: 'Yêu cầu thực hiện', sign: 'RFe', key: 'rfe' },
-                    { value: 9, text: 'Báo cáo', sign: 'Report', key: 'report' },
-                    { value: 10, text: 'Tiến độ', sign: 'Schedule', key: 'schedule' },
-                    { value: 11, text: 'Họp', sign: 'MOM', key: 'mom' },
-                 */
-                /**
                  * Tổng số lượng công việc của tôi
                  */
                 let amountTask = await PCM_PLAN_TASK_COLL.count({
@@ -4107,7 +4059,6 @@ class Model extends BaseModel {
      * Depv
      */
     sendEmailToMembersInTask({ taskID, title, notice, sender, receivers, emails, userID, ctx }) {
-        // console.log({ taskID, title, notice, sender, receivers, emails, userID })
         return new Promise(async resolve => {
             try {
                 let infoTask = await PCM_PLAN_TASK_COLL
@@ -4204,9 +4155,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 23/9/2022
      */
-    getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, projectID, keyword, subtype, ctx }){
-        // console.log('========CÔNG VIỆC PHÂN LOẠI THEO DỰ ÁN PHÒNG BAN==============')
-        // console.log({ option, companyID, projectID, keyword, subtype })
+    getAmountTaskOfCompanyOfAssigneeV1({ option, companyID, projectID, keyword, subtype }){
         return new Promise(async resolve => {
             try {
                 if (!checkObjectIDs(companyID))

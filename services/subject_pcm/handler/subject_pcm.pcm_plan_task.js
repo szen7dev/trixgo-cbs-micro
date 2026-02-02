@@ -56,10 +56,11 @@ module.exports = {
 
 				const { _id: authorID, bizfullname, email, fullname, company } = ctx.meta.infoUser;
                 // console.log(ctx.params)
+
                 const { projectID, groupID, taskID, name, description, relatedIDs, authorAttachs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, type, subType, isNotiEmail, amount, vatAmount, contactID, descriptioncv, select, populates } = ctx.params;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.insert({
-                    projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, amount, vatAmount, contactID, select, populates, senderMail: { email, fullname }, company, ctx,
+                    companyUserID: company._id, projectID, groupID, taskID, authorID, name, description, relatedIDs, sign, assigneeID, startTime, startHour, expiredHour, expiredTime, actualStartTime, parentID, docreID, messageID, contractID, documentID, boardID, reportID, groupReportID, draft, template, workflowTemplateID, amountoftime, amountPerHour, fieldID, authorAttachs, type, subType, isNotiEmail, bizfullname, amount, vatAmount, contactID, select, populates, senderMail: { email, fullname }, company, ctx,
                     descriptioncv,
                 });
 
@@ -128,6 +129,7 @@ module.exports = {
 				const { _id: userID, bizfullname, fullname, email, company } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.update({
+                    companyID: company._id,
                     typeUpdate,
                     taskID, sign, name, description, note, actualStartTime, actualFinishTime, amountoftime, amountPerHour, assigneeID, userID, progressType, fieldID, expiredHour,
                     contractID, draft, subType, approvalType, upcoming, usersDelete, related, relatedRemoves, offtimeReason, offbudgetReason, templateID, priority, status, lock, signatures, tasksLink,
@@ -341,18 +343,18 @@ module.exports = {
 
                 // console.log({select})
 
-				const { _id: userID } = ctx.meta.infoUser;
+				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler;
                 
                 // Trường hợp nếu có taskID thì gọi function lấy chi tiết task, ngược lại gọi function lấy danh sách task
                 if(taskID){
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getInfo({
-                        taskID, userID, select, populates
+                        companyID: company._id, taskID, userID, select, populates
                     })
                 }else{
                     resultAfterCallHandler = await PCM_PLAN_TASK_MODEL.getList({
-                        option, userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
+                        option, companyID: company._id, userID, projectID, status, draft, type, level, typeStatus, collection, assigneeID, authorID, subtype, statusNe, groupID, sortKey,
                         isExpired, fromDate, toDate, parentID, companyOfAuthor, companyOfAssignee, fieldID, isSortChecklist, isChecklist, isStatusNot3, isUsersDelete, isChildTask, isSortChildTask,
                         keyword, limit, unlimit, select, lastestID, populates, isPassPermision, milestone, isParent, upcoming, isMileStone, ctx
                     })
