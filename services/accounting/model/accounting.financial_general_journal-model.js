@@ -3127,80 +3127,41 @@ class Model extends BaseModel {
                 })
                 // console.log(listData)
 
-                // const docSoVND = (number) => {
+                // const docSoVND = (soTien) => {
                 //     const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
-                    
-                //     const docBlock = (so) => {
-                //         let n = parseInt(so);
+                //     const donVi = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"];
+
+                //     const docLop3So = (n, hasHuns) => {
                 //         let tram = Math.floor(n / 100);
                 //         let chuc = Math.floor((n % 100) / 10);
-                //         let donVi = n % 10;
-                //         let res = chuSo[tram] + " trăm ";
-                //         if (chuc === 0 && donVi !== 0) res += "linh ";
-                //         else if (chuc === 1) res += "mười ";
-                //         else if (chuc > 1) res += chuSo[chuc] + " mươi ";
-                        
-                //         if (chuc > 0 && donVi === 5) res += "lăm";
-                //         else if (chuc > 1 && donVi === 1) res += "mốt";
-                //         else if (donVi !== 0 || (tram === 0 && chuc === 0)) res += chuSo[donVi];
-                //         return res.trim();
+                //         let dvi = n % 10;
+                //         let s = "";
+                //         if (hasHuns || tram > 0) s += chuSo[tram] + " trăm ";
+                //         if (chuc === 0 && dvi > 0) s += (hasHuns || tram > 0) ? "linh " : "";
+                //         else if (chuc === 1) s += "mười ";
+                //         else if (chuc > 1) s += chuSo[chuc] + " mươi ";
+                //         if (dvi === 1 && chuc > 1) s += "mốt";
+                //         else if (dvi === 5 && chuc > 0) s += "lăm";
+                //         else if (dvi > 0 || (tram === 0 && chuc === 0 && !hasHuns)) s += chuSo[dvi];
+                //         return s.trim();
                 //     };
 
-                //     if (number === 0) return "Không đồng";
-                //     let str = Math.abs(number).toString();
-                //     let units = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ"];
-                //     let groups = [];
+                //     if (soTien === 0) return "Không đồng";
+                //     let str = Math.abs(soTien).toString();
+                //     let lop = [];
                 //     while (str.length > 0) {
-                //         groups.push(str.slice(Math.max(0, str.length - 3)));
+                //         lop.push(str.slice(Math.max(0, str.length - 3)));
                 //         str = str.slice(0, Math.max(0, str.length - 3));
                 //     }
 
-                //     let result = groups.map((g, i) => {
-                //         let text = docBlock(g);
-                //         return text !== "không trăm" ? text + " " + units[i] : "";
+                //     let kq = lop.map((v, i) => {
+                //         let tam = docLop3So(parseInt(v), i < lop.length - 1 || v.length === 3);
+                //         return tam ? tam + " " + donVi[i] : "";
                 //     }).reverse().join(" ").trim();
 
-                //     // Xử lý viết hoa và hậu tố
-                //     result = result.replace(/^không trăm /g, "").trim();
-                //     result = result.charAt(0).toUpperCase() + result.slice(1) + " đồng";
-                //     return result;
+                //     kq = kq.charAt(0).toUpperCase() + kq.slice(1) + " đồng";
+                //     return kq.replace(/\s+/g, ' '); // Xử lý khoảng trắng thừa
                 // };
-
-                const docSoVND = (soTien) => {
-                    const chuSo = ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"];
-                    const donVi = ["", "nghìn", "triệu", "tỷ", "nghìn tỷ", "triệu tỷ"];
-
-                    const docLop3So = (n, hasHuns) => {
-                        let tram = Math.floor(n / 100);
-                        let chuc = Math.floor((n % 100) / 10);
-                        let dvi = n % 10;
-                        let s = "";
-                        if (hasHuns || tram > 0) s += chuSo[tram] + " trăm ";
-                        if (chuc === 0 && dvi > 0) s += (hasHuns || tram > 0) ? "linh " : "";
-                        else if (chuc === 1) s += "mười ";
-                        else if (chuc > 1) s += chuSo[chuc] + " mươi ";
-                        if (dvi === 1 && chuc > 1) s += "mốt";
-                        else if (dvi === 5 && chuc > 0) s += "lăm";
-                        else if (dvi > 0 || (tram === 0 && chuc === 0 && !hasHuns)) s += chuSo[dvi];
-                        return s.trim();
-                    };
-
-                    if (soTien === 0) return "Không đồng";
-                    let str = Math.abs(soTien).toString();
-                    let lop = [];
-                    while (str.length > 0) {
-                        lop.push(str.slice(Math.max(0, str.length - 3)));
-                        str = str.slice(0, Math.max(0, str.length - 3));
-                    }
-
-                    let kq = lop.map((v, i) => {
-                        let tam = docLop3So(parseInt(v), i < lop.length - 1 || v.length === 3);
-                        return tam ? tam + " " + donVi[i] : "";
-                    }).reverse().join(" ").trim();
-
-                    kq = kq.charAt(0).toUpperCase() + kq.slice(1) + " đồng";
-                    return kq.replace(/\s+/g, ' '); // Xử lý khoảng trắng thừa
-                };
 
                 const result = listData.reduce((acc, item) => {
                     // 1. Cộng dồn tổng amount
@@ -3257,7 +3218,7 @@ class Model extends BaseModel {
                     workbook.sheet("Data").row(12).cell(2).value(finalResult.total);
 
                     workbook.sheet("Data").row(15).cell(5).value(`Ngày ${day} tháng ${month} năm ${year}`);
-                    workbook.sheet("Data").row(23).cell(1).value(`Đã nhận đủ số tiền (viết bằng chữ): ${docSoVND(finalResult.total)}`);
+                    // workbook.sheet("Data").row(23).cell(1).value(`Đã nhận đủ số tiền (viết bằng chữ): ${docSoVND(finalResult.total)}`);
 
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
 
