@@ -2176,6 +2176,7 @@ class Model extends BaseModel {
 
                             // Tính chất
                             if(type) {
+                                // console.log({type})
                                 currRow.cell(20).value(DOCUMENT_TYPES[Number(type-1)].text);
                             }
 

@@ -44,4 +44,7 @@ exports.DOCUMENT_TYPES = [
     { value: 30, text: 'Thiết kế', key: 'key' },
     { value: 31, text: 'Vật liệu', key: 'key' },
     { value: 32, text: 'Dữ liệu', key: 'key' },
+    { value: 33, text: 'Điều lệ', key: 'key' },
+    { value: 34, text: 'Giấy phép, Chứng nhận', key: 'key' },
+    { value: 35, text: 'Nghị quyết', key: 'key' },
 ]
