@@ -606,8 +606,8 @@ class Model extends BaseModel {
     }
 
     getListByFilter({
-        companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, budgetID, budgetItemID, budgetGroupID, budgetWorkID, fromDate, toDate, forward, cancel, userID, contacts,
-        limit = 1000, lastestID, select, populates = {}, sortKey, isExportExcel, ctx }) {
+        companyID, fundaID, projectID, contractID, accountID, contactID, warehouseID, goodsID, voucherID, fromDate, toDate, forward, cancel,
+        limit = 1000, lastestID, select, populates = {}, sortKey, isExportExcel }) {
         return new Promise(async (resolve) => {
             try {
                 if (limit > 1000) {
@@ -675,9 +675,10 @@ class Model extends BaseModel {
 
                 /**
                  * Sử dụng trong export excel document (hoặc theo bộ lọc)
-                 * Trả về điều kiện tra cứu
+                 * Trả về điều kiện tra cứu: Lấy toàn bộ dữ liệu
                  */
                 if(isExportExcel) {
+                    // console.log('===========Tải excel===========>>>>>>>>>>>>>>>')
                     // console.log(conditionObj)
                     return resolve({ data: conditionObj, error: false });
                 }
@@ -3205,7 +3206,6 @@ class Model extends BaseModel {
                             userID,
                             companyID,
                             isExportExcel: true, 
-                            ctx
                         });
                         break;
                     
