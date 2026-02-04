@@ -127,11 +127,11 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx, companyUserID }) {
+    insert({ projectID, groupID, taskID, authorID, name, description, sign, type, startTime, expiredTime, expiredHour, amountoftime, assigneeID, relatedIDs, progressType, parentID, contractID, draft, template, fieldID, subType, authorAttachs, bizfullname, isNotiEmail, senderMail, amount, vatAmount, contactID, descriptioncv, select, populates, ctx, companyOfUser }) {
         return new Promise(async (resolve) => {
             try {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                if(PCM_LOCK_TEMP.includes(companyUserID.toString()))
+                if(PCM_LOCK_TEMP.includes(companyOfUser.toString()))
                     return resolve({
                         error: true,
                         message: "Tạo chủ đề thất bại do Công ty bạn chưa thanh toán ứng dụng này với hệ thống",
@@ -1882,7 +1882,7 @@ class Model extends BaseModel {
         taskID, name, projectID, groupID, assigneeID, relatedIDs,
         authorAttachs, type, subtype, description, startTime, expiredHour,
         expiredTime, contractID, isDraftTask, isCloneChildTask,
-        userID, bizfullname, ctx
+        userID, bizfullname, ctx, companyOfUser
     }) {
         // console.log('===========copy công việc===========>>>>>>>>>>')
         // console.log({
@@ -1943,6 +1943,7 @@ class Model extends BaseModel {
                     signatures: [],
                     amountoftime,
                     bizfullname,
+                    companyOfUser,
                     ctx
                 })
                 if(infoAfterCloneTask.error) return resolve(infoAfterCloneTask);

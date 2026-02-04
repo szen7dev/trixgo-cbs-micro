@@ -3164,6 +3164,84 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Tải Tổng hợp công nợ
+     * Code: HiepNH
+     * Date: 01/2/2026
+     */
+    getListAdminReport({ companyID, fromDate, toDate, userID, accountID, contactID }) {
+        return new Promise(async resolve => {
+            try {
+                /**
+                 * BA
+                 * 1. Tổng hợp công nợ
+                 * 2. Công nợ theo accountID
+                 * 3. Công nợ của từng Mã khách
+                 */
+                let conditionObj = {company: ObjectID(companyID), forward: 0}
+                let arrObjectID = [accountID]
+                let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
+                let infoCompany = await COMPANY_COLL.findById(companyID).select('name sign')
+
+                const listMatch = ['1', '2', '6', '8']; // Nên để dạng chuỗi để so sánh chính xác
+                const name = infoAccount.name; // Ví dụ mã tài khoản
+                const description = infoAccount.description; // Ví dụ mã tài khoản
+                let isAssets, contactName = ''
+                let companyName = infoCompany.name, companySign = infoCompany.sign
+
+                if (listMatch.includes(String(name)[0])) {
+                    isAssets = 1
+                }else{
+                    isAssets = 2
+                }
+
+                arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
+
+                conditionObj.$or = [
+                    { debit: { $in: arrObjectID }},
+                    { credit: { $in: arrObjectID }},
+                ]
+
+                if(contactID && checkObjectIDs(contactID)){
+                    let infoContact = await ITEM__CONTACT_COLL
+                    .findById(contactID)
+                    .select('sign taxid')
+                    // console.log(infoContact)
+
+                    if(infoContact){
+                        conditionObj.$or = [
+                            { debit: { $in: arrObjectID }, customerDebit: ObjectID(contactID) },
+                            { credit: { $in: arrObjectID }, customerCredit: ObjectID(contactID) },
+                        ]
+
+                        contactName = `${infoContact.sign}_${infoContact.taxid}`
+                    }
+                }
+                // console.log(conditionObj)
+                let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
+                .select('name note amount voucher date debit credit customerDebit customerCredit paymentDeadline')
+                .populate({
+                    path:'customerDebit customerCredit voucher',
+                    select: 'name phone sign'
+                })
+                .sort({date: 1})
+                // console.log(listData)
+
+                return resolve({ error: false, data: {
+                    listData, arrObjectID, isAssets, 
+                    name, 
+                    description, 
+                    contactName,
+                    companySign,
+                    companyName,
+                } })
+                
+            } catch (error) {
+                return resolve({ error: true, message: error.message })
+            }
+        })
+    }
+
+    /**
      * Name: Tải Excel
      * Code: HiepNH
      * Date: 01/2/2026
@@ -3229,7 +3307,7 @@ class Model extends BaseModel {
                         });
                         break;
                     
-                    // Danh sách Filter
+                    // Báo cáo nhập liệu
                     case 4:
                         resultGetList = await this.getListByAuthor({
                             companyID, fromDate, toDate, userID
@@ -3240,6 +3318,14 @@ class Model extends BaseModel {
                     case 5:
                         resultGetList = await this.getListDebt({
                                 ...filterParams,
+                            userID,
+                            companyID,
+                        });
+                        break;
+
+                    case 6:
+                        resultGetList = await this.getListAdminReport({
+                            ...filterParams,
                             userID,
                             companyID,
                         });
@@ -3324,7 +3410,11 @@ class Model extends BaseModel {
             
             else if(type == 5){
                 template = '../../../files/templates/excels/accounting_export_debt.xlsx'
-            }    
+            }   
+            
+            else if(type == 6){
+                template = '../../../files/templates/excels/accounting_admin_report.xlsx'
+            }
 
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
                 .then(async workbook => {
@@ -3604,6 +3694,38 @@ class Model extends BaseModel {
                         })
 
                         fileName = `${data?.companySign}_BaoCaoCongNo_${data?.contactName}_${now.getTime()}.xlsx`;
+                    }
+
+                    else if(type == 6){
+                        fileName = `accounting_admin_report${now.getTime()}.xlsx`;
+
+                        // var i = 3
+                        // data?.forEach((item, index) => {
+                        //     workbook.sheet("orgData").row(i).cell(1).value(item?.voucher?.date);
+                        //     workbook.sheet("orgData").row(i).cell(2).value(item?.subtype?.name);
+                        //     workbook.sheet("orgData").row(i).cell(3).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
+                        //     workbook.sheet("orgData").row(i).cell(4).value(item?.funda?.name);
+                        //     workbook.sheet("orgData").row(i).cell(5).value(item?.voucher?.name);
+                        //     workbook.sheet("orgData").row(i).cell(6).value(item?.voucher?.sign);
+                        //     workbook.sheet("orgData").row(i).cell(7).value(item?.customerDebit?.name);
+                        //     workbook.sheet("orgData").row(i).cell(8).value(item?.customerCredit?.name);
+                        //     workbook.sheet("orgData").row(i).cell(9).value(item?.debit?.name);
+                        //     workbook.sheet("orgData").row(i).cell(10).value(item?.credit?.name);
+                        //     workbook.sheet("orgData").row(i).cell(11).value(Number(item?.quantity));
+                        //     workbook.sheet("orgData").row(i).cell(12).value(Number(item?.unitprice));
+                        //     workbook.sheet("orgData").row(i).cell(13).value(Number(item?.amount));
+                        //     workbook.sheet("orgData").row(i).cell(14).value(item?.contract?.name);
+                        //     workbook.sheet("orgData").row(i).cell(15).value(item?.budgetWork?.name);
+                        //     workbook.sheet("orgData").row(i).cell(16).value(Number(item?.updown));
+                        //     workbook.sheet("orgData").row(i).cell(17).value(item?.goods?.name);
+                        //     workbook.sheet("orgData").row(i).cell(18).value(item?.warehouse?.name);
+                        //     workbook.sheet("orgData").row(i).cell(19).value(item.note);
+                        //     workbook.sheet("orgData").row(i).cell(20).value(item?.subtype?.parent?.name);
+                        //     workbook.sheet("orgData").row(i).cell(21).value(`M${item?.voucher?.date.getMonth() + 1}_${item?.voucher?.date.getFullYear()}`);
+                        //     workbook.sheet("orgData").row(i).cell(22).value(item?.funda?.sign);
+    
+                        //     i++
+                        // })
                     }
 
                     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
