@@ -3169,7 +3169,7 @@ class Model extends BaseModel {
      * Date: 01/2/2026
      */
     getListAdminReport({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID }) {
-        console.log({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID })
+        // console.log({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {company: ObjectID(companyID)}
@@ -3184,65 +3184,101 @@ class Model extends BaseModel {
                     select: 'name sign unit type date'
                 })
 
-                // /**
-                //  * BA
-                //  * 1. Tổng hợp công nợ
-                //  * 2. Công nợ theo accountID
-                //  * 3. Công nợ của từng Mã khách
-                //  */
-                // let conditionObj = {company: ObjectID(companyID), forward: 0}
-                // let arrObjectID = [accountID]
-                // let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
-                // let infoCompany = await COMPANY_COLL.findById(companyID).select('name sign')
+                let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    { $match: conditionObj }, // Lọc theo ngày tháng/voucher
+                    
+                    // Lấy dữ liệu từ bảng accounts cho bên Nợ (debit)
+                    {
+                        $lookup: {
+                        from: "accounts", // Tên collection chứa tài khoản
+                        localField: "debit",
+                        foreignField: "_id",
+                        as: "debit_info"
+                        }
+                    },
+                    // Lấy dữ liệu từ bảng accounts cho bên Có (credit)
+                    {
+                        $lookup: {
+                        from: "accounts",
+                        localField: "credit",
+                        foreignField: "_id",
+                        as: "credit_info"
+                        }
+                    },
+                    { $unwind: "$debit_info" },
+                    { $unwind: "$credit_info" },
+                    
+                    {
+                        $project: {
+                        month: { $month: "$date" }, // Trích xuất tháng
+                        amount: 1,
+                        // Lấy ký tự đầu từ tên đã lookup thành công
+                        debitFirstChar: { $substr: ["$debit_info.name", 0, 1] },
+                        creditFirstChar: { $substr: ["$credit_info.name", 0, 1] }
+                        }
+                    },
+                    {
+                        $group: {
+                        _id: "$month",
+                        totalRevenue: {
+                            $sum: {
+                            $cond: [{ $in: ["$creditFirstChar", ["5", "7"]] }, "$amount", 0]
+                            }
+                        },
+                        totalExpense: {
+                            $sum: {
+                            $cond: [{ $in: ["$debitFirstChar", ["6", "8"]] }, "$amount", 0]
+                            }
+                        }
+                        }
+                    },
+                    { $sort: { "_id": 1 } }
+                    ]);
 
-                // const listMatch = ['1', '2', '6', '8']; // Nên để dạng chuỗi để so sánh chính xác
-                // const name = infoAccount.name; // Ví dụ mã tài khoản
-                // const description = infoAccount.description; // Ví dụ mã tài khoản
-                // let isAssets, contactName = ''
-                // let companyName = infoCompany.name, companySign = infoCompany.sign
+                // let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                //     {
+                //         $match: conditionObj
+                //     },  
+                //     {
+                //         $project: {
+                //             month: { $month: "$date" }, // Trích xuất tháng T1-T12
+                //             amount: 1,
+                //             // Lấy ký tự đầu tiên của tên tài khoản (giả sử đã được populate hoặc dùng $lookup)
+                //             debitFirstChar: { $substr: ["$debit.name", 0, 1] },
+                //             creditFirstChar: { $substr: ["$credit.name", 0, 1] }
+                //         }
+                //     },
+                //     {
+                //         $group: {
+                //         _id: "$month",
+                //         // Tổng doanh thu: tài khoản đầu 5 hoặc 7 (thường ghi nhận bên Có)
+                //         totalRevenue: {
+                //             $sum: {
+                //             $cond: [
+                //                 { $in: ["$creditFirstChar", ["5", "7"]] }, "$amount", 0
+                //             ]
+                //             }
+                //         },
+                //         // Tổng chi phí: tài khoản đầu 6 hoặc 8 (thường ghi nhận bên Nợ)
+                //         totalExpense: {
+                //             $sum: {
+                //             $cond: [
+                //                 { $in: ["$debitFirstChar", ["6", "8"]] }, "$amount", 0
+                //             ]
+                //             }
+                //         }
+                //         }
+                //     },
+                //     { $sort: { "_id": 1 } } // Sắp xếp từ tháng 1 đến tháng 12
+                // ]);
 
-                // if (listMatch.includes(String(name)[0])) {
-                //     isAssets = 1
-                // }else{
-                //     isAssets = 2
-                // }
+                console.log(listData1)
 
-                // arrObjectID = [...arrObjectID,...infoAccount.nestedChilds]
 
-                // conditionObj.$or = [
-                //     { debit: { $in: arrObjectID }},
-                //     { credit: { $in: arrObjectID }},
-                // ]
+                // return resolve({ error: false, data: {
+                //     listData,
 
-                // if(contactID && checkObjectIDs(contactID)){
-                //     let infoContact = await ITEM__CONTACT_COLL
-                //     .findById(contactID)
-                //     .select('sign taxid')
-                //     // console.log(infoContact)
-
-                //     if(infoContact){
-                //         conditionObj.$or = [
-                //             { debit: { $in: arrObjectID }, customerDebit: ObjectID(contactID) },
-                //             { credit: { $in: arrObjectID }, customerCredit: ObjectID(contactID) },
-                //         ]
-
-                //         contactName = `${infoContact.sign}_${infoContact.taxid}`
-                //     }
-                // }
-                // // console.log(conditionObj)
-                // let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
-                // .select('name note amount voucher date debit credit customerDebit customerCredit paymentDeadline')
-                // .populate({
-                //     path:'customerDebit customerCredit voucher',
-                //     select: 'name phone sign'
-                // })
-                // .sort({date: 1})
-                // // console.log(listData)
-
-                return resolve({ error: false, data: {
-                    listData,
-
-                } })
+                // } })
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
