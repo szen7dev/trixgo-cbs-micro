@@ -5234,8 +5234,7 @@ class Model extends BaseModel {
      * Func: Tạo task từ dữ liệu excel
      * Date: 15/09/2022
      */
-    importTaskFromExcel({ taskID, dataImport, userID, ctx }) {
-        // console.log({taskID, dataImport, userID})
+    importTaskFromExcel({ companyOfUser, taskID, dataImport, userID, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(taskID))
@@ -5272,6 +5271,7 @@ class Model extends BaseModel {
                 for (const data of dataImportJSON) {
                     if(index > 0){
                         let dataInsert = {
+                            companyOfUser,
                             name: data?.__EMPTY_1,
                             groupID: data?.__EMPTY_12,
                             authorID: userID,
