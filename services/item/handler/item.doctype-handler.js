@@ -69,12 +69,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID } = ctx.meta.infoUser;
-                const { doctypeID, type, subType, name, description, sign, unit, amount, alert, salesChannel, grade, linkItemID } = ctx.params;
+                const { doctypeID, parent, type, subType, name, description, sign, unit, amount, alert, salesChannel, grade, linkItemID } = ctx.params;
 
                 // console.log(ctx.params)
 
                 const resultAfterCallHandler = await ITEM__DOCTYPE_MODEL.update({
-                    doctypeID, type, subType, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID
+                    doctypeID, parent, type, subType, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

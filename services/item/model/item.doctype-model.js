@@ -123,13 +123,16 @@ class Model extends BaseModel {
      * Func: Update doctype
      * Date: 22/02/2022
      */
-    update({ doctypeID, type, subType, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID }) {
+    update({ doctypeID, parent, type, subType, name, description, sign, unit, amount, alert, userID, salesChannel, grade, linkItemID }) {
         return new Promise(async resolve => {
             try {
                 if(!name)
-                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" });
+                    return resolve({ error: true, message: "Tên không hợp lệ", keyError: "Request params name invalid" })
 
-                const dataUpdate = { userUpdate: userID, modifyAt: new Date() };
+                const dataUpdate = { 
+                    userUpdate: userID, 
+                    modifyAt: new Date() 
+                }
 
                 if(!checkObjectIDs([doctypeID, userID])) {
                     return resolve({
@@ -183,6 +186,17 @@ class Model extends BaseModel {
                     dataUpdate.linkItem = linkItemID
                 }
 
+                let infoCheck
+                if(parent && checkObjectIDs(parent) && parent.toString() != doctypeID.toString()){
+                    infoCheck = await ITEM__DOCTYPE_COLL.findById(doctypeID)
+
+                    if(!infoCheck.parent){
+                        let infoParent = await ITEM__DOCTYPE_COLL.findById(parent);
+                        dataUpdate.parent = parent;
+                        dataUpdate.level = infoParent.level + 1;
+                    }
+                }
+
                 let convertStr = ''
                 if(name && name != ""){
                     convertStr = stringUtils.removeAccents(name)
@@ -205,6 +219,15 @@ class Model extends BaseModel {
 						keyError: "error_occurred",
 						status: 422
 					})
+                }
+
+                if(parent && checkObjectIDs(parent) && parent.toString() != doctypeID.toString() && !infoCheck.parent){
+                    await ITEM__DOCTYPE_COLL.findByIdAndUpdate(parent, {
+                        $addToSet: {
+                            childs: doctypeID
+                        },
+                        $inc: { amountChilds: 1 }
+                    })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 })
