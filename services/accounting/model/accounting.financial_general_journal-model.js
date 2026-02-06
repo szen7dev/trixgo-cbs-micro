@@ -39,6 +39,7 @@ const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/a
 // const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
 const ITEM__CONFIG_COLL                                 = require("../../item/database/item.config-coll");
 const PCM_FILE__COLL                                    = require('../../subject_pcm/database/subject_pcm.pcm_file-coll')
+const ITEM__DOCTYPE_COLL            		            = require('../../item/database/item.doctype-coll')
 
 /**
  * MODELS
@@ -3191,7 +3192,8 @@ class Model extends BaseModel {
                     date: {
                         $gte: moment(fromDate).toDate(),
                         $lte: moment(toDate).toDate(),
-                    }
+                    },
+                    subtype: {$exists: true, $ne: null}
                 }
 
                 if(fundaID && checkObjectIDs(fundaID)){
@@ -3264,12 +3266,44 @@ class Model extends BaseModel {
                 // console.log(monthlyReport); // Trả về đủ 12 tháng từ T1 - T12
 
                 let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    { $match: conditionObj }, // Lọc theo công ty và thời gian
+                    { $match: conditionObj2 }, // Lọc theo công ty và thời gian
                     {
                         $group: {
                             _id: { 
                                 subtype: "$subtype", 
                                 month: { $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } } 
+                            },
+                            // totalRevenue: {
+                            //     $sum: {
+                            //         $subtract: [
+                            //             // Cộng số tiền nếu tài khoản CÓ nằm trong danh sách Doanh thu
+                            //             { $cond: [{ $in: ["$credit", revenueIds] }, "$amount", 0] },
+                            //             // Trừ số tiền nếu tài khoản NỢ nằm trong danh sách Doanh thu (bút toán giảm trừ)
+                            //             { $cond: [{ $in: ["$debit", revenueIds] }, "$amount", 0] }
+                            //         ]
+                            //     }
+                            // },
+                            totalExpense: {
+                                $sum: {
+                                    $subtract: [
+                                        // Cộng số tiền nếu tài khoản NỢ nằm trong danh sách Chi phí
+                                        { $cond: [{ $in: ["$debit", expenseIds] }, "$amount", 0] },
+                                        // Trừ số tiền nếu tài khoản CÓ nằm trong danh sách Chi phí
+                                        { $cond: [{ $in: ["$credit", expenseIds] }, "$amount", 0] }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                ])
+                let listDoctype2 = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData2.map(item => item._id.subtype)}}).select('name')
+
+                let listData3 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    { $match: conditionObj2 }, // Lọc theo công ty và thời gian
+                    {
+                        $group: {
+                            _id: { 
+                                subtype: "$parentSubtype", // Khoản mục cha
                             },
                             totalRevenue: {
                                 $sum: {
@@ -3292,34 +3326,37 @@ class Model extends BaseModel {
                                 }
                             }
                         }
-                    },
-                    { $sort: { "_id": 1 } } // Sắp xếp từ tháng 1 đến tháng 12
-                ]);
-
-                console.log(listData2)
+                    }
+                ])
+                let listDoctype3 = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData3.map(item => item._id.subtype)}}).select('name')
+                // console.log(listData3)
+                // console.log(listDoctype3)
 
                 let templateFile
-                if (checkObjectIDs(templateID)) {
-                    // console.log({templateID})
-                    let infoTemplate = await PCM_FILE__COLL.findById(templateID)
-                    console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`)
+                // if (checkObjectIDs(templateID)) {
+                //     // console.log({templateID})
+                //     let infoTemplate = await PCM_FILE__COLL.findById(templateID)
+                //     // console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`)
 
-                    const response = await axios({
-                        url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
-                        method: 'GET',
-                        responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
-                    })
-                    // console.log("[1524] RESPONSE:", response?.data)
+                //     const response = await axios({
+                //         url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
+                //         method: 'GET',
+                //         responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
+                //     })
+                //     // console.log("[1524] RESPONSE:", response?.data)
 
-                    templateFile = response.data
-                }
-                // console.log(`[1528] templateFile1: ${templateFile1}`)
+                //     templateFile = response.data
+                // }
+                // // console.log(`[1528] templateFile1: ${templateFile1}`)
 
                 return resolve({ error: false, data: {
                     fromDate, toDate,
                     listData,
                     monthlyReport,
+                    listDoctype2,
                     listData2,
+                    listDoctype3,
+                    listData3,
                     templateFile
                 } })
                 
@@ -3824,6 +3861,35 @@ class Model extends BaseModel {
                         data?.monthlyReport.forEach((item, index) => {
                             workbook.sheet("BCQT1").row(4).cell(i).value(Number(item?.totalRevenue));
                             workbook.sheet("BCQT1").row(5).cell(i).value(Number(item?.totalExpense));
+    
+                            i++
+                        })
+
+                        var i = 4
+                        data?.listDoctype2.forEach((item, index) => {
+                            workbook.sheet("BCQT2").row(i).cell(2).value(item?.name);
+
+                            for(var j=1; j <= 12; j++ ){
+                                for(const subitem of data?.listData2){
+                                    if(subitem._id.subtype.toString() === item._id.toString() && Number(subitem._id.month) == Number(j)){
+                                        workbook.sheet("BCQT2").row(i).cell(j + 4).value(Number(subitem?.totalExpense));
+                                    }
+                                }
+                            }
+    
+                            i++
+                        })
+
+                        var i = 4
+                        data?.listDoctype3.forEach((item, index) => {
+                            workbook.sheet("BCQT3").row(i).cell(2).value(item?.name);
+
+                            for(const subitem of data?.listData3){
+                                if(subitem._id.subtype.toString() === item._id.toString()){
+                                    workbook.sheet("BCQT3").row(i).cell(3).value(Number(subitem?.totalRevenue));
+                                    workbook.sheet("BCQT3").row(i).cell(4).value(Number(subitem?.totalExpense));
+                                }
+                            }
     
                             i++
                         })
