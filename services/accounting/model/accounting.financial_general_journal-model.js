@@ -25,6 +25,7 @@ const { uploadFileS3 }                                  = require('../../../tool
  const { RANGE_BASE_PAGINATION_V2 }                     = require('../../../tools/cursor_base/playground/index')
  const { KEY_ERROR }                                    = require('../../../tools/keys/index')
  const { VOUCHER_TYPES }                                = require('../helper/accounting.keys-constant')
+ const axios = require('axios')
 
 /**
  * COLLECTIONS
@@ -37,6 +38,7 @@ const FINANCIAL_VOUCHER_COLL                            = require('../database/a
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 // const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
 const ITEM__CONFIG_COLL                                 = require("../../item/database/item.config-coll");
+const PCM_FILE__COLL                                    = require('../../subject_pcm/database/subject_pcm.pcm_file-coll')
 
 /**
  * MODELS
@@ -3168,8 +3170,8 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 01/2/2026
      */
-    getListAdminReport({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID }) {
-        // console.log({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID })
+    getListAdminReport({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID, templateID }) {
+        // console.log({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID, templateID })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {
@@ -3182,8 +3184,19 @@ class Model extends BaseModel {
                     }
                 }
 
+                let conditionObj2 = {
+                    company: ObjectID(companyID),
+                    forward: 0,
+                    cancel: 0,
+                    date: {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
                 if(fundaID && checkObjectIDs(fundaID)){
                     conditionObj.funda = ObjectID(fundaID)
+                    conditionObj2.funda = ObjectID(fundaID)
                 }
 
                 let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
@@ -3230,7 +3243,7 @@ class Model extends BaseModel {
                     { $sort: { "_id": 1 } } // Sắp xếp từ tháng 1 đến tháng 12
                 ]);
 
-                console.log(listData1)
+                // console.log(listData1)
 
                 // Tạo mảng 12 tháng mặc định bằng 0
                 let monthlyReport = Array.from({ length: 12 }, (_, i) => ({
@@ -3248,12 +3261,66 @@ class Model extends BaseModel {
                     }
                 });
 
-                console.log(monthlyReport); // Trả về đủ 12 tháng từ T1 - T12
+                // console.log(monthlyReport); // Trả về đủ 12 tháng từ T1 - T12
+
+                let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    { $match: conditionObj }, // Lọc theo công ty và thời gian
+                    {
+                        $group: {
+                            _id: { 
+                                subtype: "$subtype", 
+                                month: { $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } } 
+                            },
+                            totalRevenue: {
+                                $sum: {
+                                    $subtract: [
+                                        // Cộng số tiền nếu tài khoản CÓ nằm trong danh sách Doanh thu
+                                        { $cond: [{ $in: ["$credit", revenueIds] }, "$amount", 0] },
+                                        // Trừ số tiền nếu tài khoản NỢ nằm trong danh sách Doanh thu (bút toán giảm trừ)
+                                        { $cond: [{ $in: ["$debit", revenueIds] }, "$amount", 0] }
+                                    ]
+                                }
+                            },
+                            totalExpense: {
+                                $sum: {
+                                    $subtract: [
+                                        // Cộng số tiền nếu tài khoản NỢ nằm trong danh sách Chi phí
+                                        { $cond: [{ $in: ["$debit", expenseIds] }, "$amount", 0] },
+                                        // Trừ số tiền nếu tài khoản CÓ nằm trong danh sách Chi phí
+                                        { $cond: [{ $in: ["$credit", expenseIds] }, "$amount", 0] }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    { $sort: { "_id": 1 } } // Sắp xếp từ tháng 1 đến tháng 12
+                ]);
+
+                console.log(listData2)
+
+                let templateFile
+                if (checkObjectIDs(templateID)) {
+                    // console.log({templateID})
+                    let infoTemplate = await PCM_FILE__COLL.findById(templateID)
+                    console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`)
+
+                    const response = await axios({
+                        url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
+                        method: 'GET',
+                        responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
+                    })
+                    // console.log("[1524] RESPONSE:", response?.data)
+
+                    templateFile = response.data
+                }
+                // console.log(`[1528] templateFile1: ${templateFile1}`)
 
                 return resolve({ error: false, data: {
                     fromDate, toDate,
                     listData,
                     monthlyReport,
+                    listData2,
+                    templateFile
                 } })
                 
             } catch (error) {
@@ -3436,6 +3503,10 @@ class Model extends BaseModel {
             
             else if(type == 6){
                 template = '../../../files/templates/excels/accounting_admin_report.xlsx'
+
+                // if(data.templateFile){
+                //     template = data.templateFile
+                // }
             }
 
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
