@@ -3196,6 +3196,17 @@ class Model extends BaseModel {
                     subtype: {$exists: true, $ne: null}
                 }
 
+                let conditionObj3 = {
+                    company: ObjectID(companyID),
+                    forward: 0,
+                    cancel: 0,
+                    date: {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    },
+                    parentSubtype: {$exists: true, $ne: null}
+                }
+
                 if(fundaID && checkObjectIDs(fundaID)){
                     conditionObj.funda = ObjectID(fundaID)
                     conditionObj2.funda = ObjectID(fundaID)
@@ -3298,9 +3309,11 @@ class Model extends BaseModel {
                     }
                 ])
                 let listDoctype2 = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData2.map(item => item._id.subtype)}}).select('name')
+                // console.log(listData2)
+                // console.log(listDoctype2)
 
                 let listData3 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    { $match: conditionObj2 }, // Lọc theo công ty và thời gian
+                    { $match: conditionObj3 }, // Lọc theo công ty và thời gian
                     {
                         $group: {
                             _id: { 
