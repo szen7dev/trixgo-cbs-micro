@@ -3206,6 +3206,7 @@ class Model extends BaseModel {
                     path: 'funda contract voucher goods warehouse customerDebit customerCredit debit credit subtype parentSubtype',
                     select: 'name sign unit type date'
                 })
+                .sort({date: 1})
 
                 // Lấy danh sách ID tài khoản Doanh thu (5, 7) và Chi phí (6, 8)
                 let listAcc1 = await ITEM_ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }).select('_id');
