@@ -25,6 +25,7 @@ const { uploadFileS3 }                                  = require('../../../tool
  const { RANGE_BASE_PAGINATION_V2 }                     = require('../../../tools/cursor_base/playground/index')
  const { KEY_ERROR }                                    = require('../../../tools/keys/index')
  const { VOUCHER_TYPES }                                = require('../helper/accounting.keys-constant')
+ const axios = require('axios')
 
 /**
  * COLLECTIONS
@@ -37,6 +38,7 @@ const FINANCIAL_VOUCHER_COLL                            = require('../database/a
 const FINANCIAL_GENERAL_JOURNAL_COLL                    = require('../database/accounting.financial_general_journal-coll')
 // const BUDGET_WORK_COLL                                  = require('../../budget/database/budget.work-coll');
 const ITEM__CONFIG_COLL                                 = require("../../item/database/item.config-coll");
+const PCM_FILE__COLL                                    = require('../../subject_pcm/database/subject_pcm.pcm_file-coll')
 
 /**
  * MODELS
@@ -3168,14 +3170,33 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 01/2/2026
      */
-    getListAdminReport({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID }) {
-        // console.log({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID })
+    getListAdminReport({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID, templateID }) {
+        // console.log({ companyID, fromDate, toDate, userID, fundaID, accountID, contactID, templateID })
         return new Promise(async resolve => {
             try {
-                let conditionObj = {company: ObjectID(companyID)}
+                let conditionObj = {
+                    company: ObjectID(companyID),
+                    forward: 0,
+                    cancel: 0,
+                    date: {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
+                let conditionObj2 = {
+                    company: ObjectID(companyID),
+                    forward: 0,
+                    cancel: 0,
+                    date: {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate(),
+                    }
+                }
+
                 if(fundaID && checkObjectIDs(fundaID)){
                     conditionObj.funda = ObjectID(fundaID)
-
+                    conditionObj2.funda = ObjectID(fundaID)
                 }
 
                 let listData = await FINANCIAL_GENERAL_JOURNAL_COLL.find(conditionObj)
@@ -3184,101 +3205,123 @@ class Model extends BaseModel {
                     select: 'name sign unit type date'
                 })
 
+                // Lấy danh sách ID tài khoản Doanh thu (5, 7) và Chi phí (6, 8)
+                let listAcc1 = await ITEM_ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }).select('_id');
+                let listAcc2 = await ITEM_ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }).select('_id');
+
+                // Chuyển thành mảng các ObjectID để so sánh trong Aggregate
+                let revenueIds = listAcc1.map(acc => acc._id);
+                let expenseIds = listAcc2.map(acc => acc._id);
+
                 let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    { $match: conditionObj }, // Lọc theo ngày tháng/voucher
-                    
-                    // Lấy dữ liệu từ bảng accounts cho bên Nợ (debit)
-                    {
-                        $lookup: {
-                        from: "accounts", // Tên collection chứa tài khoản
-                        localField: "debit",
-                        foreignField: "_id",
-                        as: "debit_info"
-                        }
-                    },
-                    // Lấy dữ liệu từ bảng accounts cho bên Có (credit)
-                    {
-                        $lookup: {
-                        from: "accounts",
-                        localField: "credit",
-                        foreignField: "_id",
-                        as: "credit_info"
-                        }
-                    },
-                    { $unwind: "$debit_info" },
-                    { $unwind: "$credit_info" },
-                    
-                    {
-                        $project: {
-                        month: { $month: "$date" }, // Trích xuất tháng
-                        amount: 1,
-                        // Lấy ký tự đầu từ tên đã lookup thành công
-                        debitFirstChar: { $substr: ["$debit_info.name", 0, 1] },
-                        creditFirstChar: { $substr: ["$credit_info.name", 0, 1] }
-                        }
-                    },
+                    { $match: conditionObj }, // Lọc theo công ty và thời gian
                     {
                         $group: {
-                        _id: "$month",
-                        totalRevenue: {
-                            $sum: {
-                            $cond: [{ $in: ["$creditFirstChar", ["5", "7"]] }, "$amount", 0]
+                            _id: { $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } }, // Gom nhóm theo tháng Việt Nam
+                            totalRevenue: {
+                                $sum: {
+                                    $subtract: [
+                                        // Cộng số tiền nếu tài khoản CÓ nằm trong danh sách Doanh thu
+                                        { $cond: [{ $in: ["$credit", revenueIds] }, "$amount", 0] },
+                                        // Trừ số tiền nếu tài khoản NỢ nằm trong danh sách Doanh thu (bút toán giảm trừ)
+                                        { $cond: [{ $in: ["$debit", revenueIds] }, "$amount", 0] }
+                                    ]
+                                }
+                            },
+                            totalExpense: {
+                                $sum: {
+                                    $subtract: [
+                                        // Cộng số tiền nếu tài khoản NỢ nằm trong danh sách Chi phí
+                                        { $cond: [{ $in: ["$debit", expenseIds] }, "$amount", 0] },
+                                        // Trừ số tiền nếu tài khoản CÓ nằm trong danh sách Chi phí
+                                        { $cond: [{ $in: ["$credit", expenseIds] }, "$amount", 0] }
+                                    ]
+                                }
                             }
-                        },
-                        totalExpense: {
-                            $sum: {
-                            $cond: [{ $in: ["$debitFirstChar", ["6", "8"]] }, "$amount", 0]
-                            }
-                        }
                         }
                     },
-                    { $sort: { "_id": 1 } }
-                    ]);
+                    { $sort: { "_id": 1 } } // Sắp xếp từ tháng 1 đến tháng 12
+                ]);
 
-                // let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                //     {
-                //         $match: conditionObj
-                //     },  
-                //     {
-                //         $project: {
-                //             month: { $month: "$date" }, // Trích xuất tháng T1-T12
-                //             amount: 1,
-                //             // Lấy ký tự đầu tiên của tên tài khoản (giả sử đã được populate hoặc dùng $lookup)
-                //             debitFirstChar: { $substr: ["$debit.name", 0, 1] },
-                //             creditFirstChar: { $substr: ["$credit.name", 0, 1] }
-                //         }
-                //     },
-                //     {
-                //         $group: {
-                //         _id: "$month",
-                //         // Tổng doanh thu: tài khoản đầu 5 hoặc 7 (thường ghi nhận bên Có)
-                //         totalRevenue: {
-                //             $sum: {
-                //             $cond: [
-                //                 { $in: ["$creditFirstChar", ["5", "7"]] }, "$amount", 0
-                //             ]
-                //             }
-                //         },
-                //         // Tổng chi phí: tài khoản đầu 6 hoặc 8 (thường ghi nhận bên Nợ)
-                //         totalExpense: {
-                //             $sum: {
-                //             $cond: [
-                //                 { $in: ["$debitFirstChar", ["6", "8"]] }, "$amount", 0
-                //             ]
-                //             }
-                //         }
-                //         }
-                //     },
-                //     { $sort: { "_id": 1 } } // Sắp xếp từ tháng 1 đến tháng 12
-                // ]);
+                // console.log(listData1)
 
-                console.log(listData1)
+                // Tạo mảng 12 tháng mặc định bằng 0
+                let monthlyReport = Array.from({ length: 12 }, (_, i) => ({
+                    month: i + 1,
+                    totalRevenue: 0,
+                    totalExpense: 0
+                }));
 
+                // Điền dữ liệu thực tế từ Database vào mảng 12 tháng
+                listData1.forEach(item => {
+                    let index = item._id - 1;
+                    if (monthlyReport[index]) {
+                        monthlyReport[index].totalRevenue = item.totalRevenue;
+                        monthlyReport[index].totalExpense = item.totalExpense;
+                    }
+                });
 
-                // return resolve({ error: false, data: {
-                //     listData,
+                // console.log(monthlyReport); // Trả về đủ 12 tháng từ T1 - T12
 
-                // } })
+                let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    { $match: conditionObj }, // Lọc theo công ty và thời gian
+                    {
+                        $group: {
+                            _id: { 
+                                subtype: "$subtype", 
+                                month: { $month: { date: "$date", timezone: "Asia/Ho_Chi_Minh" } } 
+                            },
+                            totalRevenue: {
+                                $sum: {
+                                    $subtract: [
+                                        // Cộng số tiền nếu tài khoản CÓ nằm trong danh sách Doanh thu
+                                        { $cond: [{ $in: ["$credit", revenueIds] }, "$amount", 0] },
+                                        // Trừ số tiền nếu tài khoản NỢ nằm trong danh sách Doanh thu (bút toán giảm trừ)
+                                        { $cond: [{ $in: ["$debit", revenueIds] }, "$amount", 0] }
+                                    ]
+                                }
+                            },
+                            totalExpense: {
+                                $sum: {
+                                    $subtract: [
+                                        // Cộng số tiền nếu tài khoản NỢ nằm trong danh sách Chi phí
+                                        { $cond: [{ $in: ["$debit", expenseIds] }, "$amount", 0] },
+                                        // Trừ số tiền nếu tài khoản CÓ nằm trong danh sách Chi phí
+                                        { $cond: [{ $in: ["$credit", expenseIds] }, "$amount", 0] }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    { $sort: { "_id": 1 } } // Sắp xếp từ tháng 1 đến tháng 12
+                ]);
+
+                console.log(listData2)
+
+                let templateFile
+                if (checkObjectIDs(templateID)) {
+                    // console.log({templateID})
+                    let infoTemplate = await PCM_FILE__COLL.findById(templateID)
+                    console.log(`[1517] INFO_TEMPLATE: https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`)
+
+                    const response = await axios({
+                        url: `https://trx-main.sgp1.cdn.digitaloceanspaces.com${infoTemplate?.path}`,
+                        method: 'GET',
+                        responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
+                    })
+                    // console.log("[1524] RESPONSE:", response?.data)
+
+                    templateFile = response.data
+                }
+                // console.log(`[1528] templateFile1: ${templateFile1}`)
+
+                return resolve({ error: false, data: {
+                    fromDate, toDate,
+                    listData,
+                    monthlyReport,
+                    listData2,
+                    templateFile
+                } })
                 
             } catch (error) {
                 return resolve({ error: true, message: error.message })
@@ -3460,6 +3503,10 @@ class Model extends BaseModel {
             
             else if(type == 6){
                 template = '../../../files/templates/excels/accounting_admin_report.xlsx'
+
+                // if(data.templateFile){
+                //     template = data.templateFile
+                // }
             }
 
             XlsxPopulate.fromFileAsync(path.resolve(__dirname, (template)))
@@ -3745,6 +3792,8 @@ class Model extends BaseModel {
                     else if(type == 6){
                         fileName = `accounting_admin_report${now.getTime()}.xlsx`;
 
+                        workbook.sheet("BCQT1").row(2).cell(3).value(new Date(data?.fromDate).getFullYear());
+
                         var i = 3
                         data?.listData.forEach((item, index) => {
                             workbook.sheet("NhatKyChung").row(i).cell(1).value(item?.voucher?.date);
@@ -3766,8 +3815,15 @@ class Model extends BaseModel {
                             workbook.sheet("NhatKyChung").row(i).cell(17).value(item?.subtype?.name);
                             workbook.sheet("NhatKyChung").row(i).cell(18).value(item?.parentSubtype?.name);
                             workbook.sheet("NhatKyChung").row(i).cell(19).value(item?.contract?.name);
-                            
-                            workbook.sheet("NhatKyChung").row(i).cell(21).value(`M${item?.voucher?.date.getMonth() + 1}_${item?.voucher?.date.getFullYear()}`);
+                            workbook.sheet("NhatKyChung").row(i).cell(20).value(`T${item?.voucher?.date.getMonth() + 1}.${item?.voucher?.date.getFullYear()}`);
+    
+                            i++
+                        })
+
+                        var i = 5
+                        data?.monthlyReport.forEach((item, index) => {
+                            workbook.sheet("BCQT1").row(4).cell(i).value(Number(item?.totalRevenue));
+                            workbook.sheet("BCQT1").row(5).cell(i).value(Number(item?.totalExpense));
     
                             i++
                         })

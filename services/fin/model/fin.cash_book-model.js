@@ -1509,7 +1509,7 @@ class Model extends BaseModel {
 
                             // Template download data
                             let templateFile = path.resolve(__dirname, ('../../../files/templates/excels/salary_report.xlsx'))
-                            console.log(`[1512] templateFile: ${templateFile}`)
+                            // console.log(`[1512] templateFile: ${templateFile}`)
                             let templateFile1
 
                             if (checkObjectIDs(templateID)) {
@@ -1521,11 +1521,11 @@ class Model extends BaseModel {
                                     method: 'GET',
                                     responseType: 'arraybuffer' // Để nhận dữ liệu dưới dạng buffer
                                 })
-                                console.log("[1524] RESPONSE:", response?.data)
+                                // console.log("[1524] RESPONSE:", response?.data)
 
                                 templateFile1 = response.data
                             }
-                            // console.log(`[1528] templateFile1: ${templateFile1}`)
+                            console.log(`[1528] templateFile1: ${templateFile1}`)
 
                             // Modify the workbook.
                             //  XlsxPopulate.fromFileAsync(templateFile)
