@@ -3830,6 +3830,9 @@ class Model extends BaseModel {
                         fileName = `accounting_admin_report${now.getTime()}.xlsx`;
 
                         workbook.sheet("BCQT1").row(2).cell(3).value(new Date(data?.fromDate).getFullYear());
+                        workbook.sheet("BCQT2").row(1).cell(3).value(new Date(data?.fromDate).getFullYear());
+                        workbook.sheet("BCQT3").row(2).cell(3).value(new Date(data?.fromDate).getFullYear());
+                        workbook.sheet("BCQT4").row(2).cell(3).value(new Date(data?.fromDate).getFullYear());
 
                         var i = 3
                         data?.listData.forEach((item, index) => {
