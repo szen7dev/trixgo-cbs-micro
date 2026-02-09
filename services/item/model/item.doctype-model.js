@@ -8,12 +8,15 @@ const { checkObjectIDs, IsJsonString }  = require('../../../tools/utils/utils');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 const { DOCTYPE_TYPE }                  = require('../helper/item.keys-constant');
 const stringUtils					    = require('../../../tools/utils/string_utils')
+const ObjectID                          = require('mongoose').Types.ObjectId
 
 /**
  * COLLECTIONS
  */
 const ITEM__DOCTYPE_COLL                = require('../database/item.doctype-coll');
 const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
+const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../../accounting/database/accounting.financial_voucher-coll')
+const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../../accounting/database/accounting.financial_general_journal-coll')
 
 class Model extends BaseModel {
 
@@ -190,7 +193,8 @@ class Model extends BaseModel {
                 if(parent && checkObjectIDs(parent) && parent.toString() != doctypeID.toString()){
                     infoCheck = await ITEM__DOCTYPE_COLL.findById(doctypeID)
 
-                    if(!infoCheck.parent){
+                    // Chỉ cập nhật khi là phần tử độc lập
+                    if(infoCheck.childs.length == 0){
                         let infoParent = await ITEM__DOCTYPE_COLL.findById(parent);
                         dataUpdate.parent = parent;
                         dataUpdate.level = infoParent.level + 1;
@@ -221,13 +225,31 @@ class Model extends BaseModel {
 					})
                 }
 
-                if(parent && checkObjectIDs(parent) && parent.toString() != doctypeID.toString() && !infoCheck.parent){
+                if(parent && checkObjectIDs(parent) && parent.toString() != doctypeID.toString() && infoCheck.childs.length == 0){
+                    await ITEM__DOCTYPE_COLL.findByIdAndUpdate(infoCheck.parent, {
+                        $pull: {
+                            childs: doctypeID
+                        },
+                        $inc: { amountChilds: -1 }
+                    })
+
                     await ITEM__DOCTYPE_COLL.findByIdAndUpdate(parent, {
                         $addToSet: {
                             childs: doctypeID
                         },
                         $inc: { amountChilds: 1 }
                     })
+
+                    // Cập nhật cho các phiếu kế toán
+                    await ACCOUNTING__FINANCIAL_VOUCHER_COLL.updateMany(
+                        {subtype: ObjectID(doctypeID)},
+                        {$set: {parentSubtype: ObjectID(parent)}},
+                    )
+
+                    await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.updateMany(
+                        {subtype: ObjectID(doctypeID)},
+                        {$set: {parentSubtype: ObjectID(parent)}},
+                    )
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 })
@@ -398,9 +420,9 @@ class Model extends BaseModel {
                     totalRecord,
                     totalPage,
                     nextCursor,
-                }, status: 200 });
+                }, status: 200 })
             } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
@@ -442,12 +464,12 @@ class Model extends BaseModel {
                 }
 
                 if(errorNumber != 0)
-                    return resolve({ error: true, message: "Import failed" });
+                    return resolve({ error: true, message: "Import failed" })
 
-                return resolve({ error: false, message: "Import successfull" });
+                return resolve({ error: false, message: "Import successfull" })
             } catch (error) {
                 console.log({ error })
-                return resolve({ error: true, message: error.message, status: 500 });
+                return resolve({ error: true, message: error.message, status: 500 })
             }
         })
     }
