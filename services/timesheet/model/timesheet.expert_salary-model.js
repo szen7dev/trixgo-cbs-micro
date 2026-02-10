@@ -2042,20 +2042,26 @@ class Model extends BaseModel {
                         if(infoSalary && infoSalary.status == 2)
                             return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
-                        // Danh sách userID trong bảng lương
-                        let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
-                        let dataUser = listData.map(item=>item.human.toString())
+                        if(infoSalary.type == 1){
+                            onsole.log('==========111111111111111111')
 
-                        // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
-                        await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
+                            // Danh sách userID trong bảng lương
+                            let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
+                            let dataUser = listData.map(item=>item.human.toString())
 
-                        // Cập nhật KPI vào các chi tiết của Bảng lương
-                        await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
+                            // Cập nhật chấm công vào các Chi tiết của Bảng lương: OK
+                            await that.updateValueTimesheet({ dataUser, expertSalaryID: salaryID, userID, companyID })
 
-                        // Tổng hợp các chi tiết lương vào Bảng lương: 
-                        await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
+                            // Cập nhật KPI vào các chi tiết của Bảng lương
+                            await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
 
-                        return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
+                            // Tổng hợp các chi tiết lương vào Bảng lương: 
+                            await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
+
+                            return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
+                        }else{
+                            return resolve({ error: true, message: 'Loại bảng lương này không Đồng bộ được theo Tổng hợp' })
+                        }
                     }else{
                         return resolve({ error: true, message: 'Bạn không có quyền thực hiện' })
                     }
@@ -2069,7 +2075,7 @@ class Model extends BaseModel {
                     
                     // Chỉ áp dụng cho Bảng lương Trực tiếp
                     if(infoSalary.type == 2 && checkObjectIDs(infoSalary.funda)){
-                        // console.log('==========111111111111111111')
+                        console.log('==========222222222222222222')
 
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
