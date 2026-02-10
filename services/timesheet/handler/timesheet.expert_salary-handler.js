@@ -164,7 +164,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, salaryID, orderID, fundaID, arrUser, year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
 				const { _id: userID, company, email } = ctx.meta.infoUser;
 
@@ -206,7 +206,7 @@ module.exports = {
                 let { expertSalaryID, subtype, salary, onLeaveSalary, overtimeSalary, mealAllowance, punishment, companyID, parentID, projectID, keyword, limit, lastestID, select, populates, sortOption, positionsID, departmentsID, option, month, year } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                console.log({ EXPERT_SALARY_PARAMS: ctx.params })
+                // console.log({ EXPERT_SALARY_PARAMS: ctx.params })
 
                 if(!companyID){
                     companyID = company._id
@@ -282,7 +282,7 @@ module.exports = {
 				const { _id: userID, email, company } = ctx.meta.infoUser;
 
                 let { option, year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await TIMESHEET__EXPERT_SALARY_MODEL.exportExcel({
                     companyID: company._id, option, year, month, email, userID
