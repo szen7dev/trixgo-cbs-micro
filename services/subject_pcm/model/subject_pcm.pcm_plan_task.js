@@ -51,7 +51,12 @@ const DOCUMENT_DOC_COLL                 = require('../../document/database/docum
 const BUDGET__SUBMITTAL_COLL            = require('../../budget/database/budget.submittal-coll')
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../../timesheet/database/timesheet.expert_timesheet-coll')
 
+const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 const PCM_FILE_MODEL                    = require('../model/subject_pcm.pcm_file-model').MODEL
+
+// PCM, Chấm công-Lương, Kế toán, Quỹ, Nhân sự, Hồ sơ, CRM
+const appArr = ['5eabfdc72171391e5f6a0468','61e049cffdebf77b072d1b14','61e049aefdebf77b072d1b12','5dfe4bf251dc622100bb9d8c','61e049c9fdebf77b072d1b13','5e47867080019357cce04746','61e049f6fdebf77b072d1b16'];
+const appIDCheck = appArr[0]
 
 class Model extends BaseModel {
 
@@ -131,14 +136,10 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                if(PCM_LOCK_TEMP.includes(companyOfUser.toString()))
-                    return resolve({
-                        error: true,
-                        message: "Tạo chủ đề thất bại do Công ty bạn chưa thanh toán ứng dụng này với hệ thống",
-                        keyError: KEY_ERROR.INSERT_FAILED,
-                        status: 403
-                    })
-
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: authorID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                
                 let dataInsert = {};
                 let accessUsers = [];
                 let infoGroup = null;
@@ -575,13 +576,9 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                if(PCM_LOCK_TEMP.includes(companyID.toString()))
-                    return resolve({
-                        error: true,
-                        message: "Tạo chủ đề thất bại do Công ty bạn chưa thanh toán ứng dụng này với hệ thống",
-                        keyError: KEY_ERROR.INSERT_FAILED,
-                        status: 403
-                    })
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 let dataUpdate   = {
                     userUpdate: userID,
@@ -1559,8 +1556,7 @@ class Model extends BaseModel {
      * Update: HiepNH
      * Code: 20/8/2022
      */
-    updateStatusMutiple({ taskIDs, parentID, type, option, userID, ctx }){
-        // console.log({ taskIDs, parentID, type, option, userID })
+    updateStatusMutiple({ taskIDs, parentID, type, option, userID }){
         return new Promise(async resolve => {
             try {
                 /**
@@ -1983,10 +1979,9 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                if(PCM_LOCK_TEMP.includes(companyID.toString()))
-                    return resolve({ error: false, data: {
-                        listRecords: []
-                    }, status: 200 })
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {}, status: 200 })
 
                 if (!checkObjectIDs(taskID))
                     return resolve({ error: true, message: 'param_invalid' });
@@ -2083,10 +2078,9 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                if(PCM_LOCK_TEMP.includes(companyID.toString()))
-                    return resolve({ error: false, data: {
-                        listRecords: []
-                    }, status: 200 })
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
 
                 if(Number(limit) > 20){
                     limit = 20;
@@ -2487,15 +2481,15 @@ class Model extends BaseModel {
     getListByFilter({
         option, sortOption, companyID, fromDate, toDate, assigneesID, companiesOfAssignee, authorsID, companiesOfAuthor,
         projectsID, subtypes, status, fieldsID, isExpired, read, isParent, isGroup, priority, prioritys, reportType, keyword, approvalType, unlimited,
-        limit = 20, lastestID, select, populates = '{"path":"assignee author userUpdate project group lastLog lastComment parent","select":"name fullname image sign content author createAt sign files","populate":{"path":"author files images","select":"fullname author image sign nameOrg path createAt","populate":{"path":"author","select":"bizfullname fullname image"}}}', userID, reportID, upcoming
+        limit = 20, lastestID, select, populates = {}, userID, reportID, upcoming
     }) {
+        // populates = '{"path":"assignee author userUpdate project group lastLog lastComment parent","select":"name fullname image sign content author createAt sign files","populate":{"path":"author files images","select":"fullname author image sign nameOrg path createAt","populate":{"path":"author","select":"bizfullname fullname image"}}}'
         return new Promise(async resolve => {
             try {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                if(PCM_LOCK_TEMP.includes(companyID.toString()))
-                    return resolve({ error: false, data: {
-                        listRecords: []
-                    }, status: 200 })
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
 
                 const validation = validateParamsObjectID({
                     companiesOfAssignee : { value: companiesOfAssignee, isRequire: false },

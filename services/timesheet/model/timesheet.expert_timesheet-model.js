@@ -10,6 +10,7 @@ const fs                                = require('fs')
 const path                              = require('path')
 const { uploadFileS3 }                  = require('../../../tools/s3')
 const moment                            = require('moment')
+const { KEY_ERROR }                     = require('../../../tools/keys')
 
 /**
  * TOOLS
@@ -29,23 +30,20 @@ const USER_COLL                         = require('../../auth/database/auth.user
 const TIMESHEET__EXPERT_TIMESHEET_COLL  = require('../database/timesheet.expert_timesheet-coll')
 const BUDGET__WORK_COLL                 = require('../../budget/database/budget.work-coll')
 const ITEM__FUNDA_COLL            	    = require('../../item/database/item.funda-coll')
-const ITEM__POSITION_COLL            	= require('../../item/database/item.position-coll')
+// const ITEM__POSITION_COLL            	= require('../../item/database/item.position-coll')
 const FNB_SHIFT_COLL                    = require('../../fnb/database/fnb.shift-coll')
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll')
 
 const STORE_ORDER_COLL                  = require('../../store/database/store.order-coll');
-const STORE_ORDER_PRODUCT_COLL          = require('../../store/database/store.order_product-coll');
+// const STORE_ORDER_PRODUCT_COLL          = require('../../store/database/store.order_product-coll');
 
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 const BUDGET__WORK_MODEL                = require('../../budget/model/budget.work-model').MODEL
-const STORE_ORDER_MODEL                 = require('../../store/model/store.order-model.js').MODEL;
+// const STORE_ORDER_MODEL                 = require('../../store/model/store.order-model.js').MODEL;
 
-let dataTF = {
-    appID: "61e049cffdebf77b072d1b14", // TIMESHEET
-    menuID: "623f1ecae998e94feda0cd70", //
-    type: 1, 
-    action: 1,
-}
+// PCM, Chấm công-Lương, Kế toán, Quỹ, Nhân sự, Hồ sơ, CRM
+const appArr = ['5eabfdc72171391e5f6a0468','61e049cffdebf77b072d1b14','61e049aefdebf77b072d1b12','5dfe4bf251dc622100bb9d8c','61e049c9fdebf77b072d1b13','5e47867080019357cce04746','61e049f6fdebf77b072d1b16'];
+const appIDCheck = appArr[1]
 
 class Model extends BaseModel {
 
@@ -62,6 +60,11 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async resolve => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: userCreate })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
                 if(!name){
                     return resolve({
                         error: true,
@@ -272,6 +275,11 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             const that = this
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
                 let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
                 if(!infoTimeSheet) 
                     return resolve({ error: true, message: 'Timesheet không tồn tại', keyError: "timesheet_not_exists", status: 400 })
@@ -1005,6 +1013,11 @@ class Model extends BaseModel {
     getInfo({ expertTimesheetID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
+                // // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                // let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                // if(!checkPer || checkPer.error)
+                //     return resolve({ error: false, data: {}, status: 200 })
+
                 if(!checkObjectIDs(expertTimesheetID))
                     return resolve({ error: true, message: 'Request params expertTimesheetID invalid', status: 400 });
 
@@ -1044,8 +1057,10 @@ class Model extends BaseModel {
         keyword, limit = 10, lastestID, select, populates= {}, option, month, year, humanID, companyID, type, subtype, shiftType, official, typeTimesheet }) {
         return new Promise(async (resolve) => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
 
                 if(Number(limit) > 50){
                     limit = 50;

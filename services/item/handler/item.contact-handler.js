@@ -285,7 +285,7 @@ module.exports = {
                 let resultAfterCallHandler;
                 if(contactID || linkUserID){
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getInfo({
-                        contactID, linkUserID, select, populates, ctx
+                        userID, contactID, linkUserID, select, populates, ctx
                     });
                 }else{
                     resultAfterCallHandler = await ITEM__CONTACT_MODEL.getList({
