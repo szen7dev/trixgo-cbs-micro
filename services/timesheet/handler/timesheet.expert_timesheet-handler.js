@@ -91,8 +91,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, timesheetID, month, year } = ctx.params;
-                console.log('============================>>>>>>>>>>>>')
-                console.log(ctx.params)
+                // console.log('============================>>>>>>>>>>>>')
+                // console.log(ctx.params)
 
 				const { _id: userID, company, email } = ctx.meta.infoUser;
 
@@ -234,7 +234,7 @@ module.exports = {
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let { year, month } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.exportExcel({
                     companyID: company._id, year, month, userID

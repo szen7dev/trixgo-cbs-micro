@@ -68,7 +68,7 @@ class Model extends BaseModel {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
                 let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: userCreate })
                 if(!checkPer || checkPer.error)
-                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                    return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 if(!name){
                     return resolve({
@@ -238,7 +238,7 @@ class Model extends BaseModel {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
                 let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
                 if(!checkPer || checkPer.error)
-                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                    return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
                 
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID).
                 populate({
@@ -554,8 +554,6 @@ class Model extends BaseModel {
                 
                 let year = infoSalary.date.getFullYear()
                 let month = Number(infoSalary.date.getMonth()) + 1
-                
-                // console.log({month,year, companyID})
 
                 /**
                  * Lương
@@ -708,26 +706,10 @@ class Model extends BaseModel {
                         $group: {
                             _id: { assignee: '$assignee' },
                             quantity: { $sum: {$divide: ["$hours", 8]} }, // Chia quantity theo giờ cho 8
-                            // quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
                         }
                     },
-                    // // Giai đoạn 1: Nhóm theo assignee và dayOfWeek
-                    // {
-                    //     $group: {
-                    //         _id: { assignee: '$assignee', dayOfWeek: "$dayOfWeek" },
-                    //         quantity: { $sum: 1 },
-                    //     }
-                    // },
-                    // // Giai đoạn 2: Nhóm lại chỉ theo assignee, tổng hợp quantity
-                    // {
-                    //     $group: {
-                    //         _id: { assignee: "$_id.assignee" }, // Chỉ nhóm theo assignee
-                    //         quantity: { $sum: "$quantity" }, // Tổng quantity từ dayOfWeek
-                    //     },
-                    // },
                 ])
                 // console.log(listDataDay1)
-
                 
                 // Lấy các ngày đi làm Chủ nhật
                 let listDataDay2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -757,33 +739,12 @@ class Model extends BaseModel {
                             dayOfWeek: 1,
                         }
                     },
-                    // {
-                    //     $group: {
-                    //         _id: { assignee: '$assignee' },
-                    //         quantity: { $sum: 1 },
-                    //     }
-                    // },
                     {
                         $group: {
                             _id: { assignee: '$assignee' },
                             quantity: { $sum: {$divide: ["$hours", 8]} }, // Chia quantity theo giờ cho 8
-                            // quantity: {$sum: { $round: [{ $divide: ["$hours", 8] }, 0] } }, // Chia quantity theo giờ cho 8
                         }
                     },
-                    // // Giai đoạn 1: Nhóm theo assignee và dayOfWeek
-                    // {
-                    //     $group: {
-                    //         _id: { assignee: '$assignee', dayOfWeek: "$dayOfWeek" },
-                    //         quantity: { $sum: 1 },
-                    //     }
-                    // },
-                    // // Giai đoạn 2: Nhóm lại chỉ theo assignee, tổng hợp quantity
-                    // {
-                    //     $group: {
-                    //         _id: { assignee: "$_id.assignee" }, // Chỉ nhóm theo assignee
-                    //         quantity: { $sum: "$quantity" }, // Tổng quantity từ dayOfWeek
-                    //     },
-                    // },
                 ])
                 // console.log(listDataDay2)
 
@@ -836,7 +797,8 @@ class Model extends BaseModel {
                 // console.log(arr2)
                 // console.log(arr3)
 
-                // Lương của nhân sự tại các bảng lương khác để giảm trừ đi nếu ở đó đã có: parent != expertSalaryID
+                // Lương của nhân sự tại các bảng lương khác để giảm trừ đi nếu ở đó đã có
+                // Điều kiện check: parent != expertSalaryID (khác bảng lương đang xét)
                 let listDataSalary = await TIMESHEET__EXPERT_SALARY_COLL.aggregate([
                     {
                         $match: {
@@ -894,6 +856,7 @@ class Model extends BaseModel {
                     })
 
                     if(info){
+                        // Lương
                         if(arr1[item]){
                             hours1 = Number(arr1[item][0].quantity).toFixed(2)
                             salary = Number(arr1[item][0].amount).toFixed(0)
@@ -903,6 +866,7 @@ class Model extends BaseModel {
                             }
                         }
 
+                        // Lương làm thêm
                         if(arr2[item]){
                             hours2 = Number(arr2[item][0].quantity).toFixed(2)
                             onLeaveSalary = Number(arr2[item][0].amount).toFixed(0)
@@ -912,6 +876,7 @@ class Model extends BaseModel {
                             }
                         }
 
+                        // Lương phép
                         if(arr3[item]){
                             hours3 = Number(arr3[item][0].quantity).toFixed(2)
                             overtimeSalary = Number(arr3[item][0].amount).toFixed(0)
@@ -1092,7 +1057,7 @@ class Model extends BaseModel {
                 })
 
                 for(const item of dataUser){
-                    let hours1 = 0, hours4 = 0
+                    let hours1 = 0, hours4 = 0 // Giờ thử việc
                     let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
 
                     let subAllowance1 = 0, subAllowance2 = 0, subAllowance3 = 0, subAllowance4 = 0, subAllowance5 = 0, subAllowance6 = 0, subAllowance7 = 0, subAllowance8 = 0, subAllowance9 = 0, subAllowance10 = 0, subAllowance11 = 0, subAllowance12 = 0, subAllowance13 = 0, subAllowance14 = 0, subAllowance15 = 0; 
@@ -1105,7 +1070,7 @@ class Model extends BaseModel {
                     })
 
                     // Lấy giá trị ban đầu
-                    salary = info.salary
+                    // salary = info.salary // Không lấy giá trị này vì đang đưa vào tính toán
                     onLeaveSalary = info.onLeaveSalary
                     overtimeSalary = info.overtimeSalary
                     reward = info.reward
@@ -1120,8 +1085,8 @@ class Model extends BaseModel {
                     advance = info.advance
                     paid = info.paid
                     kpiFactor = info.kpiFactor
-                    hours1 = info.hours1
-                    hours4 = info.hours4
+                    // hours1 = info.hours1 // Không lấy giá trị này vì đang đưa vào tính toán
+                    // hours4 = info.hours4 // Không lấy giá trị này vì đang đưa vào tính toán
 
                     subAllowance1 = info.subAllowance1
                     subAllowance2 = info.subAllowance2
@@ -1135,7 +1100,7 @@ class Model extends BaseModel {
                     subAllowance10 = info.subAllowance10
                     subAllowance11 = info.subAllowance11
                     subAllowance12 = info.subAllowance12
-                    subAllowance13 = info.subAllowance13
+                    // subAllowance13 = info.subAllowance13 // Không lấy giá trị này vì đang đưa vào tính toán
                     subAllowance14 = info.subAllowance14
                     subAllowance15 = info.subAllowance15
                 
@@ -1144,10 +1109,8 @@ class Model extends BaseModel {
                             hours1 = Number(arr1[item][0].quantity).toFixed(2)
                             salary = Number(arr1[item][0].amount).toFixed(0)
                         }
-
                         if(arr2[item]){
                             hours4 = Number(arr2[item][0].quantity).toFixed(2)
-                            // mealAllowance = Number(arr2[item][0].amount).toFixed(0)
                             subAllowance13 = Number(arr2[item][0].amount).toFixed(0) // Đưa tạm sang phụ cấp này cho Lương thử việc
                         }
                     }
@@ -2043,7 +2006,7 @@ class Model extends BaseModel {
                             return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
                         if(infoSalary.type == 1){
-                            console.log('==========111111111111111111')
+                            // console.log('==========111111111111111111')
 
                             // Danh sách userID trong bảng lương
                             let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
@@ -2055,7 +2018,7 @@ class Model extends BaseModel {
                             // Cập nhật KPI vào các chi tiết của Bảng lương
                             await that.updateValueKpi( { dataUser, expertSalaryID: salaryID, userID, companyID })
 
-                            // Tổng hợp các chi tiết lương vào Bảng lương: 
+                            // Tổng hợp các chi tiết lương vào Bảng lương
                             await that.updateValue( { dataUser, expertSalaryID: salaryID, userID })
 
                             return resolve({ error: false, message: 'Đồng bộ thành công', status: 200 })
@@ -2075,7 +2038,7 @@ class Model extends BaseModel {
                     
                     // Chỉ áp dụng cho Bảng lương Trực tiếp
                     if(infoSalary.type == 2 && checkObjectIDs(infoSalary.funda)){
-                        console.log('==========222222222222222222')
+                        // console.log('==========222222222222222222')
 
                         // Danh sách userID trong bảng lương
                         let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')

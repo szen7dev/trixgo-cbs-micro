@@ -128,7 +128,7 @@ class Model extends BaseModel {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
                 let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
                 if(!checkPer || checkPer.error)
-                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                    return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 if (!checkObjectIDs(departmentID) || !name || name == "" || !checkObjectIDs(packageID) || !checkObjectIDs(publishID)) {
 					return resolve({
@@ -327,7 +327,7 @@ class Model extends BaseModel {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
                 let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
                 if(!checkPer || checkPer.error)
-                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                    return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 if (!checkObjectIDs(documentID, packageID, publishID, userID)) {
 					return resolve({
