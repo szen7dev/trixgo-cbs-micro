@@ -2043,7 +2043,7 @@ class Model extends BaseModel {
                             return resolve({ error: true, message: 'Bảng lương đã khóa không thể cập nhật' })
 
                         if(infoSalary.type == 1){
-                            onsole.log('==========111111111111111111')
+                            console.log('==========111111111111111111')
 
                             // Danh sách userID trong bảng lương
                             let listData = await TIMESHEET__EXPERT_SALARY_COLL.find({ parent: salaryID }).select('human')
