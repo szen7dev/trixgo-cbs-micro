@@ -71,14 +71,16 @@ class Model extends BaseModel {
                     dataUpdate.endTime = endTime;
                 }
                 
-                let infoAfterUpdate = await AUTH__APP_COMPANY_COLL.findByIdAndUpdate(appCompanyID, dataUpdate, { new: true });
+                let infoAfterUpdate = await AUTH__APP_COMPANY_COLL.findByIdAndUpdate(appCompanyID, dataUpdate, { new: true })
                 if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 });
+                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
+
                 if(endTime){
                     let app     = infoAfterUpdate.app;
                     let company = infoAfterUpdate.company;
-                    //Cập nhật endTime cho App_User
-                    await AUTH__APP_USER_COLL.updateMany({ app, company }, { $set: { endTime }});
+                    
+                    // Cập nhật endTime cho App_User
+                    let info =  await AUTH__APP_USER_COLL.updateMany({ app, company }, { $set: { endTime }})
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
@@ -137,8 +139,9 @@ class Model extends BaseModel {
                 }
 
                 let infoAterGet = await AUTH__APP_COMPANY_COLL.findById(appCompanyID)
-                                    .select(select)
-                                    .populate(populates)
+                    .select(select)
+                    .populate(populates)
+                    
                 if(!infoAterGet)
                     return resolve({ error: true, message: "can't_get_info", keyError: KEY_ERROR.GET_INFO_FAILED, status: 200 });
  
@@ -156,8 +159,7 @@ class Model extends BaseModel {
      */
     getList({
         companyID,
-        keyword, limit = 10, lastestID, select, populates= {} }) { 
-            // console.log({companyID,keyword, limit, lastestID, select, populates })
+        keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 
