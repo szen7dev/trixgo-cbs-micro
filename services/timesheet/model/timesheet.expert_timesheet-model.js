@@ -1013,6 +1013,11 @@ class Model extends BaseModel {
     getInfo({ expertTimesheetID, userID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
+                // // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                // let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                // if(!checkPer || checkPer.error)
+                //     return resolve({ error: false, data: {}, status: 200 })
+
                 if(!checkObjectIDs(expertTimesheetID))
                     return resolve({ error: true, message: 'Request params expertTimesheetID invalid', status: 400 });
 

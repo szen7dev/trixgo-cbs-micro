@@ -15,6 +15,7 @@ const { getTimeBetween } = require('../../../tools/utils/time_utils')
 const { RANGE_BASE_PAGINATION_V2 } = require('../../../tools/cursor_base/playground/index')
 const { uploadFileS3 } = require('../../../tools/s3')
 const { isValidDate } = require('../../../tools/utils/time_utils')
+const { KEY_ERROR }                     = require('../../../tools/keys')
 
 const {
     CONTACT_CLASSIFY,
@@ -57,6 +58,10 @@ const FNB_ORDER_VOUCHER_MODEL                   = require('../../fnb/model/fnb.v
 const CONTACT_DOCUMENT_MODEL                    = require('../../human/model/human.contact_document-model').MODEL
 const ANALYSIS__HISTORY_DATA_MODEL              = require('../.../../../analysis/model/analysis.history_data').MODEL;
 
+// PCM, Chấm công-Lương, Kế toán, Quỹ, Nhân sự, Hồ sơ, CRM
+const appArr = ['5eabfdc72171391e5f6a0468','61e049cffdebf77b072d1b14','61e049aefdebf77b072d1b12','5dfe4bf251dc622100bb9d8c','61e049c9fdebf77b072d1b13','5e47867080019357cce04746','61e049f6fdebf77b072d1b16'];
+const appIDCheck = appArr[4]
+
 class Model extends BaseModel {
     constructor() {
         super(ITEM__CONTACT_COLL);
@@ -71,6 +76,11 @@ class Model extends BaseModel {
     }) {
         return new Promise(async resolve => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: authorID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
                 /**
                  * BA-Quy trình khởi tạo và quản lý khách hàng
                  * 1-Khi tạo lần đầu/Mua hàng lần đầu => Khách hàng mới
@@ -450,6 +460,11 @@ class Model extends BaseModel {
     update({ contactID, company, authorID, parent, type, name, description, note, sign, address, taxid, birthday, gender, phone, email, department, position, linkUser, status, field, property, saleID, workingStatus, realStatus, insuranceStatus, familyPolicy, contractType, contractSign, family, identity, dateProvice, place, area, area1, area2, insuranceSign, insuranceDate, sallaryFactor, sallary, nods, sallarySubFactor, sallaryBasic, numberOnLeave, numberOnLeavePlus, signerIn, signerOut, workStartDate, dayOff, appointDate, changeSallaryDate, contractDate, contractValid, contractExpire, nonResident, fundaID, bankAccount, bank, dataSource, insuranceFee, union, share, image, documents, documentsRemove, purchasedValue, totalLoyaltyPoints, usedLoyaltyPoints, remainLoyaltyPoints, getVouchers, usedVouchers, annualWorkingHours, pubertyOnsetDate, boneAge, support, joinedDate }) {
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: authorID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
                 //___________Xác thực số điện thoại
                 if (phone) {
                     if (!regexPhoneNumber(phone))
@@ -1026,9 +1041,14 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ contactID, linkUserID, select, populates }) {
+    getInfo({ userID, contactID, linkUserID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {}, status: 200 })
+
                 if (contactID) {
                     if (!checkObjectIDs(contactID))
                         return resolve({ error: true, message: 'Request params contactID invalid', status: 400 })
@@ -1091,9 +1111,14 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code  : 30/7/2023
      */
-    getList({ option, companyID, genders, statuss, departmentsID, supportsID, voucherID, parentID, type, fromDate, toDate, userCreateID, isFamily, keyword, limit = 5, lastestID, select, populates }) {
+    getList({ option, companyID, userID, genders, statuss, departmentsID, supportsID, voucherID, parentID, type, fromDate, toDate, userCreateID, isFamily, keyword, limit = 5, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
+
                 if (Number(limit) > 10) {
                     limit = 10;
                 } else {
@@ -1245,6 +1270,11 @@ class Model extends BaseModel {
         keyword, limit = 5, lastestID, select, populates = {}, isParent, type, genders }) {
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
+
                 if (limit > 5) {
                     limit = 5;
                 }

@@ -31,18 +31,12 @@ const ITEM__CONTACT_COLL                = require('../../item/database/item.cont
 const ITEM__DEPARTMENT_COLL             = require('../../item/database/item.department-coll');
 const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll')
 
-let dataTF = {
-    appID: "61e049c9fdebf77b072d1b13", // HUMAN
-    menuID: "623f1f0de998e94feda0cd72", //
-    type: 1, 
-    action: 1, // Xem
-}
-let dataTF2 = {
-    appID: "61e049c9fdebf77b072d1b13", // HUMAN
-    menuID: "623f1f0de998e94feda0cd72", //
-    type: 1,
-    action: 2, // Thêm
-}
+const AUTH__APP_USER                            = require('../.../../../auth/model/auth.app_users').MODEL
+
+// PCM, Chấm công-Lương, Kế toán, Quỹ, Nhân sự, Hồ sơ, CRM
+const appArr = ['5eabfdc72171391e5f6a0468','61e049cffdebf77b072d1b14','61e049aefdebf77b072d1b12','5dfe4bf251dc622100bb9d8c','61e049c9fdebf77b072d1b13','5e47867080019357cce04746','61e049f6fdebf77b072d1b16'];
+const appIDCheck = appArr[4]
+
 class Model extends BaseModel {
 
     constructor() {
@@ -163,7 +157,6 @@ class Model extends BaseModel {
      * Code:
      */
     update({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID }){
-        // console.log({ authorID, documentID, number, status, certificateGrade, fromDate, toDate, workplace, reference, item, project, client, name, place, description, sign, note, store, field2, position2, certificateType, certificateName, educationalBackground2, contract,  timeMobilize, factor,  filesID, fileRemoveID })
         return new Promise(async (resolve) => {
             try {
                 if(!_isValid(authorID) || !_isValid(documentID))
@@ -445,11 +438,13 @@ class Model extends BaseModel {
     getList({
         companyID, type, contactID, isDuration3Month, isCertificate ,gender, keywordContact, educationalBackground2, field2, 
         certificateType, certificateName, certificateGrade, isToDate5Month,
-        keyword, limit = 10, lastestID, select, populates= {}, userID, ctx }) {
+        keyword, limit = 10, lastestID, select, populates= {}, userID }) {
         return new Promise(async (resolve) => {
             try {
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
 
                 if(limit > 20){
                     limit = 20
@@ -619,6 +614,11 @@ class Model extends BaseModel {
         keyword, limit = 20, lastestID, select, populates= {}, isParent, type, genders }) {
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
+
                 if(limit > 20){
                     limit = 20;
                 } else{
