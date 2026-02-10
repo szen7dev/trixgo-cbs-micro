@@ -10,6 +10,7 @@ const path                                          = require('path');
 const moment                                  	    = require('moment');
 const ISOdate                                  	    = require('isodate');
 const stringUtils					                = require('../../../tools/utils/string_utils');
+const { KEY_ERROR }                                 = require('../../../tools/keys')
 
 /**
  * CONSTANTS
@@ -24,14 +25,19 @@ const { CF_ACTIONS_ITEM } 							= require('../../item/helper/item.actions-const
 const BaseModel                                 	= require('../../../tools/db/base_model');
 const timeUtils									    = require('../../../tools/utils/time_utils');
 const { RANGE_BASE_PAGINATION_V2 } 					= require('../../../tools/cursor_base/playground/index');
-const { DOC_DIRECTION_TYPE, DOC_TYPE, DOCUMENT_TYPES, DIRECTION_TYPES }              = require('../helper/document.keys-constant');
+const { DOCUMENT_TYPES, DIRECTION_TYPES }           = require('../helper/document.keys-constant');
 const {
     checkObjectIDs,
     IsJsonString,
-    checkNumberIsValidWithRange,
     validateParamsObjectID
 } = require('../../../tools/utils/utils');
 const { uploadFileS3 } = require('../../../tools/s3');
+
+const AUTH__APP_USER                            = require('../.../../../auth/model/auth.app_users').MODEL
+
+// PCM, Chấm công, Kế toán, Quỹ, Nhân sự, Hồ sơ, CRM
+const appArr = ['5eabfdc72171391e5f6a0468','61e049cffdebf77b072d1b14','61e049aefdebf77b072d1b12','5dfe4bf251dc622100bb9d8c','61e049c9fdebf77b072d1b13','5e47867080019357cce04746','61e049f6fdebf77b072d1b16'];
+const appIDCheck = appArr[5]
 
 /**
  * COLLECTIONS
@@ -117,17 +123,13 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
         name, description, note, fieldID, value, completeStatus, publishID, deadline, ctx
 	}) {
-        // console.log({
-        //     parentID, departmentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        // requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, otherID, datahubContactID,
-        // name, description, note, fieldID, value, completeStatus, publishID, deadline
-        // })
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * BA
-                 * 1-departmentID phải có định dạng String
-                 */
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
                 if (!checkObjectIDs(departmentID) || !name || name == "" || !checkObjectIDs(packageID) || !checkObjectIDs(publishID)) {
 					return resolve({
                         error: true,
@@ -320,13 +322,13 @@ class Model extends BaseModel {
         requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
         name, description, note, fieldID, value, completeStatus, otherID, publishID, deadline, ctx
 	}) {
-        // console.log({
-        //     documentID, userID, packageID, direction, senderID, receiverID, propertyID, type, contractID, storageID, amount, amountDelivery,
-        //     requestResponse, expiredResponse, sign, storeSign, approver, style, status, date, receivedDate, datahubContactID,
-        //     name, description, note, fieldID, value, completeStatus, otherID
-        // })
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: true, message: "Thất bại do Công ty bạn chưa thanh toán ứng dụng này", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+
                 if (!checkObjectIDs(documentID, packageID, publishID, userID)) {
 					return resolve({
                         error: true,
@@ -335,24 +337,6 @@ class Model extends BaseModel {
                         status: 400
                     });
                 }
-
-                // if (direction && !checkNumberIsValidWithRange({ arrValid: DOC_DIRECTION_TYPE, val: direction })) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Request params direction invalid',
-                //         keyError: 'params_direction_invalid',
-                //         status: 400
-                //     });
-                // }
-
-                // if (requestResponse && !checkNumberIsValidWithRange({ arrValid: [0,1], val: requestResponse })) {
-                //     return resolve({
-                //         error: true,
-                //         message: 'Request params requestResponse invalid',
-                //         keyError: 'paramas_requestResponse_invalid',
-                //         status: 400
-                //     });
-                // }
 
                 let dataUpdate = {
                     userUpdate: userID,
@@ -654,17 +638,14 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    getInfo({ documentID, select, populates }) {
+    getInfo({ userID, documentID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {}, status: 200 })
+
                 if(!checkObjectIDs(documentID))
                     return resolve({ error: true, message: 'Request params documentID invalid', status: 400 });
 
@@ -710,6 +691,11 @@ class Model extends BaseModel {
         keyword, limit = 20, lastestID, select, populates= {}, isParent }) {
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
+
                 let conditionObj = {};
                 let sortBy;
                 let keys	     = ['createAt__-1', '_id__-1'];
@@ -924,12 +910,13 @@ class Model extends BaseModel {
         parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel = false,
         requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
         keyword, limit = 20, lastestID, select, populates= {}, isParent }) {
-        //     console.log('=============getListByFilter=============>>>>>>>>>>>>>>')
-        //     console.log({ parentID, companyID, packagesID, directions, sendersID, receiverID, propertysID, types, contractsID, storagesID, publishsID, isExportExcel,
-        // requestResponse, fieldsID, fromDate, toDate, marked, userID, departmentsID,
-        // keyword, limit, lastestID, select, populates, isParent })
         return new Promise(async (resolve) => {
             try {
+                // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                if(!checkPer || checkPer.error)
+                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
+
                 if(limit > 20){
                     limit = 20;
                 } else{
@@ -1114,8 +1101,6 @@ class Model extends BaseModel {
      * Date: 27/10/2021
      */
     statisticalByType({ userID, companyID, departmentID, packageID }) {
-        // console.log('===========Thống kê hồ sơ===========')
-        // console.log({ userID, companyID, departmentID, packageID })
         return new Promise(async (resolve) => {
             try {
                 if(!checkObjectIDs([userID])) {
@@ -1231,8 +1216,6 @@ class Model extends BaseModel {
      * Date: 27/10/2021
      */
     statisticalByDatahubContact({ userID, companyID, departmentID, packageID }) {
-        // console.log('===========Thống kê hồ sơ===========')
-        // console.log({ userID, companyID, departmentID, packageID })
         return new Promise(async (resolve) => {
             try {
                 if(departmentID && !checkObjectIDs([departmentID])) {
@@ -1479,7 +1462,6 @@ class Model extends BaseModel {
      * Date: 29/10/2022
      */
     getDynamicReport({ userID, option, companyID, projectID, reportType, status, subtypes, fromDate, toDate, upcoming, isMilestone, year }){
-        // console.log({ userID, option, reportType, status, subtypes, fromDate, toDate, upcoming })
         return new Promise(async resolve => {
             try {
                 let conditionObj = {}, conditionProject = {}, conditionMatch = {}, objectGroup = {}
@@ -1927,7 +1909,7 @@ class Model extends BaseModel {
      * Date: 15/12/2022
      */
     exportDocumentOfPackage({ userID, filterParams = {} }) {
-        console.log('==============ĐANG TẢI HỒ SƠ=======================')
+        // console.log('==============ĐANG TẢI HỒ SƠ=======================')
         return new Promise(async resolve => {
             try {
                 const validation = validateParamsObjectID({ userID });

@@ -33,7 +33,7 @@ const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doct
 
 const AUTH__APP_USER                            = require('../.../../../auth/model/auth.app_users').MODEL
 
-// PCM, Chấm công-Lương, Kế toán, Quỹ, Nhân sự, Hồ sơ, CRM
+// PCM, Chấm công, Kế toán, Quỹ, Nhân sự, Hồ sơ, CRM
 const appArr = ['5eabfdc72171391e5f6a0468','61e049cffdebf77b072d1b14','61e049aefdebf77b072d1b12','5dfe4bf251dc622100bb9d8c','61e049c9fdebf77b072d1b13','5e47867080019357cce04746','61e049f6fdebf77b072d1b16'];
 const appIDCheck = appArr[4]
 
