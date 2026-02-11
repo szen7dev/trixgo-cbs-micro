@@ -16,6 +16,7 @@ const { isValidVietnamPhoneNumber } 	= require("../../../tools/utils/utils");
 const { 
     DEVICE_TYPES,
  }                = require('../helper/analysis.keys-constant')
+ const { VOUCHER_TYPES }                = require('../../accounting/config/accounting.financial_config')
 
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant')
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant')
@@ -55,6 +56,8 @@ const FIN__CASH_BOOK_COLL                       = require('../../fin/database/fi
 // const STORE_ORDER_COLL                          = require("../../store/database/store.order-coll");
 const MEDIA_COLL					        	= require('../../media/database/media-coll');
 const CRM_HABIT_COLL                            = require('../../crm/database/crm.habit-coll');
+const ACCOUNTING__FINANCIAL_VOUCHER_COLL        = require('../../accounting/database/accounting.financial_voucher-coll');
+const { sign } = require('crypto');
 
 const ITEM__FUNDA_MODEL                         = require('../../item/model/item.funda-model').MODEL;
 
@@ -447,6 +450,31 @@ class Model extends BaseModel {
                                 realityBonus3: 0,
                             }}
                         )
+
+                        return resolve({ error: false, data: 'Reset thành công' })
+                    }
+
+                    // Reset mã hiệu phiếu
+                    else if(option == 9){
+                        let listData = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({company: companyID}).select('name sign funda')
+                        let listFunda = await ITEM__FUNDA_COLL.find({_id: {$in: listData.map(item => item.funda)}}).select('name sign')
+                        
+                        for(const item of listFunda){
+                            for(const type of [1,2,3,4,5,6,7,8]){
+                                let listDataType = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({funda: item._id, type: type})
+                                .select('name sign type')
+                                .sort({id: 1})
+
+                                let number = 0
+                                for(const subitem of listDataType){
+                                    await ACCOUNTING__FINANCIAL_VOUCHER_COLL.findByIdAndUpdate(subitem._id, {
+                                        sign: `${item.sign}.${VOUCHER_TYPES[Number(subitem.type)-1].sign}${Number(number+1)}`
+                                    }, { new: true })
+
+                                    number++
+                                }
+                            }
+                        }
 
                         return resolve({ error: false, data: 'Reset thành công' })
                     }

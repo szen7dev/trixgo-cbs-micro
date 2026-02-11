@@ -31,7 +31,7 @@ const ITEM__ACCOUNT_COLL                            = require('../../item/databa
 const ITEM__DOCTYPE_COLL                            = require('../../item/database/item.doctype-coll')
 const ITEM_FUNDA_COLL                               = require('../../item/database/item.funda-coll')
 const ITEM_GOODS_COLL                               = require('../../item/database/item.goods-coll')
-const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
+// const CONTRACT_COLL                                 = require('../../item/database/item.contract-coll')
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
 
@@ -40,19 +40,6 @@ const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accou
  */
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL   = require('./accounting.financial_general_journal-model').MODEL;
 const ITEM__ACCOUNT_MODEL                           = require('../../item/model/item.account-model').MODEL;
-
-// let dataTF = {
-//     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
-//     menuID: "623f1f49e998e94feda0cd74", //
-//     type: 1, 
-//     action: 1, // Xem
-// }
-// let dataTF2 = {
-//     appID: "61e049aefdebf77b072d1b12", // ACCOUNTING
-//     menuID: "623f1f49e998e94feda0cd74", //
-//     type: 1,
-//     action: 2, // Thêm
-// }
 
 class Model extends BaseModel {
     constructor() {
