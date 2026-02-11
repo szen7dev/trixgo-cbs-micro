@@ -13,10 +13,11 @@ const ObjectID                          = require('mongoose').Types.ObjectId
 /**
  * COLLECTIONS
  */
-const ITEM__DOCTYPE_COLL                = require('../database/item.doctype-coll');
-const FNB_MISTAKE_COLL                  = require('../../fnb/database/fnb.mistake-coll')
+const ITEM__DOCTYPE_COLL                            = require('../database/item.doctype-coll');
+const FNB_MISTAKE_COLL                              = require('../../fnb/database/fnb.mistake-coll')
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../../accounting/database/accounting.financial_voucher-coll')
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../../accounting/database/accounting.financial_general_journal-coll')
+const STORE_ORDER_PRODUCT_COLL                      = require('../../store/database/store.order_product-coll');
 
 class Model extends BaseModel {
 
@@ -240,13 +241,19 @@ class Model extends BaseModel {
                         $inc: { amountChilds: 1 }
                     })
 
-                    // Cập nhật cho các phiếu kế toán
+                    // Cập nhật cho các phiếu kế toán để đổi parentSubtype
                     await ACCOUNTING__FINANCIAL_VOUCHER_COLL.updateMany(
                         {subtype: ObjectID(doctypeID)},
                         {$set: {parentSubtype: ObjectID(parent)}},
                     )
 
                     await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL.updateMany(
+                        {subtype: ObjectID(doctypeID)},
+                        {$set: {parentSubtype: ObjectID(parent)}},
+                    )
+
+                    // Cập nhật cho sổ quỹ
+                    await STORE_ORDER_PRODUCT_COLL.updateMany(
                         {subtype: ObjectID(doctypeID)},
                         {$set: {parentSubtype: ObjectID(parent)}},
                     )

@@ -353,7 +353,6 @@ class Model extends BaseModel {
                 }
 
                 if (forward && !isNaN(forward)) {
-                    console.log('--------------------------')
                     dataUpdate.forward = forward;
                 } 
 
