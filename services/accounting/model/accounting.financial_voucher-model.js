@@ -445,6 +445,15 @@ class Model extends BaseModel {
                         isPaid
                     }
 
+                    // Chuyển đổi mã hiệu phiếu nếu đổi phiếu
+                    if(type && info.type != type){
+                        let number = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.count({ funda: fundaID, type: type })
+                        let infoFunda = await ITEM_FUNDA_COLL.findById(fundaID)
+                        if(infoFunda){
+                            dataUpdateVoucher.sign = `${infoFunda.sign}.${VOUCHER_TYPES[Number(type)-1].sign}${Number(number+1)}`
+                        }
+                    }
+
                     let dataAddToset = {};
                     if (checkObjectIDs(filesID)) {
                         dataAddToset = { files: filesID };
@@ -1032,10 +1041,7 @@ class Model extends BaseModel {
                     .select(select)
                     .populate(populates)
 
-                if (!info) return resolve({ error: true, message: 'cannot_get' });
-
-                // Record Traffic
-                //await ctx.call(`${CF_DOMAIN_SERVICES.ANALYSIS}.${CF_ACTIONS_ANALYSIS.HISTORY_TRAFFIC_INSERT}`, dataTF)
+                if (!info) return resolve({ error: true, message: 'cannot_get' })
 
                 return resolve({ error: false, data: info });
             } catch (error) {
@@ -1061,7 +1067,8 @@ class Model extends BaseModel {
 
                 let sortBy;
                 let conditionObj = { };
-                let keys = ['createAt__-1', '_id__-1'];
+                let keys = ['modifyAt__-1', '_id__-1'];
+                // let keys = ['createAt__-1', '_id__-1'];
 
                 if (populates && typeof populates === 'string') {
                     if (!IsJsonString(populates))
