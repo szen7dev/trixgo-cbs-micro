@@ -463,7 +463,7 @@ class Model extends BaseModel {
                             for(const type of [1,2,3,4,5,6,7,8]){
                                 let listDataType = await ACCOUNTING__FINANCIAL_VOUCHER_COLL.find({funda: item._id, type: type})
                                 .select('name sign type')
-                                .sort({id: 1})
+                                .sort({date: 1})
 
                                 let number = 0
                                 for(const subitem of listDataType){
