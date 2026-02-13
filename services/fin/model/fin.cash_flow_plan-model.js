@@ -28,93 +28,51 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    insert({ companyID, fundaID, projectID, contractID, parentID, type, property, priority, outin, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, userID, ctx }) {
+    insert({ companyID, userID, fundaID, parentID, subtypeID, name, note, revenue, expense, fromDate, toDate, status }) {
         return new Promise(async (resolve) => {
             try {
-                if(!name || !checkObjectIDs(userID))
+                if(!name)
                     return resolve({ error: true, message: 'param_not_valid' })
 
-                let dataInsert = { userCreate: userID, company: companyID, outin, name, date, value, admins: [userID], members: [userID] };
-
-                if(checkObjectIDs(projectID)){
-                    let infoProject = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.DEPARTMENT_GET_LIST}`, {
-                        departmentID: projectID
-                    })
-
-                    // Trường hợp lập kế hoạch cho Dự án thuộc công ty khác
-                    if(infoProject){
-                        dataInsert.project = projectID
-                        dataInsert.company = infoProject.data.company
-                    }
-                }
-
-                if(checkObjectIDs(contractID)){
-                    let infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
-                        contractID
-                    })
-
-                    // Trường hợp lập kế hoạch cho Hợp đồng của Dự án thuộc công ty khác
-                    if(infoContract){
-                        let { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
-
-                        // dataInsert.outin = outin // outin lấy theo infoParent
-                        dataInsert.real = real
-                        dataInsert.field = field
-                        dataInsert.chair = chair
-                        dataInsert.personInCharge = personInCharge
-                        dataInsert.buyerInfo = buyerInfo
-                        dataInsert.sellerInfo = sellerInfo
-                        dataInsert.company = company
-                        dataInsert.project = project
-                        dataInsert.contract = contractID
-                    }
+                let dataInsert = { 
+                    userCreate: userID, 
+                    company: companyID, 
+                    name,
+                    admins: [userID], 
+                    members: [userID] 
                 }
 
                 if(checkObjectIDs(fundaID)){
-                    dataInsert.funda = funda;
+                    dataInsert.funda = fundaID;
                 }
 
-                // Nếu được tạo từ phần tử cha => lấy company theo phần tử cha
+                if(checkObjectIDs(subtypeID)){
+                    dataInsert.subtype = subtypeID;
+                }
+
                 if(checkObjectIDs(parentID)){
-                    let infoParent = await FIN__CASH_FLOW_PLAN_COLL.findById(parentID)
-                    if(infoParent){
-                        let { company, outin, property, type } = infoParent;
-
-                        dataInsert.parent = parentID;
-                        dataInsert.company = company;
-
-                        dataInsert.outin = outin;
-                        dataInsert.property = property;
-                        dataInsert.type = type;
-                    }
+                    dataInsert.parent = parentID
                 }
 
-                if(!isNaN(type)){
-                    dataInsert.type = Number(type);
-                }
-
-                if(!isNaN(property)){
-                    dataInsert.property = Number(property);
-                }
-
-                if(!isNaN(priority) && [1,2].includes(priority)) {
-                    dataInsert.priority = priority;
-                }
-
-                if(sign){
-                    dataInsert.sign = sign;
+                if(!isNaN(status) && [1,2].includes(status)) {
+                    dataInsert.status = status;
                 }
 
                 if(note){
                     dataInsert.note = note;
                 }
 
-                if(realDate){
-                    dataInsert.realDate = realDate;
+                if(fromDate && toDate){
+                    dataInsert.fromDate = fromDate;
+                    dataInsert.toDate = toDate;
                 }
 
-                if(!isNaN(realValue) && Number(realValue) >= 0){
-                    dataInsert.realValue = realValue;
+                if(!isNaN(revenue) && Number(revenue) >= 0){
+                    dataInsert.revenue = revenue;
+                }
+
+                if(!isNaN(expense) && Number(expense) >= 0){
+                    dataInsert.expense = expense;
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -127,6 +85,51 @@ class Model extends BaseModel {
                 }
 
                 return resolve({ error: false, data: infoAfterInsert, status: 200 });
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
+
+    /**
+     * Name  : Cập nhật giá trị khi chi tiết thay đổi
+     * Author: Hiepnh
+     * Date  : 14/2/2026
+     */
+    updateValue({ cashFlowID, userID }){
+        return new Promise(async (resolve) => {
+            try {
+                if(!checkObjectIDs(cashFlowID))
+                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashFlowID_invalid" });
+
+                let dataUpdate = { 
+                    userUpdate: userID,
+                    modifyAt: Date.now(),
+                }
+
+                let listData = await FIN__CASH_FLOW_PLAN_COLL.aggregate([
+                    {
+                        $match: {
+                            parent: ObjectID(cashFlowID),
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: { },
+                            revenue: { $sum: "$revenue" },
+                            expense: { $sum: "$expense" },
+                        }
+                    }
+                ])
+
+                if(listData && listData.length){
+                    dataUpdate.revenue = Number(listData[0].revenue)
+                    dataUpdate.expense = Number(listData[0].expense)
+                }
+
+                await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
+
+                return resolve({ error: false, message: 'Cập nhật thành công', status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -325,43 +328,6 @@ class Model extends BaseModel {
     }
 
     /**
-     * Name: Remove
-     * Author: MinhVH
-     * Date: 20/06/2022
-     */
-    remove({ cashFlowsID, userID }) {
-        return new Promise(async resolve => {
-            try {
-                const validation = validateParamsObjectID({
-                    cashFlowsID,
-                    userID
-                })
-                if(validation.error) return resolve(validation);
-
-                const result = await FIN__CASH_FLOW_PLAN_COLL.deleteMany({
-                    _id: {
-                        $in: cashFlowsID
-                    },
-                    userCreate: userID
-                });
-
-                if(!result) {
-                    return resolve({
-                        error: true,
-                        message: 'Là lỗi của chúng tôi không phải của bạn, chúng tôi đang tìm cách khắc phục',
-                        keyError: 'error_occurred',
-                        status: 422
-                    });
-                }
-
-                return resolve({ error: false, status: 200, data: result })
-            } catch(error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-    /**
      * Name: Get info
      * Author: Hiepnh
      * Date: 9/4/2022
@@ -407,7 +373,6 @@ class Model extends BaseModel {
      */
     getList({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority,
         keyword, limit = 50, lastestID, select, populates= {}, sortKey, isCompanyOther, companyOfUser }) {
-            // console.log({userID, companyID, projectID, contractID, parentID, outin, type, property, priority})
         return new Promise(async (resolve) => {
             try {
                 /**
@@ -543,68 +508,6 @@ class Model extends BaseModel {
                     nextCursor,
                 }, status: 200 });
 
-            } catch (error) {
-                return resolve({ error: true, message: error.message, status: 500 });
-            }
-        })
-    }
-
-     /**
-     * Name  : Cập nhật giá trị khi chi tiết thay đổi
-     * Author: Hiepnh
-     * Date  : 14/4/2022
-     */
-    updateValue({ cashFlowID, userID }){
-        return new Promise(async (resolve) => {
-            try {
-                /**
-                 * BA
-                 * 1-Cập nhật kế hoạch
-                 * 2-Cập nhật thực tế
-                 */
-                if(!checkObjectIDs(cashFlowID))
-                    return resolve({ error: true, message: "Mã hiệu không đúng", keyError: "cashFlowID_invalid" });
-
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataUpdate = { userUpdate: userID };
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-
-                /**
-                 * LOGIC STEP (3)
-                 * 3.1: Convert type + update name (ví dụ: string -> number)
-                 * 3.2: Operation database
-                 */
-                 let listData = await FIN__CASH_FLOW_PLAN_COLL.aggregate([
-                    {
-                        $match: {
-                            parent: ObjectID(cashFlowID),
-                        }
-                    },
-                    {
-                        $group: {
-                            _id: { },
-                            value: { $sum: "$value" },
-                            realValue: { $sum: "$realValue" },
-                        }
-                    },
-                ])
-                if(listData && listData.length){
-                    dataUpdate.value = Number(listData[0].value)
-                    dataUpdate.realValue = Number(listData[0].realValue)
-                }
-
-                let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
-                if(!infoAfterUpdate)
-                    return resolve({ error: true, message: "Cập nhật thất bại", keyError: "can't_update_budget", status: 403 });
-
-                return resolve({ error: false, data: infoAfterUpdate, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }

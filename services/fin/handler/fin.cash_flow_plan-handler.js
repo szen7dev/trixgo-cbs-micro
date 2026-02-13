@@ -17,39 +17,19 @@ module.exports = {
     insert: {
         auth: "required",
         params: {
-            companyID           : { type: "string", optional: true },
-            fundaID             : { type: "string", optional: true },
-            contractID          : { type: "string", optional: true },
-            projectID           : { type: "string", optional: true },
-            parentID            : { type: "string", optional: true },
-            type                : { type: "number", optional: true },
-            property            : { type: "number", optional: true },
-            outin               : { type: "number", optional: true },
             name                : { type: "string" },
-            sign                : { type: "string", optional: true },
-            openingBalance      : { type: "number", optional: true },
-            arising             : { type: "number", optional: true },
-            closingBalance      : { type: "number", optional: true },
-            note                : { type: "string", optional: true },
-            date                : { type: "string" },
-            value               : { type: "number", optional: true },
-            realDate            : { type: "string", optional: true },
-            realValue           : { type: "number", optional: true },
-            priority            : { type: "number", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, fundaID, contractID, projectID, parentID, priority, type, property, outin, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue } = ctx.params;
+                let { fundaID, parentID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status } = ctx.params;
+
+                console.log(ctx.params)
 
                 let { _id: userID, company } = ctx.meta.infoUser;
 
-                if(!companyID){
-                    companyID = company._id
-                }
-
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.insert({
-                    companyID, fundaID, contractID, projectID, parentID, priority, type, property, outin, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, userID, ctx
+                    companyID: company._id, userID, fundaID, parentID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
