@@ -295,56 +295,58 @@ class Model extends BaseModel {
 
                         //_________Kiểm tra nếu là phiếu xuất thì tạo thêm Giá vốn/Giảm kho_________//
                         if(type == 5 && checkObjectIDs(info632._id) && subitem.goods && checkObjectIDs(subitem.goods)){
-                            let infoGood = await ITEM_GOODS_COLL.findById(subitem.goods).select('account')
-                            if(infoGood && checkObjectIDs(infoGood.account)){
-                                let dataInsert632 = {
-                                    authorID, 
-                                    companyID, 
-                                    fundaID, 
-                                    voucherID, 
-                                    date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
-                                    updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
-                                    quantity: subitem.quantity ? Number(subitem.quantity) : 0,
-                                    amount: 0, // Chạy giá vốn sau
-                                    unitprice: 0, // Chạy giá vốn sau
-                                    note: 'Tạo tự động',
-                                    paymentDeadline, // Lấy theo phiếu
-                                    gift,
-                                    referrerID,
-                                    salesD,
-                                    isDocumented,
-                                    isPaid,
-                                    debit: info632._id, // Giá vốn 632
-                                    credit: infoGood.account, // Tài khoản nguyên liệu, hàng hóa...
-                                }
+                            // Kiểm tra xem đã có giá vốn trước đó hay chưa (hay gặp ở việc Copy phiếu)
+                            if(!selectedJournals.map(e => e.debit.toString()).includes(info632._id.toString())){
+                                let infoGood = await ITEM_GOODS_COLL.findById(subitem.goods).select('account')
+                                if(infoGood && checkObjectIDs(infoGood.account)){
+                                    let dataInsert632 = {
+                                        authorID, 
+                                        companyID, 
+                                        fundaID, 
+                                        voucherID, 
+                                        date, forward, forwardIs, returning, cancel, vat, type, source, orderNew, pricePolicy,
+                                        updown: (!isNaN(subitem.updown) && [1,-1].includes(Number(subitem.updown))) ? Number(subitem.updown) : 1,
+                                        quantity: subitem.quantity ? Number(subitem.quantity) : 0,
+                                        amount: 0, // Chạy giá vốn sau
+                                        unitprice: 0, // Chạy giá vốn sau
+                                        note: 'Tạo tự động',
+                                        paymentDeadline, // Lấy theo phiếu
+                                        gift,
+                                        referrerID,
+                                        salesD,
+                                        isDocumented,
+                                        isPaid,
+                                        debit: info632._id, // Giá vốn 632
+                                        credit: infoGood.account, // Tài khoản nguyên liệu, hàng hóa...
+                                    }
 
-                                if(subitem.customerDebit && _isValid(subitem.customerDebit)){
-                                    dataInsert632.customerDebit = subitem.customerDebit
-                                }else{
-                                    dataInsert632.customerDebit = customerID
-                                }
-
-                                if(subitem.customerCredit && _isValid(subitem.customerCredit)){
-                                    dataInsert632.customerCredit = subitem.customerCredit
-                                }else{
-                                    dataInsert632.customerCredit = customerID
-                                }
-
-                                if(subitem.goods && _isValid(subitem.goods)){
-                                    if(subitem.warehouse && _isValid(subitem.warehouse)){
-                                        dataInsert632.goods = subitem.goods
-                                        dataInsert632.warehouse = subitem.warehouse
+                                    if(subitem.customerDebit && _isValid(subitem.customerDebit)){
+                                        dataInsert632.customerDebit = subitem.customerDebit
                                     }else{
-                                        if(warehouseID && _isValid(warehouseID)){
+                                        dataInsert632.customerDebit = customerID
+                                    }
+
+                                    if(subitem.customerCredit && _isValid(subitem.customerCredit)){
+                                        dataInsert632.customerCredit = subitem.customerCredit
+                                    }else{
+                                        dataInsert632.customerCredit = customerID
+                                    }
+
+                                    if(subitem.goods && _isValid(subitem.goods)){
+                                        if(subitem.warehouse && _isValid(subitem.warehouse)){
                                             dataInsert632.goods = subitem.goods
-                                            dataInsert632.warehouse = warehouseID
+                                            dataInsert632.warehouse = subitem.warehouse
+                                        }else{
+                                            if(warehouseID && _isValid(warehouseID)){
+                                                dataInsert632.goods = subitem.goods
+                                                dataInsert632.warehouse = warehouseID
+                                            }
                                         }
                                     }
-                                }
 
-                                await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert632)
+                                    await ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_MODEL.insert(dataInsert632)
+                                }
                             }
-                            
                         }
 
                         i++
@@ -743,7 +745,6 @@ class Model extends BaseModel {
                                  * Khoản mục phí
                                  */
                                 if (subitem.subtype && checkObjectIDs(subitem.subtype)) {
-
                                     let infoSubtype = await ITEM__DOCTYPE_COLL.findById(subitem.subtype).select('parent')
                                     if(infoSubtype.parent && _isValid(infoSubtype.parent)){
                                         parentSubtypeID = infoSubtype.parent
