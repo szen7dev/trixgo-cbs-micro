@@ -53,6 +53,7 @@ module.exports = {
 		[CF_ACTIONS_FIN.CASH_FLOW_PLAN_UPDATE] 								: FIN__CASH_FLOW_PLAN_HANDLER.update,
 		[CF_ACTIONS_FIN.CASH_FLOW_PLAN_REMOVE] 								: FIN__CASH_FLOW_PLAN_HANDLER.remove,
 		[CF_ACTIONS_FIN.CASH_FLOW_PLAN_GET_INFO_AND_GET_LIST] 				: FIN__CASH_FLOW_PLAN_HANDLER.getInfoAndGetList,
+		[CF_ACTIONS_FIN.CASH_FLOW_PLAN_SYNC_DATA] 							: FIN__CASH_FLOW_PLAN_HANDLER.syncData,
 		[CF_ACTIONS_FIN.CASH_FLOW_PLAN_GET_AMOUNT_BY_PROPERTY] 				: FIN__CASH_FLOW_PLAN_HANDLER.getAmountByProperty,
 
 		//==========================================  CASH_BOOK  ==================================

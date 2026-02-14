@@ -197,6 +197,22 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Đồng bộ data
+     * Author: HiepNH
+     * Code: 22/11/2023
+     */
+    syncData({ userID, companyID, option, cashFlowID }){
+        const that = this
+        return new Promise(async (resolve) => {
+            try {
+                return resolve({ error: false, message: 'Cập nhật thành công' })
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    /**
      * Name: Get info
      * Author: Hiepnh
      * Date: 9/4/2022

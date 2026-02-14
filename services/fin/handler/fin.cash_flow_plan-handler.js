@@ -72,6 +72,34 @@ module.exports = {
     },
 
     /**
+     * Name: syncData
+     * Author: HiepNH
+     * Code: 14/2/2026
+     */
+    syncData: {
+        params: {
+            salaryID : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, cashFlowID } = ctx.params;
+                console.log(ctx.params)
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.syncData({
+                    userID, companyID: company._id, option, cashFlowID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Name: Remove
      * Author: MinhVH
      * Date: 20/06/2022
