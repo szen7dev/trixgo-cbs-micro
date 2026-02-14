@@ -831,16 +831,20 @@ class Model extends BaseModel {
                     let listData = await FIN__CASH_FLOW_PLAN_COLL.find({parent: parentID})
                     .populate({
                         path: 'subtype parentSubtype',
-                        select: 'name'
+                        select: '_id name'
                     })
+
+                    let listPS = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData.map(item=>item?.parentSubtype?._id)}}).select('name')
 
                     // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_cashflow_report.xlsx')))
                     .then(async workbook => {
                         workbook.sheet("BaoCao").row(2).cell(1).value(infoParent.name);
+                        workbook.sheet("BaoCao2").row(2).cell(1).value(infoParent.name);
                         workbook.sheet("BaoCao").row(3).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
+                        workbook.sheet("BaoCao2").row(3).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
 
-                        var i = 5;
+                        var i = 5
                         listData?.forEach((item, index) => {
                             workbook.sheet("BaoCao").row(i).cell(1).value(Number(index + 1));
                             workbook.sheet("BaoCao").row(i).cell(2).value(item?.name);
@@ -851,6 +855,14 @@ class Model extends BaseModel {
                             workbook.sheet("BaoCao").row(i).cell(7).value(Number(item.actualExpense))
                             workbook.sheet("BaoCao").row(i).cell(8).value(item.note)
                             workbook.sheet("BaoCao").row(i).cell(9).value(item?.parentSubtype?.name);
+
+                            i++
+                        })
+
+                        var i = 5
+                        listPS?.forEach((item, index) => {
+                            workbook.sheet("BaoCao2").row(i).cell(1).value(Number(index + 1));
+                            workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
 
                             i++
                         })
