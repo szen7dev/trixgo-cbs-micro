@@ -43,7 +43,7 @@ class Model extends BaseModel {
                     name,
                 }
 
-                if(fromDate & toDate){
+                if(fromDate && toDate){
                     // 1. Đưa fromDate về 00h:00m:00s:000ms
                     const start = new Date(fromDate);
                     start.setHours(0, 0, 0, 0);
@@ -148,7 +148,7 @@ class Model extends BaseModel {
                     modifyAt: new Date(),
                 };
 
-                if(fromDate & toDate){
+                if(fromDate && toDate){
                     // 1. Đưa fromDate về 00h:00m:00s:000ms
                     const start = new Date(fromDate);
                     start.setHours(0, 0, 0, 0);
