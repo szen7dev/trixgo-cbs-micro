@@ -11,6 +11,7 @@ const CF_ROUTINGS_FIN = {
 
     // ================================CASH_FLOW_PLAN=======================================//
     CASH_FLOW_PLAN                          : `${BASE_ROUTE}${CASH_FLOW_PLAN}`, 
+    CASH_FLOW_PLAN_SYNC_DATA                : `${BASE_ROUTE}${CASH_FLOW_PLAN}/sync-data`,
     CASH_FLOW_PLAN_GET_AMOUNT_BY_PROPERTY   : `${BASE_ROUTE}${CASH_FLOW_PLAN}/get-amount-by-property`,
 
     // ================================CASH_BOOK=======================================//

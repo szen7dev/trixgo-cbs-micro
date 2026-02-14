@@ -1,27 +1,16 @@
 "use strict";
 const BaseModel                         = require('../../../tools/db/base_model');
 const ObjectID                          = require('mongoose').Types.ObjectId;
-const stringUtils					    = require('../../../tools/utils/string_utils');
 const { checkObjectIDs,  IsJsonString}
                                         = require('../../../tools/utils/utils');
-const { setTimeZone  }                  = require('../../../tools/utils/time_utils');
 const { KEY_ERROR }			            = require('../../../tools/keys');
-const { template }                      = require('lodash');
 const moment                            = require("moment");
-
-const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
-const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
-const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index');
 
 const ITEM__ACCOUNT_COLL                = require('../../item/database/item.account-coll')
-const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll')
 const ITEM_FUNDA_COLL                   = require('../../item/database/item.funda-coll')
-const CONTRACT_COLL                     = require('../../item/database/item.contract-coll')
-const FINANCIAL_VOUCHER_COLL            = require('../database/accounting.financial_voucher-coll')
 const FINANCIAL_GENERAL_JOURNAL_COLL    = require('../database/accounting.financial_general_journal-coll')
 const FINANCIAL_REPORT_COLL             = require('../database/accounting.financial_report-coll')
-
 
 /**
  * import inter-model, exter-model
