@@ -21,12 +21,6 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         type: Schema.Types.ObjectId,
         ref : "cash_flow_plan"
     },
-    //_________Số cấp
-    level: {
-        type: Number,
-        default: 1,
-        enum: [1, 2]
-    },
     //_________Admin (được quyền xem, sửa)
     admins : [{
         type   : Schema.Types.ObjectId,
@@ -49,8 +43,6 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     },
     //_________Tên(*)
     name: String,
-    //_________Mã hiệu
-    sign: String,
     //_________Ghi chú
     note: String,
     //_________Doanh thu kế hoạch
@@ -61,6 +53,10 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
     actualRevenue: { type: Number, default: 0 },
     //_________Chi phí thực tế
     actualExpense: { type: Number, default: 0 },
+    //_________Từ ngày
+    fromDate: { type: Date, default: Date.now },
+    //_________Tới ngày
+    toDate: { type: Date, default: Date.now },
     /**
      * Trạng thái
      * 1-Chưa phê duyệt
@@ -70,19 +66,6 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         type: Number,
         default: 1
     },
-    //_________Người phê duyệt
-    approver: {
-        type: Schema.Types.ObjectId,
-        ref : "user"
-    },
-    //_________Thời gian phê duyệt
-    timeApproved: {
-        type: Date
-    },
-    //_________Từ ngày
-    fromDate: { type: Date, default: Date.now },
-    //_________Tới ngày
-    toDate: { type: Date, default: Date.now },
     userCreate: {
         type: Schema.Types.ObjectId,
         ref : 'user'
