@@ -18,6 +18,7 @@ const FNB_MISTAKE_COLL                              = require('../../fnb/databas
 const ACCOUNTING__FINANCIAL_VOUCHER_COLL            = require('../../accounting/database/accounting.financial_voucher-coll')
 const ACCOUNTING__FINANCIAL_GENERAL_JOURNAL_COLL    = require('../../accounting/database/accounting.financial_general_journal-coll')
 const STORE_ORDER_PRODUCT_COLL                      = require('../../store/database/store.order_product-coll');
+const FIN__CASH_FLOW_PLAN_COLL                      = require('../../fin/database/fin.cash_flow_plan-coll');
 
 class Model extends BaseModel {
 
@@ -254,6 +255,12 @@ class Model extends BaseModel {
 
                     // Cập nhật cho sổ quỹ
                     await STORE_ORDER_PRODUCT_COLL.updateMany(
+                        {subtype: ObjectID(doctypeID)},
+                        {$set: {parentSubtype: ObjectID(parent)}},
+                    )
+
+                    // Cập nhật cho Kế hoạch
+                    await FIN__CASH_FLOW_PLAN_COLL.updateMany(
                         {subtype: ObjectID(doctypeID)},
                         {$set: {parentSubtype: ObjectID(parent)}},
                     )

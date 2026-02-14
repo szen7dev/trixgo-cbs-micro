@@ -13,6 +13,7 @@ const moment                            = require("moment");
 const FIN__CASH_FLOW_PLAN_COLL          = require('../database/fin.cash_flow_plan-coll');
 const FINANCIAL_GENERAL_JOURNAL_COLL    = require('../../accounting/database/accounting.financial_general_journal-coll')
 const ITEM__ACCOUNT_COLL                = require('../../item/database/item.account-coll')
+const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { KEY_ERROR }                     = require('../../../tools/keys/index')
@@ -69,6 +70,14 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(subtypeID)){
                     dataInsert.subtype = subtypeID;
+
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoDoctype = await ITEM__DOCTYPE_COLL.findById(subtypeID)
+                    if(infoDoctype){
+                        if(infoDoctype.parent){
+                            dataInsert.parentSubtype = infoDoctype.parent;
+                        }
+                    }
                 }
 
                 if(checkObjectIDs(parentID)){
@@ -210,6 +219,14 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(subtypeID)){
                     dataUpdate.subtype = subtypeID;
+
+                    // Lấy thông tin phần tử cha để đưa sang
+                    let infoDoctype = await ITEM__DOCTYPE_COLL.findById(subtypeID)
+                    if(infoDoctype){
+                        if(infoDoctype.parent){
+                            dataUpdate.parentSubtype = infoDoctype.parent;
+                        }
+                    }
                 }
 
                 let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true })
@@ -810,28 +827,33 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 if(!option){
-                   // Modify the workbook.
+                    let infoParent = await FIN__CASH_FLOW_PLAN_COLL.findById(parentID)
+                    let listData = await FIN__CASH_FLOW_PLAN_COLL.find({parent: parentID})
+                    .populate({
+                        path: 'subtype parentSubtype',
+                        select: 'name'
+                    })
+
+                    // Modify the workbook.
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_cashflow_report.xlsx')))
                     .then(async workbook => {
-                        // workbook.sheet("BaoCao1").row(2).cell(1).value(infoParent.name);
-                        // workbook.sheet("BaoCao2").row(2).cell(1).value(infoParent.name);
+                        workbook.sheet("BaoCao").row(2).cell(1).value(infoParent.name);
+                        workbook.sheet("BaoCao").row(3).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
 
-                        // workbook.sheet("BaoCao1").row(2).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
-                        // workbook.sheet("BaoCao2").row(2).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
+                        var i = 5;
+                        listData?.forEach((item, index) => {
+                            workbook.sheet("BaoCao").row(i).cell(1).value(Number(index + 1));
+                            workbook.sheet("BaoCao").row(i).cell(2).value(item?.name);
+                            workbook.sheet("BaoCao").row(i).cell(3).value(item?.subtype?.name);
+                            workbook.sheet("BaoCao").row(i).cell(4).value(Number(item.revenue))
+                            workbook.sheet("BaoCao").row(i).cell(5).value(Number(item.expense))
+                            workbook.sheet("BaoCao").row(i).cell(6).value(Number(item.actualRevenue))
+                            workbook.sheet("BaoCao").row(i).cell(7).value(Number(item.actualExpense))
+                            workbook.sheet("BaoCao").row(i).cell(8).value(item.note)
+                            workbook.sheet("BaoCao").row(i).cell(9).value(item?.parentSubtype?.name);
 
-                        // var i = 4;
-                        // listData?.forEach((item, index) => {
-                        //     workbook.sheet("BaoCao1").row(i).cell(2).value(item?.funda?.name);
-                        //     workbook.sheet("BaoCao1").row(i).cell(3).value(Number(item.revenue))
-                        //     workbook.sheet("BaoCao1").row(i).cell(4).value(Number(item.expense))
-                        //     workbook.sheet("BaoCao1").row(i).cell(5).value(Number(item.profit))
-                        //     workbook.sheet("BaoCao1").row(i).cell(6).value(item.note)
-
-                        //     workbook.sheet("BaoCao2").row(2).cell(i+2).value(`${item?.funda?._id}`);
-                        //     workbook.sheet("BaoCao2").row(3).cell(i+2).value(item?.funda?.name)
-
-                        //     i++
-                        // })
+                            i++
+                        })
 
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
