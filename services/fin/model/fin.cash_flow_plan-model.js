@@ -129,6 +129,8 @@ class Model extends BaseModel {
                             _id: { },
                             revenue: { $sum: "$revenue" },
                             expense: { $sum: "$expense" },
+                            actualRevenue: { $sum: "$actualRevenue" },
+                            actualExpense: { $sum: "$actualExpense" },
                         }
                     }
                 ])
@@ -136,6 +138,8 @@ class Model extends BaseModel {
                 if(listData && listData.length){
                     dataUpdate.revenue = Number(listData[0].revenue)
                     dataUpdate.expense = Number(listData[0].expense)
+                    dataUpdate.actualRevenue = Number(listData[0].actualRevenue)
+                    dataUpdate.actualExpense = Number(listData[0].actualExpense)
                 }
 
                 await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true });
@@ -228,7 +232,7 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 if(option == 1){
-                        let infoCash = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
+                    let infoCash = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
 
                     let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
                     let conditionDebitObj1 = {funda: ObjectID(infoCash.funda)}
@@ -436,6 +440,8 @@ class Model extends BaseModel {
                             actualExpense: expense,
                         }, { new: true });
                     }
+
+                    await this.updateValue({cashFlowID: cashFlowID, userID})
 
                     return resolve({ error: false, message: 'Đồng bộ thành công' })
                 }else if(option == 2){
