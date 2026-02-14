@@ -454,6 +454,33 @@ class Model extends BaseModel {
 
                     return resolve({ error: false, message: 'Đồng bộ thành công' })
                 }else if(option == 2){
+                    let infoOld = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
+                    let listData = await FIN__CASH_FLOW_PLAN_COLL.find({parent: cashFlowID})
+
+                    let infoNew = await that.insert({ 
+                        companyID, 
+                        userID, 
+                        fundaID: infoOld.funda, 
+                        name: `Copy of ${infoOld.name}`, 
+                        note: infoOld.note,
+                    })
+
+                    if(infoNew){
+                        for(const item of listData){
+                            await that.insert({ 
+                                companyID, 
+                                userID, 
+                                fundaID: infoOld.funda, 
+                                name: item.name, 
+                                note: item.note,
+                                parentID: infoNew.data._id, 
+                                subtypeID: item.subtype, 
+                                revenue: item.revenue,
+                                expense: item.expense,
+                            })
+                        }
+                    }
+
                     return resolve({ error: false, message: 'Copy thành công' })
                 }
                 
