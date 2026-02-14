@@ -810,7 +810,7 @@ class Model extends BaseModel {
      * Func: Tải excel
      * Date: 4/2/2023
      */
-    exportExcel({ option, companyID, userID, parentID, reportID, accountID }) {
+    exportExcel({ option, companyID, parentID }) {
         return new Promise(async resolve => {
             try {
                 if(!option){

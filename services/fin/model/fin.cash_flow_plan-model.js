@@ -758,6 +758,289 @@ class Model extends BaseModel {
             }
         })
     }
+
+    /**
+     * Dev: HiepNH
+     * Func: Tải excel
+     * Date: 14/2/2026
+     */
+    exportExcel({ option, companyID, parentID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!option){
+                    // // Thông tin báo cáo
+                    // let infoParent = await FINANCIAL_REPORT_COLL.findById(parentID).populate({
+                    //     path: 'funda',
+                    //     select: '_id name sign'
+                    // })
+
+                    // // Danh sách cơ sở
+                    // let listData = await FINANCIAL_REPORT_COLL.find({parent: parentID}).populate({
+                    //     path: 'funda',
+                    //         select: '_id name sign'
+                    // })
+
+                    // let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                    
+                    // // Tài khoản doanh thu chi phí
+                    // let arrAccounts = []
+                    // let listAccs = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[5768]" } })
+                    // .select('_id')
+                    // if(listAccs){
+                    //     arrAccounts = listAccs.map(item=>ObjectID(item._id))
+                    // }
+
+                    // conditionProject = {
+                    //     forward: '$forward',
+                    //     cancel: '$cancel',
+                    //     funda: 1,
+                    //     date: 1,
+                    //     amount: 1,
+                    //     customerDebit: 1,
+                    //     customerCredit: 1,
+                    //     debit: 1,
+                    //     credit: 1
+                    // }
+    
+                    // conditionMatch = {
+                    //     "forward": 0,
+                    //     "cancel": 0,
+                    //     "date": {
+                    //         $gte: moment(infoParent.fromDate).toDate(),
+                    //         $lte: moment(infoParent.toDate).toDate(),
+                    //     }
+                    // }
+    
+                    // conditionGroupDebit = {
+                    //     _id: { account: "$debit", funda: "$funda" },
+                    //     amount: { $sum: "$amount" }
+                    // }
+                    // conditionGroupCredit = {
+                    //     _id: { account: "$credit", funda: "$funda" },
+                    //     amount: { $sum: "$amount" }
+                    // }
+
+                    // // https://chatgpt.com/share/6739ef43-56c0-8008-a6a8-3a01ac809f23
+                    // let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    //     {
+                    //         $facet: {
+                    //         debits: [
+                    //             {
+                    //                 $match: {
+                    //                     funda: {$in: listData.map(item => ObjectID(item.funda._id))},
+                    //                     debit: {$in: arrAccounts}
+                    //                 }
+                    //             },
+                    //             {
+                    //                 $project: conditionProject
+                    //             },
+                    //             {
+                    //                 $match: conditionMatch
+                    //             },
+                    //             {
+                    //                 $group: {
+                    //                 _id: { funda: "$funda", account: "$debit" }, // Gom nhóm theo funda và debit
+                    //                 totalDebit: { $sum: "$amount" } // Tổng amount của debit
+                    //                 }
+                    //             }
+                    //         ],
+                    //         credits: [
+                    //             {
+                    //                 $match: {
+                    //                     funda: {$in: listData.map(item => ObjectID(item.funda._id))},
+                    //                     credit: {$in: arrAccounts}
+                    //                 }
+                    //             },
+                    //             {
+                    //                 $project: conditionProject
+                    //             },
+                    //             {
+                    //                 $match: conditionMatch
+                    //             },
+                    //             {
+                    //                 $group: {
+                    //                 _id: { funda: "$funda", account: "$credit" }, // Gom nhóm theo funda và credit
+                    //                 totalCredit: { $sum: "$amount" } // Tổng amount của credit
+                    //                 }
+                    //             }
+                    //         ],
+                    //         }
+                    //     },
+                    //     {
+                    //         $project: {
+                    //         credits: 1,
+                    //         debits: 1
+                    //         }
+                    //     },
+                    //     {
+                    //         $project: {
+                    //         merged: {
+                    //             $setUnion: ["$credits", "$debits"] // Gộp chung danh sách debit và credit
+                    //         }
+                    //         }
+                    //     },
+                    //     {
+                    //         $unwind: "$merged"
+                    //     },
+                    //     {
+                    //         $group: {
+                    //         _id: { funda: "$merged._id.funda", account: "$merged._id.account" },
+                    //         totalDebit: { $sum: { $ifNull: ["$merged.totalDebit", 0] } },
+                    //         totalCredit: { $sum: { $ifNull: ["$merged.totalCredit", 0] } },
+                    //         }
+                    //     },
+                    //     {
+                    //         $project: {
+                    //         funda: "$_id.funda",
+                    //         account: "$_id.account",
+                    //         total: { $subtract: ["$totalDebit", "$totalCredit"] }
+                    //         }
+                    //     }
+                    // ])
+                    
+                    // let conditionPopulate = {
+                    //     path: 'account',
+                    //     select: '_id name description',
+                    //     model: 'account'
+                    // }
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2, conditionPopulate)
+                    // // console.log(listData2)
+
+                    // let arr = []
+                    // for(const item of listData2){
+                    //     arr.push(item.account)
+                    // }
+                    
+                    // let listAcc1s = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" }, _id: {$in: listData2.map(item=>item.account)} }) // Doanh thu
+                    // .select('_id name description')
+
+                    // let listAcc2s = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" }, _id: {$in: listData2.map(item=>item.account)} }) // Chi phí
+                    // .select('_id name description')
+
+                    // // CHI TIẾT BÚT TOÁN
+                    // let listDetail = await FINANCIAL_GENERAL_JOURNAL_COLL.find({
+                    //     forward: 0,
+                    //     cancel: 0,
+                    //     date: {
+                    //         $gte: moment(infoParent.fromDate).toDate(),
+                    //         $lte: moment(infoParent.toDate).toDate(),
+                    //     },
+                    //     $or: [
+                    //         { debit:   {
+                    //             $in: listAccs.map(item=>ObjectID(item._id))
+                    //         }},
+                    //         { credit:  {
+                    //             $in: listAccs.map(item=>ObjectID(item._id))
+                    //         } }
+                    //     ]
+                    // })
+                    // .populate({
+                    //     path: 'funda voucher warehouse goods subtype parentSubtype debit credit customerDebit customerCredit',
+                    //         select: '_id name sign unit'
+                    // })
+                    // // console.log(listDetail.length)
+
+                    // // Modify the workbook.
+                    // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_fin_report.xlsx')))
+                    // .then(async workbook => {
+                    //     workbook.sheet("BaoCao1").row(2).cell(1).value(infoParent.name);
+                    //     workbook.sheet("BaoCao2").row(2).cell(1).value(infoParent.name);
+
+                    //     workbook.sheet("BaoCao1").row(2).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
+                    //     workbook.sheet("BaoCao2").row(2).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
+
+                    //     var i = 4;
+                    //     listData?.forEach((item, index) => {
+                    //         workbook.sheet("BaoCao1").row(i).cell(2).value(item?.funda?.name);
+                    //         workbook.sheet("BaoCao1").row(i).cell(3).value(Number(item.revenue))
+                    //         workbook.sheet("BaoCao1").row(i).cell(4).value(Number(item.expense))
+                    //         workbook.sheet("BaoCao1").row(i).cell(5).value(Number(item.profit))
+                    //         workbook.sheet("BaoCao1").row(i).cell(6).value(item.note)
+
+                    //         workbook.sheet("BaoCao2").row(2).cell(i+2).value(`${item?.funda?._id}`);
+                    //         workbook.sheet("BaoCao2").row(3).cell(i+2).value(item?.funda?.name)
+
+                    //         i++
+                    //     })
+
+                    //     var i = 5;
+                    //     workbook.sheet("BaoCao2").row(4).cell(3).value('DOANH THU').style({
+                    //         bold: true,
+                    //     })
+                    //     listAcc1s?.forEach((item, index) => {
+                    //         workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
+                    //         workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
+                    //         workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
+
+                    //         i++
+                    //     })
+                    //     workbook.sheet("BaoCao2").row(15).cell(3).value('CHI PHÍ')
+                    //     .style({
+                    //         bold: true,
+                    //     })
+
+                    //     var i = 16;
+                    //     listAcc2s?.forEach((item, index) => {
+                    //         workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
+                    //         workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
+                    //         workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
+
+                    //         i++
+                    //     })
+
+                    //     var i = 4;
+                    //     listData2?.forEach((item, index) => {
+                    //         workbook.sheet("Combine").row(i).cell(2).value(`${item?.account._id}`)
+                    //         workbook.sheet("Combine").row(i).cell(3).value(`${item?.account.name}`)
+                    //         workbook.sheet("Combine").row(i).cell(4).value(`${item?.account.description}`)
+                    //         workbook.sheet("Combine").row(i).cell(5).value(`${item?.funda}`)
+                    //         workbook.sheet("Combine").row(i).cell(6).value(Number(item.total))
+
+                    //         i++
+                    //     })
+
+                    //     var i = 4;
+                    //     listDetail?.forEach((item, index) => {
+                    //         workbook.sheet("Detail").row(i).cell(1).value(item.date)
+                    //         workbook.sheet("Detail").row(i).cell(2).value(item?.funda?.name)
+                    //         workbook.sheet("Detail").row(i).cell(3).value(item?.subtype?.name)
+                    //         workbook.sheet("Detail").row(i).cell(4).value(item?.parentSubtype?.name)
+                    //         workbook.sheet("Detail").row(i).cell(5).value(item?.voucher?.name)
+                    //         workbook.sheet("Detail").row(i).cell(6).value(item?.voucher?.sign)
+                    //         workbook.sheet("Detail").row(i).cell(7).value(item?.customerDebit?.name)
+                    //         workbook.sheet("Detail").row(i).cell(8).value(item?.customerCredit?.name)
+                    //         workbook.sheet("Detail").row(i).cell(9).value(item?.debit?.name)
+                    //         workbook.sheet("Detail").row(i).cell(10).value(item?.credit?.name)
+                    //         workbook.sheet("Detail").row(i).cell(11).value(Number(item?.quantity))
+                    //         workbook.sheet("Detail").row(i).cell(12).value(Number(item?.unitprice))
+                    //         workbook.sheet("Detail").row(i).cell(13).value(Number(item?.amount))
+                    //         workbook.sheet("Detail").row(i).cell(14).value(item?.goods?.name)
+                    //         workbook.sheet("Detail").row(i).cell(15).value(item?.warehouse?.name)
+                    //         workbook.sheet("Detail").row(i).cell(16).value(item?.note)
+
+                    //         i++
+                    //     })
+
+                    //     const now = new Date();
+                    //     const filePath = '../../../files/temporary_uploads/';
+                    //     const fileName = `BaoCaoLaiLo_${now.getTime()}.xlsx`;
+                    //     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    //     await workbook.toFileAsync(pathWriteFile);
+                    //     const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    //     fs.unlinkSync(pathWriteFile);
+                    //     return resolve({ error: false, data: result?.Location, status: 200 });
+                    // })
+                }else{
+                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                }
+            } catch (error) {
+                // console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
+            }
+        })
+    }
 }
 
 exports.MODEL = new Model;

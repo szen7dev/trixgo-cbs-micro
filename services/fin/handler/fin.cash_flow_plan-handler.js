@@ -88,7 +88,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { option, cashFlowID } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -210,4 +210,38 @@ module.exports = {
             }
         }
     },
+
+    /**
+     * Name: exportExcel 
+     * Author: HiepNH
+     * Code: 14/2/2026
+     */
+    exportExcel: {
+        auth: 'required',
+        params: {
+            companyID: { type: "string", optional: true },
+            option: { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                console.log(ctx.params)
+                
+                const { _id: userID, company } = ctx.meta.infoUser;
+                let { option, companyID, parentID } = ctx.params;
+
+                if(!companyID) {
+                    companyID = company._id;
+                }
+
+                const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.exportExcel({
+                    option, companyID, parentID
+                })
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return renderStatusCodeAndResponse({ error_message: error.message, ctx });
+            }
+        }
+    }
 }
