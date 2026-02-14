@@ -33,16 +33,22 @@ class Model extends BaseModel {
     insert({ companyID, userID, fundaID, parentID, subtypeID, name, note, revenue, expense, fromDate, toDate, status }) {
         return new Promise(async (resolve) => {
             try {
-                if(!name || !checkObjectIDs(fundaID) || !fromDate ||!toDate)
-                    return resolve({ error: true, message: 'param_name|fundaID_not_valid' })
+                if(!name)
+                    return resolve({ error: true, message: 'param_name_not_valid' })
+
+                if(!parentID && !checkObjectIDs(fundaID))
+                    return resolve({ error: true, message: 'param_fundaID_not_valid' })
 
                 let dataInsert = { 
                     userCreate: userID, 
                     company: companyID, 
-                    funda: fundaID, 
                     name,
                     fromDate,
                     toDate,
+                }
+
+                if(checkObjectIDs(fundaID)){
+                    dataInsert.funda = fundaID
                 }
 
                 if(checkObjectIDs(subtypeID)){
