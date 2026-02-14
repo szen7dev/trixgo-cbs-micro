@@ -43,8 +43,19 @@ class Model extends BaseModel {
                     userCreate: userID, 
                     company: companyID, 
                     name,
-                    fromDate,
-                    toDate,
+                }
+                
+                if(fromDate & toDate){
+                    // 1. Đưa fromDate về 00h:00m:00s:000ms
+                    const start = new Date(fromDate);
+                    start.setHours(0, 0, 0, 0);
+
+                    // 2. Đưa toDate về 23h:59m:59s:999ms
+                    const end = new Date(toDate);
+                    end.setHours(23, 59, 59, 999);
+
+                    dataInsert.fromDate = start
+                    dataInsert.toDate = end
                 }
 
                 if(checkObjectIDs(fundaID)){
@@ -151,19 +162,24 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                if(name) {
+                if(fromDate & toDate){
+                    // 1. Đưa fromDate về 00h:00m:00s:000ms
+                    const start = new Date(fromDate);
+                    start.setHours(0, 0, 0, 0);
+
+                    // 2. Đưa toDate về 23h:59m:59s:999ms
+                    const end = new Date(toDate);
+                    end.setHours(23, 59, 59, 999);
+
+                    dataUpdate.fromDate = start
+                    dataUpdate.toDate = end
+                }
+
+                if(name && name != '') {
                     dataUpdate.name = name;
                 }
 
-                if(fromDate){
-                    dataUpdate.fromDate = fromDate;
-                }
-
-                if(toDate){
-                    dataUpdate.toDate = toDate;
-                }
-
-                if(note){
+                if(note && note != ''){
                     dataUpdate.note = note;
                 }
 
@@ -211,217 +227,221 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let infoCash = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
-                // console.log(infoCash)
+                if(option == 1){
+                        let infoCash = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
 
-                let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
-                let conditionDebitObj1 = {funda: ObjectID(infoCash.funda)}
-                let conditionDebitObj2 = {funda: ObjectID(infoCash.funda)}
-                let conditionCreditObj1 = {funda: ObjectID(infoCash.funda)}
-                let conditionCreditObj2 = {funda: ObjectID(infoCash.funda)}
+                    let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                    let conditionDebitObj1 = {funda: ObjectID(infoCash.funda)}
+                    let conditionDebitObj2 = {funda: ObjectID(infoCash.funda)}
+                    let conditionCreditObj1 = {funda: ObjectID(infoCash.funda)}
+                    let conditionCreditObj2 = {funda: ObjectID(infoCash.funda)}
 
-                let conditionPopulate = {
-                    path: '_id.subtype',
-                    select: '_id name',
-                    model: 'doctype'
-                }
+                    // let conditionPopulate = {
+                    //     path: '_id.subtype',
+                    //     select: '_id name',
+                    //     model: 'doctype'
+                    // }
 
-                let arrRevenueID = [], arrExpenseID = []
+                    let arrRevenueID = [], arrExpenseID = []
 
-                let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
-                .select('_id')
-                let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
-                .select('_id')
-                if(listAcc1){
-                    arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
-                }
-                if(listAcc2){
-                    arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
-                }
+                    let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
+                    .select('_id')
+                    let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
+                    .select('_id')
+                    if(listAcc1){
+                        arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
+                    }
+                    if(listAcc2){
+                        arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
+                    }
 
-                conditionDebitObj1.debit = {
-                    $in: arrRevenueID
-                }
-                conditionCreditObj1.credit = {
-                    $in: arrRevenueID
-                }
+                    conditionDebitObj1.debit = {
+                        $in: arrRevenueID
+                    }
+                    conditionCreditObj1.credit = {
+                        $in: arrRevenueID
+                    }
 
-                conditionDebitObj2.debit = {
-                    $in: arrExpenseID
-                }
-                conditionCreditObj2.credit = {
-                    $in: arrExpenseID
+                    conditionDebitObj2.debit = {
+                        $in: arrExpenseID
+                    }
+                    conditionCreditObj2.credit = {
+                        $in: arrExpenseID
+                    }
+                    
+                    conditionProject = {
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        funda: 1,
+                        date: 1,
+                        amount: 1,
+                        customerDebit: 1,
+                        customerCredit: 1,
+                        subtype: 1,
+                        credit: 1,
+                        subtype: 1,
+                        parentSubtype: 1,
+                    }
+
+                    conditionMatch = {
+                        "forward": 0,
+                        "cancel": 0,
+                        "date": {
+                            $gte: moment(infoCash.fromDate).toDate(),
+                            $lte: moment(infoCash.toDate).toDate(),
+                        }
+                    }
+
+                    conditionGroupDebit = {
+                        _id: { subtype: "$subtype" },
+                        amount: { $sum: "$amount" }
+                    }
+                    conditionGroupCredit = {
+                        _id: { subtype: "$subtype" },
+                        amount: { $sum: "$amount" }
+                    }
+
+                    let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj1
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    },
+                                ],
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj1
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupCredit
+                                    },
+                                ],
+
+                            }
+                        }
+                    ])
+
+                    let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj2
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    },
+                                ],
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj2
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupCredit
+                                    },
+                                ],
+
+                            }
+                        }
+                    ])
+
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._debit, conditionPopulate)
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._credit, conditionPopulate)
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._debit, conditionPopulate)
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._credit, conditionPopulate)
+
+                    // console.log(listData1[0]._debit)
+                    // console.log(listData1[0]._credit)
+                    // console.log(listData2[0]._debit)
+                    // console.log(listData2[0]._credit)
+
+                    let listData = await FIN__CASH_FLOW_PLAN_COLL.find({parent: cashFlowID}).select('name subtype parentSubtype')
+                    // console.log(listData)
+
+                    const revenueMap = {};
+                    // 1. Cộng các khoản doanh thu từ _credit
+                    listData1[0]?._credit?.forEach(item => {
+                        if (item._id?.subtype) {
+                            const subID = item._id.subtype.toString();
+                            revenueMap[subID] = (revenueMap[subID] || 0) + item.amount;
+                        }
+                    });
+
+                    // 2. TRỪ đi các khoản giảm trừ doanh thu từ _debit
+                    listData1[0]?._debit?.forEach(item => {
+                        if (item._id?.subtype) {
+                            const subID = item._id.subtype.toString();
+                            // Trừ trực tiếp vào giá trị đã có trong Map
+                            revenueMap[subID] = (revenueMap[subID] || 0) - item.amount;
+                        }
+                    });
+
+                    const expenseMap = {};
+                    // 1. Cộng các khoản chi phí phát sinh từ _debit
+                    listData2[0]?._debit?.forEach(item => {
+                        if (item._id?.subtype) {
+                            const subID = item._id.subtype.toString();
+                            expenseMap[subID] = (expenseMap[subID] || 0) + item.amount;
+                        }
+                    });
+
+                    // 2. TRỪ đi các khoản giảm chi phí (bút toán ngược) từ _credit
+                    listData2[0]?._credit?.forEach(item => {
+                        if (item._id?.subtype) {
+                            const subID = item._id.subtype.toString();
+                            // Trừ trực tiếp để có con số chi phí thuần
+                            expenseMap[subID] = (expenseMap[subID] || 0) - item.amount;
+                        }
+                    })
+
+                    for (const item of listData) {
+                        // QUAN TRỌNG: Phải dùng item.subtype để lấy giá trị từ Map
+                        const subID = item.subtype?.toString();
+                        
+                        let revenue = revenueMap[subID] || 0;
+                        let expense = expenseMap[subID] || 0;
+
+                        // console.log(`Checking Subtype: ${subID} -> Revenue: ${revenue}, Expense: ${expense}`);
+
+                        await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(item._id, {
+                            actualRevenue: revenue, 
+                            actualExpense: expense,
+                        }, { new: true });
+                    }
+
+                    return resolve({ error: false, message: 'Đồng bộ thành công' })
+                }else if(option == 2){
+                    return resolve({ error: false, message: 'Copy thành công' })
                 }
                 
-                conditionProject = {
-                    forward: '$forward',
-                    cancel: '$cancel',
-                    funda: 1,
-                    date: 1,
-                    amount: 1,
-                    customerDebit: 1,
-                    customerCredit: 1,
-                    subtype: 1,
-                    credit: 1,
-                    subtype: 1,
-                    parentSubtype: 1,
-                }
-
-                conditionMatch = {
-                    "forward": 0,
-                    "cancel": 0,
-                    "date": {
-                        $gte: moment(infoCash.fromDate).toDate(),
-                        $lte: moment(infoCash.toDate).toDate(),
-                    }
-                }
-
-                conditionGroupDebit = {
-                    _id: { subtype: "$subtype" },
-                    amount: { $sum: "$amount" }
-                }
-                conditionGroupCredit = {
-                    _id: { subtype: "$subtype" },
-                    amount: { $sum: "$amount" }
-                }
-
-                let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionDebitObj1
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupDebit
-                                },
-                            ],
-                            _credit:[
-                                {
-                                    $match: conditionCreditObj1
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupCredit
-                                },
-                            ],
-
-                        }
-                    }
-                ])
-
-                let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionDebitObj2
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupDebit
-                                },
-                            ],
-                            _credit:[
-                                {
-                                    $match: conditionCreditObj2
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupCredit
-                                },
-                            ],
-
-                        }
-                    }
-                ])
-
-                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._debit, conditionPopulate)
-                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._credit, conditionPopulate)
-                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._debit, conditionPopulate)
-                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._credit, conditionPopulate)
-
-                // console.log(listData1[0]._debit)
-                // console.log(listData1[0]._credit)
-                // console.log(listData2[0]._debit)
-                // console.log(listData2[0]._credit)
-
-                let listData = await FIN__CASH_FLOW_PLAN_COLL.find({parent: cashFlowID}).select('name subtype parentSubtype')
-                // console.log(listData)
-
-                const revenueMap = {};
-                // 1. Cộng các khoản doanh thu từ _credit
-                listData1[0]?._credit?.forEach(item => {
-                    if (item._id?.subtype) {
-                        const subID = item._id.subtype.toString();
-                        revenueMap[subID] = (revenueMap[subID] || 0) + item.amount;
-                    }
-                });
-
-                // 2. TRỪ đi các khoản giảm trừ doanh thu từ _debit
-                listData1[0]?._debit?.forEach(item => {
-                    if (item._id?.subtype) {
-                        const subID = item._id.subtype.toString();
-                        // Trừ trực tiếp vào giá trị đã có trong Map
-                        revenueMap[subID] = (revenueMap[subID] || 0) - item.amount;
-                    }
-                });
-
-                const expenseMap = {};
-                // 1. Cộng các khoản chi phí phát sinh từ _debit
-                listData2[0]?._debit?.forEach(item => {
-                    if (item._id?.subtype) {
-                        const subID = item._id.subtype.toString();
-                        expenseMap[subID] = (expenseMap[subID] || 0) + item.amount;
-                    }
-                });
-
-                // 2. TRỪ đi các khoản giảm chi phí (bút toán ngược) từ _credit
-                listData2[0]?._credit?.forEach(item => {
-                    if (item._id?.subtype) {
-                        const subID = item._id.subtype.toString();
-                        // Trừ trực tiếp để có con số chi phí thuần
-                        expenseMap[subID] = (expenseMap[subID] || 0) - item.amount;
-                    }
-                })
-
-                for (const item of listData) {
-                    // QUAN TRỌNG: Phải dùng item.subtype để lấy giá trị từ Map
-                    const subID = item.subtype?.toString();
-                    
-                    let revenue = revenueMap[subID] || 0;
-                    let expense = expenseMap[subID] || 0;
-
-                    // console.log(`Checking Subtype: ${subID} -> Revenue: ${revenue}, Expense: ${expense}`);
-
-                    await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(item._id, {
-                        actualRevenue: revenue, 
-                        actualExpense: expense,
-                    }, { new: true });
-                }
-
-                return resolve({ error: false, message: 'Cập nhật thành công' })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
@@ -735,6 +755,289 @@ class Model extends BaseModel {
                 return resolve({ error: false, data: listData });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
+            }
+        })
+    }
+
+    /**
+     * Dev: HiepNH
+     * Func: Tải excel
+     * Date: 14/2/2026
+     */
+    exportExcel({ option, companyID, parentID }) {
+        return new Promise(async resolve => {
+            try {
+                if(!option){
+                    // // Thông tin báo cáo
+                    // let infoParent = await FINANCIAL_REPORT_COLL.findById(parentID).populate({
+                    //     path: 'funda',
+                    //     select: '_id name sign'
+                    // })
+
+                    // // Danh sách cơ sở
+                    // let listData = await FINANCIAL_REPORT_COLL.find({parent: parentID}).populate({
+                    //     path: 'funda',
+                    //         select: '_id name sign'
+                    // })
+
+                    // let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                    
+                    // // Tài khoản doanh thu chi phí
+                    // let arrAccounts = []
+                    // let listAccs = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[5768]" } })
+                    // .select('_id')
+                    // if(listAccs){
+                    //     arrAccounts = listAccs.map(item=>ObjectID(item._id))
+                    // }
+
+                    // conditionProject = {
+                    //     forward: '$forward',
+                    //     cancel: '$cancel',
+                    //     funda: 1,
+                    //     date: 1,
+                    //     amount: 1,
+                    //     customerDebit: 1,
+                    //     customerCredit: 1,
+                    //     debit: 1,
+                    //     credit: 1
+                    // }
+    
+                    // conditionMatch = {
+                    //     "forward": 0,
+                    //     "cancel": 0,
+                    //     "date": {
+                    //         $gte: moment(infoParent.fromDate).toDate(),
+                    //         $lte: moment(infoParent.toDate).toDate(),
+                    //     }
+                    // }
+    
+                    // conditionGroupDebit = {
+                    //     _id: { account: "$debit", funda: "$funda" },
+                    //     amount: { $sum: "$amount" }
+                    // }
+                    // conditionGroupCredit = {
+                    //     _id: { account: "$credit", funda: "$funda" },
+                    //     amount: { $sum: "$amount" }
+                    // }
+
+                    // // https://chatgpt.com/share/6739ef43-56c0-8008-a6a8-3a01ac809f23
+                    // let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    //     {
+                    //         $facet: {
+                    //         debits: [
+                    //             {
+                    //                 $match: {
+                    //                     funda: {$in: listData.map(item => ObjectID(item.funda._id))},
+                    //                     debit: {$in: arrAccounts}
+                    //                 }
+                    //             },
+                    //             {
+                    //                 $project: conditionProject
+                    //             },
+                    //             {
+                    //                 $match: conditionMatch
+                    //             },
+                    //             {
+                    //                 $group: {
+                    //                 _id: { funda: "$funda", account: "$debit" }, // Gom nhóm theo funda và debit
+                    //                 totalDebit: { $sum: "$amount" } // Tổng amount của debit
+                    //                 }
+                    //             }
+                    //         ],
+                    //         credits: [
+                    //             {
+                    //                 $match: {
+                    //                     funda: {$in: listData.map(item => ObjectID(item.funda._id))},
+                    //                     credit: {$in: arrAccounts}
+                    //                 }
+                    //             },
+                    //             {
+                    //                 $project: conditionProject
+                    //             },
+                    //             {
+                    //                 $match: conditionMatch
+                    //             },
+                    //             {
+                    //                 $group: {
+                    //                 _id: { funda: "$funda", account: "$credit" }, // Gom nhóm theo funda và credit
+                    //                 totalCredit: { $sum: "$amount" } // Tổng amount của credit
+                    //                 }
+                    //             }
+                    //         ],
+                    //         }
+                    //     },
+                    //     {
+                    //         $project: {
+                    //         credits: 1,
+                    //         debits: 1
+                    //         }
+                    //     },
+                    //     {
+                    //         $project: {
+                    //         merged: {
+                    //             $setUnion: ["$credits", "$debits"] // Gộp chung danh sách debit và credit
+                    //         }
+                    //         }
+                    //     },
+                    //     {
+                    //         $unwind: "$merged"
+                    //     },
+                    //     {
+                    //         $group: {
+                    //         _id: { funda: "$merged._id.funda", account: "$merged._id.account" },
+                    //         totalDebit: { $sum: { $ifNull: ["$merged.totalDebit", 0] } },
+                    //         totalCredit: { $sum: { $ifNull: ["$merged.totalCredit", 0] } },
+                    //         }
+                    //     },
+                    //     {
+                    //         $project: {
+                    //         funda: "$_id.funda",
+                    //         account: "$_id.account",
+                    //         total: { $subtract: ["$totalDebit", "$totalCredit"] }
+                    //         }
+                    //     }
+                    // ])
+                    
+                    // let conditionPopulate = {
+                    //     path: 'account',
+                    //     select: '_id name description',
+                    //     model: 'account'
+                    // }
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2, conditionPopulate)
+                    // // console.log(listData2)
+
+                    // let arr = []
+                    // for(const item of listData2){
+                    //     arr.push(item.account)
+                    // }
+                    
+                    // let listAcc1s = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" }, _id: {$in: listData2.map(item=>item.account)} }) // Doanh thu
+                    // .select('_id name description')
+
+                    // let listAcc2s = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" }, _id: {$in: listData2.map(item=>item.account)} }) // Chi phí
+                    // .select('_id name description')
+
+                    // // CHI TIẾT BÚT TOÁN
+                    // let listDetail = await FINANCIAL_GENERAL_JOURNAL_COLL.find({
+                    //     forward: 0,
+                    //     cancel: 0,
+                    //     date: {
+                    //         $gte: moment(infoParent.fromDate).toDate(),
+                    //         $lte: moment(infoParent.toDate).toDate(),
+                    //     },
+                    //     $or: [
+                    //         { debit:   {
+                    //             $in: listAccs.map(item=>ObjectID(item._id))
+                    //         }},
+                    //         { credit:  {
+                    //             $in: listAccs.map(item=>ObjectID(item._id))
+                    //         } }
+                    //     ]
+                    // })
+                    // .populate({
+                    //     path: 'funda voucher warehouse goods subtype parentSubtype debit credit customerDebit customerCredit',
+                    //         select: '_id name sign unit'
+                    // })
+                    // // console.log(listDetail.length)
+
+                    // // Modify the workbook.
+                    // XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/accounting_fin_report.xlsx')))
+                    // .then(async workbook => {
+                    //     workbook.sheet("BaoCao1").row(2).cell(1).value(infoParent.name);
+                    //     workbook.sheet("BaoCao2").row(2).cell(1).value(infoParent.name);
+
+                    //     workbook.sheet("BaoCao1").row(2).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
+                    //     workbook.sheet("BaoCao2").row(2).cell(1).value(`Từ: ${moment(infoParent.fromDate).format('DD/MM/YYYY')}-Đến: ${moment(infoParent.toDate).format('DD/MM/YYYY')}`);
+
+                    //     var i = 4;
+                    //     listData?.forEach((item, index) => {
+                    //         workbook.sheet("BaoCao1").row(i).cell(2).value(item?.funda?.name);
+                    //         workbook.sheet("BaoCao1").row(i).cell(3).value(Number(item.revenue))
+                    //         workbook.sheet("BaoCao1").row(i).cell(4).value(Number(item.expense))
+                    //         workbook.sheet("BaoCao1").row(i).cell(5).value(Number(item.profit))
+                    //         workbook.sheet("BaoCao1").row(i).cell(6).value(item.note)
+
+                    //         workbook.sheet("BaoCao2").row(2).cell(i+2).value(`${item?.funda?._id}`);
+                    //         workbook.sheet("BaoCao2").row(3).cell(i+2).value(item?.funda?.name)
+
+                    //         i++
+                    //     })
+
+                    //     var i = 5;
+                    //     workbook.sheet("BaoCao2").row(4).cell(3).value('DOANH THU').style({
+                    //         bold: true,
+                    //     })
+                    //     listAcc1s?.forEach((item, index) => {
+                    //         workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
+                    //         workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
+                    //         workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
+
+                    //         i++
+                    //     })
+                    //     workbook.sheet("BaoCao2").row(15).cell(3).value('CHI PHÍ')
+                    //     .style({
+                    //         bold: true,
+                    //     })
+
+                    //     var i = 16;
+                    //     listAcc2s?.forEach((item, index) => {
+                    //         workbook.sheet("BaoCao2").row(i).cell(2).value(item?.name);
+                    //         workbook.sheet("BaoCao2").row(i).cell(3).value(item?.description)
+                    //         workbook.sheet("BaoCao2").row(i).cell(4).value(`${item?._id}`)
+
+                    //         i++
+                    //     })
+
+                    //     var i = 4;
+                    //     listData2?.forEach((item, index) => {
+                    //         workbook.sheet("Combine").row(i).cell(2).value(`${item?.account._id}`)
+                    //         workbook.sheet("Combine").row(i).cell(3).value(`${item?.account.name}`)
+                    //         workbook.sheet("Combine").row(i).cell(4).value(`${item?.account.description}`)
+                    //         workbook.sheet("Combine").row(i).cell(5).value(`${item?.funda}`)
+                    //         workbook.sheet("Combine").row(i).cell(6).value(Number(item.total))
+
+                    //         i++
+                    //     })
+
+                    //     var i = 4;
+                    //     listDetail?.forEach((item, index) => {
+                    //         workbook.sheet("Detail").row(i).cell(1).value(item.date)
+                    //         workbook.sheet("Detail").row(i).cell(2).value(item?.funda?.name)
+                    //         workbook.sheet("Detail").row(i).cell(3).value(item?.subtype?.name)
+                    //         workbook.sheet("Detail").row(i).cell(4).value(item?.parentSubtype?.name)
+                    //         workbook.sheet("Detail").row(i).cell(5).value(item?.voucher?.name)
+                    //         workbook.sheet("Detail").row(i).cell(6).value(item?.voucher?.sign)
+                    //         workbook.sheet("Detail").row(i).cell(7).value(item?.customerDebit?.name)
+                    //         workbook.sheet("Detail").row(i).cell(8).value(item?.customerCredit?.name)
+                    //         workbook.sheet("Detail").row(i).cell(9).value(item?.debit?.name)
+                    //         workbook.sheet("Detail").row(i).cell(10).value(item?.credit?.name)
+                    //         workbook.sheet("Detail").row(i).cell(11).value(Number(item?.quantity))
+                    //         workbook.sheet("Detail").row(i).cell(12).value(Number(item?.unitprice))
+                    //         workbook.sheet("Detail").row(i).cell(13).value(Number(item?.amount))
+                    //         workbook.sheet("Detail").row(i).cell(14).value(item?.goods?.name)
+                    //         workbook.sheet("Detail").row(i).cell(15).value(item?.warehouse?.name)
+                    //         workbook.sheet("Detail").row(i).cell(16).value(item?.note)
+
+                    //         i++
+                    //     })
+
+                    //     const now = new Date();
+                    //     const filePath = '../../../files/temporary_uploads/';
+                    //     const fileName = `BaoCaoLaiLo_${now.getTime()}.xlsx`;
+                    //     const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                    //     await workbook.toFileAsync(pathWriteFile);
+                    //     const result = await uploadFileS3(pathWriteFile, fileName);
+
+                    //     fs.unlinkSync(pathWriteFile);
+                    //     return resolve({ error: false, data: result?.Location, status: 200 });
+                    // })
+                }else{
+                    return resolve({ error: true, message: 'Bạn không có quyền', status: 500 })
+                }
+            } catch (error) {
+                // console.log({ error })
+                return resolve({ error: true, message: error.message, status: 500 });
             }
         })
     }

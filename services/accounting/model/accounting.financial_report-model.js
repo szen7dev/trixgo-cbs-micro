@@ -40,14 +40,20 @@ class Model extends BaseModel {
                 let dataInsert = { 
                     company: companyID,
                     userCreate: userID, 
-                    name
+                    name,
                 }
 
-                if (fromDate) {
-                    dataInsert.fromDate = fromDate;
-                }
-                if (toDate) {
-                    dataInsert.toDate = toDate;
+                if(fromDate & toDate){
+                    // 1. Đưa fromDate về 00h:00m:00s:000ms
+                    const start = new Date(fromDate);
+                    start.setHours(0, 0, 0, 0);
+
+                    // 2. Đưa toDate về 23h:59m:59s:999ms
+                    const end = new Date(toDate);
+                    end.setHours(23, 59, 59, 999);
+
+                    dataInsert.fromDate = start
+                    dataInsert.toDate = end
                 }
             
                 if (note && note != '') {
@@ -139,8 +145,21 @@ class Model extends BaseModel {
 
                 let dataUpdate = { 
                     userUpdate: userID, 
-                    modifyAt: new Date() 
+                    modifyAt: new Date(),
                 };
+
+                if(fromDate & toDate){
+                    // 1. Đưa fromDate về 00h:00m:00s:000ms
+                    const start = new Date(fromDate);
+                    start.setHours(0, 0, 0, 0);
+
+                    // 2. Đưa toDate về 23h:59m:59s:999ms
+                    const end = new Date(toDate);
+                    end.setHours(23, 59, 59, 999);
+
+                    dataUpdate.fromDate = start
+                    dataUpdate.toDate = end
+                }
 
                 if (name && name != '') {
                     dataUpdate.name = name;
@@ -148,13 +167,6 @@ class Model extends BaseModel {
 
                 if (note && note != '') {
                     dataUpdate.note = note;
-                }
-
-                if (fromDate) {
-                    dataUpdate.fromDate = fromDate;
-                }
-                if (toDate) {
-                    dataUpdate.toDate = toDate;
                 }
 
                 let infoAfterUpdate = await FINANCIAL_REPORT_COLL.findByIdAndUpdate(reportID, dataUpdate, { new: true })
@@ -798,7 +810,7 @@ class Model extends BaseModel {
      * Func: Tải excel
      * Date: 4/2/2023
      */
-    exportExcel({ option, companyID, userID, parentID, reportID, accountID }) {
+    exportExcel({ option, companyID, parentID }) {
         return new Promise(async resolve => {
             try {
                 if(!option){

@@ -207,17 +207,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                console.log(ctx.params)
+                // console.log(ctx.params)
                 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                let { option, companyID, parentID, reportID, accountID } = ctx.params;
+                let { option, companyID, parentID } = ctx.params;
 
                 if(!companyID) {
                     companyID = company._id;
                 }
 
                 const resultAfterCallHandler = await ACCOUNTING__FINANCIAL_REPORT_MODEL.exportExcel({
-                   option, companyID, userID, parentID, reportID, accountID
+                   option, companyID, parentID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
