@@ -38,8 +38,6 @@ class Model extends BaseModel {
                     userCreate: userID, 
                     company: companyID, 
                     name,
-                    admins: [userID], 
-                    members: [userID] 
                 }
 
                 if(checkObjectIDs(fundaID)){
@@ -142,7 +140,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({
-        cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, userID, members, admins
+        cashFlowID, subtypeID, name, note, revenue, expense, fromDate, toDate, status, userID
     }){
         return new Promise(async (resolve) => {
             try {
@@ -181,57 +179,6 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(subtypeID)){
                     dataUpdate.subtype = subtypeID;
-                }
-
-                const infoCashFlow = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID).lean();
-
-                if(!infoCashFlow) {
-                    return resolve({
-                        error: true,
-                        message: 'Cashflow không tồn tại',
-                        keyError: "cashflow_not_exists",
-                        status: 400
-                    });
-                }
-
-                const adminsID = [...infoCashFlow.admins?.map(item => item.toString()), infoCashFlow.userCreate?.toString()];
-
-                if(adminsID.includes(userID.toString())) {
-                    if(admins && admins.length) {
-                        if(checkObjectIDs(admins)) {
-                            admins = [...new Set(admins)];
-                            dataUpdate.admins = admins;
-                        } else{
-                            dataUpdate.admins = [];
-                        }
-                    }
-
-                    if(members && members.length) {
-                        if(checkObjectIDs(members)) {
-                            members = [...new Set(members)];
-                            dataUpdate.members = members;
-                        } else{
-                            dataUpdate.members = [];
-                        }
-                    }
-                } else{
-                    if(checkObjectIDs(admins)) {
-                        return resolve({
-                            error: true,
-                            message: 'Bạn không có quyền chia sẻ',
-                            keyError: "permission_denined",
-                            status: 403
-                        });
-                    }
-
-                    if(checkObjectIDs(members)) {
-                        return resolve({
-                            error: true,
-                            message: 'Bạn không có quyền chia sẻ',
-                            keyError: "permission_denined",
-                            status: 403
-                        });
-                    }
                 }
 
                 let infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(cashFlowID, dataUpdate, { new: true })

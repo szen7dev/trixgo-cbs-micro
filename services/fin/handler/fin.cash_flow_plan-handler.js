@@ -53,7 +53,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const {
-                    cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, members, admins
+                    cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -61,7 +61,7 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.update({
-                    cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, userID, members, admins
+                    cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
