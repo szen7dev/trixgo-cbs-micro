@@ -43,8 +43,19 @@ class Model extends BaseModel {
                     userCreate: userID, 
                     company: companyID, 
                     name,
-                    fromDate,
-                    toDate,
+                }
+                
+                if(fromDate & toDate){
+                    // 1. Đưa fromDate về 00h:00m:00s:000ms
+                    const start = new Date(fromDate);
+                    start.setHours(0, 0, 0, 0);
+
+                    // 2. Đưa toDate về 23h:59m:59s:999ms
+                    const end = new Date(toDate);
+                    end.setHours(23, 59, 59, 999);
+
+                    dataInsert.fromDate = start
+                    dataInsert.toDate = end
                 }
 
                 if(checkObjectIDs(fundaID)){
@@ -151,19 +162,24 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                if(name) {
+                if(fromDate & toDate){
+                    // 1. Đưa fromDate về 00h:00m:00s:000ms
+                    const start = new Date(fromDate);
+                    start.setHours(0, 0, 0, 0);
+
+                    // 2. Đưa toDate về 23h:59m:59s:999ms
+                    const end = new Date(toDate);
+                    end.setHours(23, 59, 59, 999);
+
+                    dataUpdate.fromDate = start
+                    dataUpdate.toDate = end
+                }
+
+                if(name && name != '') {
                     dataUpdate.name = name;
                 }
 
-                if(fromDate){
-                    dataUpdate.fromDate = fromDate;
-                }
-
-                if(toDate){
-                    dataUpdate.toDate = toDate;
-                }
-
-                if(note){
+                if(note && note != ''){
                     dataUpdate.note = note;
                 }
 
@@ -211,217 +227,221 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
-                let infoCash = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
-                // console.log(infoCash)
+                if(option == 1){
+                        let infoCash = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
 
-                let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
-                let conditionDebitObj1 = {funda: ObjectID(infoCash.funda)}
-                let conditionDebitObj2 = {funda: ObjectID(infoCash.funda)}
-                let conditionCreditObj1 = {funda: ObjectID(infoCash.funda)}
-                let conditionCreditObj2 = {funda: ObjectID(infoCash.funda)}
+                    let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                    let conditionDebitObj1 = {funda: ObjectID(infoCash.funda)}
+                    let conditionDebitObj2 = {funda: ObjectID(infoCash.funda)}
+                    let conditionCreditObj1 = {funda: ObjectID(infoCash.funda)}
+                    let conditionCreditObj2 = {funda: ObjectID(infoCash.funda)}
 
-                let conditionPopulate = {
-                    path: '_id.subtype',
-                    select: '_id name',
-                    model: 'doctype'
-                }
+                    // let conditionPopulate = {
+                    //     path: '_id.subtype',
+                    //     select: '_id name',
+                    //     model: 'doctype'
+                    // }
 
-                let arrRevenueID = [], arrExpenseID = []
+                    let arrRevenueID = [], arrExpenseID = []
 
-                let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
-                .select('_id')
-                let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
-                .select('_id')
-                if(listAcc1){
-                    arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
-                }
-                if(listAcc2){
-                    arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
-                }
+                    let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
+                    .select('_id')
+                    let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
+                    .select('_id')
+                    if(listAcc1){
+                        arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
+                    }
+                    if(listAcc2){
+                        arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
+                    }
 
-                conditionDebitObj1.debit = {
-                    $in: arrRevenueID
-                }
-                conditionCreditObj1.credit = {
-                    $in: arrRevenueID
-                }
+                    conditionDebitObj1.debit = {
+                        $in: arrRevenueID
+                    }
+                    conditionCreditObj1.credit = {
+                        $in: arrRevenueID
+                    }
 
-                conditionDebitObj2.debit = {
-                    $in: arrExpenseID
-                }
-                conditionCreditObj2.credit = {
-                    $in: arrExpenseID
+                    conditionDebitObj2.debit = {
+                        $in: arrExpenseID
+                    }
+                    conditionCreditObj2.credit = {
+                        $in: arrExpenseID
+                    }
+                    
+                    conditionProject = {
+                        forward: '$forward',
+                        cancel: '$cancel',
+                        funda: 1,
+                        date: 1,
+                        amount: 1,
+                        customerDebit: 1,
+                        customerCredit: 1,
+                        subtype: 1,
+                        credit: 1,
+                        subtype: 1,
+                        parentSubtype: 1,
+                    }
+
+                    conditionMatch = {
+                        "forward": 0,
+                        "cancel": 0,
+                        "date": {
+                            $gte: moment(infoCash.fromDate).toDate(),
+                            $lte: moment(infoCash.toDate).toDate(),
+                        }
+                    }
+
+                    conditionGroupDebit = {
+                        _id: { subtype: "$subtype" },
+                        amount: { $sum: "$amount" }
+                    }
+                    conditionGroupCredit = {
+                        _id: { subtype: "$subtype" },
+                        amount: { $sum: "$amount" }
+                    }
+
+                    let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj1
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    },
+                                ],
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj1
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupCredit
+                                    },
+                                ],
+
+                            }
+                        }
+                    ])
+
+                    let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                        {
+                            $facet: {
+                                _debit:[
+                                    {
+                                        $match: conditionDebitObj2
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupDebit
+                                    },
+                                ],
+                                _credit:[
+                                    {
+                                        $match: conditionCreditObj2
+                                    },
+                                    {
+                                        $project: conditionProject
+                                    },
+                                    {
+                                        $match: conditionMatch
+                                    },
+                                    {
+                                        $group: conditionGroupCredit
+                                    },
+                                ],
+
+                            }
+                        }
+                    ])
+
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._debit, conditionPopulate)
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._credit, conditionPopulate)
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._debit, conditionPopulate)
+                    // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._credit, conditionPopulate)
+
+                    // console.log(listData1[0]._debit)
+                    // console.log(listData1[0]._credit)
+                    // console.log(listData2[0]._debit)
+                    // console.log(listData2[0]._credit)
+
+                    let listData = await FIN__CASH_FLOW_PLAN_COLL.find({parent: cashFlowID}).select('name subtype parentSubtype')
+                    // console.log(listData)
+
+                    const revenueMap = {};
+                    // 1. Cộng các khoản doanh thu từ _credit
+                    listData1[0]?._credit?.forEach(item => {
+                        if (item._id?.subtype) {
+                            const subID = item._id.subtype.toString();
+                            revenueMap[subID] = (revenueMap[subID] || 0) + item.amount;
+                        }
+                    });
+
+                    // 2. TRỪ đi các khoản giảm trừ doanh thu từ _debit
+                    listData1[0]?._debit?.forEach(item => {
+                        if (item._id?.subtype) {
+                            const subID = item._id.subtype.toString();
+                            // Trừ trực tiếp vào giá trị đã có trong Map
+                            revenueMap[subID] = (revenueMap[subID] || 0) - item.amount;
+                        }
+                    });
+
+                    const expenseMap = {};
+                    // 1. Cộng các khoản chi phí phát sinh từ _debit
+                    listData2[0]?._debit?.forEach(item => {
+                        if (item._id?.subtype) {
+                            const subID = item._id.subtype.toString();
+                            expenseMap[subID] = (expenseMap[subID] || 0) + item.amount;
+                        }
+                    });
+
+                    // 2. TRỪ đi các khoản giảm chi phí (bút toán ngược) từ _credit
+                    listData2[0]?._credit?.forEach(item => {
+                        if (item._id?.subtype) {
+                            const subID = item._id.subtype.toString();
+                            // Trừ trực tiếp để có con số chi phí thuần
+                            expenseMap[subID] = (expenseMap[subID] || 0) - item.amount;
+                        }
+                    })
+
+                    for (const item of listData) {
+                        // QUAN TRỌNG: Phải dùng item.subtype để lấy giá trị từ Map
+                        const subID = item.subtype?.toString();
+                        
+                        let revenue = revenueMap[subID] || 0;
+                        let expense = expenseMap[subID] || 0;
+
+                        // console.log(`Checking Subtype: ${subID} -> Revenue: ${revenue}, Expense: ${expense}`);
+
+                        await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(item._id, {
+                            actualRevenue: revenue, 
+                            actualExpense: expense,
+                        }, { new: true });
+                    }
+
+                    return resolve({ error: false, message: 'Đồng bộ thành công' })
+                }else if(option == 2){
+                    return resolve({ error: false, message: 'Copy thành công' })
                 }
                 
-                conditionProject = {
-                    forward: '$forward',
-                    cancel: '$cancel',
-                    funda: 1,
-                    date: 1,
-                    amount: 1,
-                    customerDebit: 1,
-                    customerCredit: 1,
-                    subtype: 1,
-                    credit: 1,
-                    subtype: 1,
-                    parentSubtype: 1,
-                }
-
-                conditionMatch = {
-                    "forward": 0,
-                    "cancel": 0,
-                    "date": {
-                        $gte: moment(infoCash.fromDate).toDate(),
-                        $lte: moment(infoCash.toDate).toDate(),
-                    }
-                }
-
-                conditionGroupDebit = {
-                    _id: { subtype: "$subtype" },
-                    amount: { $sum: "$amount" }
-                }
-                conditionGroupCredit = {
-                    _id: { subtype: "$subtype" },
-                    amount: { $sum: "$amount" }
-                }
-
-                let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionDebitObj1
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupDebit
-                                },
-                            ],
-                            _credit:[
-                                {
-                                    $match: conditionCreditObj1
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupCredit
-                                },
-                            ],
-
-                        }
-                    }
-                ])
-
-                let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
-                    {
-                        $facet: {
-                            _debit:[
-                                {
-                                    $match: conditionDebitObj2
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupDebit
-                                },
-                            ],
-                            _credit:[
-                                {
-                                    $match: conditionCreditObj2
-                                },
-                                {
-                                    $project: conditionProject
-                                },
-                                {
-                                    $match: conditionMatch
-                                },
-                                {
-                                    $group: conditionGroupCredit
-                                },
-                            ],
-
-                        }
-                    }
-                ])
-
-                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._debit, conditionPopulate)
-                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._credit, conditionPopulate)
-                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._debit, conditionPopulate)
-                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._credit, conditionPopulate)
-
-                // console.log(listData1[0]._debit)
-                // console.log(listData1[0]._credit)
-                // console.log(listData2[0]._debit)
-                // console.log(listData2[0]._credit)
-
-                let listData = await FIN__CASH_FLOW_PLAN_COLL.find({parent: cashFlowID}).select('name subtype parentSubtype')
-                // console.log(listData)
-
-                const revenueMap = {};
-                // 1. Cộng các khoản doanh thu từ _credit
-                listData1[0]?._credit?.forEach(item => {
-                    if (item._id?.subtype) {
-                        const subID = item._id.subtype.toString();
-                        revenueMap[subID] = (revenueMap[subID] || 0) + item.amount;
-                    }
-                });
-
-                // 2. TRỪ đi các khoản giảm trừ doanh thu từ _debit
-                listData1[0]?._debit?.forEach(item => {
-                    if (item._id?.subtype) {
-                        const subID = item._id.subtype.toString();
-                        // Trừ trực tiếp vào giá trị đã có trong Map
-                        revenueMap[subID] = (revenueMap[subID] || 0) - item.amount;
-                    }
-                });
-
-                const expenseMap = {};
-                // 1. Cộng các khoản chi phí phát sinh từ _debit
-                listData2[0]?._debit?.forEach(item => {
-                    if (item._id?.subtype) {
-                        const subID = item._id.subtype.toString();
-                        expenseMap[subID] = (expenseMap[subID] || 0) + item.amount;
-                    }
-                });
-
-                // 2. TRỪ đi các khoản giảm chi phí (bút toán ngược) từ _credit
-                listData2[0]?._credit?.forEach(item => {
-                    if (item._id?.subtype) {
-                        const subID = item._id.subtype.toString();
-                        // Trừ trực tiếp để có con số chi phí thuần
-                        expenseMap[subID] = (expenseMap[subID] || 0) - item.amount;
-                    }
-                })
-
-                for (const item of listData) {
-                    // QUAN TRỌNG: Phải dùng item.subtype để lấy giá trị từ Map
-                    const subID = item.subtype?.toString();
-                    
-                    let revenue = revenueMap[subID] || 0;
-                    let expense = expenseMap[subID] || 0;
-
-                    // console.log(`Checking Subtype: ${subID} -> Revenue: ${revenue}, Expense: ${expense}`);
-
-                    await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(item._id, {
-                        actualRevenue: revenue, 
-                        actualExpense: expense,
-                    }, { new: true });
-                }
-
-                return resolve({ error: false, message: 'Cập nhật thành công' })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }

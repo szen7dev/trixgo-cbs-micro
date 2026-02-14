@@ -88,7 +88,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { option, cashFlowID } = ctx.params;
 
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
