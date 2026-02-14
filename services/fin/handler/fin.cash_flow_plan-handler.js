@@ -24,7 +24,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { fundaID, parentID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status } = ctx.params;
 
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 let { _id: userID, company } = ctx.meta.infoUser;
 
@@ -48,35 +48,20 @@ module.exports = {
         auth: "required",
         params: {
             cashFlowID          : { type: "string" },
-            contractID          : { type: "string", optional: true },
-            name                : { type: "string", optional: true },
-            sign                : { type: "string", optional: true },
-            openingBalance      : { type: "number", optional: true },
-            arising             : { type: "number", optional: true },
-            closingBalance      : { type: "number", optional: true },
-            note                : { type: "string", optional: true },
-            outin               : { type: "number", optional: true },
-            property            : { type: "number", optional: true },
-            status              : { type: "number", optional: true },
-            type                : { type: "number", optional: true },
-            date                : { type: "string", optional: true },
-            value               : { type: "number", optional: true },
-            realDate            : { type: "string", optional: true },
-            realValue           : { type: "number", optional: true },
-            priority            : { type: "number", optional: true },
-            members             : { type: "array", optional: true },
-            admins              : { type: "array", optional: true },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
                 const {
-                    cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority, outin, property, status, type, members, admins
+                    cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, members, admins
                 } = ctx.params;
+
+                // console.log(ctx.params)
+
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.update({
-                    cashFlowID, contractID, name, openingBalance, arising, closingBalance, sign, note, date, value, realDate, realValue, priority, outin, property, status, type, userID, members, admins, ctx
+                    cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, userID, members, admins
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -122,15 +107,6 @@ module.exports = {
         auth: "required",
         params: {
             cashFlowID      : { type: "string", optional: true },
-            companyID       : { type: "string", optional: true },
-            projectID       : { type: "string", optional: true },
-            contractID      : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            outin           : { type: "string", optional: true },
-            type            : { type: "string", optional: true },
-            property        : { type: "string", optional: true },
-            priority        : { type: "string", optional: true },
-            isCompanyOther  : { type: "string", optional: true },
 
             // Field mặc định
             keyword     : { type: "string", optional: true },

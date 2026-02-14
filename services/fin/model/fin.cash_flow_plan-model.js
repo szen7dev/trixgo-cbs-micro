@@ -54,8 +54,8 @@ class Model extends BaseModel {
                     dataInsert.parent = parentID
                 }
 
-                if(!isNaN(status) && [1,2].includes(status)) {
-                    dataInsert.status = status;
+                if(status){
+                    dataInsert.status = Number(status);
                 }
 
                 if(note){
@@ -142,96 +142,45 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({
-        cashFlowID, contractID, name, sign, note, date,
-        value, realDate, realValue, priority,
-        outin, property, status, type, userID, members, admins, ctx
+        cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, userID, members, admins
     }){
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
-                let dataUpdate = { userUpdate: userID };
-
-                let info = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID).populate('parent')
-                if(info.parent && checkObjectIDs(info.parent._id)){
-                    console.log('========OK==============')
-                    dataUpdate.outin = info.parent.outin
-                    console.log(info.parent.outin)
-                }
-                // console.log(info)
-                console.log(dataUpdate)
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
-                if(!checkObjectIDs(cashFlowID))
-                    return resolve({ error: true, message: "Mã không hợp lệ", keyError: KEY_ERROR.PARAMS_INVALID })
-
-                if(checkObjectIDs(contractID)){
-                    const infoContract = await ctx.call(`${CF_DOMAIN_SERVICES.ITEM}.${CF_ACTIONS_ITEM.CONTRACT_GET_INFO_AND_GET_LIST}`, {
-                        contractID
-                    })
-
-                    // Trường hợp lập kế hoạch cho Hợp đồng của Dự án thuộc công ty khác
-                    if(infoContract && !infoContract.error){
-                        const { outin, real, field, chair, personInCharge, buyerInfo, sellerInfo, company, project } = infoContract.data;
-
-                        // dataUpdate.outin = outin // outin lấy theo infoParent
-                        dataUpdate.real = real
-                        dataUpdate.field = field
-                        dataUpdate.chair = chair
-                        dataUpdate.personInCharge = personInCharge
-                        dataUpdate.buyerInfo = buyerInfo
-                        dataUpdate.sellerInfo = sellerInfo
-                        dataUpdate.company = company
-                        dataUpdate.project = project
-                        dataUpdate.contract = contractID
-                    }
+                let dataUpdate = { 
+                    userUpdate: userID,
+                    modifyAt: Date.now(),
                 }
 
                 if(name) {
                     dataUpdate.name = name;
                 }
 
-                if(date){
-                    dataUpdate.date = date;
+                if(fromDate){
+                    dataUpdate.fromDate = fromDate;
                 }
 
-                if(sign){
-                    dataUpdate.sign = sign;
+                if(toDate){
+                    dataUpdate.toDate = toDate;
                 }
 
                 if(note){
                     dataUpdate.note = note;
                 }
 
-                if(!isNaN(priority) && [1,2].includes(priority)) {
-                    dataUpdate.priority = priority;
+                if(!isNaN(revenue) && Number(revenue) >= 0){
+                    dataUpdate.revenue = revenue;
                 }
 
-                if(!isNaN(value) && Number(value) >= 0){
-                    dataUpdate.value     = value;
+                if(!isNaN(expense) && Number(expense) >= 0){
+                    dataUpdate.expense = expense;
                 }
 
-                if(realDate){
-                    dataUpdate.realDate = realDate;
+                if(status){
+                    dataUpdate.status = Number(status);
                 }
 
-                if(!isNaN(realValue) && Number(realValue) >= 0){
-                    dataUpdate.realValue     = realValue;
-                }
-
-                outin       && (dataUpdate.outin    = outin);
-                property    && (dataUpdate.property = property);
-                status      && (dataUpdate.status   = status);
-                type        && (dataUpdate.type     = type);
-
-                if(status && status === 2) {
-                    dataUpdate.approver = userID;
-                    dataUpdate.timeApproved = new Date();
+                if(checkObjectIDs(subtypeID)){
+                    dataUpdate.subtype = subtypeID;
                 }
 
                 const infoCashFlow = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID).lean();
@@ -289,35 +238,8 @@ class Model extends BaseModel {
                 if(!infoAfterUpdate)
                     return resolve({ error: true, message: "Cập nhật thất bại", keyError: KEY_ERROR.UPDATE_FAILED, status: 403 })
 
-                // Cập nhật thuộc tính cho các phẩn tử con
-                if(outin || property || type) {
-                    const dataUpdateMany = {};
-                    outin       && (dataUpdateMany.outin    = outin);
-                    property    && (dataUpdateMany.property = property);
-                    type        && (dataUpdateMany.type     = type);
-
-                    await FIN__CASH_FLOW_PLAN_COLL.updateMany(
-                        { parent: ObjectID(cashFlowID)},
-                        { $set: dataUpdateMany }
-                     );
-                }
-
-                // Lấy thông tin của mẩu tin populate
-                infoAfterUpdate = await FIN__CASH_FLOW_PLAN_COLL.populate(infoAfterUpdate, {
-                    path: 'contract',
-                    select: '_id sellerInfo',
-                    populate: {
-                        path: 'sellerInfo',
-                        select: '_id name',
-                    }
-                })
-
-                // Cập nhật lại phần tử cha
                 if(checkObjectIDs(infoAfterUpdate.parent)){
-                    // Cập nhật giá trị của phần tử cha
                     await this.updateValue({cashFlowID: infoAfterUpdate.parent, userID})
-
-                    // Cập nhật thuộc tính theo phần tử cha
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate, status: 200 });
