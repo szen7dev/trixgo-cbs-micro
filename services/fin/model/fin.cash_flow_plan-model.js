@@ -6,11 +6,13 @@ const ObjectID                          = require('mongoose').Types.ObjectId;
 const { CF_DOMAIN_SERVICES } 		    = require('../../gateway/helper/domain.constant');
 const { CF_ACTIONS_ITEM } 		        = require('../../item/helper/item.actions-constant');
 const { CF_ACTIONS_AUTH } 		        = require('../../auth/helper/auth.actions-constant');
-
+const moment                            = require("moment");
 /**
  * import inter-coll, exter-coll
  */
 const FIN__CASH_FLOW_PLAN_COLL          = require('../database/fin.cash_flow_plan-coll');
+const FINANCIAL_GENERAL_JOURNAL_COLL    = require('../../accounting/database/accounting.financial_general_journal-coll')
+const ITEM__ACCOUNT_COLL                = require('../../item/database/item.account-coll')
 
 const { RANGE_BASE_PAGINATION_V2 } 	    = require('../../../tools/cursor_base/playground/index')
 const { KEY_ERROR }                     = require('../../../tools/keys/index')
@@ -31,17 +33,16 @@ class Model extends BaseModel {
     insert({ companyID, userID, fundaID, parentID, subtypeID, name, note, revenue, expense, fromDate, toDate, status }) {
         return new Promise(async (resolve) => {
             try {
-                if(!name)
-                    return resolve({ error: true, message: 'param_not_valid' })
+                if(!name || !checkObjectIDs(fundaID) || !fromDate ||!toDate)
+                    return resolve({ error: true, message: 'param_name|fundaID_not_valid' })
 
                 let dataInsert = { 
                     userCreate: userID, 
                     company: companyID, 
+                    funda: fundaID, 
                     name,
-                }
-
-                if(checkObjectIDs(fundaID)){
-                    dataInsert.funda = fundaID;
+                    fromDate,
+                    toDate,
                 }
 
                 if(checkObjectIDs(subtypeID)){
@@ -58,11 +59,6 @@ class Model extends BaseModel {
 
                 if(note){
                     dataInsert.note = note;
-                }
-
-                if(fromDate && toDate){
-                    dataInsert.fromDate = fromDate;
-                    dataInsert.toDate = toDate;
                 }
 
                 if(!isNaN(revenue) && Number(revenue) >= 0){
@@ -140,7 +136,7 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     update({
-        cashFlowID, subtypeID, name, note, revenue, expense, fromDate, toDate, status, userID
+        cashFlowID, fundaID, subtypeID, name, note, revenue, expense, fromDate, toDate, status, userID
     }){
         return new Promise(async (resolve) => {
             try {
@@ -177,6 +173,10 @@ class Model extends BaseModel {
                     dataUpdate.status = Number(status);
                 }
 
+                if(checkObjectIDs(fundaID)){
+                    dataUpdate.funda = fundaID;
+                }
+
                 if(checkObjectIDs(subtypeID)){
                     dataUpdate.subtype = subtypeID;
                 }
@@ -205,6 +205,216 @@ class Model extends BaseModel {
         const that = this
         return new Promise(async (resolve) => {
             try {
+                let infoCash = await FIN__CASH_FLOW_PLAN_COLL.findById(cashFlowID)
+                // console.log(infoCash)
+
+                let conditionProject = {}, conditionMatch = {}, conditionGroupDebit = {}, conditionGroupCredit = {}
+                let conditionDebitObj1 = {funda: ObjectID(infoCash.funda)}
+                let conditionDebitObj2 = {funda: ObjectID(infoCash.funda)}
+                let conditionCreditObj1 = {funda: ObjectID(infoCash.funda)}
+                let conditionCreditObj2 = {funda: ObjectID(infoCash.funda)}
+
+                let conditionPopulate = {
+                    path: '_id.subtype',
+                    select: '_id name',
+                    model: 'doctype'
+                }
+
+                let arrRevenueID = [], arrExpenseID = []
+
+                let listAcc1 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[57]" } }) // Doanh thu
+                .select('_id')
+                let listAcc2 = await ITEM__ACCOUNT_COLL.find({ company: companyID, "name": { $regex: "^[68]" } }) // Chi phí
+                .select('_id')
+                if(listAcc1){
+                    arrRevenueID = listAcc1.map(item=>ObjectID(item._id))
+                }
+                if(listAcc2){
+                    arrExpenseID = listAcc2.map(item=>ObjectID(item._id))
+                }
+
+                conditionDebitObj1.debit = {
+                    $in: arrRevenueID
+                }
+                conditionCreditObj1.credit = {
+                    $in: arrRevenueID
+                }
+
+                conditionDebitObj2.debit = {
+                    $in: arrExpenseID
+                }
+                conditionCreditObj2.credit = {
+                    $in: arrExpenseID
+                }
+                
+                conditionProject = {
+                    forward: '$forward',
+                    cancel: '$cancel',
+                    funda: 1,
+                    date: 1,
+                    amount: 1,
+                    customerDebit: 1,
+                    customerCredit: 1,
+                    subtype: 1,
+                    credit: 1,
+                    subtype: 1,
+                    parentSubtype: 1,
+                }
+
+                conditionMatch = {
+                    "forward": 0,
+                    "cancel": 0,
+                    "date": {
+                        $gte: moment(infoCash.fromDate).toDate(),
+                        $lte: moment(infoCash.toDate).toDate(),
+                    }
+                }
+
+                conditionGroupDebit = {
+                    _id: { subtype: "$subtype" },
+                    amount: { $sum: "$amount" }
+                }
+                conditionGroupCredit = {
+                    _id: { subtype: "$subtype" },
+                    amount: { $sum: "$amount" }
+                }
+
+                let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj1
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                },
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj1
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                },
+                            ],
+
+                        }
+                    }
+                ])
+
+                let listData2 = await FINANCIAL_GENERAL_JOURNAL_COLL.aggregate([
+                    {
+                        $facet: {
+                            _debit:[
+                                {
+                                    $match: conditionDebitObj2
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupDebit
+                                },
+                            ],
+                            _credit:[
+                                {
+                                    $match: conditionCreditObj2
+                                },
+                                {
+                                    $project: conditionProject
+                                },
+                                {
+                                    $match: conditionMatch
+                                },
+                                {
+                                    $group: conditionGroupCredit
+                                },
+                            ],
+
+                        }
+                    }
+                ])
+
+                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._debit, conditionPopulate)
+                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData1[0]._credit, conditionPopulate)
+                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._debit, conditionPopulate)
+                // await FINANCIAL_GENERAL_JOURNAL_COLL.populate(listData2[0]._credit, conditionPopulate)
+
+                // console.log(listData1[0]._debit)
+                // console.log(listData1[0]._credit)
+                // console.log(listData2[0]._debit)
+                // console.log(listData2[0]._credit)
+
+                let listData = await FIN__CASH_FLOW_PLAN_COLL.find({parent: cashFlowID}).select('name subtype parentSubtype')
+                // console.log(listData)
+
+                const revenueMap = {};
+                // 1. Cộng các khoản doanh thu từ _credit
+                listData1[0]?._credit?.forEach(item => {
+                    if (item._id?.subtype) {
+                        const subID = item._id.subtype.toString();
+                        revenueMap[subID] = (revenueMap[subID] || 0) + item.amount;
+                    }
+                });
+
+                // 2. TRỪ đi các khoản giảm trừ doanh thu từ _debit
+                listData1[0]?._debit?.forEach(item => {
+                    if (item._id?.subtype) {
+                        const subID = item._id.subtype.toString();
+                        // Trừ trực tiếp vào giá trị đã có trong Map
+                        revenueMap[subID] = (revenueMap[subID] || 0) - item.amount;
+                    }
+                });
+
+                const expenseMap = {};
+                // 1. Cộng các khoản chi phí phát sinh từ _debit
+                listData2[0]?._debit?.forEach(item => {
+                    if (item._id?.subtype) {
+                        const subID = item._id.subtype.toString();
+                        expenseMap[subID] = (expenseMap[subID] || 0) + item.amount;
+                    }
+                });
+
+                // 2. TRỪ đi các khoản giảm chi phí (bút toán ngược) từ _credit
+                listData2[0]?._credit?.forEach(item => {
+                    if (item._id?.subtype) {
+                        const subID = item._id.subtype.toString();
+                        // Trừ trực tiếp để có con số chi phí thuần
+                        expenseMap[subID] = (expenseMap[subID] || 0) - item.amount;
+                    }
+                })
+
+                for (const item of listData) {
+                    // QUAN TRỌNG: Phải dùng item.subtype để lấy giá trị từ Map
+                    const subID = item.subtype?.toString();
+                    
+                    let revenue = revenueMap[subID] || 0;
+                    let expense = expenseMap[subID] || 0;
+
+                    // console.log(`Checking Subtype: ${subID} -> Revenue: ${revenue}, Expense: ${expense}`);
+
+                    await FIN__CASH_FLOW_PLAN_COLL.findByIdAndUpdate(item._id, {
+                        actualRevenue: revenue, 
+                        actualExpense: expense,
+                    }, { new: true });
+                }
+
                 return resolve({ error: false, message: 'Cập nhật thành công' })
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
@@ -256,22 +466,13 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 9/4/2022
      */
-    getList({ userID, companyID, projectID, contractID, parentID, outin, type, property, priority,
-        keyword, limit = 50, lastestID, select, populates= {}, sortKey, isCompanyOther, companyOfUser }) {
+    getList({ userID, companyID, parentID,
+        keyword, limit = 50, lastestID, select, populates= {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                  let sortBy;
                  let conditionObj = {};
                  let keys = ['createAt__-1', '_id__-1'];
-
-                /**
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 
                 if(limit > 20){
                     limit = 20
@@ -298,45 +499,11 @@ class Model extends BaseModel {
                     keys = JSON.parse(sortKey);
                 }
 
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */
                 if(checkObjectIDs(parentID)){
                     conditionObj.parent = parentID
                 } else{
-                    if(!isNaN(outin)){
-                        conditionObj.outin = Number(outin)
-                    }
-                    if(!isNaN(type)){
-                        conditionObj.type = Number(type);
-                    }
-                    if(!isNaN(property)){
-                        conditionObj.property = Number(property);
-                    }
-                    if(!isNaN(priority)){
-                        conditionObj.priority = Number(priority);
-                    }
-
-                    conditionObj.members = { $in: [userID] }
+                    conditionObj.company = companyID
                     conditionObj.parent = { $exists: false }
-
-                    if(checkObjectIDs(contractID)){
-                        conditionObj.contract = contractID
-                    } else{
-                        if(checkObjectIDs(projectID)){
-                            conditionObj.project = projectID
-                        } else{
-                            conditionObj.company = companyID
-                        }
-                    }
-
-                    if(isCompanyOther === 'true') {
-                        conditionObj.company = {
-                            $nin: [companyOfUser]
-                        }
-                    }
                 }
 
                 if(keyword){

@@ -21,16 +21,6 @@ module.exports  = DATABASE_MIDDLEWARE("cash_flow_plan", {
         type: Schema.Types.ObjectId,
         ref : "cash_flow_plan"
     },
-    //_________Admin (được quyền xem, sửa)
-    admins : [{
-        type   : Schema.Types.ObjectId,
-        ref: 'user'
-    }],
-    //_________Thành viên (được quyền xem)
-    members : [{
-        type   : Schema.Types.ObjectId,
-        ref: 'user'
-    }],
     //_________Phân loại khác
     subtype: {
         type: Schema.Types.ObjectId,

@@ -18,6 +18,9 @@ module.exports = {
         auth: "required",
         params: {
             name                : { type: "string" },
+            fundaID             : { type: "string" },
+            fromDate            : { type: "string" },
+            toDate              : { type: "string" },
         },
         async handler(ctx) {
             try {
@@ -53,7 +56,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 const {
-                    cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status
+                    cashFlowID, fundaID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status
                 } = ctx.params;
 
                 // console.log(ctx.params)
@@ -61,7 +64,7 @@ module.exports = {
                 const { _id: userID } = ctx.meta.infoUser;
 
                 const resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.update({
-                    cashFlowID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, userID
+                    cashFlowID, fundaID, subtypeID, name, note, revenue, expense, actualRevenue, actualExpense, fromDate, toDate, status, userID
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -84,7 +87,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, cashFlowID } = ctx.params;
-                console.log(ctx.params)
+
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
@@ -148,8 +152,8 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let {
-                    cashFlowID, companyID, projectID, contractID, parentID, outin, type, property, priority,
-                    keyword, limit, lastestID, populates, select, sortKey, isCompanyOther
+                    cashFlowID, companyID, parentID,
+                    keyword, limit, lastestID, populates, select, sortKey
                 } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
@@ -165,8 +169,7 @@ module.exports = {
                     });
                 }else{
                     resultAfterCallHandler = await FIN__CASH_FLOW_PLAN_MODEL.getList({
-                        companyID, projectID, contractID, parentID, outin, type, property, priority, userID,
-                        keyword, limit, lastestID, select, populates, sortKey, isCompanyOther, companyOfUser: company._id
+                        userID, companyID, parentID, keyword, limit, lastestID, select, populates, sortKey
                     });
                 }
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -185,15 +188,6 @@ module.exports = {
         auth: "required",
         params: {
             companyID       : { type: "string", optional: true },
-            parentID        : { type: "string", optional: true },
-            projectID       : { type: "string", optional: true },
-            contractID      : { type: "string", optional: true },
-            year            : { type: "string", optional: true },
-            outin           : { type: "string", optional: true },
-            type            : { type: "string", optional: true },
-            property        : { type: "string", optional: true },
-            option          : { type: "string", optional: true },
-            real            : { type: "string", optional: true },
         },
         async handler(ctx) {
             try {
