@@ -18,9 +18,9 @@ module.exports = {
         auth: "required",
         params: {
             name                : { type: "string" },
-            fundaID             : { type: "string" },
-            fromDate            : { type: "string" },
-            toDate              : { type: "string" },
+            // fundaID             : { type: "string" },
+            // fromDate            : { type: "string" },
+            // toDate              : { type: "string" },
         },
         async handler(ctx) {
             try {
