@@ -92,12 +92,12 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                if(revenue && Number(revenue) >= 0){
-                    dataInsert.revenue = revenue;
+                if(Number(revenue) >= 0){
+                    dataInsert.revenue = Number(revenue);
                 }
 
-                if(expense && Number(expense) >= 0){
-                    dataInsert.expense = expense;
+                if(Number(expense) >= 0){
+                    dataInsert.expense = Number(expense);
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
@@ -201,12 +201,12 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                if(revenue && Number(revenue) >= 0){
-                    dataUpdate.revenue = revenue;
+                if(Number(revenue) >= 0){
+                    dataUpdate.revenue = Number(revenue);
                 }
 
-                if(expense && Number(expense) >= 0){
-                    dataUpdate.expense = expense;
+                if(Number(expense) >= 0){
+                    dataUpdate.expense = Number(expense);
                 }
 
                 if(status){
