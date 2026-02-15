@@ -552,15 +552,15 @@ class Model extends BaseModel {
      * Date: 9/4/2022
      */
     getList({ userID, companyID, parentID,
-        keyword, limit = 50, lastestID, select, populates= {}, sortKey }) {
+        keyword, limit = 100, lastestID, select, populates= {}, sortKey }) {
         return new Promise(async (resolve) => {
             try {
                  let sortBy;
                  let conditionObj = {};
                  let keys = ['createAt__-1', '_id__-1'];
 
-                if(limit > 20){
-                    limit = 20
+                if(limit > 100){
+                    limit = 100
                 } else{
                     limit = +limit;
                 }
