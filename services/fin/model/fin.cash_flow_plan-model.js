@@ -92,11 +92,11 @@ class Model extends BaseModel {
                     dataInsert.note = note;
                 }
 
-                if(!isNaN(revenue) && Number(revenue) >= 0){
+                if(revenue && Number(revenue) >= 0){
                     dataInsert.revenue = revenue;
                 }
 
-                if(!isNaN(expense) && Number(expense) >= 0){
+                if(expense && Number(expense) >= 0){
                     dataInsert.expense = expense;
                 }
 
@@ -201,11 +201,11 @@ class Model extends BaseModel {
                     dataUpdate.note = note;
                 }
 
-                if(!isNaN(revenue) && Number(revenue) >= 0){
+                if(revenue && Number(revenue) >= 0){
                     dataUpdate.revenue = revenue;
                 }
 
-                if(!isNaN(expense) && Number(expense) >= 0){
+                if(expense && Number(expense) >= 0){
                     dataUpdate.expense = expense;
                 }
 
