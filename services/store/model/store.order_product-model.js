@@ -498,8 +498,8 @@ class Model extends BaseModel {
     getList({  option, status, outin, type, userID, companyID, fundaID, projectID, packageID, toPackageID, warehouseID, accountID, contraID, customerID, goodsID, parentGoodsID, assetsID, workID, subtypeID, orderID, userCreateID, fromDate, toDate, keyword, limit = 50, lastestID, select, populates, sortKey }) {
         return new Promise(async (resolve) => {
             try {
-                if(Number(limit) >= 500){
-                    limit = 500;
+                if(Number(limit) >= 100){
+                    limit = 100;
                 } else{
                     limit = +Number(limit);
                 }
