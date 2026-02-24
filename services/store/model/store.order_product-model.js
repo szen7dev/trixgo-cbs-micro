@@ -24,6 +24,7 @@ const ITEM__ACCOUNT_COLL            	= require('../../item/database/item.account
 const ITEM__DOCTYPE_COLL            	= require('../../item/database/item.doctype-coll')
 const BUDGET_WORK_COLL                  = require('../../budget/database/budget.work-coll')
 const ITEM__CONFIG_COLL                 = require("../../item/database/item.config-coll");
+const FINANCIAL_GENERAL_JOURNAL_COLL    = require('../../accounting/database/accounting.financial_general_journal-coll')
 
 /**
  * import inter-model, exter-model
@@ -389,7 +390,7 @@ class Model extends BaseModel {
                     dataUpdate.weight = weight
                 }
 
-                if (date && !isNaN(date)) {
+                if (date && date != "") {
                     dataUpdate.date = date
                 }
 
@@ -2306,7 +2307,128 @@ class Model extends BaseModel {
     exportExcelByFilter({ option, userID, companyID, filterParams, ctx }) {
         return new Promise(async resolve => {
             try {
-                if (Number(option) === 1) {
+                // Tải báo cáo Ngày biến động Quỹ và Kho
+                if(!option){
+                    // 1. Đưa fromDate về 00h:00m:00s:000ms
+                    const start = new Date();
+                    start.setHours(0, 0, 0, 0);
+
+                    // 2. Đưa toDate về 23h:59m:59s:999ms
+                    const end = new Date();
+                    end.setHours(23, 59, 59, 999);
+
+                    let listData = await STORE_ORDER_PRODUCT_COLL.find({ 
+                        company: companyID,
+                        status: 5,
+                        type: {$in: [7,8]},
+                        date: {
+                            $gte: start,
+                            $lte: end,
+                        }
+                    })
+                    .select('name outin amount date account customer note')
+                    .populate({
+                        path: 'account customer subtype',
+                        select: 'name phone description'
+                    })
+                    .sort({date: 1})
+                    // .select('name date')
+
+                    let listData1 = await FINANCIAL_GENERAL_JOURNAL_COLL.find({ 
+                        company: companyID,
+                        forward: 0,
+                        cancel: 0,
+                        type: {$in: [4,5]},
+                        date: {
+                            $gte: start,
+                            $lte: end,
+                        }
+                    })
+                    .select('name quantity unitprice amount date note voucher debit credit')
+                    .populate({
+                        path: 'voucher goods debit credit',
+                        select: 'name phone customer unit',
+                        populate: {
+                            path: 'customer',   
+                            select: 'name phone', 
+                        }
+                    })
+                    .sort({date: 1})
+
+                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fin_daily_report.xlsx')))
+                    .then(async workbook => {
+
+                        var i = 3
+                        if(listData && listData.length){
+                            listData?.forEach((item, index) => {
+                                workbook.sheet("SoQuy").row(i).cell(1).value(item.date);
+                                workbook.sheet("SoQuy").row(i).cell(2).value(`${item?.account?.name}-${item?.account?.description}`);
+                                workbook.sheet("SoQuy").row(i).cell(3).value(item?.name);
+                                workbook.sheet("SoQuy").row(i).cell(4).value(`${item?.customer?.name}-${item?.customer?.phone}`);
+
+                                if(item.outin == 2){
+                                    workbook.sheet("SoQuy").row(i).cell(5).value(Number(item?.amount));
+                                }else{
+                                    workbook.sheet("SoQuy").row(i).cell(6).value(Number(item?.amount));
+                                }
+
+                                workbook.sheet("SoQuy").row(i).cell(7).value(item?.subtype?.name);
+                                workbook.sheet("SoQuy").row(i).cell(8).value(item?.note);
+
+                                i++
+                            })
+                        }      
+
+                        var i = 4
+                        if(listData1 && listData1.length){
+                            listData1?.forEach((item, index) => {
+                                const accountDebitCode = item?.debit?.name;
+                                const accountCreditCode = item?.credit?.name;
+
+                                const firstDebitThreeChars = accountDebitCode.substring(0, 3); // Lấy từ vị trí 0 đến 3 (không bao gồm 3)
+                                const firstCreditThreeChars = accountCreditCode.substring(0, 3); // Lấy từ vị trí 0 đến 3 (không bao gồm 3)
+
+                                if(["152", "156"].includes(firstDebitThreeChars) || ["152", "156"].includes(firstCreditThreeChars)){
+
+                                    workbook.sheet("DonHang").row(i).cell(1).value(item.date);
+                                    workbook.sheet("DonHang").row(i).cell(2).value(`${item?.goods?.name}`);
+                                    workbook.sheet("DonHang").row(i).cell(3).value(`${item?.goods?.unit}`);
+                                    workbook.sheet("DonHang").row(i).cell(4).value(item?.voucher?.customer?.name);
+
+                                    if (["152", "156"].includes(firstDebitThreeChars)) {
+                                        workbook.sheet("DonHang").row(i).cell(5).value(Number(item?.quantity));
+                                        workbook.sheet("DonHang").row(i).cell(6).value(Number(item?.unitprice));
+                                        workbook.sheet("DonHang").row(i).cell(7).value(Number(item?.amount));
+                                    }
+
+                                    if (["152", "156"].includes(firstCreditThreeChars)) {
+                                        workbook.sheet("DonHang").row(i).cell(8).value(Number(item?.quantity));
+                                        workbook.sheet("DonHang").row(i).cell(9).value(Number(item?.unitprice));
+                                        workbook.sheet("DonHang").row(i).cell(10).value(Number(item?.amount));
+                                    }
+
+                                    workbook.sheet("DonHang").row(i).cell(11).value(item?.note);
+
+                                    i++
+                                }
+                            })
+                        }      
+
+                        const now = new Date();
+                        const filePath = '../../../files/temporary_uploads/';
+                        const fileName = `BaoCaoNgay_${moment(new Date()).format('DD.MM.YYYY')}_${now.getTime()}.xlsx`;
+                        const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                        await workbook.toFileAsync(pathWriteFile);
+                        const result = await uploadFileS3(pathWriteFile, fileName);
+
+                        fs.unlinkSync(pathWriteFile);
+                        return resolve({ error: false, data: result?.Location, status: 200 });
+                    });
+
+                }
+
+                else if (Number(option) === 1) {
                     const { data, error } = await this.getListByProperty({
                         ...filterParams,
                         userID,
@@ -2378,7 +2500,7 @@ class Model extends BaseModel {
                     });
                 }
 
-                // Sổ quỹ
+                // Sổ quỹ cả năm
                 else if (Number(option) === 3) {
                     let year = new Date().getFullYear()
                     let conditionObj = { company: companyID, status: 5 }
