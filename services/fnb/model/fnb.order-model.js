@@ -1795,13 +1795,11 @@ class Model extends BaseModel {
         let sortBy;
         let keys = ["createAt__-1", "_id__-1"];
 
-        // console.log({userID})
-
         let listFundaIsMember = await ITEM__FUNDA_COLL.find({
           members: { $in: [userID] },
         }).select('_id')
-        // console.log(listFundaIsMember)
 
+        // Theo Đơn vị cơ sở mặc định
         let fundasIDIsMember = listFundaIsMember.map((item) =>
           ObjectID(item._id),
         );
@@ -1831,41 +1829,24 @@ class Model extends BaseModel {
                   conditionObj.funda = { $in: arrFun };
                 }
               } 
-              
-              // else {
-              //   let listFundaIsMember = await ITEM__FUNDA_COLL.find({
-              //     members: { $in: [userID] },
-              //   });
-              //   let fundasIDIsMember = listFundaIsMember.map((item) =>
-              //     ObjectID(item._id),
-              //   );
-              //   if (fundasIDIsMember.length) {
-              //     conditionObj.funda = { $in: fundasIDIsMember };
-              //   } else {
-              //     conditionObj.funda = { $in: [] };
-              //   }
-              // }
-            } else {
-              // Tìm theo Khách hàng
+            }else {
+              if (voucherID && checkObjectIDs(voucherID)) {
+                conditionObj.voucher = ObjectID(voucherID);
+              }
+
+              // Theo Khách hàng
               if (customerID && checkObjectIDs(customerID)) {
-                limit = 5;
                 conditionObj.customer = ObjectID(customerID);
-              } else {
-                if (voucherID && checkObjectIDs(voucherID)) {
-                  limit = 5;
-                  conditionObj.voucher = ObjectID(voucherID);
-                }
+              }
 
-                // Tìm theo Sản phẩm
-                if (productID && checkObjectIDs(productID)) {
-                  let listOP = await FNB_ORDER_PRODUCT_COLL.find({
-                    product: ObjectID(productID),
-                    company: ObjectID(companyID),
-                  }).select("_id order product");
+              // Tìm theo Sản phẩm
+              if (productID && checkObjectIDs(productID)) {
+                let listOP = await FNB_ORDER_PRODUCT_COLL.find({
+                  product: ObjectID(productID),
+                  company: ObjectID(companyID),
+                }).select("_id order product");
 
-                  conditionObj._id = { $in: listOP.map((item) => item.order) };
-                  limit = 5;
-                }
+                conditionObj._id = { $in: listOP.map((item) => item.order) };
               }
             }
 
