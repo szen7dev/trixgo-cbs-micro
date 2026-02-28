@@ -77,9 +77,9 @@ class Model extends BaseModel {
         return new Promise(async resolve => {
             try {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: authorID })
-                if(!checkPer || checkPer.error)
-                    return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                // let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: authorID })
+                // if(!checkPer || checkPer.error)
+                //     return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 /**
                  * BA-Quy trình khởi tạo và quản lý khách hàng
@@ -461,9 +461,9 @@ class Model extends BaseModel {
         return new Promise(async (resolve) => {
             try {
                 // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: authorID })
-                if(!checkPer || checkPer.error)
-                    return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
+                // let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID: authorID })
+                // if(!checkPer || checkPer.error)
+                //     return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
                 //___________Xác thực số điện thoại
                 if (phone) {
@@ -1044,10 +1044,10 @@ class Model extends BaseModel {
     getInfo({ userID, contactID, linkUserID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
-                if(!checkPer || checkPer.error)
-                    return resolve({ error: false, data: {}, status: 200 })
+                // // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                // let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                // if(!checkPer || checkPer.error)
+                //     return resolve({ error: false, data: {}, status: 200 })
 
                 if (contactID) {
                     if (!checkObjectIDs(contactID))
@@ -1114,10 +1114,13 @@ class Model extends BaseModel {
     getList({ option, companyID, userID, genders, statuss, departmentsID, supportsID, voucherID, parentID, type, fromDate, toDate, userCreateID, isFamily, keyword, limit = 5, lastestID, select, populates }) {
         return new Promise(async (resolve) => {
             try {
-                // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
-                if(!checkPer || checkPer.error)
-                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
+                // // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                // let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                // console.log(checkPer)
+                // if(!checkPer || checkPer.error)
+                //     return resolve({ error: false, data: {listRecords: []}, status: 200 })
+
+                // console.log('========================')
 
                 if (Number(limit) > 10) {
                     limit = 10;
@@ -1203,7 +1206,7 @@ class Model extends BaseModel {
 
                     conditionObj.namecv = regSearch
                 }
-                // console.log(conditionObj)
+                console.log(conditionObj)
 
                 let conditionObjOrg = {
                     ...conditionObj
@@ -1270,17 +1273,16 @@ class Model extends BaseModel {
         keyword, limit = 5, lastestID, select, populates = {}, isParent, type, genders }) {
         return new Promise(async (resolve) => {
             try {
-                // Không cho show dữ liệu với các phân vùng chưa thanh toán
-                let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
-                if(!checkPer || checkPer.error)
-                    return resolve({ error: false, data: {listRecords: []}, status: 200 })
+                // // Không cho show dữ liệu với các phân vùng chưa thanh toán
+                // let checkPer = await AUTH__APP_USER.checkPermissionsAccessApp({appID: appIDCheck, userID })
+                // if(!checkPer || checkPer.error)
+                //     return resolve({ error: false, data: {listRecords: []}, status: 200 })
 
                 if (limit > 5) {
                     limit = 5;
+                }else {
+                    limit = +limit;
                 }
-                //  else {
-                //     limit = +limit;
-                // }
 
                 let conditionObj = {};
                 let sortBy;
