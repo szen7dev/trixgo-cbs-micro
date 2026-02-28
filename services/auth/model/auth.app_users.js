@@ -5,9 +5,10 @@ const { KEY_ERROR }                     = require('../../../tools/keys/index');
 /**
  * import inter-coll, exter-coll
  */
+const { RANGE_BASE_PAGINATION_V2 } 	   = require('../../../tools/cursor_base/playground/index');
 const AUTH__APP_USER_COLL              = require('../database/permission/auth.app_user-coll');
 const AUTH__APP_COMPANY_COLL           = require('../database/permission/auth.app_company-coll');
-const { RANGE_BASE_PAGINATION_V2 } 	   = require('../../../tools/cursor_base/playground/index');
+const AUTH__USER_COLL                   = require('../database/auth.user-coll');
 
 /**
  * import inter-model, exter-model
@@ -99,7 +100,7 @@ class Model extends BaseModel {
         })
     }
 
-    getList({ appID, companyID, level,
+    getList({ appID, companyID, keyword, level,
         limit = 50, lastestID, select, populates = {} }) { 
         return new Promise(async (resolve) => {
             try {
@@ -127,6 +128,14 @@ class Model extends BaseModel {
                     conditionObj.level = +level;
                 }
 
+                if (keyword) {
+                    keyword = keyword.split(" ");
+                    keyword = ".*" + keyword.join(".*") + ".*";
+                    const regSearch = new RegExp(keyword, "i");
+
+                    let listUser = await AUTH__USER_COLL.find({fullname: regSearch}).select('_id')
+                    conditionObj.user = {$in: listUser.map(item=>item._id)}
+                }
 
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
