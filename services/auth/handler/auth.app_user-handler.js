@@ -77,10 +77,12 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { _id: userID }          = ctx.meta.infoUser;
-                let { appID, companyID, limit, lastestID, select, populates } = ctx.params;
+                // console.log(ctx.params)
 
-                let resultAfterCallHandler = await AUTH__APP_USER.getList({  appID, companyID, limit, lastestID, select, populates  });
+                let { _id: userID }          = ctx.meta.infoUser;
+                let { appID, companyID, keyword, limit, lastestID, select, populates } = ctx.params;
+
+                let resultAfterCallHandler = await AUTH__APP_USER.getList({ appID, companyID, keyword, limit, lastestID, select, populates });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
                 return { error:  true, message: error.message };
@@ -99,6 +101,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+
+                // console.log(ctx.params)
+
                 let { _id: userID }          = ctx.meta.infoUser;
                 let { limit, lastestID, select, populates } = ctx.params;
 
