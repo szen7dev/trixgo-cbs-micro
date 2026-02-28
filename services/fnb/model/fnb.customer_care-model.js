@@ -44,7 +44,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     insert({ userID, companyID, fundaID, customerID, goodsID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files }) {
-        // console.log({ userID, companyID, customerID, goodsID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, files })
         return new Promise(async resolve => {
             try {
                 if(!name || name == "" || !checkObjectIDs(customerID) || !checkObjectIDs(userID)) 
@@ -225,7 +224,6 @@ class Model extends BaseModel {
      * Code: 16/6/2024
      */
     updateRating({ userID, rating, note, arrMistakeID, orderID, orderGoodsID }) {
-        // console.log({ userID, rating, note, arrMistakeID, orderID })
         return new Promise(async resolve => {
             try {
                 if(orderID && checkObjectIDs(orderID)){
@@ -302,7 +300,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     update({ companyID, userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID }) {
-        // console.log({ userID, customerCareID, customerID, name, orderID, mistakeID, journeyID, type, description, note, rating, amount, dataSourceID, status, imagesID })
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(customerCareID))
@@ -530,7 +527,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getList({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit = 20, lastestID, select, populates, userID }) {
-        console.log({ option, companyID, fundasID, businessID, journeyID, customerID, userCreateID, managerID, fromDate, toDate, status, type, channelID, salesChannel, keyword, limit, lastestID, select, populates, userID })
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 20){
@@ -698,7 +694,6 @@ class Model extends BaseModel {
      * Code: 24/11/2022
      */
     getListByProperty({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID , year, month, fromDate, toDate, status, userID }) { 
-        // console.log({ option, companyID, businessID, mistakeID, executorID, customerID, optionGroup, optionTime, fundasID, year, month, fromDate, toDate, status, userID })
         return new Promise(async (resolve) => {
             try {
                 let yearFilter, monthFilter
@@ -1054,8 +1049,7 @@ class Model extends BaseModel {
      * Code: HiepNH
      * Date: 8/2/2024
      */
-    importFromExcel({ option, companyID, dataImport, userID, ctx }) {
-        // console.log({ option, companyID, dataImport, userID })
+    importFromExcel({ option, companyID, dataImport, userID }) {
         return new Promise(async resolve => {
             try {
                 const dataImportJSON = JSON.parse(dataImport);
@@ -1103,7 +1097,6 @@ class Model extends BaseModel {
      * Date: 15/2/2024
      */
     exportExcel({ option, companyID, userID, fundaID, fromDate, toDate, month, year, status, type, salesChannel, managerID }) {
-        // console.log({ option, companyID, userID, fundaID, fromDate, toDate, month, year })
         return new Promise(async resolve => {
             try {
                 let yearFilter

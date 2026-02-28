@@ -44,9 +44,8 @@ module.exports = {
         },
         async handler(ctx) {
             try {
-                // console.log({ FNB_ORDER_INSERT_PARAMS: ctx.params });
                 await this.validateEntity(ctx.params);
-                let { type, voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID } = ctx.params;
+                let { voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID } = ctx.params;
 
                 // console.log(ctx.params)
 
@@ -55,21 +54,11 @@ module.exports = {
                     userID = infoUser._id;
                 }
 
-                if (!type) {
-                    // console.log('111111111111111111111')
-                    let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                        voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
-                    })
+                let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
+                    voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
+                })
 
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-                } else {
-                    // console.log('2222222222222222222222')
-                    let resultAfterCallHandler = await FNB_ORDER_MODEL.insert2({
-                        voucherID, fundaID, parentID, customerID, businessID, channelID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
-                    })
-
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-                }
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
                 return { error: true, message: error.message };
             }
@@ -86,7 +75,6 @@ module.exports = {
             status: { type: "number", optional: true },
             paymentMethod: { type: "number", optional: true },
             salesChannel: { type: "number", optional: true },
-            // starRating          : { type: "number", optional: true },
             complaint: { type: "number", optional: true },
             filesID: { type: "array", optional: true },
         },
@@ -205,7 +193,7 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { type, option, orderID, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID } = ctx.params;
 
-                const { _id: userID, email, fullname, company } = ctx.meta.infoUser;
+                const { _id: userID, company } = ctx.meta.infoUser;
 
                 // console.log(ctx.params)
 
@@ -216,7 +204,7 @@ module.exports = {
                     })
                 } else {
                     resultAfterCallHandler = await FNB_ORDER_MODEL.getList({
-                        type, option, companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID, ctx
+                        type, option, companyID: company._id, fundasID, shiftsID, assigneesID, shiftTypes, salesChannels, services, statuss, fromDate, toDate, isMistake, isDiscount, isSalesoff, isCredit, isOffer, isNonResident, isCustomerType, isPaymentMethod, keyword, limit, lastestID, select, populates, sortKey, userID, customerID, voucherID, productID, isComplaint, isCampaignType, starRating, managerID
                     })
                 }
 
@@ -337,7 +325,7 @@ module.exports = {
                 let { option, year, month, fromDate, toDate, companyID, filterParams, queryFnb } = ctx.params;
                
                 // console.log('11111111111111111')
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 if (!companyID) {
                     companyID = company._id;
