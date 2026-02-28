@@ -31,7 +31,7 @@ const { CF_ACTIONS_ZALO } = require("../../zalo_oa/helper/zalo.actions");
 const ITEM__FUNDA_COLL = require("../../item/database/item.funda-coll");
 const ITEM__CONTACT_COLL = require("../../item/database/item.contact-coll");
 const ITEM__CONFIG_COLL = require("../../item/database/item.config-coll");
-const ITEM__DOCTYPE_COLL = require("../../item/database/item.doctype-coll");
+// const ITEM__DOCTYPE_COLL = require("../../item/database/item.doctype-coll");
 const FNB_ORDER_COLL = require("../database/fnb.order-coll");
 const FNB_ORDER_PRODUCT_COLL = require("../database/fnb.order_product-coll");
 const FNB_SHIFT_COLL = require("../database/fnb.shift-coll");
@@ -42,8 +42,8 @@ const FIN__CASH_PAYMENT_COLL = require("../../fin/database/fin.cash_payment-coll
 /**
  * import inter-model, exter-model
  */
-// const FNB_ORDER_PRODUCT_MODEL = require("./fnb.order_product-model").MODEL;
-// const FNB_ORDER_VOUCHER_MODEL = require("./fnb.voucher-model").MODEL;
+const FNB_ORDER_PRODUCT_MODEL = require("./fnb.order_product-model").MODEL;
+const FNB_ORDER_VOUCHER_MODEL = require("./fnb.voucher-model").MODEL;
 // const FNB_NETWORK_COM_MODEL = require("./fnb.network_com-model").MODEL;
 // const FNB_ORDER_GOODS_MODEL = require("./fnb.order_goods-model").MODEL;
 
