@@ -1809,130 +1809,118 @@ class Model extends BaseModel {
           conditionObj.funda = { $in: [] };
         }
 
-        if(option == 1){
-            if (
-                !checkObjectIDs(customerID) &&
-                !checkObjectIDs(voucherID) &&
-                !checkObjectIDs(productID)
-              ) {
+        // Gom nhóm theo đơn vị cơ sở
+        const validation = validateParamsObjectID({
+          fundasID: { value: fundasID, isRequire: false },
+        });
+        if (validation.error) return resolve(validation);
 
-              const validation = validateParamsObjectID({
-                fundasID: { value: fundasID, isRequire: false },
-              });
-              if (validation.error) return resolve(validation);
+        if (fundasID && fundasID.length) {
+          let arrFun = fundasID.map((item) => ObjectID(item));
 
-              // Gom nhóm theo đơn vị cơ sở
-              if (fundasID && fundasID.length) {
-                let arrFun = fundasID.map((item) => ObjectID(item));
+          if (arrFun.length) {
+            conditionObj.funda = { $in: arrFun };
+          }
+        } 
 
-                if (arrFun.length) {
-                  conditionObj.funda = { $in: arrFun };
-                }
-              } 
-            }else {
-              if (voucherID && checkObjectIDs(voucherID)) {
-                conditionObj.voucher = ObjectID(voucherID);
-              }
-
-              // Theo Khách hàng
-              if (customerID && checkObjectIDs(customerID)) {
-                conditionObj.customer = ObjectID(customerID);
-              }
-
-              // Tìm theo Sản phẩm
-              if (productID && checkObjectIDs(productID)) {
-                let listOP = await FNB_ORDER_PRODUCT_COLL.find({
-                  product: ObjectID(productID),
-                  company: ObjectID(companyID),
-                }).select("_id order product");
-
-                conditionObj._id = { $in: listOP.map((item) => item.order) };
-              }
-            }
-
-            // Đơn hàng theo Affiliate
-            if (type && type == 1) {
-              conditionObj.affiliate = { $exists: true, $ne: null };
-            }
-
-            shiftsID && shiftsID.length && (conditionObj.shift = { $in: shiftsID });
-            assigneesID &&
-              assigneesID.length &&
-              (conditionObj.assignee = { $in: assigneesID });
-            shiftTypes &&
-              shiftTypes.length &&
-              (conditionObj.shiftType = { $in: shiftTypes });
-            salesChannels &&
-              salesChannels.length &&
-              (conditionObj.salesChannel = { $in: salesChannels });
-            services &&
-              services.length &&
-              (conditionObj.service = { $in: services });
-            statuss && statuss.length && (conditionObj.status = { $in: statuss });
-
-            // Phân loại khác
-            if (isMistake && isMistake == 1) {
-              conditionObj.numberOfMistakes = { $gt: 0 };
-            }
-
-            if (isNonResident && isNonResident == 1) {
-              conditionObj.nonResident = 2;
-            }
-
-            if (isDiscount && isDiscount == 1) {
-              conditionObj.discount = { $gt: 0 };
-            }
-
-            if (isSalesoff && isSalesoff == 1) {
-              conditionObj.salesoff = { $gt: 0 };
-            }
-
-            if (isCredit && isCredit == 1) {
-              conditionObj.credit = { $gt: 0 };
-            }
-
-            if (isOffer && isOffer == 1) {
-              conditionObj.offer = { $gt: 0 };
-            }
-
-            if (isPaymentMethod && isPaymentMethod == 1) {
-              conditionObj.paymentMethod = 1;
-            }
-            if (isPaymentMethod && isPaymentMethod == 2) {
-              conditionObj.paymentMethod = 2;
-            }
-
-            if (isCustomerType && isCustomerType == 1) {
-              conditionObj.customerType = 1;
-            }
-            if (isCustomerType && isCustomerType == 2) {
-              conditionObj.customerType = 2;
-            }
-
-            if (isComplaint && isComplaint == 1) {
-              conditionObj.complaint = { $gt: 0 };
-            }
-
-            if (isCampaignType && isCampaignType == 1) {
-              conditionObj.campaignType = { $exists: true, $ne: null };
-            }
-
-            if (starRating && !isNaN(starRating)) {
-              conditionObj.starRating = Number(starRating);
-            }
-
-            if (managerID && checkObjectIDs(managerID)) {
-              conditionObj.manager = managerID;
-            }
-
-            // Phân loại theo thời khoảng
-            if (isValidDate(fromDate) && isValidDate(toDate)) {
-              conditionObj.createAt = {
-                $gte: new Date(fromDate),
-                $lte: new Date(toDate),
-              };
-            }
+        // Theo Khách hàng
+        if (customerID && checkObjectIDs(customerID)) {
+          conditionObj.customer = ObjectID(customerID);
         }
+
+        // // Tìm theo Sản phẩm
+        // if (productID && checkObjectIDs(productID)) {
+        //   let listOP = await FNB_ORDER_PRODUCT_COLL.find({
+        //     product: ObjectID(productID),
+        //     company: ObjectID(companyID),
+        //   }).select("_id order product");
+
+        //   conditionObj._id = { $in: listOP.map((item) => item.order) };
+        // }
+
+        // if (voucherID && checkObjectIDs(voucherID)) {
+        //     conditionObj.voucher = ObjectID(voucherID);
+        // }
+
+      // // Đơn hàng theo Affiliate
+      // if (type && type == 1) {
+      //   conditionObj.affiliate = { $exists: true, $ne: null };
+      // }
+
+      // shiftsID && shiftsID.length && (conditionObj.shift = { $in: shiftsID });
+      // assigneesID &&
+      //   assigneesID.length &&
+      //   (conditionObj.assignee = { $in: assigneesID });
+      shiftTypes &&
+        shiftTypes.length &&
+        (conditionObj.shiftType = { $in: shiftTypes });
+      salesChannels &&
+        salesChannels.length &&
+        (conditionObj.salesChannel = { $in: salesChannels });
+      // services &&
+      //   services.length &&
+      //   (conditionObj.service = { $in: services });
+      statuss && statuss.length && (conditionObj.status = { $in: statuss });
+
+      // // Phân loại khác
+      // if (isMistake && isMistake == 1) {
+      //   conditionObj.numberOfMistakes = { $gt: 0 };
+      // }
+
+      if (isDiscount && isDiscount == 1) {
+        conditionObj.discount = { $gt: 0 };
+      }
+
+      if (isSalesoff && isSalesoff == 1) {
+        conditionObj.salesoff = { $gt: 0 };
+      }
+
+      if (isCredit && isCredit == 1) {
+        conditionObj.credit = { $gt: 0 };
+      }
+
+      if (isOffer && isOffer == 1) {
+        conditionObj.offer = { $gt: 0 };
+      }
+
+      // if (isPaymentMethod && isPaymentMethod == 1) {
+      //   conditionObj.paymentMethod = 1;
+      // }
+      // if (isPaymentMethod && isPaymentMethod == 2) {
+      //   conditionObj.paymentMethod = 2;
+      // }
+
+      if (isNonResident && isNonResident == 1) {
+        conditionObj.nonResident = 2;
+      }
+
+      if (isCustomerType) {
+        conditionObj.customerType = isCustomerType
+      }
+
+      // if (isComplaint && isComplaint == 1) {
+      //   conditionObj.complaint = { $gt: 0 };
+      // }
+
+      // if (isCampaignType && isCampaignType == 1) {
+      //   conditionObj.campaignType = { $exists: true, $ne: null };
+      // }
+
+      // if (starRating && !isNaN(starRating)) {
+      //   conditionObj.starRating = Number(starRating);
+      // }
+
+      // if (managerID && checkObjectIDs(managerID)) {
+      //   conditionObj.manager = managerID;
+      // }
+
+      // Phân loại theo thời khoảng
+      if (isValidDate(fromDate) && isValidDate(toDate)) {
+        conditionObj.createAt = {
+          $gte: new Date(fromDate),
+          $lte: new Date(toDate),
+        };
+      }
 
         if (populates && typeof populates === "string") {
           if (!IsJsonString(populates))
