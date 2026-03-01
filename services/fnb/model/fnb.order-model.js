@@ -1827,100 +1827,46 @@ class Model extends BaseModel {
         if (customerID && checkObjectIDs(customerID)) {
           conditionObj.customer = ObjectID(customerID);
         }
+    
+        shiftTypes &&
+          shiftTypes.length &&
+          (conditionObj.shiftType = { $in: shiftTypes });
+        salesChannels &&
+          salesChannels.length &&
+          (conditionObj.salesChannel = { $in: salesChannels });
+        statuss && statuss.length && (conditionObj.status = { $in: statuss });
 
-        // // Tìm theo Sản phẩm
-        // if (productID && checkObjectIDs(productID)) {
-        //   let listOP = await FNB_ORDER_PRODUCT_COLL.find({
-        //     product: ObjectID(productID),
-        //     company: ObjectID(companyID),
-        //   }).select("_id order product");
+        if (isDiscount && isDiscount == 1) {
+          conditionObj.discount = { $gt: 0 };
+        }
 
-        //   conditionObj._id = { $in: listOP.map((item) => item.order) };
-        // }
+        if (isSalesoff && isSalesoff == 1) {
+          conditionObj.salesoff = { $gt: 0 };
+        }
 
-        // if (voucherID && checkObjectIDs(voucherID)) {
-        //     conditionObj.voucher = ObjectID(voucherID);
-        // }
+        if (isCredit && isCredit == 1) {
+          conditionObj.credit = { $gt: 0 };
+        }
 
-      // // Đơn hàng theo Affiliate
-      // if (type && type == 1) {
-      //   conditionObj.affiliate = { $exists: true, $ne: null };
-      // }
+        if (isOffer && isOffer == 1) {
+          conditionObj.offer = { $gt: 0 };
+        }
 
-      // shiftsID && shiftsID.length && (conditionObj.shift = { $in: shiftsID });
-      // assigneesID &&
-      //   assigneesID.length &&
-      //   (conditionObj.assignee = { $in: assigneesID });
-      shiftTypes &&
-        shiftTypes.length &&
-        (conditionObj.shiftType = { $in: shiftTypes });
-      salesChannels &&
-        salesChannels.length &&
-        (conditionObj.salesChannel = { $in: salesChannels });
-      // services &&
-      //   services.length &&
-      //   (conditionObj.service = { $in: services });
-      statuss && statuss.length && (conditionObj.status = { $in: statuss });
+        if (isNonResident && isNonResident == 1) {
+          conditionObj.nonResident = 2;
+        }
 
-      // // Phân loại khác
-      // if (isMistake && isMistake == 1) {
-      //   conditionObj.numberOfMistakes = { $gt: 0 };
-      // }
+        if (isCustomerType && isCustomerType >= 1) {
+          conditionObj.customerType = isCustomerType
+        }
 
-      if (isDiscount && isDiscount == 1) {
-        conditionObj.discount = { $gt: 0 };
-      }
-
-      if (isSalesoff && isSalesoff == 1) {
-        conditionObj.salesoff = { $gt: 0 };
-      }
-
-      if (isCredit && isCredit == 1) {
-        conditionObj.credit = { $gt: 0 };
-      }
-
-      if (isOffer && isOffer == 1) {
-        conditionObj.offer = { $gt: 0 };
-      }
-
-      // if (isPaymentMethod && isPaymentMethod == 1) {
-      //   conditionObj.paymentMethod = 1;
-      // }
-      // if (isPaymentMethod && isPaymentMethod == 2) {
-      //   conditionObj.paymentMethod = 2;
-      // }
-
-      if (isNonResident && isNonResident == 1) {
-        conditionObj.nonResident = 2;
-      }
-
-      if (isCustomerType) {
-        conditionObj.customerType = isCustomerType
-      }
-
-      // if (isComplaint && isComplaint == 1) {
-      //   conditionObj.complaint = { $gt: 0 };
-      // }
-
-      // if (isCampaignType && isCampaignType == 1) {
-      //   conditionObj.campaignType = { $exists: true, $ne: null };
-      // }
-
-      // if (starRating && !isNaN(starRating)) {
-      //   conditionObj.starRating = Number(starRating);
-      // }
-
-      // if (managerID && checkObjectIDs(managerID)) {
-      //   conditionObj.manager = managerID;
-      // }
-
-      // Phân loại theo thời khoảng
-      if (isValidDate(fromDate) && isValidDate(toDate)) {
-        conditionObj.createAt = {
-          $gte: new Date(fromDate),
-          $lte: new Date(toDate),
-        };
-      }
+        // Phân loại theo thời khoảng
+        if (isValidDate(fromDate) && isValidDate(toDate)) {
+          conditionObj.createAt = {
+            $gte: new Date(fromDate),
+            $lte: new Date(toDate),
+          };
+        }
 
         if (populates && typeof populates === "string") {
           if (!IsJsonString(populates))
