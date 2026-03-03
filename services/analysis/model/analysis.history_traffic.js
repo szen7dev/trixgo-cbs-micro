@@ -348,17 +348,9 @@ class Model extends BaseModel {
                     limit = +limit;
                 }
 
-                /**
-                 * DECALARTION VARIABLE (1)
-                 */
                 let sortBy;
                 let conditionObj = { company: companyID };
                 let keys	 = ['createAt__-1', '_id__-1'];
-                /** 
-                 * VALIDATION STEP (2)
-                 *  - Kiểm tra valid từ các input
-                 *  - Kiểm tra valid từ database (ví dụ: đảm bảo foreign_key hoặc các điều kiện của coll)
-                 */
 				
                 // POPULATE
                 if(populates && typeof populates === 'string'){
@@ -371,11 +363,6 @@ class Model extends BaseModel {
                         select: ""
                     }
                 }
-                /**
-                 * LOGIC STEP (3)
-                 *  3.1: Convert type + update name (ví dụ: string -> number)
-                 *  3.2: Operation database
-                 */  
                 
 				if(keyword){
                     keyword = keyword.split(" ");
