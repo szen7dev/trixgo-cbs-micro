@@ -57,6 +57,7 @@ class Model extends BaseModel {
                 let dataInsert = {
                     userCreate: userID,
                     company: companyID,
+                    name,
                     admins: [userID],
                     members: [userID]
                 }
@@ -77,7 +78,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 19/12/2025
      */
-    update({ userID, groupID, memberAddID, memberRemoveID }){
+    update({ userID, groupID, name, memberAddID, memberRemoveID }){
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -85,10 +86,8 @@ class Model extends BaseModel {
                     modifyAt: Date.now(),
                 }
 
-                if(imagesID && imagesID.length) {
-                    dataUpdate.$addToSet = {
-                        images: imagesID,
-                    }
+                if(name && name != ""){
+                    dataUpdate.name = name;
                 }
 
                 if(memberAddID && checkObjectIDs(memberAddID)){
@@ -101,10 +100,6 @@ class Model extends BaseModel {
                     dataUpdate.$pullAll = {
                         members: memberRemoveID,
                     }
-                }
-
-                if(name && name != ""){
-                    dataUpdate.name = name;
                 }
     
                 let infoAfterUpdate = await CRM_FAMILY_GROUP_COLL.findByIdAndUpdate(groupID, dataUpdate, { new: true })

@@ -59,13 +59,13 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { groupID, memberAddID, memberRemoveID } = ctx.params;
+                let { groupID, name, memberAddID, memberRemoveID } = ctx.params;
 
                 console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM_FAMILY_GROUP_MODEL.update({ userID, groupID, memberAddID, memberRemoveID });
+                let resultAfterCallHandler = await CRM_FAMILY_GROUP_MODEL.update({ userID, groupID, name, memberAddID, memberRemoveID });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
