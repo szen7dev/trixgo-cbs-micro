@@ -366,6 +366,9 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                // console.log('11111111111111111')
+                // console.log(ctx.params)
+
                 let { _id: userID } = ctx.meta.infoUser;
 				let { lastestID, limit, keyword, filter, select, departmentID } = ctx.params;
 
@@ -802,19 +805,17 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
+                // console.log('222222222222222222')
+                // console.log(ctx.params)
+
                 const { company } = ctx.meta.infoUser;
 
                 let {
                     optionSeller, result, option, userID, projectID, companyID, arrayID,
                     keyword, limit, lastestID, select, populates, isLoadAll, startDate, endDate
                 } = ctx.params;
-                // console.log(ctx.params)
 
                 let resultAfterCallHandler;
-
-                // console.log('=======DANH SÁCH USER 222222222222==========>>>>>>>>>>>>>>>>>')
-                // console.log({ userID, projectID, companyID, arrayID,
-                //     keyword, limit, lastestID, select, populates, isLoadAll})
 
                 if(userID){
                     resultAfterCallHandler = await AUTH__USER_MODEL.getInfoV2({
@@ -824,9 +825,6 @@ module.exports = {
                     if(optionSeller){
                         companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
                     }
-                    // else{
-                    //     companyID = company._id
-                    // }
 
                     resultAfterCallHandler = await AUTH__USER_MODEL.getListV2({
                         result, option, arrayID, projectID, companyID, keyword, limit, lastestID, select, populates, ctx, isLoadAll, startDate, endDate
