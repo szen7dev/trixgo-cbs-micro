@@ -24,10 +24,11 @@ const stringUtils					    = require('../../../tools/utils/string_utils.js')
 /**
  * COLLECTIONS
  */
-// const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
+const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll')
 const CRM_HABIT_COLL                    = require('../database/crm.habit-coll')
 const CRM_HABIT_TRACK_COLL              = require('../database/crm.habit_track-coll')
+const CRM_FAMILY_GROUP_COLL             = require('../database/crm.family_group-coll')
 
 const { CRM_XP }                        = require("../helper/crm.keys-constant");
 
@@ -674,7 +675,7 @@ class Model extends BaseModel {
      * Author: Hiepnh
      * Date: 21/9/2022
      */
-    getListByProperty({ option, tab, companyID, userID, contactID, habitID, startDate, endDate, supportID, year }){
+    getListByProperty({ option, tab, companyID, userID, contactID, habitID, groupID, startDate, endDate, supportID, year }){
         return new Promise(async resolve => {
             try {
                 // Tổng hợp theo Tuần
@@ -875,10 +876,48 @@ class Model extends BaseModel {
                             userCreate: ObjectID(userID),
                             status: 2, // Hoàn thành
                         }
-                    }else{
+                    }
+
+                    // Cộng đồng
+                    else if(tab == 1){
                         conditionObj = {
                             company: ObjectID(companyID),
                             status: 2, // Hoàn thành
+                        }
+                    }
+
+                    // Nhóm gia đình
+                    else if(tab == 2){
+                        if(groupID){
+                            // Thông tin Group
+                            let infoGroup = await CRM_FAMILY_GROUP_COLL.findById(groupID)
+                            .populate({
+                                path: 'members',
+                                select: 'contacts'
+                            })
+                            // console.log(infoGroup.members)
+
+                            let arrContact = infoGroup?.members.map(item=>item.contacts[0])
+
+                            // console.log(arrContact)
+
+                            // Danh bạ
+                            let listContact = await ITEM__CONTACT_COLL.find({
+                                company: ObjectID(companyID),
+                                $or: [
+                                    { parent: {$in: arrContact} },
+                                    { _id: {$in: arrContact} }
+                                ]
+                            })
+                            .select('name phone')
+
+                            // console.log(listContact)
+
+                            conditionObj = {
+                                company: ObjectID(companyID),
+                                status: 2, // Hoàn thành
+                                contact: {$in: listContact.map(item=>ObjectID(item._id))}
+                            }
                         }
                     }
 
