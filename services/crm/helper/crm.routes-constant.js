@@ -78,6 +78,9 @@ const CF_ROUTINGS_CRM = {
     CRM_AWARD_GET_LIST_BY_PROPERTY              : `${BASE_ROUTE}/award/get-list-by-property`,
     CRM_AWARD_EXPORT_EXCEL                      : `${BASE_ROUTE}/award/export-excel`,
     CRM_AWARD_CAPTURE           		        : `${BASE_ROUTE}/award/capture`,
+
+    // ==================== CRM_FAMILY_GROUP ======================== //
+    CRM_FAMILY_GROUP                                   : `${BASE_ROUTE}/family_group`,
 }
 
 exports.CF_ROUTINGS_CRM = CF_ROUTINGS_CRM;

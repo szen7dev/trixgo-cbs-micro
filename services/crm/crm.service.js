@@ -26,6 +26,7 @@ const CRM_STORY_HANDLER					= require('./handler/crm.story-handler');
 const CRM_POINT_TRANSACTION_HANDLER		= require('./handler/crm.point_transaction-handler');
 const CRM_CUSTOMER_SERVICE_HANDLER		= require('./handler/crm.customer_service-handler');
 const CRM_AWARD_HANDLER					= require('./handler/crm.award-handler');
+const CRM_FAMILY_GROUP_HANDLER			= require('./handler/crm.family_group-handler');
 
 /**
  * COLLECTIONS
@@ -44,6 +45,7 @@ const CRM_STORY_COLL 					= require('./database/crm.story-coll');
 const CRM_POINT_TRANSACTION_COLL 		= require('./database/crm.point_transaction-coll');
 const CRM_CUSTOMER_SERVICE_COLL 		= require('./database/crm.customer_service-coll');
 const CRM_AWARD_COLL 					= require('./database/crm.award-coll');
+const CRM_FAMILY_GROUP_COLL 			= require('./database/crm.family_group-coll');
 
 module.exports = {
 	name: CF_DOMAIN_SERVICES.CRM,
@@ -62,6 +64,7 @@ module.exports = {
 		DbService(CRM_POINT_TRANSACTION_COLL),
 		DbService(CRM_CUSTOMER_SERVICE_COLL),
 		DbService(CRM_AWARD_COLL),
+		DbService(CRM_FAMILY_GROUP_COLL),
 		CacheCleaner([CF_DOMAIN_SERVICES.CRM])
     ],
 
@@ -202,7 +205,12 @@ module.exports = {
 		[CF_ACTIONS_CRM.CRM_AWARD_GET_LIST_BY_PROPERTY] : CRM_AWARD_HANDLER.getListByProperty,
 		[CF_ACTIONS_CRM.CRM_AWARD_EXPORT_EXCEL] : CRM_AWARD_HANDLER.exportExcel,
 		[CF_ACTIONS_CRM.CRM_AWARD_CAPTURE] : CRM_AWARD_HANDLER.capture,
-		
+
+		// ==================== CRM_FAMILY_GROUP ======================== //
+		[CF_ACTIONS_CRM.CRM_FAMILY_GROUP_INSERT] : CRM_FAMILY_GROUP_HANDLER.insert,
+		[CF_ACTIONS_CRM.CRM_FAMILY_GROUP_UPDATE] : CRM_FAMILY_GROUP_HANDLER.update,
+		[CF_ACTIONS_CRM.CRM_FAMILY_GROUP_REMOVE] : CRM_FAMILY_GROUP_HANDLER.remove,
+		[CF_ACTIONS_CRM.CRM_FAMILY_GROUP_GET_INFO_AND_GET_LIST] : CRM_FAMILY_GROUP_HANDLER.getInfoAndGetList,
 	},
 
 	/**
