@@ -2438,41 +2438,6 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: infoDataAfterGet, status: 200 });
                 }
 
-                if(option){
-
-                    // Tham gia khảo sát
-                    if(option == 1){
-                        let conditionTempObj = {
-                            company: ObjectID(companyID),
-                            result: Number(result)
-                        }
-
-                        if(startDate && endDate){
-                            conditionTempObj.createAt =  { 
-                                $gte: moment(startDate).toDate(),
-                                $lte: moment(endDate).toDate() 
-                            }
-                        }
-                        // console.log(conditionTempObj)
-
-                        let listDataTemp = await CRM_SURVEY_RESULT_COLL.aggregate([
-                            {
-                                $match: conditionTempObj
-                            },
-                            {
-                                $group: {
-                                    _id: '$userCreate',
-                                },
-                            },
-                        ])
-                        // console.log(listDataTemp)
-
-                        if(listDataTemp && listDataTemp.length){
-                            conditionObj._id = {$in: listDataTemp.map(item => item._id)}
-                        }
-                    }
-                }
-
                 if(populates && typeof populates === 'string'){
 					if(!IsJsonString(populates))
 						return resolve({ error: true, message: 'Request params populates invalid', status: 400 });
@@ -2500,7 +2465,13 @@ class Model extends BaseModel {
                 if(keyword){
                     keyword = keyword.split(" ");
                     keyword = '.*' + keyword.join(".*") + '.*';
-                    conditionObj.fullname = new RegExp(keyword, 'i');
+                    const regSearch = new RegExp(keyword, 'i');
+                    conditionObj.$or = [
+                        { fullname: regSearch },
+                        { phone: regSearch },
+                        { email: regSearch },
+                    ]
+                    // conditionObj.fullname = new RegExp(keyword, 'i');
                 }
 
                 let conditionObjOrg = { ...conditionObj };
