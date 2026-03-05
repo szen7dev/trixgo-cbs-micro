@@ -38,7 +38,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge }) {
+    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -119,7 +119,6 @@ class Model extends BaseModel {
                 if(date && date != ""){
                     dataInsert.date = date;
                 }
-
                 if(name && name != ""){
                     dataInsert.name = name;
                     convertStr = stringUtils.removeAccents(name)
@@ -150,6 +149,21 @@ class Model extends BaseModel {
                 if(parentName && parentName != ""){
                     dataInsert.parentName = parentName;
                     convertStr = convertStr + " " + stringUtils.removeAccents(parentName)
+                }
+
+                if(motherName && motherName != ""){
+                    dataInsert.motherName = motherName;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(motherName)
+                }
+
+                if(motherPhone && motherPhone != ""){
+                    dataInsert.motherPhone = motherPhone;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(motherPhone)
+                }
+
+                if(motherEmail && motherEmail != ""){
+                    dataInsert.motherEmail = motherEmail;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(motherEmail)
                 }
 
                 if(contactID && checkObjectIDs(contactID)){
@@ -202,14 +216,12 @@ class Model extends BaseModel {
                 if(!infoAfterInsert)
                     return resolve({ error: true, message: "cannot_insert" })
 
-                /**
-                 * TÍNH TOÁN ĐƯỜNG PHÂN VỊ VÀ CẬP NHẬT
-                 */
+                // Tính toán đường phân vị và cập nhật
                 let infoNew = await that.getInfo({ trackID: infoAfterInsert._id, userID })
                 if(infoNew){
                     await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
-                            percentile: Number(infoNew.P),
-                            predictedAdultHeight: Number(infoNew.predictedAdultHeight)
+                        percentile: Number(infoNew.P),
+                        predictedAdultHeight: Number(infoNew.predictedAdultHeight)
                     }, { new: true })
                 }
 
@@ -225,7 +237,8 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, pubertyOnsetDate }){
+    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail }){
+        const that = this;
         return new Promise(async (resolve) => {
             try {
                 let dataUpdate = {
@@ -259,6 +272,21 @@ class Model extends BaseModel {
                     dataUpdate.weight = weight;
                 }
 
+                if(!isNaN(boneAge)){
+                    dataUpdate.boneAge = boneAge;
+                }
+                if(!isNaN(fatherHeight)){
+                    dataUpdate.fatherHeight = fatherHeight;
+                }
+
+                if(!isNaN(motherHeight)){
+                    dataUpdate.motherHeight = motherHeight;
+                }
+
+                if(!isNaN(desiredHeight)){
+                    dataUpdate.desiredHeight = desiredHeight;
+                }
+
                 if(checkObjectIDs(contactID)){
                     dataUpdate.contact = contactID;
                 }
@@ -288,6 +316,13 @@ class Model extends BaseModel {
                     dataUpdate.phone = phone;
                     convertStr = convertStr + " " + stringUtils.removeAccents(phone)
                 }
+                if(email && email != ""){
+                    dataUpdate.email = email;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(email)
+                }
+                if(routine && routine != ""){
+                    dataUpdate.routine = routine;
+                }
                 if(note && note != ""){
                     dataUpdate.note = note;
                     convertStr = convertStr + " " + stringUtils.removeAccents(note)
@@ -301,6 +336,62 @@ class Model extends BaseModel {
                     convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
                 }
 
+                if(motherName && motherName != ""){
+                    dataUpdate.motherName = motherName;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(motherName)
+                }
+
+                if(motherPhone && motherPhone != ""){
+                    dataUpdate.motherPhone = motherPhone;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(motherPhone)
+                }
+
+                if(motherEmail && motherEmail != ""){
+                    dataUpdate.motherEmail = motherEmail;
+                    convertStr = convertStr + " " + stringUtils.removeAccents(motherEmail)
+                }
+
+                if(contactID && checkObjectIDs(contactID)){
+                    dataUpdate.contact = contactID;
+
+                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).populate({
+                        path: 'parent',
+                        select: 'phone name'
+                    })
+
+                    if(infoContact){
+                        dataUpdate.name = infoContact?.name;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
+
+                        if(infoContact.phone){
+                            dataUpdate.phone = infoContact?.phone;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
+                        }else{
+                            dataUpdate.phone = infoContact?.parent?.phone;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.parent?.phone)
+                        }
+
+                        if(infoContact?.birthday && infoContact?.birthday != null){
+                            dataUpdate.birthday = infoContact?.birthday;
+                            
+                            // let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
+                            // if(check >= 20)
+                            // return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
+                        }
+
+                        if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
+                            dataUpdate.pubertyOnsetDate = infoContact?.pubertyOnsetDate;
+                        }
+
+                        if(infoContact?.boneAge && !isNaN(infoContact?.boneAge)){
+                            dataUpdate.boneAge = infoContact?.boneAge;
+                        }
+                        
+                        dataUpdate.gender = infoContact?.gender;
+                        dataUpdate.parentName = infoContact?.parent?.name;
+                    }
+                }
+
                 if(convertStr != ""){
                     dataUpdate.namecv = convertStr
                 }
@@ -312,6 +403,15 @@ class Model extends BaseModel {
                         message: "Cannot update",
                         keyError: "cannot_update",
                     })
+                }
+
+                // Tính toán đường phân vị và cập nhật
+                let infoNew = await that.getInfo({ trackID: infoAfterUpdate._id, userID })
+                if(infoNew){
+                    await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterUpdate._id, {
+                        percentile: Number(infoNew.P),
+                        predictedAdultHeight: Number(infoNew.predictedAdultHeight)
+                    }, { new: true })
                 }
 
                 return resolve({ error: false, data: infoAfterUpdate });
@@ -797,8 +897,8 @@ class Model extends BaseModel {
                                 S = sheet.cell(`E${i}`).value();
                                 Z = calculateZScore(X, L, M, S);
                                 P = Number(getPercentileFromZ(Z).toFixed(2));
-                                console.log({L:L,M:M,S:S,Z:Z,X:X})
-                                console.log({P})
+                                // console.log({L:L,M:M,S:S,Z:Z,X:X})
+                                // console.log({P})
 
                                 startAge = Math.ceil(agemosCheck / 12);
 
@@ -1002,7 +1102,6 @@ class Model extends BaseModel {
                                 }
                             }
                         }
-
                     }else{
                         // console.log('======Chiều cao uyyyyyyyyyyyyyyyyyyyyyyyyyyyy=======')
                         if(ageInDays <= 1856){

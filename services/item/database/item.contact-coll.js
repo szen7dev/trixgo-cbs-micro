@@ -408,6 +408,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default : 0
     },
+    //_______Chiều cao
+    height: { 
+        type: Number,
+        default : 0
+     },
     //_______Ngày dậy thì
     pubertyOnsetDate: { type: Date, default: null },
     //_______Tuổi xương thực (dạng số - Đo bằng máy)
