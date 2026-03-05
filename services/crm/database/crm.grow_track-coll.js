@@ -28,14 +28,20 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
     },
     //_______Ngày đo
     date: { type: Date, default: Date.now },
-    //________Họ và tên bố mẹ
+    //________Họ và tên bố
     parentName: String,
-    //________Điện thoại (bố mẹ)
+    //________Điện thoại bố
     phone: String,
-    //________Email (bố mẹ)
+    //________Email bố
     email: String,
     //_________Chiều cao bố (cm)
     fatherHeight: { type: Number, default: 0 },
+    //________Họ và tên mẹ
+    motherName: String,
+    //________Điện thoại mẹ
+    motherPhone: String,
+    //________Email mẹ
+    motherEmail: String,
     //_________Chiều cao mẹ (cm)
     motherHeight: { type: Number, default: 0 },
     /**
