@@ -1068,11 +1068,8 @@ class Model extends BaseModel {
                 else if(option == 9){
                     let conditionObj = {
                         company: ObjectID(companyID),
+                        support: ObjectID(supportID),
                         status: 2,
-                    }
-
-                    if(supportID){
-                        conditionObj.support = ObjectID(supportID)
                     }
                     
                     if(startDate && endDate){
@@ -1084,6 +1081,10 @@ class Model extends BaseModel {
                             // $lte: moment(endDate).toDate() 
                         }
                     }
+
+                    let arrContactFollow = await ITEM__CONTACT_COLL.find({
+                            support: ObjectID(supportID), 
+                        }).select('_id')
                     
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
                         {
@@ -1113,25 +1114,43 @@ class Model extends BaseModel {
                         }
                     ]);
 
-                    await ITEM__CONTACT_COLL.populate(listData, {  
+                    const finalResult = arrContactFollow.map(contact => {
+                        // 1. Tìm xem contact này đã có trong listData chưa
+                        const existingContact = listData.find(item => 
+                            item._id?._id?.toString() === contact._id?.toString()
+                        );
+
+                        if (existingContact) {
+                            // 2. Nếu có, trả về nguyên mẫu dữ liệu đã có habit
+                            return existingContact;
+                        }
+
+                        // 3. Nếu chưa có (thuộc 90 bạn còn lại), tạo cấu trúc đồng bộ với total = 0
+                        return {
+                            _id: contact, // Chứa thông tin name, phone, image... giống populate
+                            details: []    // Mảng habit trống vì chưa thực hiện habit nào
+                        };
+                    });
+
+                    await ITEM__CONTACT_COLL.populate(finalResult, {  
                         path: '_id',
                         select: '_id name phone image support parent birthday gender address',
                         model: 'contact',
                     })
 
-                    await ITEM__CONTACT_COLL.populate(listData, {  
+                    await ITEM__CONTACT_COLL.populate(finalResult, {  
                         path: '_id.support',
                         select: 'name phone',
                         model: 'contact',
                     })
 
-                    await ITEM__CONTACT_COLL.populate(listData, {  
+                    await ITEM__CONTACT_COLL.populate(finalResult, {  
                         path: '_id.parent',
                         select: 'name phone',
                         model: 'contact',
                     })
 
-                    return resolve({ error: false, data: listData })
+                    return resolve({ error: false, data: finalResult })
                 }
 
                 // Tổng hợp thành viên mới theo tháng
