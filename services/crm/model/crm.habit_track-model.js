@@ -404,7 +404,7 @@ class Model extends BaseModel {
                             xpHabit = Number(xpHabit) - CRM_XP[2].xp
                         }
 
-                        dataUpdate.status = 0
+                        dataUpdate.status = 1
                         dataUpdate.percentage = 0
                         dataUpdate.xp = 0
                     }
@@ -769,7 +769,7 @@ class Model extends BaseModel {
                     return resolve({ error: false, data: listData })
                 }
 
-                // Tổng hợp theo Ngày
+                // Tổng hợp theo Ngày - 01 Habit
                 else if(option == 1){
                     let conditionObj = {
                         company: ObjectID(companyID),
@@ -1156,6 +1156,48 @@ class Model extends BaseModel {
                             $sort: { "_id": 1 } // Sắp xếp từ tháng 1 đến tháng 12
                         }
                     ]);
+
+                    return resolve({ error: false, data: listData })
+                }
+
+                // Tổng hợp theo Ngày - Nhiều Habit
+                else if(option == 11){
+                    let conditionObj = {
+                        company: ObjectID(companyID),
+                    }
+
+                    if(checkObjectIDs(contactID)){
+                        conditionObj.contact = ObjectID(contactID)
+                    }
+
+                    if(startDate && endDate){
+                        let endDateCheck = moment(endDate).format("YYYY-MM-DD")
+
+                        conditionObj.date =  { 
+                            $gte: moment(startDate).toDate(),
+                            // $lte: moment(endDate).toDate(),
+                            $lte: new Date(endDateCheck), // Chuẩn hóa với giờ được Record trong DB
+                        }
+                    }
+
+                    // console.log(conditionObj)
+
+                    let listData = await CRM_HABIT_TRACK_COLL.aggregate([
+                        {
+                          $match: conditionObj
+                        },
+                        {
+                            $project: {
+                              _id: 1,
+                              date: 1,
+                              dayOfWeek : {$dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                              status: 1,
+                              habitCate: 1,
+                              contact: 1,
+                            }
+                        },
+                    ])
+                    // console.log(listData)
 
                     return resolve({ error: false, data: listData })
                 }
