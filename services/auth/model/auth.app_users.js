@@ -133,7 +133,14 @@ class Model extends BaseModel {
                     keyword = ".*" + keyword.join(".*") + ".*";
                     const regSearch = new RegExp(keyword, "i");
 
-                    let listUser = await AUTH__USER_COLL.find({fullname: regSearch}).select('_id')
+                    let listUser = await AUTH__USER_COLL.find({
+                        $or: [
+                            { fullname: regSearch },
+                            { phone: regSearch },
+                            { email: regSearch },
+                        ]
+                    }).select('_id')
+                    
                     conditionObj.user = {$in: listUser.map(item=>item._id)}
                 }
 
