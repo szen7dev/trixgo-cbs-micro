@@ -1191,9 +1191,9 @@ class Model extends BaseModel {
                               _id: 1,
                               date: 1,
                               dayOfWeek : {$dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                              resultType: 1,
                               status: 1,
                               habitCate: 1,
-                              contact: 1,
                             }
                         },
                     ])
