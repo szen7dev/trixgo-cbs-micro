@@ -870,11 +870,20 @@ class Model extends BaseModel {
                 // Tổng hợp Kết quả game theo người chơi
                 else if(option == 7){
                     let conditionObj = {}
+
+                    // Gia đình
                     if(!tab){
+                        let listContactUserIsMember = await ITEM__CONTACT_COLL.find({
+                            members: { $in: [userID] },
+                        }).select('_id')
+
                         conditionObj = {
                             company: ObjectID(companyID),
-                            userCreate: ObjectID(userID),
                             status: 2, // Hoàn thành
+                            $or: [
+                                { userCreate: ObjectID(userID) },
+                                { contact: { $in: listContactUserIsMember.map(item=>item._id) }},
+                            ]
                         }
                     }
 
@@ -886,7 +895,7 @@ class Model extends BaseModel {
                         }
                     }
 
-                    // Nhóm gia đình
+                    // Nhóm
                     else if(tab == 2){
                         if(groupID){
                             // Thông tin Group
