@@ -995,6 +995,7 @@ class Model extends BaseModel {
                         // console.log('1111111111')
                         conditionObj.company = ObjectID(companyID)
                         conditionContactObj.support = { $exists: true, $ne: null }
+                        conditionContactObj.parent = { $exists: true, $ne: null }
                     }else{
                         let infoContact = await ITEM__CONTACT_COLL.findOne({
                             company: ObjectID(companyID), 
@@ -1006,10 +1007,12 @@ class Model extends BaseModel {
                             // console.log('222222222222')
                             conditionObj.support = infoContact._id
                             conditionContactObj.support = infoContact._id
+                            conditionContactObj.parent = { $exists: true, $ne: null }
                         }else{
                             // console.log('333333333333333')
                             conditionObj.support = { $exists: false }
                             conditionContactObj.support = { $exists: false }
+                            conditionContactObj.parent = { $exists: true, $ne: null }
                         }
                     }
 
@@ -1191,9 +1194,9 @@ class Model extends BaseModel {
                               _id: 1,
                               date: 1,
                               dayOfWeek : {$dayOfWeek: { date: "$date", timezone: "Asia/Ho_Chi_Minh" }},
+                              resultType: 1,
                               status: 1,
                               habitCate: 1,
-                              contact: 1,
                             }
                         },
                     ])
