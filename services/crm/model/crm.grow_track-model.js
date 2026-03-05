@@ -74,47 +74,6 @@ class Model extends BaseModel {
 
                 let convertStr = '';
 
-                if(checkObjectIDs(contactID)){
-                    dataInsert.contact = contactID;
-
-                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).populate({
-                        path: 'parent',
-                        select: 'phone name'
-                    })
-
-                    if(infoContact){
-                        dataInsert.name = infoContact?.name;
-                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
-
-                        if(infoContact.phone){
-                            dataInsert.phone = infoContact?.phone;
-                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
-                        }else{
-                            dataInsert.phone = infoContact?.parent?.phone;
-                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.parent?.phone)
-                        }
-
-                        if(infoContact?.birthday && infoContact?.birthday != null){
-                            dataInsert.birthday = infoContact?.birthday;
-                            
-                            // let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
-                            // if(check >= 20)
-                            // return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
-                        }
-
-                        if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
-                            dataInsert.pubertyOnsetDate = infoContact?.pubertyOnsetDate;
-                        }
-
-                        if(infoContact?.boneAge && !isNaN(infoContact?.boneAge)){
-                            dataInsert.boneAge = infoContact?.boneAge;
-                        }
-                        
-                        dataInsert.gender = infoContact?.gender;
-                        dataInsert.parentName = infoContact?.parent?.name;
-                    }
-                }
-
                 if(!isNaN(status) && [1,2].includes(Number(status))){
                     dataInsert.status = status;
                 }
@@ -191,6 +150,47 @@ class Model extends BaseModel {
                 if(parentName && parentName != ""){
                     dataInsert.parentName = parentName;
                     convertStr = convertStr + " " + stringUtils.removeAccents(parentName)
+                }
+
+                if(contactID && checkObjectIDs(contactID)){
+                    dataInsert.contact = contactID;
+
+                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).populate({
+                        path: 'parent',
+                        select: 'phone name'
+                    })
+
+                    if(infoContact){
+                        dataInsert.name = infoContact?.name;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
+
+                        if(infoContact.phone){
+                            dataInsert.phone = infoContact?.phone;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
+                        }else{
+                            dataInsert.phone = infoContact?.parent?.phone;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.parent?.phone)
+                        }
+
+                        if(infoContact?.birthday && infoContact?.birthday != null){
+                            dataInsert.birthday = infoContact?.birthday;
+                            
+                            // let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
+                            // if(check >= 20)
+                            // return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
+                        }
+
+                        if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
+                            dataInsert.pubertyOnsetDate = infoContact?.pubertyOnsetDate;
+                        }
+
+                        if(infoContact?.boneAge && !isNaN(infoContact?.boneAge)){
+                            dataInsert.boneAge = infoContact?.boneAge;
+                        }
+                        
+                        dataInsert.gender = infoContact?.gender;
+                        dataInsert.parentName = infoContact?.parent?.name;
+                    }
                 }
                 
                 if(convertStr != ""){
