@@ -1320,19 +1320,19 @@ class Model extends BaseModel {
 				if(checkObjectIDs(contactID)){                    
                     conditionObj.contact = contactID
 				}else{
-                    conditionObj.company = companyID
-                }
+                    if(phone && phone != ""){
+                        conditionObj.phone = phone
+                    }else{
+                        conditionObj.company = companyID
 
-                if(phone && phone != ""){
-                    conditionObj.phone = phone
-                }else{
-                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                        appID: "61e049f6fdebf77b072d1b16",
-                        userID
-                    })
+                        let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                            appID: "61e049f6fdebf77b072d1b16",
+                            userID
+                        })
 
-                    if(getInfoUserApp.error || Number(getInfoUserApp.data.level) == 1){
-                       conditionObj.userCreate = userID
+                        if(getInfoUserApp.error || Number(getInfoUserApp.data.level) == 1){
+                            conditionObj.userCreate = userID
+                        }
                     }
                 }
 
