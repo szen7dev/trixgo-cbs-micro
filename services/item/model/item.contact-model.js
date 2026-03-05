@@ -1133,6 +1133,7 @@ class Model extends BaseModel {
                 //     return resolve({ error: false, data: {listRecords: []}, status: 200 })
 
                 // console.log('========================')
+                // console.log({userID, companyID})
 
                 if (Number(limit) > 10) {
                     limit = 10;
@@ -1166,9 +1167,12 @@ class Model extends BaseModel {
                     if(!isFamily){
                         conditionObj.parent = parentID
                     }else{
+
+                        // Thành viên gia đình
                         conditionObj.$or = [
                             { parent: parentID },
-                            { _id: parentID }
+                            { _id: parentID },
+                            { members: { $in: [userID] } },
                         ]
                     }
                 }

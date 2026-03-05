@@ -612,15 +612,25 @@ class Model extends BaseModel {
 
                 // Màn hình Habit chung (các Habit do user tạo ra)
                 if (checkObjectIDs(userCreateID)) {
-                    conditionObj.userCreate = userCreateID
+                    // conditionObj.userCreate = userCreateID
 
                     // Hoặc là Habit của các contact mà user được quyền truy cập members[]
+                    let listContactUserIsMember = await ITEM__CONTACT_COLL.find({
+                        members: { $in: [userCreateID] },
+                    }).select('_id')
+                    
+                    conditionObj.$or = [
+                        { userCreate: userCreateID },
+                        { contact: { $in: listContactUserIsMember.map(item=>item._id) }},
+                    ]
                 }     
                 
                 // Màn hình Habit của 1 contactID cụ thể
                 if(checkObjectIDs(contactID)){
                     conditionObj.contact = contactID
                 }
+
+                // console.log(conditionObj)
 
                 let conditionObjOrg = { ...conditionObj }
 
