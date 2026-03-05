@@ -35,6 +35,11 @@ module.exports  = DATABASE_MIDDLEWARE("contact", {
         type: Number,
         default: 1 
     },
+    //_________Thành viên được quyền truy cập
+    members : [{
+        type   : Schema.Types.ObjectId,
+        ref: 'user'
+    }],
     /**
      * ĐỆ QUY ĐỂ XỬ LÝ SỐ LIỆU AFFILIATE
      */

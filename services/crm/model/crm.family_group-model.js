@@ -97,7 +97,7 @@ class Model extends BaseModel {
                 }
 
                 if(memberRemoveID && checkObjectIDs(memberRemoveID)){
-                    dataUpdate.$pullAll = {
+                    dataUpdate.$pull = {
                         members: memberRemoveID,
                     }
                 }
