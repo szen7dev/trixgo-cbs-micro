@@ -1084,6 +1084,8 @@ class Model extends BaseModel {
 
                     let arrContactFollow = await ITEM__CONTACT_COLL.find({
                             support: ObjectID(supportID), 
+                            type: 6, // Các bé
+                            status: 1
                         }).select('_id')
                     
                     let listData = await CRM_HABIT_TRACK_COLL.aggregate([
