@@ -1151,7 +1151,7 @@ class Model extends BaseModel {
                 supportsID && supportsID.length && (conditionObj.support = { $in: supportsID });
 
                 // Theo phân loại
-                if (type && [1, 2, 3].includes(Number(type))) {
+                if (type && [1, 2, 3, 4, 5, 6].includes(Number(type))) {
                     conditionObj.type = type
                 } else {
                     delete conditionObj.type
