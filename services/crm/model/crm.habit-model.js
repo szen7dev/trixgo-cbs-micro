@@ -613,6 +613,8 @@ class Model extends BaseModel {
                 // Màn hình Habit chung (các Habit do user tạo ra)
                 if (checkObjectIDs(userCreateID)) {
                     conditionObj.userCreate = userCreateID
+
+                    // Hoặc là Habit của các contact mà user được quyền truy cập members[]
                 }     
                 
                 // Màn hình Habit của 1 contactID cụ thể
