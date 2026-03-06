@@ -25,6 +25,9 @@ const {
 }  = require('../../../tools/utils/utils.js');
 const stringUtils					    = require('../../../tools/utils/string_utils.js')
 // const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.js')
+const {
+  compareTwoTime,
+} = require("../../../tools/utils/time_utils");
 
 const { TEMPLATE_NOTIFICATION } = require('../../../tools/constants/index.js');
 
@@ -161,6 +164,14 @@ class Model extends BaseModel {
 
                 if(finishDate && finishDate != ""){
                     dataInsert.finishDate = finishDate;
+                }
+
+                let checkTime = compareTwoTime(startDate, finishDate);
+                if(checkTime == 0){
+                    const startOfWeek = moment().startOf('isoWeek').toDate(); 
+                    const endOfWeek = moment().endOf('isoWeek').toDate();
+                    dataInsert.startDate = startOfWeek;
+                    dataInsert.finishDate = endOfWeek;
                 }
 
                 if(color && color != ""){
