@@ -284,7 +284,7 @@ module.exports = {
                     companyID = company._id;
                 }
 
-                const resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.exportExcel2({
+                const resultAfterCallHandler = await FNB_ORDER_PRODUCT_MODEL.exportExcel({
                     userID, email, companyID, option, month, year, filterParams
                 })
 

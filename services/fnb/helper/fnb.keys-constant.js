@@ -21,6 +21,11 @@ exports.FNB_NEW = [
     { value: 2, text: 'Cũ' },
 ]
 
+exports.FNB_SIZE = [
+    { value: 1, text: 'M' },
+    { value: 2, text: 'L' },
+]
+
 exports.FNB_NON_RESIDENT = [
     { value: 1, text: 'Biết tên' },
     { value: 2, text: 'Vãng lai' },
@@ -59,6 +64,22 @@ exports.FNB_SALES_CHANNEL = [
     { value: 11, text: 'FB Reels' },
     { value: 12, text: 'Xanh Ngon' },
     { value: 13, text: 'Egets' },
+]
+
+exports.FNB_SALES_CHANNEL_2 = [
+    { value: 1, text: 'Khách mua trực tiếp' },
+    { value: 2, text: 'Sàn TMĐT Grab' },
+    { value: 3, text: 'Sàn TMĐT Shopee' },
+    { value: 4, text: 'Sàn TMĐT Gojek' },
+    { value: 5, text: 'Sàn TMĐT Baemin' },
+    { value: 6, text: 'Sàn TMĐT Loship' },
+    { value: 7, text: 'Sàn TMĐT Be' },
+    { value: 8, text: 'Sàn TMĐT TikTok' },
+    { value: 9, text: 'Sàn TMĐT Shopee Shop' },
+    { value: 10, text: 'Sàn TMĐT Lazada' },
+    { value: 11, text: 'Sàn TMĐT FB Reels' },
+    { value: 12, text: 'Sàn TMĐT Xanh Ngon' },
+    { value: 13, text: 'Sàn TMĐT Egets' },
 ]
 
 exports.FNB_PAYMENT_METHOD = [
