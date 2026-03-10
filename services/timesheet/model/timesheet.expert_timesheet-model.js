@@ -204,7 +204,7 @@ class Model extends BaseModel {
                 }
 
                 if(distance && distance != 0){
-                    distance = Number(distance)
+                    dataInsert.distance = Number(distance)
                 }
 
                 if(note && note != ""){
