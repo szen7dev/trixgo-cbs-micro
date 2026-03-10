@@ -1468,6 +1468,7 @@ class Model extends BaseModel {
                         // Modify the workbook.
                         XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_mau_bao_cao_san_pham.xlsx')))
                         .then(async workbook => {
+                            workbook.sheet("Order").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         
                             var i = 3
                             orderProducts?.forEach((item, index) => {
