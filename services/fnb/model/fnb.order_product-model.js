@@ -1147,10 +1147,10 @@ class Model extends BaseModel {
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     })
                 }
-
+                
                 // Danh sách sản phẩm phục vụ xuất hóa đơn VAT
                 else if(Number(option) == 5){
-                    let conditionObj = { company: companyID }
+                    let conditionObj = { company: ObjectID(companyID) }
     
                     let obj = JSON.parse(filterParams);
 
@@ -1322,6 +1322,178 @@ class Model extends BaseModel {
                         fs.unlinkSync(pathWriteFile);
                         return resolve({ error: false, data: result?.Location, status: 200 });
                     })
+                }
+
+                // Báo cáo sản phẩm bán được
+                else if(Number(option) == 6){
+                    let obj = JSON.parse(filterParams);
+
+                    let fundasID = obj.fundasID
+                    let shiftTypes = obj.shiftTypes
+                    let fromDate = obj.fromDate
+                    let toDate = obj.toDate
+                    let keyword = obj.keyword
+                    let salesChannels = obj.salesChannels
+                    let statuss = obj.statuss
+                    let isMistake = obj.isMistake
+                    let isDiscount = obj.isDiscount
+                    let isSalesoff = obj.isSalesoff
+                    let isCredit = obj.isCredit
+                    let isOffer = obj.isOffer
+                    let isNonResident = obj.isNonResident
+                    let isCustomerType = obj.isCustomerType
+
+                    let duration = getTimeBetween(toDate, fromDate)
+                    if(Number(duration/86400) > 90){
+                        return resolve({ error: true, message: 'Chỉ tra cứu được trong khoảng thời gian <= 90 ngày', keyError: KEY_ERROR.PARAMS_INVALID })
+                    }else{
+
+                        let conditionObj = { company: ObjectID(companyID) }
+
+                        if(fundasID && fundasID.length ){
+                            let arrFun = fundasID.map(item=>ObjectID(item))
+
+                            if(arrFun.length) {
+                                conditionObj.funda = { $in: arrFun };
+                            }
+                        }else{
+                            let listFundaIsMember = await ITEM__FUNDA_COLL.find({members: {$in: [userID]}});
+                            let fundasIDIsMember = listFundaIsMember.map(item=>ObjectID(item._id));
+                            if(fundasIDIsMember.length) {
+                                conditionObj.funda = { $in: fundasIDIsMember };
+                            }else{
+                                conditionObj.funda = { $in: [] }
+                            }
+                        }
+
+                        shiftTypes && shiftTypes.length             && (conditionObj.shiftType = { $in: shiftTypes });
+                        salesChannels && salesChannels.length       && (conditionObj.salesChannel = { $in: salesChannels });
+                        
+                        statuss && statuss.length                   && (conditionObj.status = { $in: statuss });
+
+                        conditionObj.status = 5 // Chỉ lấy đơn hoàn thành
+
+                        // Phân loại khác
+                        if(isMistake && isMistake == 1){
+                            conditionObj.numberOfMistakes = { $gt: 0 }
+                        }
+
+                        if(isNonResident && isNonResident == 1){
+                            conditionObj.nonResident = 2
+                        }
+
+                        if(isDiscount && isDiscount == 1){
+                            conditionObj.discount = { $gt: 0 }
+                        }
+
+                        if(isSalesoff && isSalesoff == 1){
+                            conditionObj.salesoff = { $gt: 0 }
+                        }
+
+                        if(isCredit && isCredit == 1){
+                            conditionObj.credit = { $gt: 0 }
+                        }
+
+                        if(isOffer && isOffer == 1){
+                            conditionObj.offer = { $gt: 0 }
+                        }
+
+                        if(isCustomerType && isCustomerType == 1){
+                            conditionObj.customerType = 1
+                        }
+                        if(isCustomerType && isCustomerType == 2){
+                            conditionObj.customerType = 2
+                        }
+                        // console.log(conditionObj)
+
+                        // Phân loại theo thời khoảng
+                        if(fromDate && toDate){
+                            conditionObj.createAt = {
+                                $gte: new Date(fromDate),
+                                $lte: new Date(toDate),
+                            }
+                        }
+
+                        if(keyword){
+                            keyword = keyword.split(" ");
+                            keyword = '.*' + keyword.join(".*") + '.*';
+                            const regSearch = new RegExp(keyword, 'i');
+
+                            conditionObj.$or = [
+                                { name: regSearch },
+                                { sign: regSearch },
+                            ]
+                        }
+                        // console.log(conditionObj)
+
+                        let listData  = await FNB_ORDER_COLL.find(conditionObj).select('_id')
+                        // .limit(50000)
+                        // .sort({createAt: -1})
+                        // console.log(listData)
+
+                        let orderProducts = await FNB_ORDER_PRODUCT_COLL.aggregate([
+                            {
+                                $match: {
+                                    order: {$in: listData.map(item => ObjectID(item._id))}
+                                }
+                            },
+                            {
+                                $group:  {
+                                    _id: { funda: "$funda", product: "$product", salesChannel: "$salesChannel", size: "$size" },
+                                    quantity: { $sum: "$quantity" },
+                                }
+                            },
+                            {
+                                $sort: {
+                                    "quantity": -1
+                                }
+                            }
+                        ])
+                        // console.log(orderProducts)
+
+                        await FNB_ORDER_PRODUCT_COLL.populate(orderProducts, {
+                            path: '_id.product',
+                            select: '_id name unit',
+                            model: 'fnb_product'
+                        })
+
+                        await FNB_ORDER_PRODUCT_COLL.populate(orderProducts, {
+                            path: '_id.funda',
+                            select: '_id name',
+                            model: 'funda'
+                        })
+                        // console.log(orderProducts)
+
+
+                        // Modify the workbook.
+                        XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_mau_bao_cao_san_pham.xlsx')))
+                        .then(async workbook => {
+                        
+                            var i = 3
+                            orderProducts?.forEach((item, index) => {
+                                workbook.sheet("Order").row(i).cell(1).value(Number(index + 1));
+                                workbook.sheet("Order").row(i).cell(2).value(item?._id?.product?.name);
+                                workbook.sheet("Order").row(i).cell(3).value(`${FNB_SALES_CHANNEL_2[Number(item._id.salesChannel) - 1].text}`);
+                                workbook.sheet("Order").row(i).cell(4).value(item?._id?.product?.unit);
+                                workbook.sheet("Order").row(i).cell(5).value(Number(item.quantity));
+                                workbook.sheet("Order").row(i).cell(6).value(FNB_SIZE[item?._id?.size - 1].text);
+                                workbook.sheet("Order").row(i).cell(7).value(item?._id?.funda?.name);
+
+                                i++
+                            })
+                        
+                            const now = new Date();
+                            const filePath = '../../../files/temporary_uploads/';
+                            const fileName = `mau_bao_cao_san_pham_${now.getTime()}.xlsx`;
+                            const pathWriteFile = path.resolve(__dirname, filePath, fileName);
+
+                            await workbook.toFileAsync(pathWriteFile);
+                            const result = await uploadFileS3(pathWriteFile, fileName);
+
+                            fs.unlinkSync(pathWriteFile);
+                            return resolve({ error: false, data: result?.Location, status: 200 });
+                        })
+                    }
                 }
             } catch (error) {
                 // console.log({ error })
