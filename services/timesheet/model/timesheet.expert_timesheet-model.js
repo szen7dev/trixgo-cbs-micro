@@ -56,7 +56,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official, convert }) {
+    insert({ userCreate, companyID, parentID, name, location, distance, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official, convert }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -201,6 +201,10 @@ class Model extends BaseModel {
 
                 if(location && location != ""){
                     dataInsert.location = location;
+                }
+
+                if(distance && distance != 0){
+                    distance = Number(distance)
                 }
 
                 if(note && note != ""){

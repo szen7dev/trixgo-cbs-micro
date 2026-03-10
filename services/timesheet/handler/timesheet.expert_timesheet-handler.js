@@ -29,7 +29,7 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official } = ctx.params;
+                let { parentID, name, location, distance, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official } = ctx.params;
 				// console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
