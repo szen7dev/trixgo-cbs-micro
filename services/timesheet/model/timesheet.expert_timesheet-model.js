@@ -188,6 +188,7 @@ class Model extends BaseModel {
 
                         dataInsert.location = location;
                         dataInsert.distance = Number(checkDis)
+                        dataInsert.note = 'Chấm công trên Mobile';
                     }else{
                         return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
                     }
