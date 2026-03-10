@@ -39,7 +39,7 @@ class Model extends BaseModel {
 	 * Func: Tạo account
 	 * Date: 13/12/2021
 	 */
-	insert({ companyID, parentID, userID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
+	insert({ companyID, parentID, userID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance, location, distance }){
         return new Promise(async resolve => {
             try {
                 if(!name)
@@ -79,6 +79,14 @@ class Model extends BaseModel {
 
                 if(numberOfRating && !isNaN(numberOfRating)){
                     dataInsert.numberOfRating = +numberOfRating;
+                }
+
+                if(location && location != ""){
+                    dataInsert.location = location;
+                }
+
+                if(distance && distance != 0){
+                    dataInsert.distance = Number(distance)
                 }
 
                 // Link danh bạ
@@ -210,7 +218,7 @@ class Model extends BaseModel {
 	 * Func: update account
 	 * Date: 13/12/2021
 	 */
-	update({ userID, fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, thumbnailID, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance }){
+	update({ userID, fundaID, project, rating, numberOfRating, platform, name, sign, description, phone, bankAccount, bankQrcode, address, initialDay, members, admins, membersRemove, adminsRemove, getNotification, getNotificationRemove, campaign, internal, area, planExpense, utilityExpense, humanExpense, sellingExpenseRate, materialExpenseRate, otherExpenseRate, activeCampaign, loyaltyPointsRate, thumbnailID, imagesID, manager, trainStaffSalar, trialStaffSalary, officialStaffSalar, nightShiftStaffSalary, lunchStaffAllowance, location, distance }){
         return new Promise(async resolve => {
             try {
                 if(!checkObjectIDs(fundaID))
@@ -256,6 +264,14 @@ class Model extends BaseModel {
 
                 if(numberOfRating && !isNaN(numberOfRating)){
                     dataUpdate.numberOfRating = +numberOfRating;
+                }
+
+                if(location && location != ""){
+                    dataUpdate.location = location;
+                }
+
+                if(distance && distance != 0){
+                    dataUpdate.distance = Number(distance)
                 }
 
                 let dataAddToset = {};

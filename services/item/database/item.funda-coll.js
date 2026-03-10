@@ -96,6 +96,11 @@ module.exports  = DATABASE_MIDDLEWARE("funda", {
      */
     //_________Địa chỉ theo google map
     location: String,
+    //_________Khoảng cách tới vị trí quy định (m)
+    distance: {
+        type: Number,
+        default: 0
+    },
     //_________Địa chỉ
     address: String,
     //_________Tỉnh/Thành phố

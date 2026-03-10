@@ -49,6 +49,11 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     namecv: String,
     //_________Địa chỉ theo google map
     location: String,
+    //_________Khoảng cách tới vị trí quy định (m)
+    distance: {
+        type: Number,
+        default: 0
+    },
     /**
      * Phân loại
      * 1 quản lý
