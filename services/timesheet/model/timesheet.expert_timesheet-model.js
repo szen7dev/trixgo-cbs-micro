@@ -170,7 +170,10 @@ class Model extends BaseModel {
                         dataInsert.members = [userCreate, infoFunda.manager]
                     }
 
-                    if(infoFunda.location && infoFunda.location != '' && location && location != ""){
+                    // console.log(infoFunda.location);
+                    // console.log(infoFunda.distance);
+
+                    if(infoFunda.location && infoFunda.location != '' && location && location != "" && infoFunda.distance > 0){
                         const [lat1, lon1] = location.split(',').map(item => item.trim());
                         const [lat2, lon2] = infoFunda.location.split(',').map(item => item.trim());
 
