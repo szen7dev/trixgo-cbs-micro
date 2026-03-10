@@ -11,6 +11,7 @@ const path                              = require('path')
 const { uploadFileS3 }                  = require('../../../tools/s3')
 const moment                            = require('moment')
 const { KEY_ERROR }                     = require('../../../tools/keys')
+const geolib                            = require('geolib');
 
 /**
  * TOOLS
@@ -160,13 +161,32 @@ class Model extends BaseModel {
                 }
 
                 // Áp dụng cho việc tạo Hàng loạt theo cơ sở
-                if(checkObjectIDs(fundaID)){
+                if(fundaID && checkObjectIDs(fundaID)){
                     dataInsert.funda = fundaID;
 
                     let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
                     if(infoFunda && checkObjectIDs(infoFunda.manager)){
                         dataInsert.admins = [userCreate, infoFunda.manager]
                         dataInsert.members = [userCreate, infoFunda.manager]
+                    }
+
+                    if(infoFunda.location && infoFunda.location != '' && location && location != ""){
+                        const [lat1, lon1] = location.split(',').map(item => item.trim());
+                        const [lat2, lon2] = infoFunda.location.split(',').map(item => item.trim());
+
+                        const a1 = { latitude: lat1, longitude: lon1 };
+                        const a2 = { latitude: lat2, longitude: lon2 };
+
+                        const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
+                        // console.log(`Khoảng cách: ${checkDis} m`);
+
+                        if(checkDis > infoFunda.distance)
+                            return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
+
+                        dataInsert.location = location;
+                        dataInsert.distance = Number(checkDis)
+                    }else{
+                        return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
                     }
                 }
 
@@ -197,14 +217,6 @@ class Model extends BaseModel {
                 // Chỉ áp dụng cho các bảng chấm công Convert
                 if(!isNaN(convert)){
                     dataInsert.convert = convert;
-                }
-
-                if(location && location != ""){
-                    dataInsert.location = location;
-                }
-
-                if(distance && distance != 0){
-                    dataInsert.distance = Number(distance)
                 }
 
                 if(note && note != ""){
