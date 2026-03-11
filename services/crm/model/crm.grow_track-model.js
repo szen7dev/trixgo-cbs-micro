@@ -213,6 +213,8 @@ class Model extends BaseModel {
 
                             if(infoContact?.boneAge && !isNaN(infoContact?.boneAge)){
                                 dataInsert.boneAge = infoContact?.boneAge;
+                            }else{
+                                dataInsert.boneAge = null
                             }
                             
                             dataInsert.gender = infoContact?.gender;
@@ -402,6 +404,8 @@ class Model extends BaseModel {
 
                         if(infoContact?.boneAge && !isNaN(infoContact?.boneAge)){
                             dataUpdate.boneAge = infoContact?.boneAge;
+                        }else{
+                            dataUpdate.boneAge = null
                         }
                         
                         dataUpdate.gender = infoContact?.gender;
