@@ -570,6 +570,8 @@ class Model extends BaseModel {
 
                 if (boneAge) {
                     dataUpdate.boneAge = boneAge;
+                }else{
+                    dataUpdate.boneAge  = null
                 }
 
                 if (phone) {
