@@ -502,11 +502,6 @@ class Model extends BaseModel {
           for (const prodSize of products) {
             // console.log('=============1.1: Bắt đầu SP==========================>>>>>>>>>>>>>>>>>')
             // console.log(prodSize)
-            // console.log(prodSize.variants)
-            // console.log(prodSize.fundas)
-            // if(prodSize.doctype && checkObjectIDs(prodSize.doctype)){
-            //     dataInsert.doctype = prodSize.doctype
-            // }
             if(prodSize.convertOption == 1){
               if (prodSize.size == 1) {
                 totalSizeM = Number(totalSizeM) + Number(prodSize.quantity);
@@ -517,7 +512,6 @@ class Model extends BaseModel {
             }else{
               totalOtherSize = Number(totalOtherSize) + Number(prodSize.quantity);
             }
-
             // console.log('=============1.2: Kết thúc SP==========================>>>>>>>>>>>>>>>>>')
           }
         }
@@ -527,6 +521,7 @@ class Model extends BaseModel {
         dataInsert.numberOfSizeL = Number(totalSizeL);
         dataInsert.numberOfOther = Number(totalOtherSize);
 
+        // TẠO ĐƠN HÀNG
         let infoAfterInsert = await this.insertData(dataInsert);
         if (!infoAfterInsert)
           return resolve({
@@ -536,7 +531,7 @@ class Model extends BaseModel {
           })
 
         /**
-         * GÁN SẢN PHẨM VÀO ĐƠN HÀNG-SẢN PHẨM
+         * GÁN SẢN PHẨM VÀO ĐƠN HÀNG
          */
         const orderID = infoAfterInsert._id;
         if (products && products.length) {

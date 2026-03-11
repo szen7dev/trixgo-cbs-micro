@@ -78,13 +78,6 @@ class Model extends BaseModel {
                 if(!infoProduct)
                     return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                /**
-                 * Kiểm tra sự tồn tại của orderID và productID
-                 */
-                // let checkExist = await FNB_ORDER_PRODUCT_COLL.findOne({ product: productID, order: orderID })
-                // if(checkExist)
-                //     return resolve({ error: true, message: "Sản phẩm đã tồn tại trong đơn hàng", keyError: KEY_ERROR.ITEM_EXISTED })
-
                 let dataInsert = {
                     userCreate: userID,
                     company: infoOrder.company,
