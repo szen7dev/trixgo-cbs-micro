@@ -427,8 +427,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      */
     //_________Giới tính
     gender: { type: Number, default: 1 },
-    //______Độ tuổi: lấy Năm hiện tại (khi tạo đơn hàng) - Ngày sinh của khách hàng
-    age: { type: Number, default: 1 },
+    // //______Độ tuổi: lấy Năm hiện tại (khi tạo đơn hàng) - Ngày sinh của khách hàng
+    // age: { type: Number, default: 1 },
     //______Điểm tích lũy
     loyaltyPoints: {
         type: Number,

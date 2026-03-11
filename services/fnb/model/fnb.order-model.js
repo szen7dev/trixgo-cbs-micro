@@ -90,7 +90,6 @@ class Model extends BaseModel {
     paid,
     products,
     userID,
-    ctx,
   }) {
     const that = this;
     return new Promise(async (resolve) => {
@@ -149,31 +148,14 @@ class Model extends BaseModel {
         /**
          * B1. CẬP NHẬT THUỘC TÍNH CỦA CƠ SỞ
          */
-        // Thuộc chiến dịch marketing hay không
-        if (infoFunda.campaign) {
-          dataInsert.campaign = infoFunda.campaign;
-        }
-
-        // Thong hoặc ngoài hệ thống
+        // Thong hoặc ngoài hệ thống: Công ty hoặc Nhượng quyền
         if (infoFunda.internal) {
           dataInsert.internal = infoFunda.internal;
-        }
-
-        // Khu vực
-        if (infoFunda.area3) {
-          dataInsert.area1 = infoFunda.area1;
-          dataInsert.area2 = infoFunda.area2;
-          dataInsert.area3 = infoFunda.area3;
         }
 
         // Quản lý điểm bán
         if (infoFunda.manager) {
           dataInsert.manager = infoFunda.manager;
-        }
-
-        // Chiến dịch
-        if (infoFunda.campaignName && checkObjectIDs(infoFunda.campaignName)) {
-          dataInsert.campaignName = infoFunda.campaignName;
         }
 
         /**
@@ -202,26 +184,9 @@ class Model extends BaseModel {
           dataInsert.gender = Number(infoCustomer.gender);
         }
 
-        // Độ tuổi
-        if (infoCustomer.birthday) {
-          let dateNow = new Date();
-          dataInsert.age =
-            Number(dateNow.getFullYear()) -
-            Number(infoCustomer.birthday.getFullYear());
-          // console.log(Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear()))
-        }
-
         // Người giới thiệu
         if (infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)) {
           dataInsert.referrer = infoCustomer.referrer;
-        }
-
-        // Phân loại chiến dịch
-        if (
-          infoCustomer.campaignType &&
-          checkObjectIDs(infoCustomer.campaignType)
-        ) {
-          dataInsert.campaignType = infoCustomer.campaignType;
         }
 
         // Doanh số khách cũ, mới và khách vãng lai
@@ -248,21 +213,12 @@ class Model extends BaseModel {
           dataInsert.date = date;
         }
 
-        // affiliateID
-        if (affiliateID && checkObjectIDs(affiliateID)) {
-          dataInsert.affiliate = affiliateID;
-        }
-
         if (appOrderSign && appOrderSign != "") {
           dataInsert.appOrderSign = appOrderSign;
         }
 
         if (note && note != "") {
           dataInsert.note = note;
-        }
-
-        if (parentID && checkObjectIDs(parentID)) {
-          dataInsert.parent = parentID;
         }
 
         if (!isNaN(sources) && [1, 2, 3, 4, 5].includes(Number(sources))) {
