@@ -162,19 +162,19 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
     },
     /**
      * Phân loại kênh bán hàng
-     * 1-Offline
-     * 2-Grab Food
-     * 3-Shopee Food
+     * 1-Offline***
+     * 2-Grab Food***
+     * 3-Shopee Food***
      * 4-Gojek
      * 5-Baemin
      * 6-Loship
-     * 7-Be
+     * 7-Be***
      * 8-TikTok Shop
      * 9-Shopee
      * 10-Lazada
      * 11-FB Reels
-     * 12-Xanh Ngon
-     * 12-Egets
+     * 12-Xanh Ngon***
+     * 13-Egets***
      */
     salesChannel: {
         type: Number,
@@ -427,8 +427,8 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order", {
      */
     //_________Giới tính
     gender: { type: Number, default: 1 },
-    //______Độ tuổi: lấy Năm hiện tại (khi tạo đơn hàng) - Ngày sinh của khách hàng
-    age: { type: Number, default: 1 },
+    // //______Độ tuổi: lấy Năm hiện tại (khi tạo đơn hàng) - Ngày sinh của khách hàng
+    // age: { type: Number, default: 1 },
     //______Điểm tích lũy
     loyaltyPoints: {
         type: Number,

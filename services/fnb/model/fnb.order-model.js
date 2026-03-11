@@ -90,7 +90,6 @@ class Model extends BaseModel {
     paid,
     products,
     userID,
-    ctx,
   }) {
     const that = this;
     return new Promise(async (resolve) => {
@@ -149,31 +148,14 @@ class Model extends BaseModel {
         /**
          * B1. CẬP NHẬT THUỘC TÍNH CỦA CƠ SỞ
          */
-        // Thuộc chiến dịch marketing hay không
-        if (infoFunda.campaign) {
-          dataInsert.campaign = infoFunda.campaign;
-        }
-
-        // Thong hoặc ngoài hệ thống
+        // Thong hoặc ngoài hệ thống: Công ty hoặc Nhượng quyền
         if (infoFunda.internal) {
           dataInsert.internal = infoFunda.internal;
-        }
-
-        // Khu vực
-        if (infoFunda.area3) {
-          dataInsert.area1 = infoFunda.area1;
-          dataInsert.area2 = infoFunda.area2;
-          dataInsert.area3 = infoFunda.area3;
         }
 
         // Quản lý điểm bán
         if (infoFunda.manager) {
           dataInsert.manager = infoFunda.manager;
-        }
-
-        // Chiến dịch
-        if (infoFunda.campaignName && checkObjectIDs(infoFunda.campaignName)) {
-          dataInsert.campaignName = infoFunda.campaignName;
         }
 
         /**
@@ -202,26 +184,9 @@ class Model extends BaseModel {
           dataInsert.gender = Number(infoCustomer.gender);
         }
 
-        // Độ tuổi
-        if (infoCustomer.birthday) {
-          let dateNow = new Date();
-          dataInsert.age =
-            Number(dateNow.getFullYear()) -
-            Number(infoCustomer.birthday.getFullYear());
-          // console.log(Number(dateNow.getFullYear()) - Number(infoCustomer.birthday.getFullYear()))
-        }
-
         // Người giới thiệu
         if (infoCustomer.referrer && checkObjectIDs(infoCustomer.referrer)) {
           dataInsert.referrer = infoCustomer.referrer;
-        }
-
-        // Phân loại chiến dịch
-        if (
-          infoCustomer.campaignType &&
-          checkObjectIDs(infoCustomer.campaignType)
-        ) {
-          dataInsert.campaignType = infoCustomer.campaignType;
         }
 
         // Doanh số khách cũ, mới và khách vãng lai
@@ -248,21 +213,12 @@ class Model extends BaseModel {
           dataInsert.date = date;
         }
 
-        // affiliateID
-        if (affiliateID && checkObjectIDs(affiliateID)) {
-          dataInsert.affiliate = affiliateID;
-        }
-
         if (appOrderSign && appOrderSign != "") {
           dataInsert.appOrderSign = appOrderSign;
         }
 
         if (note && note != "") {
           dataInsert.note = note;
-        }
-
-        if (parentID && checkObjectIDs(parentID)) {
-          dataInsert.parent = parentID;
         }
 
         if (!isNaN(sources) && [1, 2, 3, 4, 5].includes(Number(sources))) {
@@ -546,11 +502,6 @@ class Model extends BaseModel {
           for (const prodSize of products) {
             // console.log('=============1.1: Bắt đầu SP==========================>>>>>>>>>>>>>>>>>')
             // console.log(prodSize)
-            // console.log(prodSize.variants)
-            // console.log(prodSize.fundas)
-            // if(prodSize.doctype && checkObjectIDs(prodSize.doctype)){
-            //     dataInsert.doctype = prodSize.doctype
-            // }
             if(prodSize.convertOption == 1){
               if (prodSize.size == 1) {
                 totalSizeM = Number(totalSizeM) + Number(prodSize.quantity);
@@ -561,7 +512,6 @@ class Model extends BaseModel {
             }else{
               totalOtherSize = Number(totalOtherSize) + Number(prodSize.quantity);
             }
-
             // console.log('=============1.2: Kết thúc SP==========================>>>>>>>>>>>>>>>>>')
           }
         }
@@ -571,26 +521,17 @@ class Model extends BaseModel {
         dataInsert.numberOfSizeL = Number(totalSizeL);
         dataInsert.numberOfOther = Number(totalOtherSize);
 
+        // TẠO ĐƠN HÀNG
         let infoAfterInsert = await this.insertData(dataInsert);
         if (!infoAfterInsert)
           return resolve({
             error: true,
             message: "Thêm thất bại",
             keyError: KEY_ERROR.INSERT_FAILED,
-          });
+          })
 
         /**
-         *  Demo bắn inbox về Facebook
-         */
-        // console.log('===============FBOOOOOOOOOOOOOOOOOOOOOOO')
-        // let infoFB = await ctx.call(`${CF_DOMAIN_SERVICES.FACEBOOK}.${CF_ACTIONS_FACEBOOK.FACEBOOK_SEND_MESSAGE}`, {
-        //     phone: infoCustomer.phone,
-        //     message: `Cảm ơn bạn đã mua hàng tại Winggo, giá trị đơn hàng của bạn là ${total} (amount)`,
-        // })
-        // console.log(infoFB)
-
-        /**
-         * GÁN SẢN PHẨM VÀO ĐƠN HÀNG-SẢN PHẨM
+         * GÁN SẢN PHẨM VÀO ĐƠN HÀNG
          */
         const orderID = infoAfterInsert._id;
         if (products && products.length) {
@@ -778,13 +719,11 @@ class Model extends BaseModel {
         if (salesChannel == 1) {
           await that.updateCustomer({ customerID, userID });
         }
-        // await that.updateCustomer({ customerID, userID })
 
         /**
          * CẬP NHẬT VÀO VOUCHER
          */
         if (salesChannel == 1 && voucherID && checkObjectIDs(voucherID)) {
-          // console.log('Cập nhật thông tin Người sử dụng voucher')
           //______Cập nhật thông tin Người sử dụng voucher
           await FNB_ORDER_VOUCHER_MODEL.update({
             userID,
@@ -892,78 +831,78 @@ class Model extends BaseModel {
          * - Đơn hàng Offline
          * - Khách hàng đã từng bấm quan tâm Zalo OA
          */
-        // Hàm kiểm tra Phone
-        function isValidVietnamPhoneNumber(str) {
-            const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
-            return phoneRegex.test(str);
-        }
-        const strValid = infoCustomer.phone.toLowerCase().trim();
-        let hour = Number(moment(new Date()).hours())
-        // if (Number(total) >= 50000 && hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
-        if (hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
-          /**
-           * Số điện thoại không hợp lệ
-           * Nội dung mẫu ZNS không hợp lệ
-           * Mẫu ZNS này không được phép gửi vào ban đêm (từ 22h-6h)
-           * Tài khoản Zalo không tồn tại hoặc đã bị vô hiệu hoá
-           */
-          // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
+        // // Hàm kiểm tra Phone
+        // function isValidVietnamPhoneNumber(str) {
+        //     const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+        //     return phoneRegex.test(str);
+        // }
+        // const strValid = infoCustomer.phone.toLowerCase().trim();
+        // let hour = Number(moment(new Date()).hours())
+        // // if (Number(total) >= 50000 && hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
+        // if (hour <= 21 && isValidVietnamPhoneNumber(strValid)) {
+        //   /**
+        //    * Số điện thoại không hợp lệ
+        //    * Nội dung mẫu ZNS không hợp lệ
+        //    * Mẫu ZNS này không được phép gửi vào ban đêm (từ 22h-6h)
+        //    * Tài khoản Zalo không tồn tại hoặc đã bị vô hiệu hoá
+        //    */
+        //   // console.log('===============BẮN ZNS THỬ NGHIỆM===============>>>>>>>>>>>>>>>')
 
-          let infoConfig = await ITEM__CONFIG_COLL.findOne({
-            company: infoFunda.company,
-            type: 1,
-            active: 1,
-          });
-          // console.log(infoConfig)
-          const { metadata: { template } } = infoConfig;
+        //   let infoConfig = await ITEM__CONFIG_COLL.findOne({
+        //     company: infoFunda.company,
+        //     type: 1,
+        //     active: 1,
+        //   });
+        //   // console.log(infoConfig)
+        //   const { metadata: { template } } = infoConfig;
 
-          if (infoConfig && template) {
-            // console.log('===============Check OK===============>>>>>>>>>>>>>>>')
+        //   if (infoConfig && template) {
+        //     // console.log('===============Check OK===============>>>>>>>>>>>>>>>')
 
-            // Xử lý dữ liệu số điện thoại
-            const str = infoCustomer.phone;
-            const removeFirst1 = `84${str.slice(1)}`;
+        //     // Xử lý dữ liệu số điện thoại
+        //     const str = infoCustomer.phone;
+        //     const removeFirst1 = `84${str.slice(1)}`;
 
-            let dataOA1 = {
-              phone: `${removeFirst1}`,
-              // phone: "84985199295",
-              templateData: {
-                customer_name: `Khách ${infoCustomer.phone}`,
-                order_code: `C${Number(numberOfOrder + 1)}`,
-                price: total,
-                date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                note: "Quan tâm OA tặng mã 200k",
-                // note: "Chi tiết xem linkProfile",
-              },
-              templateId: template.new_order,
-              appId: infoConfig.channel,
-            }
-            await ctx.call(
-              `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-              dataOA1,
-            )
+        //     let dataOA1 = {
+        //       phone: `${removeFirst1}`,
+        //       // phone: "84985199295",
+        //       templateData: {
+        //         customer_name: `Khách ${infoCustomer.phone}`,
+        //         order_code: `C${Number(numberOfOrder + 1)}`,
+        //         price: total,
+        //         date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
+        //         note: "Quan tâm OA tặng mã 200k",
+        //         // note: "Chi tiết xem linkProfile",
+        //       },
+        //       templateId: template.new_order,
+        //       appId: infoConfig.channel,
+        //     }
+        //     await ctx.call(
+        //       `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+        //       dataOA1,
+        //     )
 
-            if(Number(total) >= 200000){
-              let dataOA2 = {
-                phone: "84985199295",
-                templateData: {
-                  customer_name: `Khách ${infoCustomer.phone}`,
-                  order_code: `C${Number(numberOfOrder + 1)}`,
-                  price: total,
-                  date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
-                  // note: "Chi tiết xem linkProfile",
-                  note: "Quan tâm OA tặng mã 200k",
-                },
-                templateId: template.new_order,
-                appId: infoConfig.channel
-              }
-              await ctx.call(
-                `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
-                dataOA2,
-              )
-            }
-          }
-        }
+        //     if(Number(total) >= 200000){
+        //       let dataOA2 = {
+        //         phone: "84985199295",
+        //         templateData: {
+        //           customer_name: `Khách ${infoCustomer.phone}`,
+        //           order_code: `C${Number(numberOfOrder + 1)}`,
+        //           price: total,
+        //           date: moment(new Date()).format("HH:mm DD/MM/YYYY"),
+        //           // note: "Chi tiết xem linkProfile",
+        //           note: "Quan tâm OA tặng mã 200k",
+        //         },
+        //         templateId: template.new_order,
+        //         appId: infoConfig.channel
+        //       }
+        //       await ctx.call(
+        //         `${CF_DOMAIN_SERVICES.ZALO}.${CF_ACTIONS_ZALO.ZALO_SEND_MESSAGE_ZNS}`,
+        //         dataOA2,
+        //       )
+        //     }
+        //   }
+        // }
 
         return resolve({ error: false, data: infoAfterInsert });
       } catch (error) {

@@ -70,7 +70,6 @@ class Model extends BaseModel {
      * Code  :
      */
     getList({ company, app, role, limit = 30, lastestID, select, populates = {} }) {
-        // console.log({ company, app, role, limit, lastestID, select, populates })
         return new Promise(async (resolve) => {
             try {
                 if(limit > 30){
@@ -200,7 +199,6 @@ class Model extends BaseModel {
      * [x] Đã check ok
      */
     getPermissionToAccessOneMenuOfApp({ type=1, menu, user, app, company }) {
-        // console.log({ type, menu, user, app, company })
         return new Promise(async resolve => {
             try {
                 let listRoles = await AUTH__APP_ROLE_COLL.find({

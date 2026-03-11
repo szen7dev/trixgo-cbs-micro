@@ -78,13 +78,6 @@ class Model extends BaseModel {
                 if(!infoProduct)
                     return resolve({ error: true, message: "Sản phẩm không tồn tại", keyError: KEY_ERROR.ITEM_EXISTED })
 
-                /**
-                 * Kiểm tra sự tồn tại của orderID và productID
-                 */
-                // let checkExist = await FNB_ORDER_PRODUCT_COLL.findOne({ product: productID, order: orderID })
-                // if(checkExist)
-                //     return resolve({ error: true, message: "Sản phẩm đã tồn tại trong đơn hàng", keyError: KEY_ERROR.ITEM_EXISTED })
-
                 let dataInsert = {
                     userCreate: userID,
                     company: infoOrder.company,
@@ -127,26 +120,8 @@ class Model extends BaseModel {
                 }
 
                 let infoAfterInsert = await this.insertData(dataInsert);
-
                 if (!infoAfterInsert)
-                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED });
-
-                /**
-                 * CẬP NHẬT NGUYÊN LIỆU HAO PHÍ VÀO ĐƠN HÀNG
-                 */
-                // const listQuota = await FNB_QUOTA_COLL.find({ product: productID })
-                // const orderMaterialAsync = listQuota.map(item => 
-                //     FNB_ORDER_MATERIAL_MODEL.insert({
-                //         orderID,
-                //         productID,
-                //         quantityOfProduct: quantity,
-                //         goodsID: item.goods,
-                //         quantity: item.quantity,
-                //         unitPrice: item.unitPrice,
-                //         userID
-                //     })
-                // );
-                // await Promise.all(orderMaterialAsync);
+                    return resolve({ error: true, message: 'Thêm thất bại', keyError: KEY_ERROR.INSERT_FAILED })
 
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {

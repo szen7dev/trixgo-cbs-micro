@@ -56,7 +56,7 @@ module.exports = {
                 }
 
                 let resultAfterCallHandler = await FNB_ORDER_MODEL.insert({
-                    voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID, ctx
+                    voucherID, fundaID, parentID, customerID, affiliateID, shiftID, assigneeID, date, name, appOrderSign, note, service, salesChannel, paymentMethod, sources, total, discount, salesoff, credit, offer, vatAmount, products, shippingFee, paid, userID
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })

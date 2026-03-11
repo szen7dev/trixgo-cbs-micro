@@ -27,6 +27,8 @@ const ITEM__CONTACT_COLL                = require('../../item/database/item.cont
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
 
 const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
+const AUTH__APP_ROLE_MENU               = require('../.../../../auth/model/auth.app_role_menu').MODEL
+
 class Model extends BaseModel {
 
     constructor() {
@@ -45,187 +47,202 @@ class Model extends BaseModel {
                 if(emailUser.toString() == 'guest.lamin@gmail.com')
                     return resolve({ error: true, message: "Bạn không có quyền" })
 
-                if(phone){
-                    // Hàm kiểm tra Phone
-                    const strValid = phone.toLowerCase().trim();
+                // Kiểm tra quyền được đo cao
+                let infoPer = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
+                    type: 1, 
+                    menu: '67cd26c32f3dbd0012e41555', 
+                    user: userID, 
+                    app: '61e049f6fdebf77b072d1b16', 
+                    company: companyID
+                })
 
-                    function isValidVietnamPhoneNumber(str) {
-                        const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
-                        return phoneRegex.test(str);
-                    }
+                // console.log(infoPer)
+                if(infoPer && infoPer.data && infoPer.data.create >= 1){
+                    if(phone){
+                        // Hàm kiểm tra Phone
+                        const strValid = phone.toLowerCase().trim();
 
-                    if(!isValidVietnamPhoneNumber(strValid))
-                        return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
-                }else{
-                    if(checkObjectIDs(contactID)){
-                        if(!height || !weight)
-                            return resolve({ error: true, message: "Ngày sinh, chiều cao, cân nặng không hợp lệ" })
+                        function isValidVietnamPhoneNumber(str) {
+                            const phoneRegex = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
+                            return phoneRegex.test(str);
+                        }
+
+                        if(!isValidVietnamPhoneNumber(strValid))
+                            return resolve({ error: true, message: "Số điện thoại không hợp lệ. Hãy vui lòng thử lại" })
                     }else{
-                        if(!name || !birthday || !height || !weight)
-                        return resolve({ error: true, message: "Tên, ngày sinh, chiều cao, cân nặng không hợp lệ" })
-                    }
-                }
-
-                //__________Khai báo và validate dữ liệu
-                let dataInsert = {
-                    company: companyID,
-                    userCreate: userID,
-                }
-
-                let convertStr = '';
-
-                if(!isNaN(status) && [1,2].includes(Number(status))){
-                    dataInsert.status = status;
-                }
-
-                if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
-                    dataInsert.gender = gender;
-                }
-
-                if(!isNaN(height)){
-                    dataInsert.height = height;
-                }
-
-                if(!isNaN(weight)){
-                    dataInsert.weight = weight;
-                }
-
-                if(!isNaN(fatherHeight)){
-                    dataInsert.fatherHeight = fatherHeight;
-                }
-
-                if(!isNaN(motherHeight)){
-                    dataInsert.motherHeight = motherHeight;
-                }
-
-                if(!isNaN(desiredHeight)){
-                    dataInsert.desiredHeight = desiredHeight;
-                }
-
-                if(birthday && birthday != ""){
-                    dataInsert.birthday = birthday;
-
-                    let check = new Date().getFullYear() - new Date(birthday).getFullYear()
-                    if(check >= 20)
-                        return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
-                }
-
-                if(pubertyOnsetDate && pubertyOnsetDate != ""){
-                    dataInsert.pubertyOnsetDate = pubertyOnsetDate;
-                }
-                if(!isNaN(boneAge)){
-                    dataInsert.boneAge = boneAge;
-                }
-                if(date && date != ""){
-                    dataInsert.date = date;
-                }
-                if(name && name != ""){
-                    dataInsert.name = name;
-                    convertStr = stringUtils.removeAccents(name)
-                }
-                if(phone && phone != ""){
-                    dataInsert.phone = phone;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(phone)
-                }
-                if(email && email != ""){
-                    dataInsert.email = email;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(email)
-                }
-                if(routine && routine != ""){
-                    dataInsert.routine = routine;
-                }
-                if(note && note != ""){
-                    dataInsert.note = note;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(note)
-                }
-                if(facebook && facebook != ""){
-                    dataInsert.facebook = facebook;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(facebook)
-                }
-                if(tiktok && tiktok != ""){
-                    dataInsert.tiktok = tiktok;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
-                }
-                if(parentName && parentName != ""){
-                    dataInsert.parentName = parentName;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(parentName)
-                }
-
-                if(motherName && motherName != ""){
-                    dataInsert.motherName = motherName;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(motherName)
-                }
-
-                if(motherPhone && motherPhone != ""){
-                    dataInsert.motherPhone = motherPhone;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(motherPhone)
-                }
-
-                if(motherEmail && motherEmail != ""){
-                    dataInsert.motherEmail = motherEmail;
-                    convertStr = convertStr + " " + stringUtils.removeAccents(motherEmail)
-                }
-
-                if(contactID && checkObjectIDs(contactID)){
-                    dataInsert.contact = contactID;
-
-                    let infoContact = await ITEM__CONTACT_COLL.findById(contactID).populate({
-                        path: 'parent',
-                        select: 'phone name'
-                    })
-
-                    if(infoContact){
-                        dataInsert.name = infoContact?.name;
-                        convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
-
-                        if(infoContact.phone){
-                            dataInsert.phone = infoContact?.phone;
-                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
+                        if(checkObjectIDs(contactID)){
+                            if(!height || !weight)
+                                return resolve({ error: true, message: "Ngày sinh, chiều cao, cân nặng không hợp lệ" })
                         }else{
-                            dataInsert.phone = infoContact?.parent?.phone;
-                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.parent?.phone)
+                            if(!name || !birthday || !height || !weight)
+                            return resolve({ error: true, message: "Tên, ngày sinh, chiều cao, cân nặng không hợp lệ" })
                         }
-
-                        if(infoContact?.birthday && infoContact?.birthday != null){
-                            dataInsert.birthday = infoContact?.birthday;
-                            
-                            // let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
-                            // if(check >= 20)
-                            // return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
-                        }
-
-                        if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
-                            dataInsert.pubertyOnsetDate = infoContact?.pubertyOnsetDate;
-                        }
-
-                        if(infoContact?.boneAge && !isNaN(infoContact?.boneAge)){
-                            dataInsert.boneAge = infoContact?.boneAge;
-                        }
-                        
-                        dataInsert.gender = infoContact?.gender;
-                        dataInsert.parentName = infoContact?.parent?.name;
                     }
-                }
-                
-                if(convertStr != ""){
-                    dataInsert.namecv = convertStr
-                }
-                // console.log(dataInsert)
 
-                let infoAfterInsert = await this.insertData(dataInsert)
-                if(!infoAfterInsert)
-                    return resolve({ error: true, message: "cannot_insert" })
+                    //__________Khai báo và validate dữ liệu
+                    let dataInsert = {
+                        company: companyID,
+                        userCreate: userID,
+                    }
 
-                // Tính toán đường phân vị và cập nhật
-                let infoNew = await that.getInfo({ trackID: infoAfterInsert._id, userID })
-                if(infoNew){
-                    await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
-                        percentile: Number(infoNew.P),
-                        predictedAdultHeight: Number(infoNew.predictedAdultHeight)
-                    }, { new: true })
+                    let convertStr = '';
+
+                    if(!isNaN(status) && [1,2].includes(Number(status))){
+                        dataInsert.status = status;
+                    }
+
+                    if(!isNaN(gender) && [1,2,3].includes(Number(gender))){
+                        dataInsert.gender = gender;
+                    }
+
+                    if(!isNaN(height)){
+                        dataInsert.height = height;
+                    }
+
+                    if(!isNaN(weight)){
+                        dataInsert.weight = weight;
+                    }
+
+                    if(!isNaN(fatherHeight)){
+                        dataInsert.fatherHeight = fatherHeight;
+                    }
+
+                    if(!isNaN(motherHeight)){
+                        dataInsert.motherHeight = motherHeight;
+                    }
+
+                    if(!isNaN(desiredHeight)){
+                        dataInsert.desiredHeight = desiredHeight;
+                    }
+
+                    if(birthday && birthday != ""){
+                        dataInsert.birthday = birthday;
+
+                        let check = new Date().getFullYear() - new Date(birthday).getFullYear()
+                        if(check >= 20)
+                            return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
+                    }
+
+                    if(pubertyOnsetDate && pubertyOnsetDate != ""){
+                        dataInsert.pubertyOnsetDate = pubertyOnsetDate;
+                    }
+                    if(!isNaN(boneAge)){
+                        dataInsert.boneAge = boneAge;
+                    }
+                    if(date && date != ""){
+                        dataInsert.date = date;
+                    }
+                    if(name && name != ""){
+                        dataInsert.name = name;
+                        convertStr = stringUtils.removeAccents(name)
+                    }
+                    if(phone && phone != ""){
+                        dataInsert.phone = phone;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(phone)
+                    }
+                    if(email && email != ""){
+                        dataInsert.email = email;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(email)
+                    }
+                    if(routine && routine != ""){
+                        dataInsert.routine = routine;
+                    }
+                    if(note && note != ""){
+                        dataInsert.note = note;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(note)
+                    }
+                    if(facebook && facebook != ""){
+                        dataInsert.facebook = facebook;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(facebook)
+                    }
+                    if(tiktok && tiktok != ""){
+                        dataInsert.tiktok = tiktok;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(tiktok)
+                    }
+                    if(parentName && parentName != ""){
+                        dataInsert.parentName = parentName;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(parentName)
+                    }
+
+                    if(motherName && motherName != ""){
+                        dataInsert.motherName = motherName;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(motherName)
+                    }
+
+                    if(motherPhone && motherPhone != ""){
+                        dataInsert.motherPhone = motherPhone;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(motherPhone)
+                    }
+
+                    if(motherEmail && motherEmail != ""){
+                        dataInsert.motherEmail = motherEmail;
+                        convertStr = convertStr + " " + stringUtils.removeAccents(motherEmail)
+                    }
+
+                    if(contactID && checkObjectIDs(contactID)){
+                        dataInsert.contact = contactID;
+
+                        let infoContact = await ITEM__CONTACT_COLL.findById(contactID).populate({
+                            path: 'parent',
+                            select: 'phone name'
+                        })
+
+                        if(infoContact){
+                            dataInsert.name = infoContact?.name;
+                            convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.name)
+
+                            if(infoContact.phone){
+                                dataInsert.phone = infoContact?.phone;
+                                convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.phone)
+                            }else{
+                                dataInsert.phone = infoContact?.parent?.phone;
+                                convertStr = convertStr + " " + stringUtils.removeAccents(infoContact?.parent?.phone)
+                            }
+
+                            if(infoContact?.birthday && infoContact?.birthday != null){
+                                dataInsert.birthday = infoContact?.birthday;
+                                
+                                // let check = new Date().getFullYear() - new Date(infoContact?.birthday).getFullYear()
+                                // if(check >= 20)
+                                // return resolve({ error: true, message: "Chỉ đo cao cho người dưới 20 tuổi" })
+                            }
+
+                            if(infoContact?.pubertyOnsetDate && infoContact?.pubertyOnsetDate != null){
+                                dataInsert.pubertyOnsetDate = infoContact?.pubertyOnsetDate;
+                            }
+
+                            if(infoContact?.boneAge && !isNaN(infoContact?.boneAge)){
+                                dataInsert.boneAge = infoContact?.boneAge;
+                            }
+                            
+                            dataInsert.gender = infoContact?.gender;
+                            dataInsert.parentName = infoContact?.parent?.name;
+                        }
+                    }
+                    
+                    if(convertStr != ""){
+                        dataInsert.namecv = convertStr
+                    }
+                    // console.log(dataInsert)
+
+                    let infoAfterInsert = await this.insertData(dataInsert)
+                    if(!infoAfterInsert)
+                        return resolve({ error: true, message: "cannot_insert" })
+
+                    // Tính toán đường phân vị và cập nhật
+                    let infoNew = await that.getInfo({ trackID: infoAfterInsert._id, userID })
+                    if(infoNew){
+                        await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterInsert._id, {
+                            percentile: Number(infoNew.P),
+                            predictedAdultHeight: Number(infoNew.predictedAdultHeight)
+                        }, { new: true })
+                    }
+
+                    return resolve({ error: false, data: infoAfterInsert });
+
+                }else{
+                    return resolve({ error: true, message: "Bạn không có quyền" })
                 }
-
-                return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
             }
