@@ -593,70 +593,7 @@ class Model extends BaseModel {
                     XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/fnb_export_order.xlsx')))
                     .then(async workbook => {
                         var i = 3;
-                        listData?.forEach((item, index) => {
-                            workbook.sheet("Order").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Order").row(i).cell(2).value(item?.funda?.name);
-                            workbook.sheet("Order").row(i).cell(3).value(item.createAt);
-                            workbook.sheet("Order").row(i).cell(4).value(item?.shift?.name);
-                            workbook.sheet("Order").row(i).cell(5).value(`${FNB_SHIFT_TYPES[Number(item.shiftType)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(6).value(item.name);
-                            workbook.sheet("Order").row(i).cell(7).value(item.sign);
-                            workbook.sheet("Order").row(i).cell(8).value(`${FNB_SALES_CHANNEL[Number(item.salesChannel)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(9).value(item?.appOrderSign);
-                            workbook.sheet("Order").row(i).cell(10).value(`${FNB_PAYMENT_METHOD[Number(item.paymentMethod)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(11).value(`${FNB_STATUS[Number(item.status)-1].text}`);
-                            workbook.sheet("Order").row(i).cell(12).value(Number(item.total));
-                            workbook.sheet("Order").row(i).cell(13).value(Number(item.discount));
-                            workbook.sheet("Order").row(i).cell(14).value(Number(item.salesoff));
-                            workbook.sheet("Order").row(i).cell(15).value(Number(item.credit));
-                            workbook.sheet("Order").row(i).cell(16).value(Number(item.offer));
-                            workbook.sheet("Order").row(i).cell(17).value(Number(item.amount));
-                            workbook.sheet("Order").row(i).cell(18).value(Number(item?.shippingFeeTotal));
-                            workbook.sheet("Order").row(i).cell(19).value(Number(item?.shippingFee));
-                            workbook.sheet("Order").row(i).cell(20).value(Number(item.numberOfSizeM));
-                            workbook.sheet("Order").row(i).cell(21).value(Number(item.numberOfSizeL));
-                            workbook.sheet("Order").row(i).cell(22).value(Number(item.numberOfProducts));
-                            workbook.sheet("Order").row(i).cell(23).value(Number(item.numberOfMistakes));
-                            workbook.sheet("Order").row(i).cell(24).value(item.note);
-                            workbook.sheet("Order").row(i).cell(25).value(Number(item.loyaltyPoints));
-                            workbook.sheet("Order").row(i).cell(26).value(item.amount != 0 ? Number(item.loyaltyPoints)/Number(item.amount) : 0);
-                            workbook.sheet("Order").row(i).cell(27).value(item.total !=0 ? Number(item.salesoff)/Number(item.total) : "");
-                            if(item.customerType && Number(item.customerType) === 1 && Number(item.nonResident) === 1){
-                                workbook.sheet("Order").row(i).cell(28).value('Đơn nhân viên');
-                            }
-                            if(Number(item.nonResident) === 2){
-                                workbook.sheet("Order").row(i).cell(29).value('Khách vãng lai');
-                            }
-                            workbook.sheet("Order").row(i).cell(30).value(`${item?.customer?._id}`);
-                            workbook.sheet("Order").row(i).cell(31).value(item?.customer?.phone);
-                            workbook.sheet("Order").row(i).cell(32).value(item?.customer?.name);
-                            workbook.sheet("Order").row(i).cell(33).value(item?.referrer ? `${item?.referrer?._id}` : "");
-                            workbook.sheet("Order").row(i).cell(34).value(item?.referrer ? item?.referrer?.phone : "");
-                            workbook.sheet("Order").row(i).cell(35).value(item?.referrer ? item?.referrer?.name : "");
-                            workbook.sheet("Order").row(i).cell(36).value(item?.campaignType ? item?.campaignType?.name : "");
-
-                            i++
-                        });
-
-                        var i = 3;
-                        listData2?.forEach((item, index) => {
-                            workbook.sheet("Product").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Product").row(i).cell(2).value(`${item._id.product.name}`);
-                            workbook.sheet("Product").row(i).cell(3).value(`${item._id.funda.name}`);
-                            workbook.sheet("Product").row(i).cell(4).value(Number(item?.quantity));
-
-                            i++
-                        });
-
-                        var i = 3;
-                        listData3?.forEach((item, index) => {
-                            workbook.sheet("Report").row(i).cell(1).value(Number(index+1));
-                            workbook.sheet("Report").row(i).cell(2).value(`${item._id.product.name}`);
-                            workbook.sheet("Report").row(i).cell(3).value(Number(item?.quantity));
-
-                            i++
-                        });
-
+                        
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
                         const fileName = `DanhSachDonHang_${now.getTime()}.xlsx`;

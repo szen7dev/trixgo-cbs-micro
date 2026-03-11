@@ -36,6 +36,15 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_order_product", {
         default : 1
     },
     /**
+     * Có phân size hay không
+     * 1-Có
+     * 2-Không
+     */
+    convertOption: {
+        type: Number,
+        default : 1
+    },
+    /**
      * Kích cỡ
      * 1-Size M
      * 2-Size L

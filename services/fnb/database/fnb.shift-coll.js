@@ -158,6 +158,11 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_shift", {
         type: Number,
         default: 0
     },
+    //______Số sản phẩm khác sử dụng trong ca
+    numberOfOther: {
+        type: Number,
+        default: 0
+    },
     //______Tiền mặt
     cashAmount: {
         type: Number,

@@ -57,7 +57,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 24/11/2022
      */
-    insert({ orderID, productID, size, sugar, ice, subProductsID, quantity, unitPrice, note, userID }) {
+    insert({ orderID, productID, convertOption, size, sugar, ice, subProductsID, quantity, unitPrice, note, userID }) {
         return new Promise(async resolve => {
             try {
                 /**
@@ -91,6 +91,7 @@ class Model extends BaseModel {
                     funda: infoOrder.funda,
                     order: orderID,
                     product: productID,
+                    convertOption,
                     size,
                     sugar,
                     ice,
