@@ -540,8 +540,7 @@ class Model extends BaseModel {
         /**
          * THÊM SIZE VÀO ĐƠN HÀNG VÀ CA LÀM VIỆC
          */
-        let totalSizeM = 0,
-          totalSizeL = 0;
+        let totalSizeM = 0, totalSizeL = 0, totalOtherSize = 0;
         // console.log('=============1: SẢN PHẨM GIỎ HÀNG==========================>>>>>>>>>>>>>>>>>')
         if (products && products.length) {
           for (const prodSize of products) {
@@ -552,12 +551,17 @@ class Model extends BaseModel {
             // if(prodSize.doctype && checkObjectIDs(prodSize.doctype)){
             //     dataInsert.doctype = prodSize.doctype
             // }
-            if (prodSize.size == 1) {
-              totalSizeM = Number(totalSizeM) + Number(prodSize.quantity);
+            if(prodSize.convertOption == 1){
+              if (prodSize.size == 1) {
+                totalSizeM = Number(totalSizeM) + Number(prodSize.quantity);
+              }
+              if (prodSize.size == 2) {
+                totalSizeL = Number(totalSizeL) + Number(prodSize.quantity);
+              }
+            }else{
+              totalOtherSize = Number(totalOtherSize) + Number(prodSize.quantity);
             }
-            if (prodSize.size == 2) {
-              totalSizeL = Number(totalSizeL) + Number(prodSize.quantity);
-            }
+
             // console.log('=============1.2: Kết thúc SP==========================>>>>>>>>>>>>>>>>>')
           }
         }
@@ -565,6 +569,7 @@ class Model extends BaseModel {
 
         dataInsert.numberOfSizeM = Number(totalSizeM);
         dataInsert.numberOfSizeL = Number(totalSizeL);
+        dataInsert.numberOfOther = Number(totalOtherSize);
 
         let infoAfterInsert = await this.insertData(dataInsert);
         if (!infoAfterInsert)
@@ -631,6 +636,7 @@ class Model extends BaseModel {
               orderID,
               productID: product.productID,
               black: product.black ? Number(product.size) : 1,
+              convertOption: product.convertOption ? Number(product.convertOption) : 1,
               size: product.size ? Number(product.size) : 1,
               sugar: product.sugar ? Number(product.sugar) : 1,
               ice: product.ice ? Number(product.ice) : 1,
@@ -664,6 +670,7 @@ class Model extends BaseModel {
             total1: Number(total),
             numberOfSizeM: Number(totalSizeM),
             numberOfSizeL: Number(totalSizeL),
+            numberOfOther: Number(totalOtherSize),
           };
         }
         if (!isNaN(salesChannel) && Number(salesChannel) === 2) {
@@ -676,6 +683,7 @@ class Model extends BaseModel {
             total2: Number(total),
             numberOfSizeM: Number(totalSizeM),
             numberOfSizeL: Number(totalSizeL),
+            numberOfOther: Number(totalOtherSize),
           };
         }
         if (!isNaN(salesChannel) && Number(salesChannel) === 3) {
@@ -688,6 +696,7 @@ class Model extends BaseModel {
             total3: Number(total),
             numberOfSizeM: Number(totalSizeM),
             numberOfSizeL: Number(totalSizeL),
+            numberOfOther: Number(totalOtherSize),
           };
         }
         if (!isNaN(salesChannel) && Number(salesChannel) === 7) {
@@ -700,6 +709,7 @@ class Model extends BaseModel {
             total7: Number(total),
             numberOfSizeM: Number(totalSizeM),
             numberOfSizeL: Number(totalSizeL),
+            numberOfOther: Number(totalOtherSize),
           };
         }
         if (!isNaN(salesChannel) && Number(salesChannel) === 12) {
@@ -712,6 +722,7 @@ class Model extends BaseModel {
             total12: Number(total),
             numberOfSizeM: Number(totalSizeM),
             numberOfSizeL: Number(totalSizeL),
+            numberOfOther: Number(totalOtherSize),
           };
         }
         if (!isNaN(salesChannel) && Number(salesChannel) === 13) {
@@ -724,6 +735,7 @@ class Model extends BaseModel {
             total13: Number(total),
             numberOfSizeM: Number(totalSizeM),
             numberOfSizeL: Number(totalSizeL),
+            numberOfOther: Number(totalOtherSize),
           };
         }
 
@@ -1277,6 +1289,7 @@ class Model extends BaseModel {
         let transferAmount = 0;
         let numberOfSizeM = 0;
         let numberOfSizeL = 0;
+        let numberOfOther = 0;
         let numberOfOrders1 = 0;
         let numberOfOrders2 = 0;
         let numberOfOrders3 = 0;
@@ -1448,7 +1461,7 @@ class Model extends BaseModel {
           },
           {
             $group: {
-              _id: { size: "$size" },
+              _id: { size: "$size", convertOption: "$convertOption" },
               quantity: { $sum: "$quantity" },
             },
           },
@@ -1456,10 +1469,15 @@ class Model extends BaseModel {
         // console.log(listData1)
         if (listData1 && listData1.length) {
           for (const item of listData1) {
-            if (item._id.size && item._id.size == 1) {
-              numberOfSizeM = Number(numberOfSizeM) + Number(item.quantity);
-            } else {
-              numberOfSizeL = Number(numberOfSizeL) + Number(item.quantity);
+            if (item._id.convertOption && item._id.convertOption == 1) {
+              // Quản lý theo Size
+              if (item._id.size && item._id.size == 1) {
+                numberOfSizeM = Number(numberOfSizeM) + Number(item.quantity);
+              } else {
+                numberOfSizeL = Number(numberOfSizeL) + Number(item.quantity);
+              }
+            }else{
+              numberOfOther = Number(numberOfOther) + Number(item.quantity);
             }
           }
         }
@@ -1469,6 +1487,7 @@ class Model extends BaseModel {
         dataUpdate.totalOfCancelOrders = Number(totalOfCancelOrders);
         dataUpdate.numberOfSizeM = Number(numberOfSizeM);
         dataUpdate.numberOfSizeL = Number(numberOfSizeL);
+        dataUpdate.numberOfOther = Number(numberOfOther);
         dataUpdate.cashAmount = Number(cashAmount);
         dataUpdate.transferAmount = Number(transferAmount);
         dataUpdate.numberOfOrders1 = Number(numberOfOrders1);

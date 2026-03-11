@@ -32,12 +32,12 @@
          async handler(ctx) {
              try {
                 await this.validateEntity(ctx.params);
-                let { parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type } = ctx.params;
+                let { parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type, convertOption } = ctx.params;
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await FNB_PRODUCT_MODEL.insert({
-                    userID, companyID: company._id, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type
+                    userID, companyID: company._id, parentID, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, type, convertOption
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
@@ -75,6 +75,9 @@
          async handler(ctx) {
              try {
                  await this.validateEntity(ctx.params);
+
+                //  console.log(ctx.params)
+
                  let {  productID, parentID, type, name, sign, unit, note, quantity, unitPrice, unitPrice2, unitPrice3, unitPrice4, imagesID, fundasID, option, convertOption, status } = ctx.params;
                  
                  const { _id: userID, company } = ctx.meta.infoUser;

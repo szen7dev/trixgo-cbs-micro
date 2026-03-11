@@ -110,8 +110,9 @@ module.exports  = DATABASE_MIDDLEWARE("fnb_product", {
         default: 0 
     },
     /**
-     * 1-Khu Hà Nội
-     * 2-Hồ Chí Minh
+     * Có phân size hay không
+     * 1-Có
+     * 2-Không
      */
     convertOption: {
         type: Number,
