@@ -525,7 +525,7 @@ class Model extends BaseModel {
                 }
                 // Áp dụng có tuổi thực xương
                 else{
-                    if(infoAterGet.boneAge && infoAterGet.boneAge != ''){
+                    if(infoAterGet.boneAge && !isNaN(infoAterGet.boneAge)){
                         const tuoiThucXuong = infoAterGet.boneAge
                         const result = subtractYearsAsDays(date2, tuoiThucXuong);
                         if(isValidDate(result)){
