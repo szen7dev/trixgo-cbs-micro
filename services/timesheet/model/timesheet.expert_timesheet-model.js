@@ -291,7 +291,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official, filesID }){
+    update({ expertTimesheetID, projectID, fundaID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official, filesID }){
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -303,7 +303,6 @@ class Model extends BaseModel {
                 let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(expertTimesheetID);
                 if(!infoTimeSheet) 
                     return resolve({ error: true, message: 'Timesheet không tồn tại', keyError: "timesheet_not_exists", status: 400 })
-                
 
                 //___________Quyền truy cập ứng dụng
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -315,6 +314,32 @@ class Model extends BaseModel {
                 let dataUpdate = {
                     userUpdate: userID,
                     modifyAt: Date.now(),
+                }
+
+                // Áp dụng cho việc tạo Hàng loạt theo cơ sở
+                if(fundaID && checkObjectIDs(fundaID)){
+                    dataUpdate.funda = fundaID;
+
+                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
+                    if(infoFunda.location && infoFunda.location != '' && location && location != "" && infoFunda.distance > 0){
+                        const [lat1, lon1] = location.split(',').map(item => item.trim());
+                        const [lat2, lon2] = infoFunda.location.split(',').map(item => item.trim());
+
+                        const a1 = { latitude: lat1, longitude: lon1 };
+                        const a2 = { latitude: lat2, longitude: lon2 };
+
+                        const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
+                        // console.log(`Khoảng cách: ${checkDis} m`);
+
+                        if(checkDis > infoFunda.distance)
+                            return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
+
+                        dataUpdate.location = location;
+                        dataUpdate.distance = Number(checkDis)
+                        dataUpdate.note = 'Chấm công trên Mobile';
+                    }else{
+                        return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
+                    }
                 }
 
                 let dataAddToset = {};
