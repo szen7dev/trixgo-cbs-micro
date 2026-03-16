@@ -1953,10 +1953,25 @@ class Model extends BaseModel {
                         userCreate: infoUserAfterInsert._id
                     }, { new: true })
 
-                    await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                    let newInfoUser = await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
                         $addToSet: { contacts: infoContact._id }
                     }, { new: true })
 
+                    delete newInfoUser.password;
+
+                    
+                    // Thông báo email tới người dùng
+                    const mailContent = templateInfoAccount(fullname, password);
+                    sendEmailRecoverPass(
+                        emailValid,
+                        'THÔNG TIN TÀI KHOẢN/ACCOUNT INFO - TRIXGO.COM',
+                        mailContent,
+                        cb => {
+                            console.log(cb);
+                        }
+                    )
+
+                    return resolve({ error: false, data: newInfoUser, status: 200 })
                 } else{
                     let infoNewContact = await ITEM__CONTACT_MODEL.insert({
                         companyID,
@@ -1975,24 +1990,26 @@ class Model extends BaseModel {
                             userCreate: infoUserAfterInsert._id
                         }, { new: true })
 
-                        await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
+                        let newInfoUser = await AUTH__USER_COLL.findByIdAndUpdate(infoUserAfterInsert._id, {
                             $addToSet: { contacts: infoNewContact.data?._id }
                         }, { new: true })
+
+                        delete newInfoUser.password;
+
+                        // Thông báo email tới người dùng
+                        const mailContent = templateInfoAccount(fullname, password);
+                        sendEmailRecoverPass(
+                            emailValid,
+                            'THÔNG TIN TÀI KHOẢN/ACCOUNT INFO - TRIXGO.COM',
+                            mailContent,
+                            cb => {
+                                console.log(cb);
+                            }
+                        )
+
+                        return resolve({ error: false, data: newInfoUser, status: 200 })
                     }
                 }
-
-                // Thông báo email tới người dùng
-                const mailContent = templateInfoAccount(fullname, password);
-                sendEmailRecoverPass(
-                    emailValid,
-                    'THÔNG TIN TÀI KHOẢN/ACCOUNT INFO - TRIXGO.COM',
-                    mailContent,
-                    cb => {
-                        console.log(cb);
-                    }
-                )
-
-                return resolve({ error: false, data: infoUserAfterInsert, status: 200 });
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 });
             }
@@ -2151,6 +2168,24 @@ class Model extends BaseModel {
                     }
                 })
                 // console.log('222222222222222222222222222')
+
+                // Cập nhật lại với linkContact
+                let infoContact = await ITEM__CONTACT_COLL.findOne({
+                    company: companyID,
+                    linkUser: infoUserAfterUpdate._id
+                })
+                if(infoContact){
+                    await ITEM__CONTACT_MODEL.update({
+                        contactID: infoContact._id,
+                        company: companyID, 
+                        authorID: userID,
+                        department: infoUserAfterUpdate?.department, 
+                        position: infoUserAfterUpdate?.position,
+                        email: infoUserAfterUpdate?.email,
+                        phone: infoUserAfterUpdate?.phone,
+                        name: infoUserAfterUpdate?.fullname,
+                    })
+                }
 
                 // await cachingInfoUser(userID, session); // Hỏi lại Khánh cache chỗ này mục đích gì
                 return resolve({ error: false, data: infoUserAfterUpdate });

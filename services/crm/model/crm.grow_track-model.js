@@ -27,7 +27,10 @@ const ITEM__CONTACT_COLL                = require('../../item/database/item.cont
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
 
 const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
+const AUTH__USER                        = require('../.../../../auth/model/auth.user-model').MODEL
 const AUTH__APP_ROLE_MENU               = require('../.../../../auth/model/auth.app_role_menu').MODEL
+const ITEM__CONTACT_MODEL               = require('../../item/model/item.contact-model').MODEL
+const CRM_HABIT_MODEL                   = require('../model/crm.habit-model').MODEL
 
 class Model extends BaseModel {
 
@@ -1313,7 +1316,7 @@ class Model extends BaseModel {
      * Code: 16/3/2026
      */
     syncData({
-        option, companyID, userID, trackID
+        option, companyID, userID, trackID, ctx
     }){
         const that = this
         return new Promise(async (resolve) => {
@@ -1324,8 +1327,63 @@ class Model extends BaseModel {
                     userID
                 })
 
-                return resolve({ error: false, message: "Update successfull" });
+                let info = await CRM__GROW_TRACK_COLL.findById(trackID)
+                // console.log(info)
+                
+                if(info && info?.phone){
+                    let infoUser = await AUTH__USER_COLL.findOne({ phone: info.phone, company: companyID })
+                    // console.log(infoUser)
 
+                    // Chỉ xử lý khi chưa tồn tại User, nếu đã tồn tại rồi thực hiện trình tự thủ công
+                    if(!infoUser){
+                        // console.log('1111111111111111111111')
+                        // Tạo user và danh bạ cha mẹ
+                        let newInfoUser = await AUTH__USER.insert({ 
+                            email: info?.email, 
+                            fullname: info?.parentName, 
+                            companyID, 
+                            phone: info.phone, 
+                            userID
+                        })
+                        // console.log(newInfoUser)
+
+                        // Tạo danh bạ cho con
+                        if(newInfoUser){
+                            let infoChild = await ITEM__CONTACT_MODEL.insert({ 
+                                companyID, 
+                                authorID: userID, 
+                                parent: newInfoUser?.data?.contacts[0], 
+                                name: info?.name, 
+                                birthday: info?.birthday, 
+                                gender: info?.gender, 
+                                pubertyOnsetDate: info?.pubertyOnsetDate, 
+                                support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
+                                note: 'Tạo từ Hồ sơ đo cao'
+                            })
+
+                            if(infoChild){
+                                // Tạo game Habit cho con
+                                await CRM_HABIT_MODEL.addMany({
+                                    companyID, 
+                                    contactID: newInfoUser?.data?.contacts[0], 
+                                    ctx
+                                })
+
+                                // Link đo cao vào Profile
+                                await that.update({ 
+                                    trackID, 
+                                    userID,
+                                    contactID: infoChild?.data?._id
+                                 })
+                            }
+
+                            return resolve({ error: false, message: "Update successfull" })
+                        }
+                    }else{
+                        console.log('2222222222222222222222')
+                        return resolve({ error: false, message: "Update successfull" })
+                    }
+                }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
             }
