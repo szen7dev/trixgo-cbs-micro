@@ -92,13 +92,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, timesheetID, month, year } = ctx.params;
-                // console.log('============================>>>>>>>>>>>>')
                 // console.log(ctx.params)
 
 				const { _id: userID, company, email } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.syncData({
-                    userID, companyID: company._id, option, userID, timesheetID, month, year
+                    userID, companyID: company._id, option, timesheetID, month, year
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

@@ -1308,6 +1308,31 @@ class Model extends BaseModel {
     }
 
     /**
+     * Name: Đồng bộ data
+     * Author: HiepNH
+     * Code: 16/3/2026
+     */
+    syncData({
+        option, companyID, userID, trackID
+    }){
+        const that = this
+        return new Promise(async (resolve) => {
+            try {
+                //___________Quyền truy cập ứng dụng
+                let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
+                    appID: "61e04a0dfdebf77b072d1b18", // Habit
+                    userID
+                })
+
+                return resolve({ error: false, message: "Update successfull" });
+
+            } catch (error) {
+                return resolve({ error: true, message: error.message, status: 500 })
+            }
+        })
+    }
+
+    /**
      * Name  : Danh sách expert timesheet
      * Author: Depv
      * Code  :

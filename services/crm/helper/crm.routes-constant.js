@@ -6,6 +6,7 @@ const CF_ROUTINGS_CRM = {
     CRM_GROW_TRACK_GET_LIST_BY_PROPERTY         : `${BASE_ROUTE}/grow_track/get-list-by-property`,
     CRM_GROW_TRACK_EXPORT_EXCEL                 : `${BASE_ROUTE}/grow_track/export-excel`,
     CRM_GROW_TRACK_IMPORT_EXCEL                 : `${BASE_ROUTE}/grow_track/import-from-excel`,
+    CRM_GROW_TRACK_SYNC_DATA                    : `${BASE_ROUTE}/grow_track/sync-data`,
        
     // ==================== CRM_HABIT ======================== //
     CRM_HABIT                                   : `${BASE_ROUTE}/habit`,

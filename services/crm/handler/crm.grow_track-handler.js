@@ -96,6 +96,34 @@ module.exports = {
     },
 
     /**
+     * Name: syncData
+     * Author: HiepNH
+     * Code: 22/3/2024
+     */
+    syncData: {
+        params: {
+            trackID : { type: "string", optional: true },
+        },
+        async handler(ctx) {
+            try {
+                await this.validateEntity(ctx.params);
+                let { option, trackID } = ctx.params;
+                console.log(ctx.params)
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.syncData({
+                    userID, companyID: company._id, option, trackID
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error: true, message: error.message };
+            }
+        }
+    },
+
+    /**
      * Name: Remove
      * Author: HiepNH
      * Code: 22/3/2024

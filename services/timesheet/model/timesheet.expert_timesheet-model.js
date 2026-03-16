@@ -703,7 +703,7 @@ class Model extends BaseModel {
         })
     }
 
-        /**
+    /**
      * Name: Đồng bộ data
      * Author: HiepNH
      * Code: 22/11/2023
@@ -711,7 +711,6 @@ class Model extends BaseModel {
     syncData({
         option, companyID, userID, timesheetID, month, year
     }){
-        console.log({option, companyID, userID, timesheetID, month, year})
         const that = this
         return new Promise(async (resolve) => {
             try {
@@ -771,7 +770,7 @@ class Model extends BaseModel {
                 else if(option == 1){
                     // Khởi tạo lại và đồng bộ
                     let infoTimeSheet = await TIMESHEET__EXPERT_TIMESHEET_COLL.findById(timesheetID)
-                    console.log(infoTimeSheet)
+                    // console.log(infoTimeSheet)
 
                     if(infoTimeSheet.convert == 2){
                         if(infoTimeSheet.official == 1){
@@ -1014,7 +1013,7 @@ class Model extends BaseModel {
                  */
                 else if(option == 3){
                     if(!infoAppUser.error && infoAppUser.data.level == 0){
-                       console.log('==-111111111111111111')
+                    //    console.log('==-111111111111111111')
 
                        let info = await STORE_ORDER_COLL.findOne({company: companyID, type: 9})
                        if(!info){
