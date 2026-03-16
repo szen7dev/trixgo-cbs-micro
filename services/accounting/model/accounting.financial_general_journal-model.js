@@ -3569,28 +3569,26 @@ class Model extends BaseModel {
                     if(type == 1){
                         var i = 3
                         data?.forEach((item, index) => {
-                            workbook.sheet("orgData").row(i).cell(1).value(item?.voucher?.date);
-                            workbook.sheet("orgData").row(i).cell(2).value(item?.subtype?.name);
-                            workbook.sheet("orgData").row(i).cell(3).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
-                            workbook.sheet("orgData").row(i).cell(4).value(item?.funda?.name);
-                            workbook.sheet("orgData").row(i).cell(5).value(item?.voucher?.name);
-                            workbook.sheet("orgData").row(i).cell(6).value(item?.voucher?.sign);
-                            workbook.sheet("orgData").row(i).cell(7).value(item?.customerDebit?.name);
-                            workbook.sheet("orgData").row(i).cell(8).value(item?.customerCredit?.name);
-                            workbook.sheet("orgData").row(i).cell(9).value(item?.debit?.name);
-                            workbook.sheet("orgData").row(i).cell(10).value(item?.credit?.name);
-                            workbook.sheet("orgData").row(i).cell(11).value(Number(item?.quantity));
-                            workbook.sheet("orgData").row(i).cell(12).value(Number(item?.unitprice));
-                            workbook.sheet("orgData").row(i).cell(13).value(Number(item?.amount));
-                            workbook.sheet("orgData").row(i).cell(14).value(item?.contract?.name);
-                            workbook.sheet("orgData").row(i).cell(15).value(item?.budgetWork?.name);
-                            workbook.sheet("orgData").row(i).cell(16).value(Number(item?.updown));
-                            workbook.sheet("orgData").row(i).cell(17).value(item?.goods?.name);
-                            workbook.sheet("orgData").row(i).cell(18).value(item?.warehouse?.name);
-                            workbook.sheet("orgData").row(i).cell(19).value(item.note);
-                            workbook.sheet("orgData").row(i).cell(20).value(item?.subtype?.parent?.name);
-                            workbook.sheet("orgData").row(i).cell(21).value(`M${item?.voucher?.date.getMonth() + 1}_${item?.voucher?.date.getFullYear()}`);
-                            workbook.sheet("orgData").row(i).cell(22).value(item?.funda?.sign);
+                            workbook.sheet("NKC").row(i).cell(1).value(item?.voucher?.date);
+                            workbook.sheet("NKC").row(i).cell(2).value(item?.subtype?.name);
+                            workbook.sheet("NKC").row(i).cell(3).value((item?.voucher?.type && item?.voucher?.type >= 1) ? VOUCHER_TYPES[Number(item?.voucher?.type - 1)].text : '');
+                            workbook.sheet("NKC").row(i).cell(4).value(item?.funda?.name);
+                            workbook.sheet("NKC").row(i).cell(5).value(item?.voucher?.name);
+                            workbook.sheet("NKC").row(i).cell(6).value(item?.voucher?.sign);
+                            workbook.sheet("NKC").row(i).cell(7).value(item?.customerDebit?.name);
+                            workbook.sheet("NKC").row(i).cell(8).value(item?.customerCredit?.name);
+                            workbook.sheet("NKC").row(i).cell(9).value(item?.debit?.name);
+                            workbook.sheet("NKC").row(i).cell(10).value(item?.credit?.name);
+                            workbook.sheet("NKC").row(i).cell(11).value(Number(item?.quantity));
+                            workbook.sheet("NKC").row(i).cell(12).value(Number(item?.unitprice));
+                            workbook.sheet("NKC").row(i).cell(13).value(Number(item?.amount));
+                            workbook.sheet("NKC").row(i).cell(14).value(item?.contract?.name);
+                            workbook.sheet("NKC").row(i).cell(15).value(item?.goods?.name);
+                            workbook.sheet("NKC").row(i).cell(16).value(item?.warehouse?.name);
+                            workbook.sheet("NKC").row(i).cell(17).value(item.note);
+                            workbook.sheet("NKC").row(i).cell(18).value(item?.subtype?.parent?.name);
+                            workbook.sheet("NKC").row(i).cell(19).value(`M${item?.voucher?.date.getMonth() + 1}_${item?.voucher?.date.getFullYear()}`);
+                            workbook.sheet("NKC").row(i).cell(20).value(item?.funda?.sign);
     
                             i++
                         })
