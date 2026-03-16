@@ -108,12 +108,12 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { option, trackID } = ctx.params;
-                console.log(ctx.params)
+                // console.log(ctx.params)
 
                 const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.syncData({
-                    userID, companyID: company._id, option, trackID
+                    userID, companyID: company._id, option, trackID, ctx
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
