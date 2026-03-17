@@ -26,8 +26,8 @@ const AUTH__USER_COLL                   = require('../../auth/database/auth.user
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
 
-const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
 const AUTH__USER                        = require('../.../../../auth/model/auth.user-model').MODEL
+const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
 const AUTH__APP_ROLE_MENU               = require('../.../../../auth/model/auth.app_role_menu').MODEL
 const ITEM__CONTACT_MODEL               = require('../../item/model/item.contact-model').MODEL
 const CRM_HABIT_MODEL                   = require('../model/crm.habit-model').MODEL
@@ -53,13 +53,12 @@ class Model extends BaseModel {
                 // Kiểm tra quyền được đo cao
                 let infoPer = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
                     type: 1, 
-                    menu: '67cd26c32f3dbd0012e41555', 
+                    menu: '67cd26c32f3dbd0012e41555', // Màn hình đo cao
                     user: userID, 
-                    app: '61e049f6fdebf77b072d1b16', 
+                    app: '61e049f6fdebf77b072d1b16', // App Habit
                     company: companyID
                 })
 
-                // console.log(infoPer)
                 if(infoPer && infoPer.data && infoPer.data.create >= 1){
                     if(phone){
                         // Hàm kiểm tra Phone
@@ -1323,66 +1322,88 @@ class Model extends BaseModel {
             try {
                 //___________Quyền truy cập ứng dụng
                 let infoAppUser = await AUTH__APP_USER.checkPermissionsAccessApp({
-                    appID: "61e04a0dfdebf77b072d1b18", // Habit
+                    appID: "61e049f6fdebf77b072d1b16", // CRM
                     userID
                 })
 
-                let info = await CRM__GROW_TRACK_COLL.findById(trackID)
-                // console.log(info)
-                
-                if(info && info?.phone){
-                    let infoUser = await AUTH__USER_COLL.findOne({ phone: info.phone, company: companyID })
-                    // console.log(infoUser)
+                if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
+                    let info = await CRM__GROW_TRACK_COLL.findById(trackID)
+                    if(info && info?.phone){
+                        let infoUser = await AUTH__USER_COLL.findOne({ phone: info.phone, company: companyID })
 
-                    // Chỉ xử lý khi chưa tồn tại User, nếu đã tồn tại rồi thực hiện trình tự thủ công
-                    if(!infoUser){
-                        // console.log('1111111111111111111111')
-                        // Tạo user và danh bạ cha mẹ
-                        let newInfoUser = await AUTH__USER.insert({ 
-                            email: info?.email, 
-                            fullname: info?.parentName, 
-                            companyID, 
-                            phone: info.phone, 
-                            userID
-                        })
-                        // console.log(newInfoUser)
-
-                        // Tạo danh bạ cho con
-                        if(newInfoUser){
-                            let infoChild = await ITEM__CONTACT_MODEL.insert({ 
+                        // Chỉ xử lý khi chưa tồn tại User, nếu đã tồn tại rồi thực hiện trình tự thủ công
+                        if(!infoUser){
+                            // Tạo user và danh bạ cha mẹ
+                            let newInfoUser = await AUTH__USER.insert({ 
+                                email: info?.email, 
+                                fullname: info?.parentName, 
                                 companyID, 
-                                authorID: userID, 
-                                parent: newInfoUser?.data?.contacts[0], 
-                                name: info?.name, 
-                                birthday: info?.birthday, 
-                                gender: info?.gender, 
-                                pubertyOnsetDate: info?.pubertyOnsetDate, 
-                                support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
-                                note: 'Tạo từ Hồ sơ đo cao'
+                                phone: info.phone, 
+                                userID
                             })
+                            // console.log(newInfoUser)
 
-                            if(infoChild){
-                                // Tạo game Habit cho con
+                            // Tạo danh bạ cho con
+                            if(newInfoUser){
+                                let infoChild = await ITEM__CONTACT_MODEL.insert({ 
+                                    companyID, 
+                                    authorID: userID, 
+                                    parent: newInfoUser?.data?.contacts[0], 
+                                    name: info?.name, 
+                                    birthday: info?.birthday, 
+                                    gender: info?.gender, 
+                                    pubertyOnsetDate: info?.pubertyOnsetDate, 
+                                    support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
+                                    note: 'Tạo từ Hồ sơ đo cao'
+                                })
+
+                                if(infoChild){
+                                    // Link đo cao vào Profile
+                                    await that.update({ 
+                                        trackID, 
+                                        userID,
+                                        contactID: infoChild?.data?._id
+                                    })
+                                }
+
+                                // Tạo game Habit cho các con của ba mẹ
                                 await CRM_HABIT_MODEL.addMany({
                                     companyID, 
                                     contactID: newInfoUser?.data?.contacts[0], 
                                     ctx
                                 })
 
-                                // Link đo cao vào Profile
-                                await that.update({ 
-                                    trackID, 
-                                    userID,
-                                    contactID: infoChild?.data?._id
-                                 })
+                                // Cấp quyền truy cập ứng dụng Habit
+                                await AUTH__APP_USER.insert({ 
+                                    appID: '61e04a0dfdebf77b072d1b18', // Habit
+                                    companyID,
+                                    users: [ newInfoUser?.data?._id ],
+                                    userID 
+                                })
+
+                                return resolve({ error: false, message: "Update successfull" })
                             }
+                        }else{
+                            // Tạo game Habit cho các con của ba mẹ
+                            await CRM_HABIT_MODEL.addMany({
+                                companyID, 
+                                contactID: infoUser?.contacts[0], 
+                                ctx
+                            })
+
+                            // Cấp quyền truy cập ứng dụng Habit
+                            await AUTH__APP_USER.insert({ 
+                                appID: '61e04a0dfdebf77b072d1b18', // Habit
+                                companyID,
+                                users: [ infoUser?._id ],
+                                userID 
+                            })
 
                             return resolve({ error: false, message: "Update successfull" })
                         }
-                    }else{
-                        console.log('2222222222222222222222')
-                        return resolve({ error: false, message: "Update successfull" })
                     }
+                }else{
+                    return resolve({ error: true, message: "Bạn không có quyền Đồng bộ" })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })

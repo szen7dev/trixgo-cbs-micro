@@ -16,6 +16,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { _id: userID }          = ctx.meta.infoUser;
                 let { appID, companyID, users } = ctx.params;
+
+                // console.log(ctx.params)
+
                 let resultAfterCallHandler = await AUTH__APP_USER.insert({ appID, companyID, users, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -37,6 +40,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { _id: userID }          = ctx.meta.infoUser;
                 let { appID, companyID, memberID, level } = ctx.params;
+
+                // console.log(ctx.params)
+
                 let resultAfterCallHandler = await AUTH__APP_USER.update({ appID, companyID, memberID, level, userID });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
@@ -55,6 +61,9 @@ module.exports = {
                 await this.validateEntity(ctx.params);
                 let { _id: userID }          = ctx.meta.infoUser;
                 let { appUserIDs  } = ctx.params;
+
+                console.log(ctx.params)
+
                 let resultAfterCallHandler = await AUTH__APP_USER.remove({ appUserIDs });
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {
