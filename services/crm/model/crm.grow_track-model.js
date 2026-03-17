@@ -1342,9 +1342,9 @@ class Model extends BaseModel {
                                 userID
                             })
                             // console.log(newInfoUser)
-
-                            // Tạo danh bạ cho con
+                            
                             if(newInfoUser){
+                                // Tạo danh bạ cho con
                                 let infoChild = await ITEM__CONTACT_MODEL.insert({ 
                                     companyID, 
                                     authorID: userID, 
@@ -1357,8 +1357,8 @@ class Model extends BaseModel {
                                     note: 'Tạo từ Hồ sơ đo cao'
                                 })
 
+                                // Link đo cao vào Profile
                                 if(infoChild){
-                                    // Link đo cao vào Profile
                                     await that.update({ 
                                         trackID, 
                                         userID,
@@ -1384,6 +1384,39 @@ class Model extends BaseModel {
                                 return resolve({ error: false, message: "Update successfull" })
                             }
                         }else{
+                            // Kiểm tra xem tên bé đã tồn tại chưa
+                            let checkContact = await ITEM__CONTACT_COLL.findOne({
+                                company: companyID,
+                                parent: infoUser?.contacts[0],
+                                name: info?.name, 
+                                gender: info?.gender, 
+                            })
+                            // console.log({checkContact})
+
+                            if(!checkContact){
+                                // Tạo danh bạ cho con
+                                let infoChild = await ITEM__CONTACT_MODEL.insert({ 
+                                    companyID, 
+                                    authorID: userID, 
+                                    parent: infoUser?.contacts[0], 
+                                    name: info?.name, 
+                                    birthday: info?.birthday, 
+                                    gender: info?.gender, 
+                                    pubertyOnsetDate: info?.pubertyOnsetDate, 
+                                    support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
+                                    note: 'Tạo từ Hồ sơ đo cao'
+                                })
+
+                                // Link đo cao vào Profile
+                                if(infoChild){
+                                    await that.update({ 
+                                        trackID, 
+                                        userID,
+                                        contactID: infoChild?.data?._id
+                                    })
+                                }
+                            }
+
                             // Tạo game Habit cho các con của ba mẹ
                             await CRM_HABIT_MODEL.addMany({
                                 companyID, 
