@@ -1415,6 +1415,12 @@ class Model extends BaseModel {
                                         contactID: infoChild?.data?._id
                                     })
                                 }
+                            }else{
+                                await that.update({ 
+                                    trackID, 
+                                    userID,
+                                    contactID: checkContact?._id
+                                })
                             }
 
                             // Tạo game Habit cho các con của ba mẹ
