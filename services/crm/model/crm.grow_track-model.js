@@ -259,6 +259,7 @@ class Model extends BaseModel {
      * Code: 22/11/2023
      */
     update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail }){
+        // console.log({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail })
         const that = this;
         return new Promise(async (resolve) => {
             try {
@@ -1328,14 +1329,17 @@ class Model extends BaseModel {
 
                 if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
                     let info = await CRM__GROW_TRACK_COLL.findById(trackID)
+                    // console.log(info)
+
                     if(info && info?.phone){
                         let infoUser = await AUTH__USER_COLL.findOne({ phone: info.phone, company: companyID })
+                        // console.log(infoUser)
 
                         // Chỉ xử lý khi chưa tồn tại User, nếu đã tồn tại rồi thực hiện trình tự thủ công
                         if(!infoUser){
                             // Tạo user và danh bạ cha mẹ
                             let newInfoUser = await AUTH__USER.insert({ 
-                                email: info?.email, 
+                                email: info?.email || `${info.phone}.temp.trx@gmail.com`, 
                                 fullname: info?.parentName, 
                                 companyID, 
                                 phone: info.phone, 
@@ -1343,7 +1347,7 @@ class Model extends BaseModel {
                             })
                             // console.log(newInfoUser)
                             
-                            if(newInfoUser){
+                            if(newInfoUser && !newInfoUser.error){
                                 // Tạo danh bạ cho con
                                 let infoChild = await ITEM__CONTACT_MODEL.insert({ 
                                     companyID, 
@@ -1359,11 +1363,14 @@ class Model extends BaseModel {
 
                                 // Link đo cao vào Profile
                                 if(infoChild){
-                                    await that.update({ 
+                                    let check = await that.update({ 
                                         trackID, 
                                         userID,
                                         contactID: infoChild?.data?._id
                                     })
+
+                                    // console.log('11111111111111111')
+                                    // console.log(check)
                                 }
 
                                 // Tạo game Habit cho các con của ba mẹ
@@ -1409,18 +1416,24 @@ class Model extends BaseModel {
 
                                 // Link đo cao vào Profile
                                 if(infoChild){
-                                    await that.update({ 
+                                    let check = await that.update({ 
                                         trackID, 
                                         userID,
                                         contactID: infoChild?.data?._id
                                     })
+                                    
+                                    // console.log('22222222222222')
+                                    // console.log(check)
                                 }
                             }else{
-                                await that.update({ 
+                                let check = await that.update({ 
                                     trackID, 
                                     userID,
                                     contactID: checkContact?._id
                                 })
+
+                                // console.log('333333333333333')
+                                // console.log(check)
                             }
 
                             // Tạo game Habit cho các con của ba mẹ
