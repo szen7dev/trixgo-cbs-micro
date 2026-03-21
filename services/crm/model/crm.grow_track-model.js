@@ -1331,7 +1331,7 @@ class Model extends BaseModel {
                     let info = await CRM__GROW_TRACK_COLL.findById(trackID)
                     // console.log(info)
 
-                    if(info && info?.phone){
+                    if(info && info?.phone && info?.phone != ""){
                         let infoUser = await AUTH__USER_COLL.findOne({ phone: info.phone, company: companyID })
                         // console.log(infoUser)
 
@@ -1453,6 +1453,8 @@ class Model extends BaseModel {
 
                             return resolve({ error: false, message: "Update successfull" })
                         }
+                    }else{
+                        return resolve({ error: true, message: "Dữ liệu đo cao không hợp lệ" })
                     }
                 }else{
                     return resolve({ error: true, message: "Bạn không có quyền Đồng bộ" })
