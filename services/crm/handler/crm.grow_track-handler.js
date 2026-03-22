@@ -38,7 +38,7 @@ module.exports = {
                 }
 
                 await this.validateEntity(ctx.params);
-                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail } = ctx.params;
+                let { optionSeller, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID } = ctx.params;
 
 				const { _id: userID, email: emailUser, company } = ctx.meta.infoUser;
 
@@ -51,7 +51,7 @@ module.exports = {
                     companyID = company?._id
                 }
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, emailUser, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail })
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.insert({ userID, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, filesID, parentName, email, emailUser, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
             } catch (error) {
@@ -80,13 +80,13 @@ module.exports = {
                 }
 
                 await this.validateEntity(ctx.params);
-                let { trackID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, email, fatherHeight, motherHeight, desiredHeight, routine } = ctx.params;
+                let { trackID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, email, fatherHeight, motherHeight, desiredHeight, routine } = ctx.params;
 
                 // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
-                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, email, fatherHeight, motherHeight, desiredHeight, routine });
+                let resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, email, fatherHeight, motherHeight, desiredHeight, routine });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
             } catch (error) {

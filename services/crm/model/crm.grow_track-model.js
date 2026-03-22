@@ -43,7 +43,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail }) {
+    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -85,6 +85,10 @@ class Model extends BaseModel {
                     let dataInsert = {
                         company: companyID,
                         userCreate: userID,
+                    }
+
+                    if(checkObjectIDs(supportID)){
+                        dataInsert.support = supportID;
                     }
 
                     let convertStr = '';
@@ -258,8 +262,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail }){
-        // console.log({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail })
+    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID }){
         const that = this;
         return new Promise(async (resolve) => {
             try {
@@ -276,6 +279,10 @@ class Model extends BaseModel {
                     if(!checkObjectIDs(thumbnailID)){
                         dataUpdate.thumbnail = imagesID[0];
                     }
+                }
+
+                if(checkObjectIDs(supportID)){
+                    dataUpdate.support = supportID;
                 }
 
                 if(!isNaN(status) && [1,2].includes(Number(status))){
@@ -1343,7 +1350,9 @@ class Model extends BaseModel {
                                 fullname: info?.parentName, 
                                 companyID, 
                                 phone: info.phone, 
-                                userID
+                                userID,
+                                supportID: info?.support,
+                                type: 5,
                             })
                             // console.log(newInfoUser)
                             
@@ -1358,7 +1367,9 @@ class Model extends BaseModel {
                                     gender: info?.gender, 
                                     pubertyOnsetDate: info?.pubertyOnsetDate, 
                                     support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
-                                    note: 'Tạo từ Hồ sơ đo cao'
+                                    note: 'Tạo từ Hồ sơ đo cao',
+                                    support: info?.support,
+                                    type: 6
                                 })
 
                                 // Link đo cao vào Profile
@@ -1411,7 +1422,9 @@ class Model extends BaseModel {
                                     gender: info?.gender, 
                                     pubertyOnsetDate: info?.pubertyOnsetDate, 
                                     support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
-                                    note: 'Tạo từ Hồ sơ đo cao'
+                                    note: 'Tạo từ Hồ sơ đo cao',
+                                    support: info?.support,
+                                    type: 6
                                 })
 
                                 // Link đo cao vào Profile
