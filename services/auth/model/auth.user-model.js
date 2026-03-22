@@ -1846,7 +1846,7 @@ class Model extends BaseModel {
 	 * Func: Hàm tạo mới user
 	 * Date: 03/03/2022
 	 */
-    insert({ email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse, userID }) {
+    insert({ email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse, userID, supportID, type }) {
         // console.log( { email, fullname, level, departmentID, positionID, companyID, phone, birthDay, storageUse, userID })
         return new Promise(async resolve => {
             try {
@@ -1982,7 +1982,9 @@ class Model extends BaseModel {
                         phone: phone,
                         email: email,
                         department: departmentID, 
-                        position: positionID
+                        position: positionID,
+                        support: supportID,
+                        type: type
                     })
 
                     if(!infoNewContact.error && infoNewContact.data){

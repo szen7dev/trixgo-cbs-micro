@@ -9,6 +9,11 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
+    //_________Người support, chăm sóc
+    support: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
     //_________Mã khách
     contact: {
         type: Schema.Types.ObjectId,
