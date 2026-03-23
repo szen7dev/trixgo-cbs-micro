@@ -30,7 +30,7 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { parentID, name, location, device, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official } = ctx.params;
-				console.log(ctx.params)
+				// console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log({company})
@@ -61,15 +61,15 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
                 let { expertTimesheetID, projectID, fundaID, name, location, type, assigneeID, hours, unitprice, amount, status, approver, note, date,
-                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType, official, filesID } = ctx.params;
+                     dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType, official, filesID, device } = ctx.params;
 
                 // console.log(ctx.params)
 
 				const { _id: userID, company } = ctx.meta.infoUser;
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.update({
-                    expertTimesheetID, userID, projectID, fundaID, name, location, type, assigneeID, hours, unitprice, amount, status, approver,
-                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType, official, filesID
+                    expertTimesheetID, companyID: company._id, userID, projectID, fundaID, name, location, type, assigneeID, hours, unitprice, amount, status, approver,
+                    note, date, dateIn1, dateOut1, dateIn2, dateOut2, dateIn3, dateOut3, members, membersRemove, admins, adminsRemove, workID, subtype, shiftType, official, filesID, device
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

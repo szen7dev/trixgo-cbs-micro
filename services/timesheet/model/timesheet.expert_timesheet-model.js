@@ -82,6 +82,7 @@ class Model extends BaseModel {
                     admins: [userCreate], 
                     members: [userCreate]
                 }
+
                 // Kiểm tra quyền chấm công trên Web
                 if(device && device == 1){
                     let infoPer = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
@@ -313,7 +314,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    update({ expertTimesheetID, projectID, fundaID, name, location, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official, filesID }){
+    update({ expertTimesheetID, companyID, projectID, fundaID, name, location, device, type, assigneeID, hours, unitprice, status, approver, note, date, admins, members, userID, workID, subtype, shiftType, official, filesID }){
         return new Promise(async (resolve) => {
             const that = this
             try {
@@ -336,6 +337,28 @@ class Model extends BaseModel {
                 let dataUpdate = {
                     userUpdate: userID,
                     modifyAt: Date.now(),
+                }
+
+                 // Kiểm tra quyền chấm công trên Web
+                if(device && device == 1){
+                    let infoPer = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
+                        type: 1, 
+                        menu: '6741a542619da700128e3206', // Chấm công Web
+                        user: userID, 
+                        app: '61e049cffdebf77b072d1b14', // App Chấm công
+                        company: companyID
+                    })
+                    // console.log(infoPer)
+
+                    if(infoPer && infoPer.data && infoPer.data.create >= 1){
+                        // console.log('okkkkkkkkkkkkkkkkkkkkkkkkk')
+                        dataUpdate.device = 1
+                    }else{
+                        // console.log('Không có quyền chấm công trên Web')
+                        return resolve({ error: true, message: "Bạn không có quyền chấm công trên Web" })
+                    }
+                }else{
+                    dataUpdate.device = 2
                 }
 
                 // Áp dụng cho việc tạo Hàng loạt theo cơ sở
@@ -565,6 +588,8 @@ class Model extends BaseModel {
                         });
                     }
                 }
+
+                console.log(dataUpdate)
 
                 let infoAfterUpdate = await TIMESHEET__EXPERT_TIMESHEET_COLL.findByIdAndUpdate(expertTimesheetID, dataUpdate, { new: true })
                 if(!infoAfterUpdate) 
