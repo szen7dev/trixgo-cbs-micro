@@ -29,14 +29,14 @@ module.exports = {
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { parentID, name, location, distance, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official } = ctx.params;
-				// console.log(ctx.params)
+                let { parentID, name, location, device, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official } = ctx.params;
+				console.log(ctx.params)
                 
                 const { _id: userID, company } = ctx.meta.infoUser;
                 // console.log({company})
 
                 let resultAfterCallHandler = await TIMESHEET__EXPERT_TIMESHEET_MODEL.insert({
-                    userCreate: userID, companyID: company._id, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official
+                    userCreate: userID, companyID: company._id, parentID, name, location, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official, device
                 });
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });

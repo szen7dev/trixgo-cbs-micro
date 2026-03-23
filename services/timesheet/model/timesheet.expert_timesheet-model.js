@@ -41,6 +41,7 @@ const STORE_ORDER_COLL                  = require('../../store/database/store.or
 const AUTH__APP_USER                    = require('../../auth/model/auth.app_users').MODEL
 const BUDGET__WORK_MODEL                = require('../../budget/model/budget.work-model').MODEL
 // const STORE_ORDER_MODEL                 = require('../../store/model/store.order-model.js').MODEL;
+const AUTH__APP_ROLE_MENU               = require('../.../../../auth/model/auth.app_role_menu').MODEL
 
 // PCM, Chấm công, Kế toán, Quỹ, Nhân sự, Hồ sơ, CRM
 const appArr = ['5eabfdc72171391e5f6a0468','61e049cffdebf77b072d1b14','61e049aefdebf77b072d1b12','5dfe4bf251dc622100bb9d8c','61e049c9fdebf77b072d1b13','5e47867080019357cce04746','61e049f6fdebf77b072d1b16'];
@@ -57,7 +58,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code:
      */
-    insert({ userCreate, companyID, parentID, name, location, distance, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official, convert }) {
+    insert({ userCreate, companyID, parentID, name, location, device, date, type, note, hours, unitprice, projectID, assigneeID, shiftID, fundaID, subtype, shiftType, official, convert }) {
         const that = this
         return new Promise(async resolve => {
             try {
@@ -80,6 +81,27 @@ class Model extends BaseModel {
                     name, 
                     admins: [userCreate], 
                     members: [userCreate]
+                }
+                // Kiểm tra quyền chấm công trên Web
+                if(device && device == 1){
+                    let infoPer = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
+                        type: 1, 
+                        menu: '6741a542619da700128e3206', // Chấm công Web
+                        user: userCreate, 
+                        app: '61e049cffdebf77b072d1b14', // App Chấm công
+                        company: companyID
+                    })
+                    // console.log(infoPer)
+
+                    if(infoPer && infoPer.data && infoPer.data.create >= 1){
+                        // console.log('okkkkkkkkkkkkkkkkkkkkkkkkk')
+                        dataInsert.device = 1
+                    }else{
+                        // console.log('Không có quyền chấm công trên Web')
+                        return resolve({ error: true, message: "Bạn không có quyền chấm công trên Web" })
+                    }
+                }else{
+                    dataInsert.device = 2
                 }
 
                 if(companyID){

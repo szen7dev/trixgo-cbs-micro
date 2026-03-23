@@ -3039,7 +3039,7 @@ class Model extends BaseModel {
                         $lte: moment(toDate).toDate() 
                     }
                 })
-                .select('createAt assignee funda distance modifyAt note')
+                .select('createAt assignee funda location distance modifyAt note device')
                 .populate({
                     path: 'assignee funda',
                     select:'fullname name'
@@ -3160,9 +3160,16 @@ class Model extends BaseModel {
                         workbook.sheet("ChiTiet").row(i).cell(1).value(item.createAt)
                         workbook.sheet("ChiTiet").row(i).cell(2).value(item?.assignee?.fullname)
                         workbook.sheet("ChiTiet").row(i).cell(3).value(item?.funda?.name)
-                        workbook.sheet("ChiTiet").row(i).cell(4).value(Number(item?.distance))
-                        workbook.sheet("ChiTiet").row(i).cell(5).value(item.modifyAt)
-                        workbook.sheet("ChiTiet").row(i).cell(6).value(item?.note)
+                        workbook.sheet("ChiTiet").row(i).cell(4).value(item?.location)
+                        workbook.sheet("ChiTiet").row(i).cell(5).value(item?.location ? Number(item?.distance) : '')
+                        workbook.sheet("ChiTiet").row(i).cell(6).value(item.modifyAt)
+                        workbook.sheet("ChiTiet").row(i).cell(7).value(item?.note)
+                        if(item?.device && item?.device == 2){
+                            workbook.sheet("ChiTiet").row(i).cell(8).value('Mobile')
+                        }
+                        if(item?.device && item?.device == 1){
+                            workbook.sheet("ChiTiet").row(i).cell(8).value('Web')
+                        }
 
                         i++
                     })
