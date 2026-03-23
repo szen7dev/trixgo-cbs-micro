@@ -3028,7 +3028,23 @@ class Model extends BaseModel {
                 let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({ 
                     appID: "61e049cffdebf77b072d1b14", 
                     userID
-                 })
+                })
+
+                let listData = await TIMESHEET__EXPERT_TIMESHEET_COLL.find({
+                    company: ObjectID(companyID),
+                    parent: { $exists: true, $ne: null },
+                    assignee: { $exists: true, $ne: null },
+                    date: {
+                        $gte: moment(fromDate).toDate(),
+                        $lte: moment(toDate).toDate() 
+                    }
+                })
+                .select('createAt assignee funda distance modifyAt note')
+                .populate({
+                    path: 'assignee funda',
+                    select:'fullname name'
+                })
+                .sort({date: 1})
 
                 // console.log({yearFilter, monthFilter})
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
@@ -3131,11 +3147,25 @@ class Model extends BaseModel {
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/timesheet_check.xlsx')))
                 .then(async workbook => {
                     if(isValidDate(fromDate) && isValidDate(toDate)){
+                        workbook.sheet("ChiTiet").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
+
                         workbook.sheet("Data1").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         workbook.sheet("Data2").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         workbook.sheet("Data3").row(2).cell(6).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                         workbook.sheet("Data4").row(2).cell(1).value(`Từ ${moment(fromDate).format('DD/MM/YYYY')} đến ${moment(toDate).format('DD/MM/YYYY')}`)
                     }
+
+                    var i = 4
+                    listData.forEach((item, index) =>{
+                        workbook.sheet("ChiTiet").row(i).cell(1).value(item.createAt)
+                        workbook.sheet("ChiTiet").row(i).cell(2).value(item?.assignee?.fullname)
+                        workbook.sheet("ChiTiet").row(i).cell(3).value(item?.funda?.name)
+                        workbook.sheet("ChiTiet").row(i).cell(4).value(Number(item?.distance))
+                        workbook.sheet("ChiTiet").row(i).cell(5).value(item.modifyAt)
+                        workbook.sheet("ChiTiet").row(i).cell(6).value(item?.note)
+
+                        i++
+                    })
 
                     var i = 4
                     listUser.forEach((item, index) =>{
