@@ -3044,7 +3044,7 @@ class Model extends BaseModel {
                     path: 'assignee funda',
                     select:'fullname name'
                 })
-                .sort({date: 1})
+                .sort({createAt: 1})
 
                 // console.log({yearFilter, monthFilter})
                 let listData2 = await TIMESHEET__EXPERT_TIMESHEET_COLL.aggregate([
