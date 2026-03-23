@@ -55,6 +55,12 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         default: 0
     },
     /**
+     * Thiết bị
+     * 1 Web
+     * 2 Mobile
+     */
+    device: Number,
+    /**
      * Phân loại
      * 1 quản lý
      * 2 sản xuất
