@@ -1549,25 +1549,37 @@ class Model extends BaseModel {
 				if(checkObjectIDs(contactID)){                    
                     conditionObj.contact = contactID
 				}else{
-                    if(phone && phone != ""){
-                        conditionObj.phone = phone
-                    }else{
-                        conditionObj.company = companyID
+                    // if(phone && phone != ""){
+                    //     conditionObj.phone = phone
+                    // }else{
+                        
+                    // }
+                    conditionObj.company = companyID
 
-                        let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
-                            appID: "61e049f6fdebf77b072d1b16",
-                            userID
-                        })
+                    let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
+                        appID: "61e049f6fdebf77b072d1b16",
+                        userID
+                    })
 
-                        if(getInfoUserApp.error || Number(getInfoUserApp.data.level) == 1){
+                    // Dành cho người không phải là Admin dự án
+                    if(getInfoUserApp.error || Number(getInfoUserApp.data.level) == 1){
+                        let infoUser = await AUTH__USER_COLL.findById(userID).select('contacts')
+                        if(infoUser){
+                            conditionObj.$or = [
+                                {userCreate: userID},
+                                {support: infoUser.contacts[0]},
+                            ]
+                        }else{
                             conditionObj.userCreate = userID
+                        }
+                    }else{
+
+                        // Lọc theo chủ Trạm
+                        if(checkObjectIDs(supportID)){                    
+                            conditionObj.support = supportID
                         }
                     }
                 }
-
-                if(checkObjectIDs(supportID)){                    
-                    conditionObj.support = supportID
-				}
 
                 if(keyword){
                     keyword = stringUtils.removeAccents(keyword)
