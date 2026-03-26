@@ -285,6 +285,9 @@ class Model extends BaseModel {
         const that = this;
         return new Promise(async (resolve) => {
             try {
+                // Dữ liệu kết quả đo ban đầu
+                let infoOrg = await CRM__GROW_TRACK_COLL.findById(trackID)
+
                 let dataUpdate = {
                     userUpdate: userID,
                     modifyAt: Date.now(),
@@ -474,13 +477,33 @@ class Model extends BaseModel {
                 }
 
                 // Tính toán đường phân vị và cập nhật
-                let infoNew = await that.getInfo({ trackID: infoAfterUpdate._id, userID })
-                if(infoNew){
-                    await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterUpdate._id, {
-                        percentile: Number(infoNew.P),
-                        predictedAdultHeight: Number(infoNew.predictedAdultHeight)
-                    }, { new: true })
+                const date1 = new Date(infoAfterUpdate.birthday);
+                const date2 = new Date(infoOrg.birthday);
+                const date3 = new Date(infoAfterUpdate.pubertyOnsetDate);
+                const date4 = new Date(infoOrg.pubertyOnsetDate);
+
+                // Tạo bản sao để tránh làm thay đổi biến gốc nếu cần
+                const d1 = new Date(date1).setHours(0, 0, 0, 0);
+                const d2 = new Date(date2).setHours(0, 0, 0, 0);
+                const d3 = new Date(date3).setHours(0, 0, 0, 0);
+                const d4 = new Date(date4).setHours(0, 0, 0, 0);
+
+                // console.log({____1:infoAfterUpdate?.contact})
+                // console.log({____2: infoOrg?.contact})
+
+                if(infoAfterUpdate.gender != infoOrg.gender || d1 != d2 || infoAfterUpdate.height != infoOrg.height || infoAfterUpdate.weight != infoOrg.weight || infoAfterUpdate.boneAge != infoOrg.boneAge || d3 != d4 || infoAfterUpdate?.contact?.toString() != infoOrg?.contact?.toString()){
+                    // console.log('111===============Cập nhật kết quả đo cao CDC===============')
+                    let infoNew = await that.getInfo({ trackID: infoAfterUpdate._id, userID })
+                    if(infoNew){
+                        await CRM__GROW_TRACK_COLL.findByIdAndUpdate(infoAfterUpdate._id, {
+                            percentile: Number(infoNew.P),
+                            predictedAdultHeight: Number(infoNew.predictedAdultHeight)
+                        }, { new: true })
+                    }
                 }
+                // else{
+                //     console.log('22222222222222222222222222222')
+                // }
 
                 return resolve({ error: false, data: infoAfterUpdate });
             } catch (error) {
