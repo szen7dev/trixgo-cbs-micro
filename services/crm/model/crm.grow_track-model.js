@@ -43,7 +43,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID }) {
+    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -227,6 +227,24 @@ class Model extends BaseModel {
                             dataInsert.parentName = infoContact?.parent?.name;
                         }
                     }
+
+                    if(checkObjectIDs(secialistID)){
+                        dataInsert.secialist = secialistID;
+                    }
+
+                    if(checkObjectIDs(sourceID)){
+                        dataInsert.source = sourceID;
+                    }
+
+                    if(checkObjectIDs(productID)){
+                        dataInsert.product = productID;
+                    }
+
+                    if(!isNaN(quantity) && !isNaN(unitPrice)){
+                        dataInsert.quantity = quantity;
+                        dataInsert.unitPrice = unitPrice;
+                        dataInsert.amount = Number(quantity * unitPrice);
+                    }
                     
                     if(convertStr != ""){
                         dataInsert.namecv = convertStr
@@ -262,7 +280,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID }){
+    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice }){
         const that = this;
         return new Promise(async (resolve) => {
             try {
@@ -318,6 +336,24 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(contactID)){
                     dataUpdate.contact = contactID;
+                }
+
+                if(checkObjectIDs(secialistID)){
+                    dataUpdate.secialist = secialistID;
+                }
+
+                if(checkObjectIDs(sourceID)){
+                    dataUpdate.source = sourceID;
+                }
+
+                if(checkObjectIDs(productID)){
+                    dataUpdate.product = productID;
+                }
+
+                if(!isNaN(quantity) && !isNaN(unitPrice)){
+                    dataUpdate.quantity = quantity;
+                    dataUpdate.unitPrice = unitPrice;
+                    dataUpdate.amount = Number(quantity * unitPrice);
                 }
 
                 if(birthday && birthday != ""){
@@ -1483,7 +1519,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, userID, contactID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, userID, contactID, supportID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -1527,6 +1563,10 @@ class Model extends BaseModel {
                         }
                     }
                 }
+
+                if(checkObjectIDs(supportID)){                    
+                    conditionObj.support = supportID
+				}
 
                 if(keyword){
                     keyword = stringUtils.removeAccents(keyword)
@@ -1665,7 +1705,7 @@ class Model extends BaseModel {
      * Name: Download Template Excel
      * Date: 25/11/2024
      */
-    exportExcel({ option, companyID, userID }) {
+    exportExcel({ option, companyID, userID, supportID, keyword }) {
        return new Promise(async resolve => {
            try {
             // Tải mẫu Template
@@ -1675,59 +1715,104 @@ class Model extends BaseModel {
                     userID
                 })
 
-                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cdc_grow_track.xlsm')))
+                let conditionObj = {
+                    company: companyID,
+                    status: 1, // Chỉ lấy mẩu tin Hoàn thành
+                }
+
+                if(keyword){
+                    keyword = stringUtils.removeAccents(keyword)
+                    keyword = keyword.split(" ");
+                    keyword = '.*' + keyword.join(".*") + '.*';
+                    const regSearch = new RegExp(keyword, 'i');
+                    conditionObj.namecv = regSearch
+                }
+
+                if(checkObjectIDs(supportID)){                    
+                    conditionObj.support = supportID
+                }
+                // console.log(conditionObj)
+
+                XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cdc_grow_track.xlsx')))
                     .then(async workbook => {
                         let listData = [], listUser = []
+
+                        // Nếu là Admin ứng dụng
                         if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
-                            listData = await CRM__GROW_TRACK_COLL.find({ company: companyID })
+                            // console.log(conditionObj)
+
+                            listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
                             .populate({
-                                path: 'userCreate',
-                                select:'fullname'
+                                path: 'userCreate source secialist product',
+                                select:'fullname name unit'
                             })
                             .sort({_id: -1})
                             .limit(5000)
 
-                            listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
-                        }else{
-                            listData = await CRM__GROW_TRACK_COLL.find({ userCreate: userID, company: companyID })
-                            .populate({
-                                path: 'userCreate',
-                                select:'fullname'
-                            })
-                            .sort({_id: -1})
-                            .limit(5000)
-
-                            listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
+                            // listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
                         }
 
-                        var i = 2
+                        // Nếu không phải admin: người support, người tạo
+                        else{
+                            conditionObj.userCreate = userID
+                            // console.log(conditionObj)
+
+                            listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
+                            .populate({
+                                path: 'userCreate source secialist product',
+                                select:'fullname name unit'
+                            })
+                            .sort({_id: -1})
+                            // .limit(5000)
+
+                            // listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
+                        }
+
+                        var i = 4
                         listData?.forEach((item, index) => {
-                            workbook.sheet("BaoCao").row(i).cell(1).value(item?.date);
-                            workbook.sheet("BaoCao").row(i).cell(2).value(item?.parentName);
-                            workbook.sheet("BaoCao").row(i).cell(3).value(item?.phone);
-                            workbook.sheet("BaoCao").row(i).cell(4).value(item?.name);
-                            workbook.sheet("BaoCao").row(i).cell(5).value(item?.birthday);
-                            workbook.sheet("BaoCao").row(i).cell(6).value(item?.gender == 1 ? "Nam" : "Nữ");
-                            workbook.sheet("BaoCao").row(i).cell(7).value(item?.height);
-                            workbook.sheet("BaoCao").row(i).cell(8).value(item?.weight);
-                            workbook.sheet("BaoCao").row(i).cell(9).value(item?.boneAge);
-                            workbook.sheet("BaoCao").row(i).cell(10).value(item?.pubertyOnsetDate);
-                            workbook.sheet("BaoCao").row(i).cell(11).value(item?.percentile);
-                            workbook.sheet("BaoCao").row(i).cell(12).value(item?.userCreate.fullname);
+                            const birthDate = new Date(item?.birthday);
+                            const today = new Date();
+
+                            workbook.sheet("ChiTietHoSo").row(i).cell(1).value(Number(index+1));
+                            workbook.sheet("ChiTietHoSo").row(i).cell(2).value(item?.date);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(3).value(item?.parentName);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(4).value(item?.phone);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(5).value(item?.name);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(6).value(item?.birthday);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(7).value(Number(today.getFullYear() - birthDate.getFullYear()));
+                            workbook.sheet("ChiTietHoSo").row(i).cell(8).value(item?.gender == 1 ? "Nam" : "Nữ");
+                            workbook.sheet("ChiTietHoSo").row(i).cell(9).value(item?.email);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(10).value(item?.source?.name);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(11).value(item?.height);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(12).value(item?.weight);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(13).value(item?.pubertyOnsetDate);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(14).value(item?.percentile);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(15).value(item?.predictedAdultHeight);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(16).value(item?.secialist?.name);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(17).value(item?.product?.name);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(18).value(item?.product?.unit);
+                            
+                            workbook.sheet("ChiTietHoSo").row(i).cell(19).value(Number(item?.quantity));
+                            workbook.sheet("ChiTietHoSo").row(i).cell(20).value(Number(item?.unitPrice));
+                            workbook.sheet("ChiTietHoSo").row(i).cell(21).value(Number(item?.amount));
+                            
+                            workbook.sheet("ChiTietHoSo").row(i).cell(22).value(item?.note);
+                            
+                            // workbook.sheet("ChiTietHoSo").row(i).cell(24).value(item?.userCreate.fullname);
 
                             i++
                         })
 
-                        var i = 2
-                        listUser?.forEach((item, index) => {
-                            workbook.sheet("BaoCao2").row(i).cell(2).value(item?.fullname);
+                        // var i = 2
+                        // listUser?.forEach((item, index) => {
+                        //     workbook.sheet("BaoCao2").row(i).cell(2).value(item?.fullname);
 
-                            i++
-                        })
+                        //     i++
+                        // })
             
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
-                        const fileName = `cdc_grow_track_${now.getTime()}.xlsm`;
+                        const fileName = `cdc_grow_track_${now.getTime()}.xlsx`;
                         const pathWriteFile = path.resolve(__dirname, filePath, fileName)
 
                         await workbook.toFileAsync(pathWriteFile)
