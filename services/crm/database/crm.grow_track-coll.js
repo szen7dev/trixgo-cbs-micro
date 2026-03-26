@@ -9,8 +9,23 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
         type: Schema.Types.ObjectId,
         ref : "company"
     },
-    //_________Người support, chăm sóc
+    //_________Sự kiện
+    event: {
+        type: Schema.Types.ObjectId,
+        ref: 'crm_vng_event'
+    },
+    //_________Người support/Chủ Trạm
     support: {
+        type: Schema.Types.ObjectId,
+        ref: "contact"
+    },
+    //_________Nguồn khách hàng
+    source: {
+        type: Schema.Types.ObjectId,
+        ref: 'doctype'
+    },
+    //_________Người tư vấn/chuyên viên
+    secialist: {
         type: Schema.Types.ObjectId,
         ref: "contact"
     },
@@ -49,6 +64,26 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
     motherEmail: String,
     //_________Chiều cao mẹ (cm)
     motherHeight: { type: Number, default: 0 },
+    //_________Sản phẩm
+    product: {
+        type: Schema.Types.ObjectId,
+        ref : "goods"
+    },
+    //______Khối lượng/Số lượng
+    quantity: {
+        type: Number,
+        default : 1
+    },
+    //______Đơn giá
+    unitPrice: {
+        type: Number,
+        default : 0
+    },
+    //______Thành tiền
+    amount: {
+        type: Number,
+        default : 0
+    },
     /**
      * CON
      */

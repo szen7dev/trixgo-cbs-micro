@@ -4,6 +4,12 @@ const { template } = require('lodash');
 const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
+/**
+ * BA
+ * Family Group
+ * Cuộc thi
+ */
+
 module.exports  = DATABASE_MIDDLEWARE("crm_family_group", {
     //________Công ty
     company: {

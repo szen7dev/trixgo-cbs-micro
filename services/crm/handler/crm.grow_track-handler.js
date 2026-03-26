@@ -186,10 +186,10 @@ module.exports = {
                 }
 
                 await this.validateEntity(ctx.params);
-                let { optionSeller, option, trackID, contactID, phone, userCreateID, keyword, limit, lastestID, select, populates } = ctx.params;
+                let { optionSeller, option, trackID, contactID, supportID, phone, userCreateID, keyword, limit, lastestID, select, populates } = ctx.params;
 
 				const { _id: userID, company } = ctx.meta.infoUser;
-                // console.log(ctx.params)
+                console.log(ctx.params)
 
                 let companyID
                 if(optionSeller){
@@ -204,7 +204,7 @@ module.exports = {
                     });
                 } else {
                     resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.getList({
-                        companyID, userID, contactID, phone, userCreateID, keyword, limit, lastestID, select, populates
+                        companyID, userID, contactID, supportID, phone, userCreateID, keyword, limit, lastestID, select, populates
                     })
                 }
 
@@ -300,11 +300,11 @@ module.exports = {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
                
-                let { option} = ctx.params;
-                // console.log(ctx.params)
+                let { option, supportID, keyword } = ctx.params;
+                console.log(ctx.params)
 
                 const resultAfterCallHandler = await CRM__GROW_TRACK_MODEL.exportExcel({
-                    companyID: company._id, option, userID
+                    companyID: company._id, option, userID, supportID, keyword
                 })
 
                 return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
