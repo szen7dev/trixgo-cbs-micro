@@ -43,7 +43,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID }) {
+    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -227,6 +227,24 @@ class Model extends BaseModel {
                             dataInsert.parentName = infoContact?.parent?.name;
                         }
                     }
+
+                    if(checkObjectIDs(secialistID)){
+                        dataInsert.secialist = secialistID;
+                    }
+
+                    if(checkObjectIDs(sourceID)){
+                        dataInsert.source = sourceID;
+                    }
+
+                    if(checkObjectIDs(productID)){
+                        dataInsert.product = productID;
+                    }
+
+                    if(!isNaN(quantity) && !isNaN(unitPrice)){
+                        dataInsert.quantity = quantity;
+                        dataInsert.unitPrice = unitPrice;
+                        dataInsert.amount = Number(quantity * unitPrice);
+                    }
                     
                     if(convertStr != ""){
                         dataInsert.namecv = convertStr
@@ -262,7 +280,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID }){
+    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice }){
         const that = this;
         return new Promise(async (resolve) => {
             try {
@@ -318,6 +336,24 @@ class Model extends BaseModel {
 
                 if(checkObjectIDs(contactID)){
                     dataUpdate.contact = contactID;
+                }
+
+                if(checkObjectIDs(secialistID)){
+                    dataUpdate.secialist = secialistID;
+                }
+
+                if(checkObjectIDs(sourceID)){
+                    dataUpdate.source = sourceID;
+                }
+
+                if(checkObjectIDs(productID)){
+                    dataUpdate.product = productID;
+                }
+
+                if(!isNaN(quantity) && !isNaN(unitPrice)){
+                    dataUpdate.quantity = quantity;
+                    dataUpdate.unitPrice = unitPrice;
+                    dataUpdate.amount = Number(quantity * unitPrice);
                 }
 
                 if(birthday && birthday != ""){
