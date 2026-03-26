@@ -24,6 +24,7 @@ const stringUtils					    = require('../../../tools/utils/string_utils.js')
  */
 const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
+const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll.js')
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
 
 const AUTH__USER                        = require('../.../../../auth/model/auth.user-model').MODEL
@@ -1768,6 +1769,9 @@ class Model extends BaseModel {
                             // listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
                         }
 
+                        let listSpecialist = await ITEM__CONTACT_COLL.find({_id: {$in: listData.map(item => item?.secialist?._id)}}).select('name')
+                        let listSource = await ITEM__DOCTYPE_COLL.find({_id: {$in: listData.map(item => item?.source?._id)}}).select('name')
+
                         var i = 4
                         listData?.forEach((item, index) => {
                             const birthDate = new Date(item?.birthday);
@@ -1809,6 +1813,22 @@ class Model extends BaseModel {
 
                         //     i++
                         // })
+
+                        var i = 4
+                        listSource?.forEach((item, index) => {
+                            if(i <= 13){
+                                workbook.sheet("BaoCao").row(i).cell(2).value(item.name)
+                            }
+                            i++
+                        })
+                        
+                        var i = 17
+                        listSpecialist?.forEach((item, index) => {
+                            if(i <= 26){
+                                workbook.sheet("BaoCao").row(i).cell(2).value(item.name)
+                            }
+                            i++
+                        })
             
                         const now = new Date();
                         const filePath = '../../../files/temporary_uploads/';
