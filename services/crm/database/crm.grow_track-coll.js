@@ -70,20 +70,11 @@ module.exports  = DATABASE_MIDDLEWARE("crm_grow_track", {
         ref : "goods"
     },
     //______Khối lượng/Số lượng
-    quantity: {
-        type: Number,
-        default : 1
-    },
+    quantity: Number,
     //______Đơn giá
-    unitPrice: {
-        type: Number,
-        default : 0
-    },
+    unitPrice: Number,
     //______Thành tiền
-    amount: {
-        type: Number,
-        default : 0
-    },
+    amount: Number,
     /**
      * CON
      */
