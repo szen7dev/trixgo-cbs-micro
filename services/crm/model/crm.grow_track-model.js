@@ -1835,10 +1835,10 @@ class Model extends BaseModel {
                             workbook.sheet("ChiTietHoSo").row(i).cell(17).value(item?.product?.name);
                             workbook.sheet("ChiTietHoSo").row(i).cell(18).value(item?.product?.unit);
                             
-                            workbook.sheet("ChiTietHoSo").row(i).cell(19).value(item?.quantity > 0 && Number(item?.quantity));
-                            workbook.sheet("ChiTietHoSo").row(i).cell(20).value(item?.unitPrice > 0 && Number(item?.unitPrice));
-                            workbook.sheet("ChiTietHoSo").row(i).cell(21).value(item?.amount > 0 && Number(item?.amount));
-                            
+                            workbook.sheet("ChiTietHoSo").row(i).cell(19).value((item?.quantity && Number(item?.quantity) > 0) ? Number(item?.quantity) : '');
+                            workbook.sheet("ChiTietHoSo").row(i).cell(20).value((item?.unitPrice && Number(item?.unitPrice) > 0) ? Number(item?.unitPrice) : '');
+                            workbook.sheet("ChiTietHoSo").row(i).cell(21).value((item?.amount && Number(item?.amount) > 0) ? Number(item?.amount) : '');
+
                             workbook.sheet("ChiTietHoSo").row(i).cell(22).value(item?.note);
                             
                             // workbook.sheet("ChiTietHoSo").row(i).cell(24).value(item?.userCreate.fullname);
