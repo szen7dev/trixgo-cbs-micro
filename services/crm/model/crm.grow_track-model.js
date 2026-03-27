@@ -1764,18 +1764,16 @@ class Model extends BaseModel {
                     conditionObj.namecv = regSearch
                 }
 
-                if(checkObjectIDs(supportID)){                    
-                    conditionObj.support = supportID
-                }
-                // console.log(conditionObj)
-
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cdc_grow_track.xlsx')))
                     .then(async workbook => {
                         let listData = [], listUser = []
 
                         // Nếu là Admin ứng dụng
                         if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
-                            // console.log(conditionObj)
+
+                            if(checkObjectIDs(supportID)){                    
+                                conditionObj.support = supportID
+                            }
 
                             listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
                             .populate({
@@ -1790,8 +1788,15 @@ class Model extends BaseModel {
 
                         // Nếu không phải admin: người support, người tạo
                         else{
-                            conditionObj.userCreate = userID
-                            // console.log(conditionObj)
+                            let infoUser = await AUTH__USER_COLL.findById(userID).select('contacts')
+                            if(infoUser){
+                                conditionObj.$or = [
+                                    {userCreate: userID},
+                                    {support: infoUser.contacts[0]},
+                                ]
+                            }else{
+                                conditionObj.userCreate = userID
+                            }
 
                             listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
                             .populate({
@@ -1799,7 +1804,6 @@ class Model extends BaseModel {
                                 select:'fullname name unit'
                             })
                             .sort({_id: -1})
-                            // .limit(5000)
 
                             // listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
                         }
@@ -1831,9 +1835,9 @@ class Model extends BaseModel {
                             workbook.sheet("ChiTietHoSo").row(i).cell(17).value(item?.product?.name);
                             workbook.sheet("ChiTietHoSo").row(i).cell(18).value(item?.product?.unit);
                             
-                            workbook.sheet("ChiTietHoSo").row(i).cell(19).value(Number(item?.quantity));
-                            workbook.sheet("ChiTietHoSo").row(i).cell(20).value(Number(item?.unitPrice));
-                            workbook.sheet("ChiTietHoSo").row(i).cell(21).value(Number(item?.amount));
+                            workbook.sheet("ChiTietHoSo").row(i).cell(19).value(item?.quantity > 0 && Number(item?.quantity));
+                            workbook.sheet("ChiTietHoSo").row(i).cell(20).value(item?.unitPrice > 0 && Number(item?.unitPrice));
+                            workbook.sheet("ChiTietHoSo").row(i).cell(21).value(item?.amount > 0 && Number(item?.amount));
                             
                             workbook.sheet("ChiTietHoSo").row(i).cell(22).value(item?.note);
                             
