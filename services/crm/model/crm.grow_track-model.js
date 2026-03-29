@@ -1600,6 +1600,10 @@ class Model extends BaseModel {
                         }else{
                             conditionObj.userCreate = userID
                         }
+
+                        if(checkObjectIDs(eventID)){                    
+                            conditionObj.event = eventID
+                        }
                     }else{
 
                         // Lọc theo chủ Trạm
@@ -1810,6 +1814,11 @@ class Model extends BaseModel {
                                 ]
                             }else{
                                 conditionObj.userCreate = userID
+                            }
+
+                            if(checkObjectIDs(eventID)){                    
+                                conditionObj.event = eventID
+                                infoEvent = await CRM__VNG_EVENT_COLL.findById(eventID)
                             }
 
                             listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
