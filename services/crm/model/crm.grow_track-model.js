@@ -6,6 +6,7 @@ const XlsxPopulate                      = require('xlsx-populate')
 const fs                                = require('fs')
 const path                              = require('path')
 const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
+const moment                            = require('moment');
 
 /**
  * DOMAIN AND ACTIONS
@@ -26,6 +27,7 @@ const AUTH__USER_COLL                   = require('../../auth/database/auth.user
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
 const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll.js')
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
+const CRM__VNG_EVENT_COLL               = require('../database/crm.vng_event-coll')
 
 const AUTH__USER                        = require('../.../../../auth/model/auth.user-model').MODEL
 const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
@@ -1773,7 +1775,7 @@ class Model extends BaseModel {
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cdc_grow_track.xlsx')))
                     .then(async workbook => {
-                        let listData = [], listUser = []
+                        let listData = [], listUser = [], infoEvent;
 
                         // Nếu là Admin ứng dụng
                         if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
@@ -1784,6 +1786,7 @@ class Model extends BaseModel {
 
                             if(checkObjectIDs(eventID)){                    
                                 conditionObj.event = eventID
+                                infoEvent = await CRM__VNG_EVENT_COLL.findById(eventID)
                             }
 
                             listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
@@ -1826,6 +1829,12 @@ class Model extends BaseModel {
                         listData?.forEach((item, index) => {
                             const birthDate = new Date(item?.birthday);
                             const today = new Date();
+
+                            if(checkObjectIDs(eventID)){                    
+                               workbook.sheet("ChiTietHoSo").row(2).cell(1).value(
+                                `${infoEvent.name} - Ngày: ${moment(infoEvent.date).format('DD/MM/YYYY')}`
+                               );
+                            }
 
                             workbook.sheet("ChiTietHoSo").row(i).cell(1).value(Number(index+1));
                             workbook.sheet("ChiTietHoSo").row(i).cell(2).value(item?.date);

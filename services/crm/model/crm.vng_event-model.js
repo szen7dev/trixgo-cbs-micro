@@ -29,9 +29,6 @@ const { CRM_PERMISSION }                = require('../helper/crm.keys-constant.j
 /**
  * COLLECTIONS
  */
-// const AUTH__COMPANY_COLL                = require('../../auth/database/auth.company-coll')
-const AUTH__USER_COLL                   = require('../../auth/database/auth.user-coll.js')
-const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
 const CRM__VNG_EVENT_COLL               = require('../database/crm.vng_event-coll')
 
 
