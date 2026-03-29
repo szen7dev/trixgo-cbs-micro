@@ -44,7 +44,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice }) {
+    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice, eventID }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -86,6 +86,10 @@ class Model extends BaseModel {
                     let dataInsert = {
                         company: companyID,
                         userCreate: userID,
+                    }
+
+                    if(checkObjectIDs(eventID)){
+                        dataInsert.event = eventID;
                     }
 
                     if(checkObjectIDs(supportID)){
@@ -281,7 +285,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice }){
+    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice, eventID }){
         const that = this;
         return new Promise(async (resolve) => {
             try {
@@ -301,6 +305,10 @@ class Model extends BaseModel {
                     if(!checkObjectIDs(thumbnailID)){
                         dataUpdate.thumbnail = imagesID[0];
                     }
+                }
+
+                if(checkObjectIDs(eventID)){
+                    dataUpdate.event = eventID;
                 }
 
                 if(checkObjectIDs(supportID)){
@@ -1543,7 +1551,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, userID, contactID, supportID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, userID, eventID, contactID, supportID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -1572,11 +1580,6 @@ class Model extends BaseModel {
 				if(checkObjectIDs(contactID)){                    
                     conditionObj.contact = contactID
 				}else{
-                    // if(phone && phone != ""){
-                    //     conditionObj.phone = phone
-                    // }else{
-                        
-                    // }
                     conditionObj.company = companyID
 
                     let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -1600,6 +1603,10 @@ class Model extends BaseModel {
                         // Lọc theo chủ Trạm
                         if(checkObjectIDs(supportID)){                    
                             conditionObj.support = supportID
+                        }
+
+                        if(checkObjectIDs(eventID)){                    
+                            conditionObj.event = eventID
                         }
                     }
                 }
@@ -1741,7 +1748,7 @@ class Model extends BaseModel {
      * Name: Download Template Excel
      * Date: 25/11/2024
      */
-    exportExcel({ option, companyID, userID, supportID, keyword }) {
+    exportExcel({ option, companyID, userID, supportID, eventID, keyword }) {
        return new Promise(async resolve => {
            try {
             // Tải mẫu Template
@@ -1773,6 +1780,10 @@ class Model extends BaseModel {
 
                             if(checkObjectIDs(supportID)){                    
                                 conditionObj.support = supportID
+                            }
+
+                            if(checkObjectIDs(eventID)){                    
+                                conditionObj.event = eventID
                             }
 
                             listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
