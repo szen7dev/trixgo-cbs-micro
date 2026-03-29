@@ -6,6 +6,7 @@ const XlsxPopulate                      = require('xlsx-populate')
 const fs                                = require('fs')
 const path                              = require('path')
 const { uploadFileS3 }                  = require('../../../tools/s3/index.js')
+const moment                            = require('moment');
 
 /**
  * DOMAIN AND ACTIONS
@@ -26,6 +27,7 @@ const AUTH__USER_COLL                   = require('../../auth/database/auth.user
 const ITEM__CONTACT_COLL                = require('../../item/database/item.contact-coll.js')
 const ITEM__DOCTYPE_COLL                = require('../../item/database/item.doctype-coll.js')
 const CRM__GROW_TRACK_COLL              = require('../database/crm.grow_track-coll')
+const CRM__VNG_EVENT_COLL               = require('../database/crm.vng_event-coll')
 
 const AUTH__USER                        = require('../.../../../auth/model/auth.user-model').MODEL
 const AUTH__APP_USER                    = require('../.../../../auth/model/auth.app_users').MODEL
@@ -44,7 +46,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice }) {
+    insert({ userID, emailUser, companyID, phone, contactID, status, birthday, gender, height, weight, name, note, facebook, tiktok, parentName, email, fatherHeight, motherHeight, date, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice, eventID }) {
         const that = this;
         return new Promise(async resolve => {
             try {
@@ -86,6 +88,10 @@ class Model extends BaseModel {
                     let dataInsert = {
                         company: companyID,
                         userCreate: userID,
+                    }
+
+                    if(checkObjectIDs(eventID)){
+                        dataInsert.event = eventID;
                     }
 
                     if(checkObjectIDs(supportID)){
@@ -281,7 +287,7 @@ class Model extends BaseModel {
      * Author: HiepNH
      * Code: 22/11/2023
      */
-    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice }){
+    update({ trackID, userID, phone, contactID, status, birthday, date, gender, height, weight, name, note, facebook, tiktok, thumbnailID, imagesID, parentName, email, fatherHeight, motherHeight, desiredHeight, routine, pubertyOnsetDate, boneAge, motherName, motherPhone, motherEmail, supportID, secialistID, sourceID, productID, quantity, unitPrice, eventID }){
         const that = this;
         return new Promise(async (resolve) => {
             try {
@@ -301,6 +307,10 @@ class Model extends BaseModel {
                     if(!checkObjectIDs(thumbnailID)){
                         dataUpdate.thumbnail = imagesID[0];
                     }
+                }
+
+                if(checkObjectIDs(eventID)){
+                    dataUpdate.event = eventID;
                 }
 
                 if(checkObjectIDs(supportID)){
@@ -1543,7 +1553,7 @@ class Model extends BaseModel {
      * Author: Depv
      * Code  :
      */
-    getList({ companyID, userID, contactID, supportID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
+    getList({ companyID, userID, eventID, contactID, supportID, phone, keyword, limit = 10, lastestID, select, populates= {} }) {
         return new Promise(async (resolve) => {
             try {
                 if(Number(limit) > 50){
@@ -1572,11 +1582,6 @@ class Model extends BaseModel {
 				if(checkObjectIDs(contactID)){                    
                     conditionObj.contact = contactID
 				}else{
-                    // if(phone && phone != ""){
-                    //     conditionObj.phone = phone
-                    // }else{
-                        
-                    // }
                     conditionObj.company = companyID
 
                     let getInfoUserApp = await AUTH__APP_USER.checkPermissionsAccessApp({
@@ -1595,11 +1600,19 @@ class Model extends BaseModel {
                         }else{
                             conditionObj.userCreate = userID
                         }
+
+                        if(checkObjectIDs(eventID)){                    
+                            conditionObj.event = eventID
+                        }
                     }else{
 
                         // Lọc theo chủ Trạm
                         if(checkObjectIDs(supportID)){                    
                             conditionObj.support = supportID
+                        }
+
+                        if(checkObjectIDs(eventID)){                    
+                            conditionObj.event = eventID
                         }
                     }
                 }
@@ -1741,7 +1754,7 @@ class Model extends BaseModel {
      * Name: Download Template Excel
      * Date: 25/11/2024
      */
-    exportExcel({ option, companyID, userID, supportID, keyword }) {
+    exportExcel({ option, companyID, userID, supportID, eventID, keyword }) {
        return new Promise(async resolve => {
            try {
             // Tải mẫu Template
@@ -1766,13 +1779,18 @@ class Model extends BaseModel {
 
                 XlsxPopulate.fromFileAsync(path.resolve(__dirname, ('../../../files/templates/excels/cdc_grow_track.xlsx')))
                     .then(async workbook => {
-                        let listData = [], listUser = []
+                        let listData = [], listUser = [], infoEvent;
 
                         // Nếu là Admin ứng dụng
                         if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
 
                             if(checkObjectIDs(supportID)){                    
                                 conditionObj.support = supportID
+                            }
+
+                            if(checkObjectIDs(eventID)){                    
+                                conditionObj.event = eventID
+                                infoEvent = await CRM__VNG_EVENT_COLL.findById(eventID)
                             }
 
                             listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
@@ -1798,6 +1816,11 @@ class Model extends BaseModel {
                                 conditionObj.userCreate = userID
                             }
 
+                            if(checkObjectIDs(eventID)){                    
+                                conditionObj.event = eventID
+                                infoEvent = await CRM__VNG_EVENT_COLL.findById(eventID)
+                            }
+
                             listData = await CRM__GROW_TRACK_COLL.find(conditionObj)
                             .populate({
                                 path: 'userCreate source secialist product',
@@ -1815,6 +1838,12 @@ class Model extends BaseModel {
                         listData?.forEach((item, index) => {
                             const birthDate = new Date(item?.birthday);
                             const today = new Date();
+
+                            if(checkObjectIDs(eventID)){                    
+                               workbook.sheet("ChiTietHoSo").row(2).cell(1).value(
+                                `${infoEvent.name} - Ngày: ${moment(infoEvent.date).format('DD/MM/YYYY')}`
+                               );
+                            }
 
                             workbook.sheet("ChiTietHoSo").row(i).cell(1).value(Number(index+1));
                             workbook.sheet("ChiTietHoSo").row(i).cell(2).value(item?.date);
