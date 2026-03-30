@@ -280,29 +280,32 @@ class Model extends BaseModel {
                     })
                 }
 
-                // Kiểm tra quyền chấm công trên Web
+                // Check location
                 if(location && location != ""){
-                    console.log('Chấm công trên Mobile')
+                    // console.log('Chấm công trên Mobile')
 
-                    if(infoTask.project.location && infoTask.project.location != '' && location && location != "" && infoTask.project.distance > 0){
-                        const [lat1, lon1] = location.split(',').map(item => item.trim());
-                        const [lat2, lon2] = infoTask.project.location.split(',').map(item => item.trim());
+                    // Chỉ áp dụng cho Ghi danh
+                    if(infoTask.subtype == 16){
+                        if(infoTask.project.location && infoTask.project.location != '' && infoTask.project.distance > 0){
+                            const [lat1, lon1] = location.split(',').map(item => item.trim());
+                            const [lat2, lon2] = infoTask.project.location.split(',').map(item => item.trim());
 
-                        const a1 = { latitude: lat1, longitude: lon1 };
-                        const a2 = { latitude: lat2, longitude: lon2 };
+                            const a1 = { latitude: lat1, longitude: lon1 };
+                            const a2 = { latitude: lat2, longitude: lon2 };
 
-                        const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
-                        // console.log(`Khoảng cách: ${checkDis} m`);
+                            const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
+                            // console.log(`Khoảng cách: ${checkDis} m`);
 
-                        if(checkDis > infoTask.project.distance)
-                            return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
+                            if(checkDis > infoTask.project.distance)
+                                return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
 
-                        dataInsert.location = location;
-                        dataInsert.distance = Number(checkDis)
-                        dataInsert.note = 'Chấm công trên Mobile';
-                        dataInsert.device = 2
-                    }else{
-                        return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
+                            dataInsert.location = location;
+                            dataInsert.distance = Number(checkDis)
+                            dataInsert.note = 'Chấm công trên Mobile';
+                            dataInsert.device = 2
+                        }else{
+                            return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
+                        }
                     }
                 }
                 
