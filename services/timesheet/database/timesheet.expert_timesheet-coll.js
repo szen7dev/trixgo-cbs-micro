@@ -47,6 +47,12 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
     //________Nội dung công việc (*)
     name: String,
     namecv: String,
+    /**
+     * Thiết bị
+     * 1 Web
+     * 2 Mobile
+     */
+    device: Number,
     //_________Địa chỉ theo google map
     location: String,
     //_________Khoảng cách tới vị trí quy định (m)
@@ -54,12 +60,6 @@ module.exports  = DATABASE_MIDDLEWARE("expert_timesheet", {
         type: Number,
         default: 0
     },
-    /**
-     * Thiết bị
-     * 1 Web
-     * 2 Mobile
-     */
-    device: Number,
     /**
      * Phân loại
      * 1 quản lý
