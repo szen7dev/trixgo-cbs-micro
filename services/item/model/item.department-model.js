@@ -36,7 +36,7 @@ class Model extends BaseModel {
      * Name: Tạo mới dự án/phòng ban bởi Supper Admin
      * Author: Depv
      */
-    insert({ type, name, location, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, budget, vatBudget, forecastBudget, vatForecastBudget, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePaymentPaid, contractAmountPaid, ctx }) {
+    insert({ type, name, location, distance, description, company, parent, sign, owner, address, startTime, expiredTime, pm, status, note, assistant, projectCapital, projectType, buildingGrade, buildingType, investmentAmount, area, authorID, milestones, completedMilestones, budget, vatBudget, forecastBudget, vatForecastBudget, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePaymentPaid, contractAmountPaid, ctx }) {
         return new Promise(async resolve => {
             try {
                 if(!_isValid(company) | !_isValid(authorID))
@@ -103,8 +103,12 @@ class Model extends BaseModel {
                     contractAmountPaid
                 }
 
-                if(location){
+                if(location && location != ""){
                     dataInsert.location = location;
+                }
+
+                if(distance && distance != 0){
+                    dataInsert.distance = Number(distance)
                 }
 
                 if(pm && _isValid(pm)){
@@ -124,8 +128,10 @@ class Model extends BaseModel {
                     dataInsert.parent = parent;
                     dataInsert.level = infoMenuParent.level + 1;
                 }
+                // console.log(dataInsert)
 
                 let infoAfterInsert = await this.insertData(dataInsert, authorID);
+                // console.log(infoAfterInsert)
                 return resolve({ error: false, data: infoAfterInsert });
             } catch (error) {
                 return resolve({ error: true, message: error.message });
@@ -139,7 +145,7 @@ class Model extends BaseModel {
      */
     update({
         departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
-        description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
+        description, sign, owner, location, distance, address, area, startTime, expiredTime, actualStartTime, actualFinishTime, photos,
         pm, assistant, budget, vatBudget, note, image, files, userUpdate, milestones, completedMilestones, tasks, completedTasks,
         images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
         realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
@@ -149,6 +155,8 @@ class Model extends BaseModel {
         receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
         numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs, inspectionTasks, completedInspectionTasks, ctx
     }) {
+
+        console.log(location, distance)
         return new Promise(async resolve => {
             try {
                 let dataUpdate   = {};
@@ -160,7 +168,7 @@ class Model extends BaseModel {
                     return resolve({ error: true, message: "Request params departmentID invalid" });
 
                 const infoDepartment = await ITEM__DEPARTMENT_COLL.findById(departmentID);
-                console.log(infoDepartment.members.length)
+                // console.log(infoDepartment.members.length)
 
                 // KIỂM TRA SIGN VÀ NAME CÓ TỒN TẠI Ở 1 DỰ ÁN KHÁC CHƯA
                 if(sign || name){
@@ -271,8 +279,12 @@ class Model extends BaseModel {
                     dataUpdate.owner = owner;
                 }
 
-                if(location){
+                if(location && location != ""){
                     dataUpdate.location = location;
+                }
+
+                if(distance && distance != 0){
+                    dataUpdate.distance = Number(distance)
                 }
 
                 if(address){
