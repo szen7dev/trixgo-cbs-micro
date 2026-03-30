@@ -4,6 +4,19 @@ const DATABASE_MIDDLEWARE   = require('../../../tools/db/database.middleware');
 const Schema                = require('mongoose').Schema;
 
 module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
+    /**
+     * Thiết bị
+     * 1 Web
+     * 2 Mobile
+     */
+    device: Number,
+    //_________Địa chỉ theo google map
+    location: String,
+    //_________Khoảng cách tới vị trí quy định (m)
+    distance: {
+        type: Number,
+        default: 0
+    },
     //_________User có quyền truy cập
     accessUsers: [{
         type: Schema.Types.ObjectId,
