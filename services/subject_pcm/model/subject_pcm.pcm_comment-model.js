@@ -292,7 +292,7 @@ class Model extends BaseModel {
                         const a2 = { latitude: lat2, longitude: lon2 };
 
                         const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
-                        console.log(`Khoảng cách: ${checkDis} m`);
+                        // console.log(`Khoảng cách: ${checkDis} m`);
 
                         if(checkDis > infoTask.project.distance)
                             return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
