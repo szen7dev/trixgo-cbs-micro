@@ -133,8 +133,16 @@ module.exports  = DATABASE_MIDDLEWARE("department", {
     sign: String,
     //_________Chủ đầu tư
     owner: String,
+    /**
+     * Khu vực
+     */
     //_________Địa chỉ theo google map
     location: String,
+    //_________Khoảng cách tới vị trí quy định (m)
+    distance: {
+        type: Number,
+        default: 0
+    },
     //_________Địa chỉ dự án/phòng ban
     address: String,
     //_________Khu vực dự án/phòng ban

@@ -20,42 +20,42 @@ module.exports = {
             type            : { type: "number" },
             name            : { type: "string" },
             sign            : { type: "string" },
-            location        : { type: "string" , optional: true  },
-            startTime       : { type: "string" },
-            expiredTime     : { type: "string" },
-            milestones      : { type: "number" },
-            completedMilestones: { type: "number" },
-            description     : { type: "string", optional: true },
-            parent          : { type: "string", optional: true },
-            owner           : { type: "string", optional: true },
-            address         : { type: "string", optional: true },
-            pm              : { type: "string", optional: true },
-            status          : { type: "string", optional: true },
-            note            : { type: "string", optional: true },
-            assistant       : { type: "string", optional: true },
-            projectCapital  : { type: "string", optional: true },
-            projectType     : { type: "string", optional: true },
-            buildingGrade   : { type: "string", optional: true },
-            buildingType    : { type: "string", optional: true },
-            investmentAmount: { type: "string", optional: true },
-            area            : { type: "string", optional: true },
-            members         : { type: "array", optional: true },
-            admins          : { type: "array", optional: true },
-            budget          : { type: "number" },
-            vatBudget                   : { type: "number" },
-            forecastBudget              : { type: "number" },
-            vatForecastBudget           : { type: "number" },
-            contractValue               : { type: "number" },
-            contractVatValue            : { type: "number" },
-            contractPlus                : { type: "number" },
-            contractVatPlus             : { type: "number" },
-            contractAdvancePaymentPaid  : { type: "number" },
-            contractAmountPaid          : { type: "number" },
+            // location        : { type: "string" , optional: true  },
+            // startTime       : { type: "string" },
+            // expiredTime     : { type: "string" },
+            // milestones      : { type: "number" },
+            // completedMilestones: { type: "number" },
+            // description     : { type: "string", optional: true },
+            // parent          : { type: "string", optional: true },
+            // owner           : { type: "string", optional: true },
+            // address         : { type: "string", optional: true },
+            // pm              : { type: "string", optional: true },
+            // status          : { type: "string", optional: true },
+            // note            : { type: "string", optional: true },
+            // assistant       : { type: "string", optional: true },
+            // projectCapital  : { type: "string", optional: true },
+            // projectType     : { type: "string", optional: true },
+            // buildingGrade   : { type: "string", optional: true },
+            // buildingType    : { type: "string", optional: true },
+            // investmentAmount: { type: "string", optional: true },
+            // area            : { type: "string", optional: true },
+            // members         : { type: "array", optional: true },
+            // admins          : { type: "array", optional: true },
+            // budget          : { type: "number" },
+            // vatBudget                   : { type: "number" },
+            // forecastBudget              : { type: "number" },
+            // vatForecastBudget           : { type: "number" },
+            // contractValue               : { type: "number" },
+            // contractVatValue            : { type: "number" },
+            // contractPlus                : { type: "number" },
+            // contractVatPlus             : { type: "number" },
+            // contractAdvancePaymentPaid  : { type: "number" },
+            // contractAmountPaid          : { type: "number" },
         },
         async handler(ctx) {
             try {
                 await this.validateEntity(ctx.params);
-                let { companyID, type, name, sign, location, startTime, expiredTime, milestones, completedMilestones,
+                let { companyID, type, name, sign, location, distance, startTime, expiredTime, milestones, completedMilestones,
                     budget,
                     vatBudget,
                     forecastBudget,
@@ -72,7 +72,7 @@ module.exports = {
                     companyID = company._id
                 }
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.insert({
-                    ctx, authorID: userID, company: companyID, type, name, sign, location, startTime, expiredTime, milestones, completedMilestones,
+                    ctx, authorID: userID, company: companyID, type, name, sign, location, distance, startTime, expiredTime, milestones, completedMilestones,
                     budget,
                     vatBudget,
                     forecastBudget,
@@ -208,9 +208,11 @@ module.exports = {
             try {
                 await this.validateEntity(ctx.params);
 				const { _id: userID, company } = ctx.meta.infoUser;
+                
+                // console.log(ctx.params)
 
                 let {  departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
-                    description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
+                    description, sign, owner, location, distance , address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
                     pm, assistant, budget, vatBudget, note, position, image, files, milestones, completedMilestones, tasks, completedTasks,
                     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
                     realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
@@ -220,9 +222,12 @@ module.exports = {
                     receivable, estimate, lastDateContact, transactionContacts, likelihoodOfSuccess, lastChange, numberOfContact, numberOfMoms, numberOfDocs,
                     numberOfDrawings, numberOfReports, numberOfIpcs, numberOfRfis, numberOfSubmitals, numberOfPunchLists, numberOfPhotos, numberOfInspections, numberFinishOfDocs, inspectionTasks, completedInspectionTasks } = ctx.params;
 
+                // console.log({location: location})
+                // console.log({distance:distance})
+
                 let resultAfterCallHandler = await ITEM__DEPARTMENT_MODEL.update({
                     departmentID, type, name, admins, adminsRemove, members, membersRemove, stage, ontime, onbudget, status, projectType, projectCapital, buildingType, buildingGrade,
-                    description, sign, owner, location, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
+                    description, sign, owner, location, distance, address, area, startTime, expiredTime, actualStartTime, actualFinishTime,
                     pm, assistant, budget, vatBudget, note, position, image, files, userUpdate: userID, milestones, completedMilestones, tasks, completedTasks,
                     images, lastComment, revenue, forecastRevenue, realRevenue, forecastBudget, vatForecastBudget, realBudget, npv, forecastNpv, realNpv, irr, forecastIrr,
                     realIrr, numberOfPackage, numberOfUnexecutedPackage, numberOfExecutedPackage, numberOfCompletedPackage, amountOfUnexecutedPackage, amountOfExecutedPackage, amountOfCompletedPackage, percentOfCompletedPackage, numberOfContractIn, contractValue, contractVatValue, contractPlus, contractVatPlus, contractAdvancePayment,
