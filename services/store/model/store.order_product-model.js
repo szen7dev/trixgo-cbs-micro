@@ -2361,6 +2361,7 @@ class Model extends BaseModel {
                         var i = 3
                         if(listData && listData.length){
                             listData?.forEach((item, index) => {
+                                let monthSign = `T${Number(new Date(item.date).getMonth() + 1)}_${new Date(item.date).getFullYear()}`;
                                 workbook.sheet("SoQuy").row(i).cell(1).value(item.date);
                                 workbook.sheet("SoQuy").row(i).cell(2).value(`${item?.account?.name}-${item?.account?.description}`);
                                 workbook.sheet("SoQuy").row(i).cell(3).value(item?.name);
@@ -2374,6 +2375,7 @@ class Model extends BaseModel {
 
                                 workbook.sheet("SoQuy").row(i).cell(7).value(item?.subtype?.name);
                                 workbook.sheet("SoQuy").row(i).cell(8).value(item?.note);
+                                workbook.sheet("SoQuy").row(i).cell(9).value(monthSign);
 
                                 i++
                             })
@@ -2382,6 +2384,7 @@ class Model extends BaseModel {
                         var i = 4
                         if(listData1 && listData1.length){
                             listData1?.forEach((item, index) => {
+                                let monthSign = `T${Number(new Date(item.date).getMonth() + 1)}_${new Date(item.date).getFullYear()}`;
                                 const accountDebitCode = item?.debit?.name;
                                 const accountCreditCode = item?.credit?.name;
 
@@ -2408,6 +2411,7 @@ class Model extends BaseModel {
                                     }
 
                                     workbook.sheet("DonHang").row(i).cell(11).value(item?.note);
+                                    workbook.sheet("DonHang").row(i).cell(12).value(monthSign);
 
                                     i++
                                 }
