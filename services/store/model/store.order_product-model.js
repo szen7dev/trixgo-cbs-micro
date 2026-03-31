@@ -2321,10 +2321,10 @@ class Model extends BaseModel {
                         company: companyID,
                         status: 5,
                         type: {$in: [7,8]},
-                        date: {
-                            $gte: start,
-                            $lte: end,
-                        }
+                        // date: {
+                        //     $gte: start,
+                        //     $lte: end,
+                        // }
                     })
                     .select('name outin amount date account customer note')
                     .populate({
@@ -2339,10 +2339,10 @@ class Model extends BaseModel {
                         forward: 0,
                         cancel: 0,
                         type: {$in: [4,5]},
-                        date: {
-                            $gte: start,
-                            $lte: end,
-                        }
+                        // date: {
+                        //     $gte: start,
+                        //     $lte: end,
+                        // }
                     })
                     .select('name quantity unitprice amount date note voucher debit credit')
                     .populate({
