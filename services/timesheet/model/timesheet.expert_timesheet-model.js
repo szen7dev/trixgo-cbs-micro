@@ -67,6 +67,9 @@ class Model extends BaseModel {
                 if(!checkPer || checkPer.error)
                     return resolve({ error: true, message: "Bạn không có quyền | Công ty bạn chưa thanh toán ứng dụng", keyError: KEY_ERROR.INSERT_FAILED, status: 403 })
 
+                // console.log('Quyền truy cập ứng dụng: OKKKKKKKKKKKKKKKKKKKKK')
+                // console.log(checkPer)
+
                 if(!name){
                     return resolve({
                         error: true,
@@ -95,15 +98,17 @@ class Model extends BaseModel {
                     // console.log(infoPer)
 
                     if(infoPer && infoPer.data && infoPer.data.create >= 1){
-                        // console.log('okkkkkkkkkkkkkkkkkkkkkkkkk')
+                        // console.log('Bạn có quyền chấm công trên Web')
                         dataInsert.device = 1
                     }else{
-                        // console.log('Không có quyền chấm công trên Web')
+                        console.log('Không có quyền chấm công trên Web')
                         return resolve({ error: true, message: "Bạn không có quyền chấm công trên Web" })
                     }
                 }else{
                     dataInsert.device = 2
                 }
+                // console.log('-----------------')
+                // console.log(dataInsert)
 
                 if(companyID){
                     dataInsert.company = companyID;
@@ -195,25 +200,29 @@ class Model extends BaseModel {
 
                     // console.log(infoFunda.location);
                     // console.log(infoFunda.distance);
-
-                    if(infoFunda.location && infoFunda.location != '' && location && location != "" && infoFunda.distance > 0){
-                        const [lat1, lon1] = location.split(',').map(item => item.trim());
-                        const [lat2, lon2] = infoFunda.location.split(',').map(item => item.trim());
-
-                        const a1 = { latitude: lat1, longitude: lon1 };
-                        const a2 = { latitude: lat2, longitude: lon2 };
-
-                        const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
-                        // console.log(`Khoảng cách: ${checkDis} m`);
-
-                        if(checkDis > infoFunda.distance)
-                            return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
-
-                        dataInsert.location = location;
-                        dataInsert.distance = Number(checkDis)
-                        dataInsert.note = 'Chấm công trên Mobile';
+                    if(device && device == 1){
+                        // console.log(`Bạn đang chấm công trên Web`);
                     }else{
-                        return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
+                        if(infoFunda.location && infoFunda.location != '' && location && location != "" && infoFunda.distance > 0){
+                            const [lat1, lon1] = location.split(',').map(item => item.trim());
+                            const [lat2, lon2] = infoFunda.location.split(',').map(item => item.trim());
+
+                            const a1 = { latitude: lat1, longitude: lon1 };
+                            const a2 = { latitude: lat2, longitude: lon2 };
+
+                            const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
+                            // console.log(`Khoảng cách: ${checkDis} m`);
+
+                            if(checkDis > infoFunda.distance)
+                                return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
+
+                            dataInsert.location = location;
+                            dataInsert.distance = Number(checkDis)
+                            dataInsert.note = 'Chấm công trên Mobile';
+                        }else{
+                            // console.log(`"Địa điểm chưa có dữ liệu`);
+                            return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
+                        }
                     }
                 }
 
@@ -766,6 +775,8 @@ class Model extends BaseModel {
                     appID: "61e049cffdebf77b072d1b14",
                     userID
                 })
+                // console.log('Quyền truy cập ứng dụng')
+                // console.log(infoAppUser)
 
                 function getLastDayOfMonth(year, month) {
                     return new Date(year, month, 0)
@@ -777,6 +788,9 @@ class Model extends BaseModel {
                 if(!option){
                     if(!infoAppUser.error && infoAppUser.data.level == 0){
                         let listFunda = await ITEM__FUNDA_COLL.find({company: companyID})
+                        // console.log('==============>>>>>>>>>>>>>>>>>>>>>>')
+                        // console.log(listFunda)
+
                         for(const item of listFunda){
                             // Kiểm tra xem bảng đã tồn tại hay chưa, nếu chưa thì tạo mới
                             let info = await TIMESHEET__EXPERT_TIMESHEET_COLL.findOne({
@@ -787,10 +801,12 @@ class Model extends BaseModel {
                                 parent: { $exists: false }
                             })
                             .select('name date')
+                            // console.log('=========Check bảng chấm công tồn tại================')
                             // console.log(info)
 
                             if(!info){
                                 await that.insert({ 
+                                    device: 1,
                                     userCreate: userID, 
                                     companyID, 
                                     name: `Bảng chấm công theo ca Cơ sở ${item.name} T${month}.${year} `, 
@@ -958,6 +974,7 @@ class Model extends BaseModel {
                             for(const item of listData1){
                                 if(item._id.shiftGroup.toString() === 'G123'){
                                     await that.insert({ 
+                                        device: 1,
                                         userCreate: userID, 
                                         companyID, 
                                         parentID: timesheetID, 
@@ -974,6 +991,7 @@ class Model extends BaseModel {
                                     })
                                 }else{
                                     await that.insert({ 
+                                        device: 1,
                                         userCreate: userID, 
                                         companyID, 
                                         parentID: timesheetID, 
@@ -994,6 +1012,7 @@ class Model extends BaseModel {
                             for(const item of listData2){
                                 if(item._id.shiftGroup.toString() === 'G123'){
                                     await that.insert({ 
+                                        device: 1,
                                         userCreate: userID, 
                                         companyID, 
                                         parentID: timesheetID, 
@@ -1010,6 +1029,7 @@ class Model extends BaseModel {
                                     })
                                 }else{
                                     await that.insert({ 
+                                        device: 1,
                                         userCreate: userID, 
                                         companyID, 
                                         parentID: timesheetID, 
