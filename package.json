@@ -6,6 +6,7 @@
     "dev": "moleculer-runner -r --hot ./services/**/*.service.js",
     "dev:watch": "nodemon --watch services --watch tools --watch moleculer.config.js --exec \"npm run dev\"",
     "start": "moleculer-runner services/**/*.service.js",
+    "onesignal:test": "node ./tools/cloudmsg/onesignal.diagnostic.js",
     "ngrok": "node ./tools/https/ngrok.js",
     "cli": "moleculer connect NATS",
     "ci": "jest --watch",
