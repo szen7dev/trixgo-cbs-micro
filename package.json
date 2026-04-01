@@ -6,7 +6,7 @@
     "dev": "moleculer-runner -r --hot ./services/**/*.service.js",
     "dev:watch": "nodemon --watch services --watch tools --watch moleculer.config.js --exec \"npm run dev\"",
     "start": "moleculer-runner services/**/*.service.js",
-    "ngrok": "node ./tools/https/ngrok.js",
+    "onesignal:test": "node ./tools/cloudmsg/onesignal.diagnostic.js",
     "cli": "moleculer connect NATS",
     "ci": "jest --watch",
     "test": "jest --coverage",
@@ -24,8 +24,7 @@
     "eslint": "^7.7.0",
     "jest": "^26.4.2",
     "jest-cli": "^26.4.2",
-    "moleculer-repl": "^0.6.4",
-    "ngrok": "^5.0.0-beta.2"
+    "moleculer-repl": "^0.6.4"
   },
   "dependencies": {
     "@auth0/s3": "^1.0.0",
