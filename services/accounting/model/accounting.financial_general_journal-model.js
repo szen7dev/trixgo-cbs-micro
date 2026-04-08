@@ -3041,7 +3041,7 @@ class Model extends BaseModel {
                  * 2. Công nợ theo accountID
                  * 3. Công nợ của từng Mã khách
                  */
-                let conditionObj = {company: ObjectID(companyID), forward: 0}
+                let conditionObj = {company: ObjectID(companyID), forward: 0, cancel: 0 }
                 let arrObjectID = [accountID]
                 let infoAccount = await ITEM_ACCOUNT_COLL.findById(accountID)
                 let infoCompany = await COMPANY_COLL.findById(companyID).select('name sign')
