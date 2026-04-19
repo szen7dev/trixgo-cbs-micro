@@ -38,10 +38,10 @@ module.exports = {
                 // console.log(ctx.params)
 
 				const { _id: authorID, bizfullname, company } = ctx.meta.infoUser;
-                const { content, rawContent, taskID, location, device, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params
+                const { content, rawContent, taskID, fundaID, location, device, projectID, type, parentID, files, images, switchType, isOfficial, receiversID, select, populates } = ctx.params
 
                 const resultAfterCallHandler = await PCM_COMMENT_MODEL.insert({
-					taskID, location, device, projectID, parentID, authorID, type, content, rawContent, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname: bizfullname,
+					taskID, fundaID, location, device, projectID, parentID, authorID, type, content, rawContent, files, images, switchType, isOfficial, receiversID, select, populates, bizfullname: bizfullname,
                     companyOfAuthor: company._id, ctx
 				})
 

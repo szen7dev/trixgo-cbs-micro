@@ -31,23 +31,10 @@ const PCM_PLAN_TASK_COLL                        = require('../database/subject_p
 const PCM_COMMENT_COLL                          = require('../database/subject_pcm.pcm_comment-coll');
 const PCM_COMMENT_REACTION_COLL                 = require('../database/subject_pcm.pcm_comment_reaction-coll');
 const PCM_FILE_COLL                             = require('../database/subject_pcm.pcm_file-coll');
+const ITEM__FUNDA_COLL            	            = require('../../item/database/item.funda-coll')
+
 const PCM_FILE_MODEL                            = require('../model/subject_pcm.pcm_file-model').MODEL;
 const PCM_PLAN_TASK_MODEL                		= require('../model/subject_pcm.pcm_plan_task').MODEL;
-const AUTH__APP_ROLE_MENU                       = require('../.../../../auth/model/auth.app_role_menu').MODEL
-
-// let dataTF = {
-//     appID: "5eabfdc72171391e5f6a0468", // PCM
-//     menuID: "623ef213e998e94feda0ccd8", //
-//     type: 1, 
-//     action: 1, // Xem
-// }
-
-// let dataTF2 = {
-//     appID: "5eabfdc72171391e5f6a0468", // PCM
-//     menuID: "623ef213e998e94feda0ccd8", //
-//     type: 1, 
-//     action: 2, // Thêm
-// }
 
 class Model extends BaseModel {
 
@@ -202,7 +189,7 @@ class Model extends BaseModel {
 	 * Date: 22/02/2022
 	 */
     insertCommentTask({
-        taskID, location, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
+        taskID, fundaID, location, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor, isOfficial = false, ctx
     }) {
         // console.log('=======================Tạo comment Task=====================')
         // console.log({ taskID, location, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, companyOfAuthor})
@@ -280,56 +267,29 @@ class Model extends BaseModel {
                     })
                 }
 
-                // Check location
-                if(location && location != ""){
-                    // console.log('Chấm công trên Mobile')
+                if(fundaID && checkObjectIDs(fundaID)){
+                    let infoFunda = await ITEM__FUNDA_COLL.findById(fundaID)
 
-                    // Chỉ áp dụng cho Ghi danh
-                    if(infoTask.subtype == 16){
-                        if(infoTask.project.location && infoTask.project.location != '' && infoTask.project.distance > 0){
-                            const [lat1, lon1] = location.split(',').map(item => item.trim());
-                            const [lat2, lon2] = infoTask.project.location.split(',').map(item => item.trim());
+                    if(infoFunda.location && infoFunda.location != '' && location && location != "" && infoFunda.distance > 0){
+                        const [lat1, lon1] = location.split(',').map(item => item.trim());
+                        const [lat2, lon2] = infoFunda.location.split(',').map(item => item.trim());
 
-                            const a1 = { latitude: lat1, longitude: lon1 };
-                            const a2 = { latitude: lat2, longitude: lon2 };
+                        const a1 = { latitude: lat1, longitude: lon1 };
+                        const a2 = { latitude: lat2, longitude: lon2 };
 
-                            const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
-                            // console.log(`Khoảng cách: ${checkDis} m`);
+                        const checkDis = geolib.getDistance(a1, a2); // Trả về mét (m)
+                        // console.log(`Khoảng cách: ${checkDis} m`);
 
-                            if(checkDis > infoTask.project.distance)
-                                return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
+                        if(checkDis > infoFunda.distance)
+                            return resolve({ error: true, message: "Khoảng cách không hợp lệ" })
 
-                            dataInsert.location = location;
-                            dataInsert.distance = Number(checkDis)
-                            dataInsert.note = 'Chấm công trên Mobile';
-                            dataInsert.device = 2
-                        }else{
-                            return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
-                        }
+                        dataInsert.location = location;
+                        dataInsert.distance = Number(checkDis)
+                        dataInsert.note = 'Chấm công trên Mobile';
+                    }else{
+                        // console.log(`"Địa điểm chưa có dữ liệu`);
+                        return resolve({ error: true, message: "Địa điểm chưa có dữ liệu" })
                     }
-                }
-                
-                else{
-                    dataInsert.device = 1
-
-                    // // Xét logic sau
-                    // console.log('Chấm công trên Web')
-                    // let infoPer = await AUTH__APP_ROLE_MENU.getPermissionToAccessOneMenuOfApp({ 
-                    //     type: 1, 
-                    //     menu: '6741a542619da700128e3206', // Chấm công Web
-                    //     user: authorID, 
-                    //     app: '61e049cffdebf77b072d1b14', // App Chấm công
-                    //     company: companyOfAuthor
-                    // })
-                    // // console.log(infoPer)
-
-                    // if(infoPer && infoPer.data && infoPer.data.create >= 1){
-                    //     // console.log('okkkkkkkkkkkkkkkkkkkkkkkkk')
-                    //     dataInsert.device = 1
-                    // }else{
-                    //     // console.log('Không có quyền chấm công trên Web')
-                    //     return resolve({ error: true, message: "Bạn không có quyền chấm công trên Web" })
-                    // }
                 }
 
                 dataInsert.subType = infoTask.subtype;
@@ -965,7 +925,7 @@ class Model extends BaseModel {
 	 * Date: 18/05/2022
 	 */
     insert({
-        taskID, location, device, projectID, parentID, authorID, type, content, rawContent, files, images, receiversID,
+        taskID, fundaID, location, device, projectID, parentID, authorID, type, content, rawContent, files, images, receiversID,
         select, populates, bizfullname, isOfficial, companyOfAuthor, switchType = this.SWITCH_TYPE.TASK, ctx
     }) {
         return new Promise(async (resolve) => {
@@ -973,7 +933,7 @@ class Model extends BaseModel {
                 // Tạo comment cho Task
                 case this.SWITCH_TYPE.TASK:
                     resolve(await this.insertCommentTask({
-                        taskID, location, device, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, isOfficial, companyOfAuthor, ctx
+                        taskID, fundaID, location, device, parentID, authorID, type, content, rawContent, files, images, receiversID, select, populates, bizfullname, isOfficial, companyOfAuthor, ctx
                     }))
                     break;
 
