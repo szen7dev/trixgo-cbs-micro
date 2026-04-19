@@ -17,6 +17,8 @@ module.exports  = DATABASE_MIDDLEWARE("pcm_comment", {
         type: Number,
         default: 0
     },
+    //_________Ghi chú
+    note: String,
     //_________User có quyền truy cập
     accessUsers: [{
         type: Schema.Types.ObjectId,
