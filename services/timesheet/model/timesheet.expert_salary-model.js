@@ -1339,17 +1339,17 @@ class Model extends BaseModel {
                  * Mức 4: A>=1001
                  */
                 // const priceLevels1 = [
-                //     { quantity: 99, price: 300 }, // 100 cốc đầu x 100
-                //     { quantity: 401, price: 500 }, // 200 cốc tiếp theo x 200
-                //     { quantity: 500, price: 600 }, // 200 cốc tiếp theo x 200
-                //     { quantity: 50000, price: 700 }, // 200 cốc tiếp theo x 200
+                //     { quantity: 99, price: 200 }, // 100 cốc đầu x 200
+                //     { quantity: 401, price: 350 }, // 400 cốc tiếp theo x 350
+                //     { quantity: 500, price: 400 }, // 500 cốc tiếp theo x 400
+                //     { quantity: 50000, price: 450 }, // Từ 1000 cốc tiếp theo x 450
                 // ];
 
                 const priceLevels = [
-                    { quantity: 99, price: 150 },
-                    { quantity: 401, price: 250 },
-                    { quantity: 500, price: 300 },
-                    { quantity: 50000, price: 350 },
+                    { quantity: 99, price: 200 },
+                    { quantity: 401, price: 350 },
+                    { quantity: 500, price: 400 },
+                    { quantity: 50000, price: 450 },
                 ];
 
                 let infoSalary = await TIMESHEET__EXPERT_SALARY_COLL.findById(expertSalaryID)
