@@ -479,17 +479,21 @@ class Model extends BaseModel {
         /**
          * KHỐI LƯỢNG SẢN PHẨM
          */
-        let totalQuantity = 0;
+        let totalQuantity = 0, totalQuantityKPI = 0;
         if (products && products.length) {
           for (let item of products) {
             totalQuantity = Number(totalQuantity) + Number(item.quantity);
+
+            if(item.convertOption == 1){
+               totalQuantityKPI = Number(totalQuantityKPI) + Number(item.quantity);
+            }
           }
 
           dataInsert.numberOfProducts = Number(totalQuantity);
 
           // Số lượng sản phẩm trung bình của mỗi nhân viên
           dataInsert.avgQuantityPerStaff = Number(
-            totalQuantity / Number(numberStaff),
+            totalQuantityKPI / Number(numberStaff),
           ).toFixed(2);
         }
 
