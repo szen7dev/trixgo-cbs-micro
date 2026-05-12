@@ -1404,125 +1404,71 @@ class Model extends BaseModel {
                     userID
                 })
 
-                if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
-                    let info = await CRM__GROW_TRACK_COLL.findById(trackID)
-                    // console.log(info)
+                // if((infoAppUser && !infoAppUser.error && infoAppUser.data.level == 0)){
+                    
+                // }else{
+                //     return resolve({ error: true, message: "Bạn không có quyền Đồng bộ" })
+                // }
 
-                    if(info && info?.phone && info?.phone != ""){
-                        let infoUser = await AUTH__USER_COLL.findOne({ phone: info.phone, company: companyID })
-                        // console.log(infoUser)
+                let info = await CRM__GROW_TRACK_COLL.findById(trackID)
+                // console.log(info)
 
-                        // Chỉ xử lý khi chưa tồn tại User, nếu đã tồn tại rồi thực hiện trình tự thủ công
-                        if(!infoUser){
-                            // Tạo user và danh bạ cha mẹ
-                            let newInfoUser = await AUTH__USER.insert({ 
-                                email: info?.email || `${info.phone}.temp.trx@gmail.com`, 
-                                fullname: info?.parentName, 
+                const searchDate = new Date(info?.birthday);
+                const startOfDay = new Date(searchDate.setHours(0, 0, 0, 0));
+                const endOfDay = new Date(searchDate.setHours(23, 59, 59, 999));
+
+                if(info && info?.phone && info?.phone != ""){
+                    let infoUser = await AUTH__USER_COLL.findOne({ phone: info.phone, company: companyID })
+                    // console.log(infoUser)
+
+                    // Chỉ xử lý khi chưa tồn tại User, nếu đã tồn tại rồi thực hiện trình tự thủ công
+                    if(!infoUser){
+                        // Tạo user và danh bạ cha mẹ
+                        let newInfoUser = await AUTH__USER.insert({ 
+                            email: info?.email || `${info.phone}.temp.trx@gmail.com`, 
+                            fullname: info?.parentName, 
+                            companyID, 
+                            phone: info.phone, 
+                            userID,
+                            supportID: info?.support,
+                            type: 5,
+                        })
+                        // console.log(newInfoUser)
+                        
+                        if(newInfoUser && !newInfoUser.error){
+                            // Vì chưa có user của ba mẹ -> Đồng nghĩa chưa tạo được danh bạ của bé link với ba mẹ
+
+                            // Tạo danh bạ cho con
+                            let infoChild = await ITEM__CONTACT_MODEL.insert({ 
                                 companyID, 
-                                phone: info.phone, 
-                                userID,
-                                supportID: info?.support,
-                                type: 5,
-                            })
-                            // console.log(newInfoUser)
-                            
-                            if(newInfoUser && !newInfoUser.error){
-                                // Tạo danh bạ cho con
-                                let infoChild = await ITEM__CONTACT_MODEL.insert({ 
-                                    companyID, 
-                                    authorID: userID, 
-                                    parent: newInfoUser?.data?.contacts[0], 
-                                    name: info?.name, 
-                                    birthday: info?.birthday, 
-                                    gender: info?.gender, 
-                                    pubertyOnsetDate: info?.pubertyOnsetDate, 
-                                    support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
-                                    note: 'Tạo từ Hồ sơ đo cao',
-                                    support: info?.support,
-                                    type: 6
-                                })
-
-                                // Link đo cao vào Profile
-                                if(infoChild){
-                                    let check = await that.update({ 
-                                        trackID, 
-                                        userID,
-                                        contactID: infoChild?.data?._id
-                                    })
-
-                                    // console.log('11111111111111111')
-                                    // console.log(check)
-                                }
-
-                                // Tạo game Habit cho các con của ba mẹ
-                                await CRM_HABIT_MODEL.addMany({
-                                    companyID, 
-                                    contactID: newInfoUser?.data?.contacts[0], 
-                                    ctx
-                                })
-
-                                // Cấp quyền truy cập ứng dụng Habit
-                                await AUTH__APP_USER.insert({ 
-                                    appID: '61e04a0dfdebf77b072d1b18', // Habit
-                                    companyID,
-                                    users: [ newInfoUser?.data?._id ],
-                                    userID 
-                                })
-
-                                return resolve({ error: false, message: "Update successfull" })
-                            }
-                        }else{
-                            // Kiểm tra xem tên bé đã tồn tại chưa
-                            let checkContact = await ITEM__CONTACT_COLL.findOne({
-                                company: companyID,
-                                parent: infoUser?.contacts[0],
+                                authorID: userID, 
+                                parent: newInfoUser?.data?.contacts[0], 
                                 name: info?.name, 
+                                birthday: info?.birthday, 
                                 gender: info?.gender, 
+                                pubertyOnsetDate: info?.pubertyOnsetDate, 
+                                support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
+                                note: 'Tạo từ Hồ sơ đo cao',
+                                support: info?.support,
+                                type: 6
                             })
-                            // console.log({checkContact})
 
-                            if(!checkContact){
-                                // Tạo danh bạ cho con
-                                let infoChild = await ITEM__CONTACT_MODEL.insert({ 
-                                    companyID, 
-                                    authorID: userID, 
-                                    parent: infoUser?.contacts[0], 
-                                    name: info?.name, 
-                                    birthday: info?.birthday, 
-                                    gender: info?.gender, 
-                                    pubertyOnsetDate: info?.pubertyOnsetDate, 
-                                    support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
-                                    note: 'Tạo từ Hồ sơ đo cao',
-                                    support: info?.support,
-                                    type: 6
-                                })
-
-                                // Link đo cao vào Profile
-                                if(infoChild){
-                                    let check = await that.update({ 
-                                        trackID, 
-                                        userID,
-                                        contactID: infoChild?.data?._id
-                                    })
-                                    
-                                    // console.log('22222222222222')
-                                    // console.log(check)
-                                }
-                            }else{
+                            // Link đo cao vào Profile
+                            if(infoChild){
                                 let check = await that.update({ 
                                     trackID, 
                                     userID,
-                                    contactID: checkContact?._id
+                                    contactID: infoChild?.data?._id
                                 })
 
-                                // console.log('333333333333333')
+                                // console.log('11111111111111111')
                                 // console.log(check)
                             }
 
                             // Tạo game Habit cho các con của ba mẹ
                             await CRM_HABIT_MODEL.addMany({
                                 companyID, 
-                                contactID: infoUser?.contacts[0], 
+                                contactID: newInfoUser?.data?.contacts[0], 
                                 ctx
                             })
 
@@ -1530,17 +1476,85 @@ class Model extends BaseModel {
                             await AUTH__APP_USER.insert({ 
                                 appID: '61e04a0dfdebf77b072d1b18', // Habit
                                 companyID,
-                                users: [ infoUser?._id ],
+                                users: [ newInfoUser?.data?._id ],
                                 userID 
                             })
 
                             return resolve({ error: false, message: "Update successfull" })
                         }
                     }else{
-                        return resolve({ error: true, message: "Dữ liệu đo cao không hợp lệ" })
+                        // Kiểm tra xem tên bé đã tồn tại chưa
+                        let checkContact = await ITEM__CONTACT_COLL.findOne({
+                            company: companyID,
+                            parent: infoUser?.contacts[0],
+                            // name: info?.name, 
+                            gender: info?.gender, 
+                            birthday: {
+                                $gte: startOfDay,
+                                $lte: endOfDay
+                            }
+                        })
+                        // console.log(checkContact)
+
+                        if(!checkContact){
+                            // Tạo danh bạ cho con
+                            let infoChild = await ITEM__CONTACT_MODEL.insert({ 
+                                companyID, 
+                                authorID: userID, 
+                                parent: infoUser?.contacts[0], 
+                                name: info?.name, 
+                                birthday: info?.birthday, 
+                                gender: info?.gender, 
+                                pubertyOnsetDate: info?.pubertyOnsetDate, 
+                                support: '682f3f4bc478290036623665', // Công ty Lamin (fix cứng)
+                                note: 'Tạo từ Hồ sơ đo cao',
+                                support: info?.support,
+                                type: 6
+                            })
+
+                            // Link đo cao vào Profile
+                            if(infoChild){
+                                let check = await that.update({ 
+                                    trackID, 
+                                    userID,
+                                    contactID: infoChild?.data?._id
+                                })
+                                
+                                // console.log('22222222222222')
+                                // console.log(check)
+                            }
+                        }else{
+                            // console.log('Thành viên đã tồn tại')
+
+                            let check = await that.update({ 
+                                trackID, 
+                                userID,
+                                contactID: checkContact?._id
+                            })
+
+                            // console.log('333333333333333')
+                            // console.log(check)
+                        }
+
+                        // Tạo game Habit cho các con của ba mẹ
+                        await CRM_HABIT_MODEL.addMany({
+                            companyID, 
+                            contactID: infoUser?.contacts[0], 
+                            ctx
+                        })
+
+                        // Cấp quyền truy cập ứng dụng Habit
+                        await AUTH__APP_USER.insert({ 
+                            appID: '61e04a0dfdebf77b072d1b18', // Habit
+                            companyID,
+                            users: [ infoUser?._id ],
+                            userID 
+                        })
+
+                        return resolve({ error: false, message: "Update successfull" })
                     }
                 }else{
-                    return resolve({ error: true, message: "Bạn không có quyền Đồng bộ" })
+                    return resolve({ error: true, message: "Dữ liệu đo cao không hợp lệ" })
                 }
             } catch (error) {
                 return resolve({ error: true, message: error.message, status: 500 })
