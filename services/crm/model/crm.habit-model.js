@@ -241,10 +241,10 @@ class Model extends BaseModel {
                 let userID = infoContact.linkUser
 
                 let arrHabitCate = [
-                    {key: '67f3638edba06a0012faf28b', name: 'Ngủ 21h45-22h-22h15'},
-                    {key: '67f363a2254cd50012f2a04d', name: 'Vận động 15-30 phút'},
-                    {key: '67f363be2e00c80011d7aeb0', name: 'Uống Cốm LaminGrow 2-3 gói'},
-                    {key: '69452b1172e6080013bbe708', name: 'Ăn Đạm thịt cá trứng sữa'},
+                    {key: '67f3638edba06a0012faf28b', name: 'Ngủ 21h45-22h-22h15-theo tuổi'},
+                    {key: '67f363a2254cd50012f2a04d', name: 'Vận động 15-30-45 phút-theo tuổi'},
+                    {key: '67f363be2e00c80011d7aeb0', name: 'Uống Cốm LaminGrow 1-2-3 gói-theo tuổi'},
+                    {key: '69452b1172e6080013bbe708', name: 'Ăn Đạm thịt cá trứng sữa-theo tuổi'},
                 ]
                 let colors = ['#FF0000','#00FF00','#0000FF','#FFFF00','#FFA500','#00CDE1','#2196F3','#4CAF50','#800080','#A52A2A','#808080']
 
