@@ -124,14 +124,8 @@ module.exports = {
                     companyID = OPTION_SELLERS[Number(optionSeller) - 1].company
                 }
 
-                if(!option){
-                    const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, ctx })
+                const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtp({ phone, companyID, ctx })
                     return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-                }else{
-                    const resultAfterCallHandler = await AUTH__USER_MODEL.getPhoneOtpNew({ phone, companyID, ctx })
-                    return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx })
-                }
-
 
             } catch (error) {
                 return renderStatusCodeAndResponse({ ctx, error_message: error.message });
