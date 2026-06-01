@@ -1815,7 +1815,7 @@ class Model extends BaseModel {
                             .sort({_id: -1})
                             .limit(5000)
 
-                            // listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
+                            listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
                         }
 
                         // Nếu không phải admin: người support, người tạo
@@ -1842,7 +1842,7 @@ class Model extends BaseModel {
                             })
                             .sort({_id: -1})
 
-                            // listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
+                            listUser = await AUTH__USER_COLL.find({_id: {$in: listData.map(item=>item.userCreate._id)}}).select('fullname')
                         }
 
                         let listSpecialist = await ITEM__CONTACT_COLL.find({_id: {$in: listData.map(item => item?.secialist?._id)}}).select('name')
@@ -1884,17 +1884,18 @@ class Model extends BaseModel {
 
                             workbook.sheet("ChiTietHoSo").row(i).cell(22).value(item?.note);
                             
-                            // workbook.sheet("ChiTietHoSo").row(i).cell(24).value(item?.userCreate.fullname);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(23).value(item?.userCreate?.fullname);
+                            workbook.sheet("ChiTietHoSo").row(i).cell(24).value(`T${item?.date.getMonth() + 1}.${item?.date.getFullYear()}`);
 
                             i++
                         })
 
-                        // var i = 2
-                        // listUser?.forEach((item, index) => {
-                        //     workbook.sheet("BaoCao2").row(i).cell(2).value(item?.fullname);
+                        var i = 2
+                        listUser?.forEach((item, index) => {
+                            workbook.sheet("BaoCao2").row(i).cell(2).value(item?.fullname);
 
-                        //     i++
-                        // })
+                            i++
+                        })
 
                         var i = 4
                         listSource?.forEach((item, index) => {
