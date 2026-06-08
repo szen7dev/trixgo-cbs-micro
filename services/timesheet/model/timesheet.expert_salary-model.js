@@ -1333,8 +1333,8 @@ class Model extends BaseModel {
                 
                 /**
                  * Hàm tính bậc thang
-                 * Mức 1: A<100
-                 * Mức 2: 100<=A<=500
+                 * Mức 1: A<101
+                 * Mức 2: 101<=A<=500
                  * Mức 3: 501<=A<=1000
                  * Mức 4: A>=1001
                  */
@@ -1346,9 +1346,9 @@ class Model extends BaseModel {
                 // ];
 
                 const priceLevels = [
-                    { quantity: 99, price: 200 },
-                    { quantity: 401, price: 350 },
-                    { quantity: 500, price: 400 },
+                    { quantity: 100, price: 200 }, // 100 cốc đầu
+                    { quantity: 400, price: 350 }, // 400 cốc tiếp theo
+                    { quantity: 500, price: 400 }, // 500 cốc tiếp theo
                     { quantity: 50000, price: 450 },
                 ];
 
