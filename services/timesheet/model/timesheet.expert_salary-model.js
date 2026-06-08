@@ -1338,13 +1338,6 @@ class Model extends BaseModel {
                  * Mức 3: 501<=A<=1000
                  * Mức 4: A>=1001
                  */
-                // const priceLevels1 = [
-                //     { quantity: 99, price: 200 }, // 100 cốc đầu x 200
-                //     { quantity: 401, price: 350 }, // 400 cốc tiếp theo x 350
-                //     { quantity: 500, price: 400 }, // 500 cốc tiếp theo x 400
-                //     { quantity: 50000, price: 450 }, // Từ 1000 cốc tiếp theo x 450
-                // ];
-
                 const priceLevels = [
                     { quantity: 100, price: 200 }, // 100 cốc đầu
                     { quantity: 400, price: 350 }, // 400 cốc tiếp theo
