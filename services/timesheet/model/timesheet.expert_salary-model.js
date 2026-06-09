@@ -1427,6 +1427,8 @@ class Model extends BaseModel {
                     arr[key].push(item)
                 })
 
+                // console.log(listData)
+
                 for(const item of dataUser){
                     let salary = 0, onLeaveSalary = 0, overtimeSalary = 0, reward = 0, revenueBonus = 0, mealAllowance = 0, punishment = 0, insurance = 0, pitax = 0, union = 0, share = 0, other = 0, advance  = 0, paid = 0, remaining = 0, kpiFactor = 1
                     
@@ -1457,6 +1459,10 @@ class Model extends BaseModel {
                             revenueBonus = Math.round(calculateRevenue(Number(arr[item][0].avgQuantityPerStaff), priceLevels) / 1000) * 1000
                         }
                     }
+
+                    // if(item.toString() === '69b8ade23950cc00123af398'){
+                    //     console.log({revenueBonus})
+                    // }
 
                     remaining = Number(Number(salary * kpiFactor) + Number(onLeaveSalary) + Number(overtimeSalary) + Number(reward) + Number(revenueBonus) + Number(mealAllowance) - Number(punishment) - Number(insurance) - Number(pitax) - Number(union) - Number(share) - Number(other) - Number(advance) - Number(paid)).toFixed(0)
 
