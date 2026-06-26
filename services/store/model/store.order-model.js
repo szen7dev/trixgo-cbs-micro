@@ -745,7 +745,7 @@ insertFull({ outin, type, companyID, projectID, fundaID, businessID, channelID, 
  * Author: Hiepnh
  * Date: 9/4/2022
  */
-update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, outin, type, status, isAddSignature, forward, deliveryStartETA, deliveryEndETA, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, ctx }) {
+update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, warehouseID, toWarehouseID, accountID, customerID, contractID, goodsID, assetsID, workID, name, sign, note, linkID, date, toDate, outin, type, status, isAddSignature, forward, deliveryStartETA, deliveryEndETA, lotID, referrerID, salesLeaderID, salesID, sellerID, affiliateID, customerCareID, recipientAddress, ctx }) {
     return new Promise(async (resolve) => {
         try {
             const infoOrder = await STORE_ORDER_COLL.findById(orderID)
@@ -836,6 +836,10 @@ update({ userID, orderID, filesID, fundaID, projectID, packageID, toPackageID, w
             }
             if (toDate) {
                 dataUpdate.toDate = toDate;
+            }
+
+            if (recipientAddress && recipientAddress != '') {
+                dataUpdate.recipientAddress = recipientAddress;
             }
 
             let convertStr = ''
