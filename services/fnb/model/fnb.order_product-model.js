@@ -1089,15 +1089,17 @@ class Model extends BaseModel {
                             workbook.sheet("Order").row(i).cell(11).value((item?.size == 1) ? Number(item?.quantity) : 0);
                             workbook.sheet("Order").row(i).cell(12).value((item?.size == 2) ? Number(item?.quantity) : 0);
 
-                            workbook.sheet("Order").row(i).cell(13).value(`${FNB_STATUS[Number(item.order.status) - 1].text}`);
-                            workbook.sheet("Order").row(i).cell(14).value(Number(item?.order?.total));
-                            workbook.sheet("Order").row(i).cell(15).value(Number(item?.order?.discount));
-                            workbook.sheet("Order").row(i).cell(16).value(Number(item?.order?.salesoff));
-                            workbook.sheet("Order").row(i).cell(17).value(Number(item?.order?.credit));
-                            workbook.sheet("Order").row(i).cell(18).value(Number(item?.order?.offer));
-                            workbook.sheet("Order").row(i).cell(19).value(Number(item?.order?.loyaltyPoints));
-                            workbook.sheet("Order").row(i).cell(20).value(item?.order?.appOrderSign);
-                            workbook.sheet("Order").row(i).cell(21).value(item?.funda?.name);
+                            workbook.sheet("Order").row(i).cell(13).value(`${FNB_STATUS[Number(item.order.status) - 1].text}`); 
+                            workbook.sheet("Order").row(i).cell(14).value(`${FNB_PAYMENT_METHOD[Number(item.order.paymentMethod) - 1].text}`);
+
+                            workbook.sheet("Order").row(i).cell(15).value(Number(item?.order?.total));
+                            workbook.sheet("Order").row(i).cell(16).value(Number(item?.order?.discount));
+                            workbook.sheet("Order").row(i).cell(17).value(Number(item?.order?.salesoff));
+                            workbook.sheet("Order").row(i).cell(18).value(Number(item?.order?.credit));
+                            workbook.sheet("Order").row(i).cell(19).value(Number(item?.order?.offer));
+                            workbook.sheet("Order").row(i).cell(20).value(Number(item?.order?.loyaltyPoints));
+                            workbook.sheet("Order").row(i).cell(21).value(item?.order?.appOrderSign);
+                            workbook.sheet("Order").row(i).cell(22).value(item?.funda?.name);
 
                             if(item?.subProducts?.length){
                                 let str = ''
@@ -1105,7 +1107,7 @@ class Model extends BaseModel {
                                     str = str + `${subitem.name} - ${Number(subitem.unitPrice)} |`
                                 })
 
-                                workbook.sheet("Order").row(i).cell(22).value(str);
+                                workbook.sheet("Order").row(i).cell(23).value(str);
                             }
 
                             i++
