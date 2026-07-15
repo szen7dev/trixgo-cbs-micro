@@ -71,10 +71,17 @@ class Model extends BaseModel {
                     a2 = Number(infoFunda.nightShiftStaffSalary) || 0
                 }
 
-                let a3 = Number(workingHours) || 0
-                let a4 = Number(subWorkingHours) || 0
-                let a5 = Number(staffsID.length) || 0
-                let a6 = Number(subStaffsID.length) || 0
+                let a3 = Number(workingHours) || 0 //Số giờ làm việc của ca chính
+                let a4 = Number(subWorkingHours) || 0 //Số giờ làm việc của ca phụ
+                let a5 = Number(staffsID.length) || 0 // Số Nhân viên ca chính
+                let a6 = Number(subStaffsID.length) || 0 // Số Nhân viên ca phụ
+
+                // Xử lý tạm thời: nếu ca đêm có 2 người cùng làm thì lương là 25k thay vì 27k
+                // Cần cấu hình vào infoFunda
+                if(a5 >= 2){
+                    a1 = 25000
+                    a2 = 25000
+                }
 
                 dataInsert.officialStaffSalar = a1
                 dataInsert.trialStaffSalary = a2
