@@ -78,7 +78,7 @@ class Model extends BaseModel {
 
                 // Xử lý tạm thời: nếu ca đêm có 2 người cùng làm thì lương là 25k thay vì 27k
                 // Cần cấu hình vào infoFunda
-                if(a5 >= 2){
+                if(shiftType && !isNaN(shiftType) && shiftType == 4 && a5 >= 2){
                     a1 = 25000
                     a2 = 25000
                 }
