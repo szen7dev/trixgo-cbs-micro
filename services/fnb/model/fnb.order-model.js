@@ -302,46 +302,46 @@ class Model extends BaseModel {
             }
           }
 
-          // Nếu có tích điểm
-          if (!isNaN(credit) && Number(credit) >= 0) {
-            let creditRound = 1000 * Math.round(credit / 1000);
+          // // Nếu có tích điểm
+          // if (!isNaN(credit) && Number(credit) >= 0) {
+          //   let creditRound = 1000 * Math.round(credit / 1000);
 
-            if (Number(amount) <= Number(creditRound)) {
-              creditRound = amount;
-              amount = 0;
-            } else {
-              amount = Number(amount) - Number(creditRound);
-            }
+          //   if (Number(amount) <= Number(creditRound)) {
+          //     creditRound = amount;
+          //     amount = 0;
+          //   } else {
+          //     amount = Number(amount) - Number(creditRound);
+          //   }
 
-            dataInsert.credit = Number(creditRound);
-          }
+          //   dataInsert.credit = Number(creditRound);
+          // }
 
           /**
            * Chính sách tích điểm => Mở chính thức vào 1/3/2023
            */
-          let factor = 0;
-          if (
-            Number(infoCustomer.purchasedOffValue) <
-            Number(FNB_FACTOR.credit.level2.purchasedOffValue)
-          ) {
-            factor = Number(FNB_FACTOR.credit.level1.factor);
-          } else {
-            if (
-              Number(infoCustomer.purchasedOffValue) <
-              Number(FNB_FACTOR.credit.level3.purchasedOffValue)
-            ) {
-              factor = Number(FNB_FACTOR.credit.level2.factor);
-            } else {
-              if (
-                Number(infoCustomer.purchasedOffValue) <
-                Number(FNB_FACTOR.credit.level4.purchasedOffValue)
-              ) {
-                factor = Number(FNB_FACTOR.credit.level3.factor);
-              } else {
-                factor = Number(FNB_FACTOR.credit.level4.factor);
-              }
-            }
-          }
+          // let factor = 0;
+          // if (
+          //   Number(infoCustomer.purchasedOffValue) <
+          //   Number(FNB_FACTOR.credit.level2.purchasedOffValue)
+          // ) {
+          //   factor = Number(FNB_FACTOR.credit.level1.factor);
+          // } else {
+          //   if (
+          //     Number(infoCustomer.purchasedOffValue) <
+          //     Number(FNB_FACTOR.credit.level3.purchasedOffValue)
+          //   ) {
+          //     factor = Number(FNB_FACTOR.credit.level2.factor);
+          //   } else {
+          //     if (
+          //       Number(infoCustomer.purchasedOffValue) <
+          //       Number(FNB_FACTOR.credit.level4.purchasedOffValue)
+          //     ) {
+          //       factor = Number(FNB_FACTOR.credit.level3.factor);
+          //     } else {
+          //       factor = Number(FNB_FACTOR.credit.level4.factor);
+          //     }
+          //   }
+          // }
 
           /**
            * OFFER GIẢM GIÁ TỪ VOUCHER
