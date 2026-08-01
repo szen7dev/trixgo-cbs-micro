@@ -319,7 +319,7 @@ class Model extends BaseModel {
           /**
            * Chính sách tích điểm => Mở chính thức vào 1/3/2023
            */
-          // let factor = 0;
+          let factor = 0;
           // if (
           //   Number(infoCustomer.purchasedOffValue) <
           //   Number(FNB_FACTOR.credit.level2.purchasedOffValue)
@@ -419,13 +419,13 @@ class Model extends BaseModel {
             dataInsert.offer = Number(offer);
           }
 
-          /**
-           * ĐIỂM TRUNG THÀNH
-           */
-          loyaltyPoints = Number(Number(amount) * Number(factor / 100)).toFixed(
-            0,
-          );
-          dataInsert.loyaltyPoints = Number(loyaltyPoints);
+          // /**
+          //  * ĐIỂM TRUNG THÀNH
+          //  */
+          // loyaltyPoints = Number(Number(amount) * Number(factor / 100)).toFixed(
+          //   0,
+          // );
+          // dataInsert.loyaltyPoints = Number(loyaltyPoints);
         }
 
         // Giá trị thanh toán
