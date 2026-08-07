@@ -40,6 +40,48 @@ const s3Client = s3.createClient({
 });
 
 /**
+ * Đổi link trỏ thẳng DO Spaces thành link đi qua gateway đã xác thực.
+ *
+ * Bucket giờ là private nên `Location` mà SDK trả về không mở được nữa. Hơn 100 chỗ
+ * trong services đang trả `result.Location` cho FE (file Excel/zip xuất ra), nên
+ * chuyển đổi ngay tại đây để không phải sửa từng chỗ.
+ *
+ * AWS_BUCKET_URL phải trỏ về gateway, ví dụ https://api.trixgo.com/api/files/s3
+ */
+const toProxyUrl = (location) => {
+    const base = (process.env.AWS_BUCKET_URL || '').replace(/\/+$/, '');
+    if (!location || !base) return location;
+
+    try {
+        const url = new URL(location);
+        let key = decodeURIComponent(url.pathname).replace(/^\/+/, '');
+
+        // Link kiểu path-style còn kèm tên bucket ở đầu -> cắt bỏ
+        for (const bucketName of [config.bucket, config.bucketDemo]) {
+            if (bucketName && key.startsWith(`${bucketName}/`)) {
+                key = key.slice(bucketName.length + 1);
+                break;
+            }
+        }
+
+        // Mã hoá lại từng đoạn: tên file có dấu cách/ký tự lạ vẫn ra link hợp lệ
+        const encodedKey = key.split('/').map(encodeURIComponent).join('/');
+
+        return `${base}/${encodedKey}`;
+    } catch (error) {
+        return location;
+    }
+}
+
+/**
+ * Bọc kết quả upload: giữ nguyên mọi field, chỉ thay Location bằng link có xác thực.
+ */
+const withProxyLocation = (result) => {
+    if (!result || !result.Location) return result;
+    return { ...result, Location: toProxyUrl(result.Location) };
+}
+
+/**
  * @deprecated
  * Use uploadFileS3V2 instead
  */
@@ -51,7 +93,6 @@ const uploadFileS3 = (pathFile, fileName) => {
     // Setting up S3 upload parameters
     const params = {
         Bucket: bucket,
-        ACL: 'public-read',
         Key: key, // File name you want to save as in S3
         Body: fileContent,
     };
@@ -59,7 +100,7 @@ const uploadFileS3 = (pathFile, fileName) => {
     return new Upload({
         client: s3Object,
         params,
-    }).done();
+    }).done().then(withProxyLocation);
 }
 
 /**
@@ -101,13 +142,12 @@ const uploadFileS3V2 = (uploadParams) => {
     const params = {
         Bucket: bucketName,
         Key: key,
-        ACL: 'public-read',
         ...uploadParams,
     };
     return new Upload({
         client: s3Object,
         params,
-    }).done();
+    }).done().then(withProxyLocation);
 }
 
 const downloadFileS3V2 = (params) => {
@@ -138,7 +178,6 @@ const downloadFileS3V2 = (params) => {
                     Bucket: bucketName,
                     Key: zipTo ? `${zipTo}/${fileName}` : `files/temporary_uploads/${KeyDefault}`,
                     Body: passThrough,
-                    ACL: 'public-read',
                     ContentType: 'application/zip',
                 };
                 try {
@@ -147,7 +186,7 @@ const downloadFileS3V2 = (params) => {
                         params,
                     }).done();
                     console.log(`File uploaded successfully. ${data.Location}`);
-                    resolve(data.Location);
+                    resolve(toProxyUrl(data.Location));
                 } catch (err) {
                     console.error("Error uploading file:", err);
                 }
@@ -188,7 +227,6 @@ const copyFileS3 = (copyParams) => {
 
         const params = {
             Bucket: bucketName,
-            ACL: 'public-read',
             ...copyParams
         };
 
@@ -233,7 +271,6 @@ const zipFileToS3 = async (files, key) => {
             Bucket,
             Key,
             Body: passThrough,
-            ACL: 'public-read',
             ContentType: 'application/zip',
         };
         try {
@@ -242,7 +279,7 @@ const zipFileToS3 = async (files, key) => {
                 params,
             }).done();
             console.log(`File uploaded successfully. ${data.Location}`);
-            resolve(data);
+            resolve(withProxyLocation(data));
         } catch (err) {
             console.error("Error uploading file:", err);
             reject(err);
@@ -285,4 +322,5 @@ module.exports = {
     copyFileS3,
     listObjectsS3,
     zipFileToS3,
+    toProxyUrl,
 }

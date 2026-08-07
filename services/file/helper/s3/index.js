@@ -6,9 +6,7 @@ let uuidv4 = require('uuid').v4;
 
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { Upload } = require('@aws-sdk/lib-storage');
-const { PutObjectCommand, S3 } = require('@aws-sdk/client-s3');
-
-console.log({ config });
+const { GetObjectCommand, PutObjectCommand, S3 } = require('@aws-sdk/client-s3');
 
 let s3Object = new S3({
     forcePathStyle: false, // Configures to use subdomain/virtual calling format.
@@ -41,10 +39,14 @@ let render_link_upload_file_s3 = async ({ fileName, type, typeUpload, pathS3 }) 
             key = `files/db/companys/${fileName}`;
         }
 
+        /**
+         * KHÔNG set ACL "public-read": object nằm private trong bucket, chỉ đọc được
+         * qua link ký tạm thời do gateway cấp sau khi user đã đăng nhập.
+         * Client cũng phải bỏ header x-amz-acl khi PUT, nếu không chữ ký sẽ lệch (403).
+         */
         let signedUrl = await getSignedUrl(s3Object, new PutObjectCommand({
             Bucket: config.bucket,
             Key: key,
-            ACL: "public-read",
             ContentType: type,
         }), {
             expiresIn: config.signedUrlExpireSeconds,
@@ -55,6 +57,30 @@ let render_link_upload_file_s3 = async ({ fileName, type, typeUpload, pathS3 }) 
         console.log({ error });
         return { error: true, message: "Can't presign url: " + error.message }
     }
+}
+
+/**
+ * Ký link đọc file (GET) có hạn — dùng cho tầng phục vụ file đã xác thực ở gateway.
+ *
+ * @param {string} key          Key trong bucket, không có dấu "/" đầu
+ * @param {number} expiresIn    Số giây link còn hiệu lực
+ * @param {string} fileName     Nếu có -> ép trình duyệt tải về với tên này
+ * @returns {Promise<string>}
+ */
+const getSignedDownloadUrl = ({ key, expiresIn, fileName }) => {
+    const commandParams = {
+        Bucket: config.bucket,
+        Key: key,
+    };
+
+    if (fileName) {
+        commandParams.ResponseContentDisposition =
+            `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`;
+    }
+
+    return getSignedUrl(s3Object, new GetObjectCommand(commandParams), {
+        expiresIn: expiresIn || config.signedDownloadExpireSeconds,
+    });
 }
 
 function render_link_upload_s3(fileName, type, typeUpload, pathS3) {
@@ -88,7 +114,6 @@ const uploadFile = (pathFile, key) => {
             const params = {
                 ContentEncoding: 'base64',
                 ContentType: 'image/jpeg',
-                ACL: 'public-read',
                 Bucket: bucket,
                 Key: key,
                 Body: parseBase64ToBuffer
@@ -298,3 +323,4 @@ const getPathS3 = ({
 exports.GENERATE_LINK_S3 = render_link_upload_s3;
 exports.UPLOAD_FILE_S3 = uploadFile;
 exports.GET_PATH_S3 = getPathS3;
+exports.GET_SIGNED_DOWNLOAD_URL = getSignedDownloadUrl;

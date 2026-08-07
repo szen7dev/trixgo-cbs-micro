@@ -7,6 +7,9 @@ exports.config = {
   bucket: process.env.AWS_BUCKET || "trx-demo-003",
   bucketDemo: process.env.AWS_BUCKET_DEMO || "trx-demo-003",
   bucketPath: process.env.AWS_BUCKET_PATH || "root",
+  // Hạn của link ký để UPLOAD (PUT)
   signedUrlExpireSeconds: 60000,
+  // Hạn của link ký để ĐỌC (GET) — gateway cấp sau khi user đã đăng nhập
+  signedDownloadExpireSeconds: Number(process.env.AWS_SIGNED_DOWNLOAD_EXPIRE_SECONDS || 300),
 };
 
