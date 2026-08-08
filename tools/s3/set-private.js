@@ -70,6 +70,13 @@ const run = async () => {
         forcePathStyle: false,
         endpoint: process.env.AWS_ENDPOINT_URL_S3 || "https://sgp1.digitaloceanspaces.com",
         region: "sgp1",
+        /**
+         * DO Spaces trả 503 SlowDown khi bị bắn quá nhanh. Chế độ adaptive tự hạ
+         * nhịp phía client thay vì bỏ cuộc — không có nó, một cú SlowDown khi
+         * ĐANG LIỆT KÊ sẽ giết cả lượt quét và để lại object vẫn public.
+         */
+        retryMode: "adaptive",
+        maxAttempts: 10,
         credentials: {
             accessKeyId: config.aws_access_key_id,
             secretAccessKey: config.aws_secret_access_key,
@@ -84,7 +91,15 @@ const run = async () => {
     let continuationToken;
     let scanned = 0;
     let updated = 0;
-    let failed = 0;
+    const stubborn = new Set(); // key đặt private không thành, thử lại ở cuối
+
+    const setPrivate = async (key) => {
+        await client.send(new PutObjectAclCommand({
+            Bucket: bucket,
+            Key: key,
+            ACL: "private",
+        }));
+    }
 
     do {
         const listed = await client.send(new ListObjectsV2Command({
@@ -103,15 +118,12 @@ const run = async () => {
 
                 await Promise.all(batch.map(async object => {
                     try {
-                        await client.send(new PutObjectAclCommand({
-                            Bucket: bucket,
-                            Key: object.Key,
-                            ACL: "private",
-                        }));
+                        await setPrivate(object.Key);
                         updated++;
                         if (args.verbose) console.log(`  private  ${object.Key}`);
                     } catch (error) {
-                        failed++;
+                        // Ghi lại để thử lại ở cuối — bỏ qua là để object vẫn public
+                        stubborn.add(object.Key);
                         console.error(`  LỖI      ${object.Key}: ${error.message}`);
                     }
                 }));
@@ -121,13 +133,35 @@ const run = async () => {
         }
 
         continuationToken = listed.IsTruncated ? listed.NextContinuationToken : undefined;
-        console.log(`Đã quét ${scanned} object | đã đặt private ${updated} | lỗi ${failed}`);
+        console.log(`Đã quét ${scanned} object | đã đặt private ${updated} | chờ thử lại ${stubborn.size}`);
     } while (continuationToken);
 
-    console.log("--------------------------------------------------");
-    console.log(`XONG. Tổng quét ${scanned}, đặt private ${updated}, lỗi ${failed}.`);
+    // Vòng thử lại: object nào vẫn hỏng sau các lượt này mới thật sự là thất bại
+    for (let round = 1; round <= 3 && stubborn.size > 0; round++) {
+        const keys = [...stubborn];
+        console.log(`Thử lại lượt ${round} cho ${keys.length} object...`);
 
-    if (failed > 0) process.exit(1);
+        for (let i = 0; i < keys.length; i += args.concurrency) {
+            await Promise.all(keys.slice(i, i + args.concurrency).map(async key => {
+                try {
+                    await setPrivate(key);
+                    stubborn.delete(key);
+                    updated++;
+                } catch (error) {
+                    console.error(`  VẪN LỖI  ${key}: ${error.message}`);
+                }
+            }));
+        }
+    }
+
+    console.log("--------------------------------------------------");
+    console.log(`XONG. Tổng quét ${scanned}, đặt private ${updated}, còn lỗi ${stubborn.size}.`);
+
+    if (stubborn.size > 0) {
+        console.error("Các key CHƯA khoá được (vẫn đang public):");
+        [...stubborn].slice(0, 50).forEach(k => console.error(`  ${k}`));
+        process.exit(1);
+    }
 }
 
 run().catch(error => {
