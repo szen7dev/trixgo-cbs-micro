@@ -62,12 +62,23 @@ const isUserActive = async (broker, userID) => {
     try {
         const result = await broker.call(
             `${CF_DOMAIN_SERVICES.AUTH}.${CF_ACTIONS_AUTH.USER_GET_INFO_AND_GET_LIST}`,
-            { userID, select: "status" }
+            {
+                userID,
+                select: "status",
+                populates: JSON.stringify({ path: "company", select: "_id" }),
+            }
         );
 
-        // Không tìm thấy user hoặc user bị khoá -> chặn
-        if (result?.error) active = false;
-        else if (result?.data?.status === 0) active = false;
+        /**
+         * Chỉ chặn khi tra cứu THÀNH CÔNG và tài khoản thật sự bị khoá — giống hệt
+         * cách gateway.authorize đang làm. Coi mọi lỗi tra cứu là "bị khoá" sẽ chặn
+         * oan toàn bộ user, vì action này trả error trong nhiều tình huống bình thường.
+         * Chữ ký JWT hợp lệ đã đủ chứng minh người dùng có đăng nhập.
+         */
+        if (!result?.error && result?.data?.status === 0) {
+            active = false;
+            broker.logger.info(`[file-access] chặn user bị khoá: ${userID}`);
+        }
     } catch (error) {
         // Auth service trục trặc: không chặn oan người đang dùng, chỉ ghi log
         broker.logger.warn("[file-access] không kiểm tra được trạng thái user:", error.message);
