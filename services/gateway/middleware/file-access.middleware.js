@@ -29,6 +29,13 @@ const { CF_ACTIONS_AUTH } = require("../../auth/helper/auth.actions-constant");
 const FILE_PROXY_PREFIX = "/api/files/s3/";
 const FILE_SESSION_PATH = "/api/files/session";
 
+/**
+ * moleculer-web cắt prefix của route (`/api`) khỏi req.url trước khi chạy middleware,
+ * nên phải nhận cả hai dạng đường dẫn: có và không có "/api".
+ */
+const PROXY_PREFIXES = [FILE_PROXY_PREFIX, "/files/s3/"];
+const SESSION_PATHS = [FILE_SESSION_PATH, "/files/session"];
+
 const COOKIE_NAME = process.env.FILE_COOKIE_NAME || "tx_file";
 const COOKIE_DOMAIN = process.env.FILE_COOKIE_DOMAIN || "";
 const COOKIE_SAME_SITE = process.env.FILE_COOKIE_SAME_SITE || "lax";
@@ -124,7 +131,10 @@ const sendJson = (res, statusCode, body) => {
  * Bóc key S3 từ URL. Chặn mọi mưu toan đi ngược thư mục.
  */
 const extractKey = (pathname) => {
-    const raw = pathname.slice(FILE_PROXY_PREFIX.length);
+    const prefix = PROXY_PREFIXES.find(p => pathname.startsWith(p));
+    if (!prefix) return null;
+
+    const raw = pathname.slice(prefix.length);
     if (!raw) return null;
 
     let key;
@@ -145,10 +155,10 @@ const extractKey = (pathname) => {
  */
 const createFileAccessMiddleware = (getBroker) => {
     return function fileAccessMiddleware(req, res, next) {
-        const pathname = (req.url || "").split("?")[0];
+        const pathname = (req.originalUrl || req.url || "").split("?")[0];
 
-        const isSession = pathname === FILE_SESSION_PATH;
-        const isProxy = pathname.startsWith(FILE_PROXY_PREFIX);
+        const isSession = SESSION_PATHS.includes(pathname);
+        const isProxy = PROXY_PREFIXES.some(p => pathname.startsWith(p));
 
         if (!isSession && !isProxy) return next();
 
@@ -211,7 +221,8 @@ const createFileAccessMiddleware = (getBroker) => {
                     return sendJson(res, 403, { error: true, message: "user_blocked" });
                 }
 
-                const query = new URLSearchParams((req.url.split("?")[1] || ""));
+                const rawUrl = req.originalUrl || req.url || "";
+                const query = new URLSearchParams((rawUrl.split("?")[1] || ""));
                 const downloadName = query.get("download");
 
                 const signedUrl = await GET_SIGNED_DOWNLOAD_URL({
