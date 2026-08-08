@@ -14,6 +14,10 @@ const { CF_DOMAIN_SERVICES } = require('./helper/domain.constant');
 const { CF_ACTIONS_GATEWAY } = require('./helper/gateway.actions-constant');
 const { CF_ACTIONS_AUTH } = require('../auth/helper/auth.actions-constant');
 const GATEWAY__HANDLER = require('./handler/gateway.handler');
+const { createFileAccessMiddleware } = require('./middleware/file-access.middleware');
+
+// Broker được gán ở lifecycle created() -> middleware express dùng lại để gọi service
+let brokerRef = null;
 
 // const v8 = require('node:v8');
 // const { heap_size_limit } = v8.getHeapStatistics();
@@ -42,6 +46,8 @@ module.exports = {
 		// Global Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
 		use: [
 			express.static(path.join(__dirname, "public")),
+			// Chặn trước routing: mọi request đọc file S3 phải qua xác thực
+			createFileAccessMiddleware(() => brokerRef),
 		],
 
 		cors: {
@@ -246,7 +252,9 @@ module.exports = {
 	},
 
 	// some lifecycle
-	created() { },
+	created() {
+		brokerRef = this.broker;
+	},
 	started() { },
 	stopped() {
 		if (this.app?.listening) {
