@@ -162,7 +162,7 @@ class Model extends BaseModel {
                     dataUpdate.quantity = Number(quantity);
                 }
 
-                if(unitPrice && !isNaN(unitPrice)){
+                if(!isNaN(unitPrice)){
                     dataUpdate.unitPrice = Number(unitPrice);
                     dataUpdate.unitPrice2 = Number(unitPrice2);
                     dataUpdate.unitPrice3 = Number(unitPrice3);
