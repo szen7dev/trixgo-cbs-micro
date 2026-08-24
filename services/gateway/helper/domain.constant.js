@@ -33,6 +33,7 @@ let CF_DOMAIN_SERVICES = {
     ZALO            : 'zalo',
     CRM             : 'crm',
     SHIPMENT        : 'shipment',
+    ADMIN           : 'admin',
 }
 
 exports.CF_DOMAIN_SERVICES = CF_DOMAIN_SERVICES;

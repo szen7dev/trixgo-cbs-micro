@@ -15,6 +15,7 @@ const { CF_ROUTINGS_CHATTING } 		= require('../chatting/helper/chatting.routes-c
 const { CF_ROUTINGS_DOCUMENT } 		= require('../document/helper/document.routes-constant');
 const { CF_ROUTINGS_REMINDER } 		= require('../reminder/helper/reminder.routes-constant');
 const { CF_ROUTINGS_FILE } 			= require('../file/helper/file.routes-constant');
+const { CF_ROUTINGS_ADMIN } 		= require('../admin/helper/admin.routes-constant');
 const { CF_ROUTINGS_MEDIA } 	    = require('../media/helper/media.routes-constant');
 const { CF_ROUTINGS_ITEM } 	    	= require('../item/helper/item.routes-constant');
 const { CF_ROUTINGS_CONTACT }		= require('../human/helper/human.routes-constant');
@@ -46,6 +47,7 @@ const { CF_ACTIONS_CHATTING } 		= require('../chatting/helper/chatting.actions-c
 const { CF_ACTIONS_DOCUMENT } 		= require('../document/helper/document.actions-constant');
 const { CF_ACTIONS_REMINDER } 		= require('../reminder/helper/reminder.actions-constant');
 const { CF_ACTIONS_FILE } 			= require('../file/helper/file.actions-constant');
+const { CF_ACTIONS_ADMIN } 			= require('../admin/helper/admin.actions-constant');
 const { CF_ACTIONS_MEDIA } 	        = require('../media/helper/media.actions-constant');
 const { CF_ACTIONS_ITEM } 	        = require('../item/helper/item.actions-constant');
 const { CF_ACTIONS_CONTACT }		= require('../human/helper/human.actions-constant');
@@ -455,6 +457,22 @@ module.exports = {
 
 		[`POST ${CF_ROUTINGS_FILE.GENERATE_LINK_S3}`] :
 		[`${CF_DOMAIN_SERVICES.FILE}.${CF_ACTIONS_FILE.GENERATE_LINK_S3}`],
+
+
+		//---------------------------🏁 START SERVICE ADMIN 🏁---------------------------//
+		/**
+		 * Sao lưu CSDL — CHỈ ĐỌC, và chỉ Admin ứng dụng Quản trị (level 0) gọi được.
+		 * Chốt quyền nằm trong handler (`admin.backup-handler.js`), không phải ở đây: nhóm
+		 * route này chỉ bật kiểm token, không phân biệt vai.
+		 * ⚠️ CỐ Ý không có route XOÁ. Vòng đời bản sao lưu do CronJob lo (giữ 14 ngày).
+		 */
+		[`GET ${CF_ROUTINGS_ADMIN.BACKUPS}`] :
+		[`${CF_DOMAIN_SERVICES.ADMIN}.${CF_ACTIONS_ADMIN.BACKUP_GET_LIST}`],
+
+		[`GET ${CF_ROUTINGS_ADMIN.BACKUP_DOWNLOAD_URL}`] :
+		[`${CF_DOMAIN_SERVICES.ADMIN}.${CF_ACTIONS_ADMIN.BACKUP_GET_URL}`],
+		//---------------------------🏁 END SERVICE ADMIN 🏁---------------------------//
+
 
 
 		//---------------------------🏁 START SERVICE ITEM 🏁---------------------------//
