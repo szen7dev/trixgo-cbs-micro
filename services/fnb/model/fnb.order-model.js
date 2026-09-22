@@ -1755,10 +1755,20 @@ class Model extends BaseModel {
 
         let conditionObj = {company: ObjectID(companyID)};
         let sortBy;
-        let keys = ["createAt__-1", "_id__-1"];
+        // Phân trang + sort theo _id (không phải createAt): _id luôn khớp đúng thời điểm tạo
+        // đơn (đã xác nhận nghiệp vụ không cho import Excel nên createAt không bị set lùi ngày).
+        // Với company+funda $in nhiều giá trị, sort theo createAt buộc Mongo phải quét HẾT tập
+        // khớp điều kiện rồi sort trong RAM (blocking sort) vì index company_1_funda_1_createAt_-1
+        // không cho thứ tự thời gian toàn cục khi funda có nhiều giá trị — đo thực tế: quét
+        // 1,55 triệu bản ghi, mất ~6s cho tài khoản quản lý nhiều cơ sở. Sort theo _id cho phép
+        // Mongo dùng index mặc định _id_ để quét ngược đã có sẵn thứ tự, lọc company/funda như
+        // điều kiện phụ và dừng ngay khi đủ limit — không cần sửa gì ở FE vì nextCursor vốn đã
+        // luôn là _id (xem infoDataAfterGet[limit-1]?._id bên dưới).
+        let keys = ["_id__-1"];
 
         let listFundaIsMember = await ITEM__FUNDA_COLL.find({
           members: { $in: [userID] },
+          company: ObjectID(companyID),
         }).select('_id')
 
         // Theo Đơn vị cơ sở mặc định
@@ -1899,8 +1909,11 @@ class Model extends BaseModel {
                 infoDataAfterGet.length = limit;
             }
         }
-        let totalRecord = await FNB_ORDER_COLL.count(conditionObjOrg);
-        let totalPage   = Math.ceil(totalRecord/limit);
+        // Chỉ đếm tổng ở trang đầu (không có lastestID) — đếm ở mọi trang cursor-pagination
+        // trên collection lớn (2.6M+ bản ghi) là nguyên nhân chính gây chậm, và FE
+        // (useFnbOrder.ts) chỉ đọc totalRecord/totalPage từ pages[0], không dùng ở trang sau.
+        let totalRecord = (lastestID && checkObjectIDs(lastestID)) ? null : await FNB_ORDER_COLL.countDocuments(conditionObjOrg);
+        let totalPage   = totalRecord == null ? null : Math.ceil(totalRecord/limit);
 
         return resolve({ error: false, data: {
             listRecords: infoDataAfterGet,
@@ -1979,6 +1992,7 @@ class Model extends BaseModel {
             } else {
               let listFundaIsMember = await ITEM__FUNDA_COLL.find({
                 members: { $in: [userID] },
+                company: ObjectID(companyID),
               });
               let fundasIDIsMember = listFundaIsMember.map((item) =>
                 ObjectID(item._id),
@@ -2002,6 +2016,7 @@ class Model extends BaseModel {
             } else {
               let listFundaIsMember = await ITEM__FUNDA_COLL.find({
                 members: { $in: [userID] },
+                company: ObjectID(companyID),
               });
               let fundasIDIsMember = listFundaIsMember.map((item) =>
                 ObjectID(item._id),
@@ -2887,6 +2902,7 @@ class Model extends BaseModel {
             }else{
               let listFundaIsMember = await ITEM__FUNDA_COLL.find({
                 members: { $in: [userID] },
+                company: ObjectID(companyID),
               });
               let fundasIDIsMember = listFundaIsMember.map((item) =>
                 ObjectID(item._id),
@@ -3336,6 +3352,7 @@ class Model extends BaseModel {
             } else {
               let listFundaIsMember = await ITEM__FUNDA_COLL.find({
                 members: { $in: [userID] },
+                company: ObjectID(companyID),
               });
               let fundasIDIsMember = listFundaIsMember.map((item) =>
                 ObjectID(item._id),
@@ -3670,6 +3687,7 @@ class Model extends BaseModel {
               // Địa điểm cơ sở được quyền truy cập
               let listFuda = await ITEM__FUNDA_COLL.find({
                 members: { $in: [userID] },
+                company: ObjectID(companyID),
               })
                 .select("_id name sign")
                 .sort({ _id: 1 });
@@ -4056,6 +4074,7 @@ class Model extends BaseModel {
                 } else {
                   listFundaIsMember = await ITEM__FUNDA_COLL.find({
                     members: { $in: [userID] },
+                    company: ObjectID(companyID),
                   }).select("_id name");
                   let fundasIDIsMember = listFundaIsMember.map((item) =>
                     ObjectID(item._id),
@@ -4399,6 +4418,7 @@ class Model extends BaseModel {
               } else {
                 let listFundaIsMember = await ITEM__FUNDA_COLL.find({
                   members: { $in: [userID] },
+                  company: ObjectID(companyID),
                 });
                 let fundasIDIsMember = listFundaIsMember.map((item) =>
                   ObjectID(item._id),
