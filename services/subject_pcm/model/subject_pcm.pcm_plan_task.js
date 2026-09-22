@@ -2127,7 +2127,7 @@ class Model extends BaseModel {
                     }
 
                     //__________Danh sách các nhóm dữ liệu mà userID là members
-                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, company: ObjectID(companyID) })
 
                     // Lấy công việc mà user được quyền truy cập
                     conditionObj.$or = [
@@ -2537,7 +2537,7 @@ class Model extends BaseModel {
                  */
                 if(isGroup && Number(isGroup) == 1){
                     // Lấy danh sách các nhóm dữ liệu mà userID là members
-                    const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    const listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, company: ObjectID(companyID) })
 
                     // Lấy công việc mà userID được quyền truy cập
                     conditionObj.$or = [
@@ -2755,7 +2755,7 @@ class Model extends BaseModel {
                 let conditionObj = {}, conditionProject = {}
 
                 // //__________Danh sách các nhóm dữ liệu mà userID là members
-                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, company: ObjectID(companyID) })
 
                 // Lấy công việc mà user được quyền truy cập
                 conditionObj.$or = [
@@ -3364,7 +3364,7 @@ class Model extends BaseModel {
 
                 // Việc liên quan/của tôi/giao
                 if(reportType && reportType == 3){
-                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]} })
+                    let listGroups = await PCM_PLAN_GROUP_COLL.find({ members: { $in: [userID]}, company: ObjectID(companyID) })
                     conditionObj.$or = [
                         { accessUsers: {$in: [ObjectID(userID)]}},
                         { group: { $in: listGroups.map(item => ObjectID(item._id)) }},
