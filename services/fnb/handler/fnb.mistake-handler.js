@@ -28,14 +28,24 @@ module.exports = {
             note                : { type: "string", optional: true },
         },
         async handler(ctx) {
-            // ⚠️ 2026-09-27: KHOÁ tạo mới — nghiệp vụ "Vi phạm nhân sự" đã chuyển sang hệ thống
-            // S7 (app.szen7.com/hr/violations-report). Dữ liệu cũ ở Trixgo giữ nguyên để tra cứu
-            // (getInfoAndGetList/update vẫn hoạt động bình thường), chỉ chặn tạo ticket MỚI ở
-            // đây để tránh phát sinh thêm dữ liệu lệch pha giữa 2 hệ thống. Yêu cầu trực tiếp.
-            return {
-                error: true,
-                message: "Chức năng ghi nhận vi phạm đã chuyển sang hệ thống mới (S7 - Kiểm soát nội bộ). Vui lòng liên hệ quản lý để được cấp quyền truy cập.",
-            };
+            try {
+                await this.validateEntity(ctx.params);
+                let { mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, companyID, date } = ctx.params;
+
+                const { _id: userID, company } = ctx.meta.infoUser;
+
+                if(!companyID){
+                    companyID = company._id
+                }
+
+                let resultAfterCallHandler = await FNB_MISTAKE_MODEL.insert({
+                    mistakeID, executorID, fundaID, orderID, type, amount, bonus, note, files, userID, companyID, date
+                });
+
+                return renderStatusCodeAndResponse({ resultAfterCallHandler, ctx });
+            } catch (error) {
+                return { error:  true, message: error.message };
+            }
         }
     },
 
