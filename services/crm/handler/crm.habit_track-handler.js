@@ -24,6 +24,14 @@ module.exports = {
             status              : { type: "string" },
         },
         async handler(ctx) {
+            // ⚠️ 2026-10-16: KHOÁ tạo mới crm_habit_tracks. Dữ liệu cũ giữ nguyên để tra cứu
+            // (getInfoAndGetList/getListByProperty/update/remove vẫn hoạt động), chỉ chặn tạo
+            // bản ghi MỚI qua hàm insert. Yêu cầu trực tiếp. Mở lại: xoá khối return bên dưới.
+            return {
+                error: true,
+                message: "Chức năng ghi nhận theo dõi thói quen (habit track) hiện đã bị khoá tạo mới.",
+            };
+
             try {
                 await this.validateEntity(ctx.params);
                 let { optionSeller, habitID, contactID, status, date, name, note, duration, resultType, percentage } = ctx.params;
