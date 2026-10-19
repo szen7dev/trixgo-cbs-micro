@@ -3753,25 +3753,20 @@ class Model extends BaseModel {
                 amount: { $sum: "$amount" },
               };
 
-              let listData = await FNB_ORDER_COLL.aggregate([
-                {
-                  $match: conditionObj,
-                },
-                {
-                  $project: projectObj,
-                },
-                {
-                  $match: conditionObjYear,
-                },
-                {
-                  $group: conditionGroup,
-                },
-                {
-                  $sort: sortBy,
-                },
-              ]);
+              /* 2026-10-19 — tối ưu: bản cũ chỉ lọc company+status+funda rồi mới $project/$match theo
+                 tháng ⇒ quét TOÀN BỘ đơn hoàn thành từ trước tới nay (Trixgo: 1.438.268 đơn), và quét
+                 HAI lần (theo cơ sở + theo ngày): đo trên prod 29,4 s/lần ≈ 59 s ⇒ vượt 60 s của ingress,
+                 người dùng nhận 504. Nay: (1) chặn createAt ngay ở $match đầu (dùng được index
+                 company+funda+createAt) — khoảng [ngày 1 tháng (m-2), ngày 1 tháng (m+1)) giờ VN, vẫn giữ
+                 $match năm/tháng phía sau nên kết quả y hệt; (2) một lượt group theo
+                 kênh+cơ sở+tháng+ngày rồi cộng dồn ra hai danh sách trong JS. Đo prod: 5,2 s cho cả hai. */
+              const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+              const firstMonth = Math.max(currentMonth - 2, 1);
+              const rangeStart = new Date(Date.UTC(yearFilter, firstMonth - 1, 1) - VN_OFFSET_MS);
+              const rangeEnd = new Date(Date.UTC(yearFilter, currentMonth, 1) - VN_OFFSET_MS); // tháng 12 ⇒ Date.UTC tự sang 1/1 năm sau
+              conditionObj.createAt = { $gte: rangeStart, $lt: rangeEnd };
 
-              let listData2 = await FNB_ORDER_COLL.aggregate([
+              let listDataMerged = await FNB_ORDER_COLL.aggregate([
                 {
                   $match: conditionObj,
                 },
@@ -3782,12 +3777,43 @@ class Model extends BaseModel {
                   $match: conditionObjYear,
                 },
                 {
-                  $group: conditionGroupDay,
+                  $group: {
+                    ...conditionGroup,
+                    _id: {
+                      salesChannel: "$salesChannel",
+                      funda: "$funda",
+                      month: "$month",
+                      day: "$day",
+                    },
+                  },
                 },
-                {
-                  $sort: { "_id.month": 1, "_id.day": 1 },
-                },
-              ]);
+              ]).allowDiskUse(true);
+
+              const SUM_FIELDS = ["number", "total", "discount", "salesoff", "credit", "amount"];
+              const rollUp = (keyOf) => {
+                const acc = new Map();
+                for (const row of listDataMerged) {
+                  const { key, id } = keyOf(row._id);
+                  let cur = acc.get(key);
+                  if (!cur) {
+                    cur = { _id: id };
+                    SUM_FIELDS.forEach((f) => (cur[f] = 0));
+                    acc.set(key, cur);
+                  }
+                  SUM_FIELDS.forEach((f) => (cur[f] += Number(row[f]) || 0));
+                }
+                return [...acc.values()];
+              };
+              // Giống `conditionGroup` cũ: kênh + cơ sở + tháng.
+              let listData = rollUp(({ salesChannel, funda, month }) => ({
+                key: `${salesChannel}|${funda}|${month}`,
+                id: { salesChannel, funda, month },
+              })).sort((a, b) => Number(a._id.salesChannel) - Number(b._id.salesChannel));
+              // Giống `conditionGroupDay` cũ: kênh + ngày + tháng.
+              let listData2 = rollUp(({ salesChannel, day, month }) => ({
+                key: `${salesChannel}|${month}|${day}`,
+                id: { salesChannel, day, month },
+              })).sort((a, b) => a._id.month - b._id.month || a._id.day - b._id.day);
               // console.log(listData2)
               // console.log(conditionObjYear)
 
@@ -3812,62 +3838,35 @@ class Model extends BaseModel {
                   });
                 }
 
-                listData?.forEach((item, index) => {
-                  for (var m = 1; m <= 12; m++) {
-                    if (Number(item._id.month) === Number(m)) {
-                      for (var i = 3; i <= Number(listFuda.length + 2); i++) {
-                        let discount = 0,
-                          salesoff = 0,
-                          credit = 0,
-                          amount = 0;
-                        let fundaID = workbook
-                          .sheet(`T${m}`)
-                          .row(i)
-                          .cell(3)
-                          .value();
+                /* 2026-10-19 — tra bằng Map thay vì quét lồng (mỗi bản ghi × mọi dòng × đọc ô Excel).
+                   Dòng của cơ sở = 3 + vị trí trong `listFuda` (đúng thứ tự vừa ghi ở trên). */
+                const fundaRow = new Map(listFuda.map((f, idx) => [String(f._id), idx + 3]));
+                const monthFundaSums = new Map(); // `${month}|${fundaID}` → tổng discount/salesoff/credit/amount
+                listData?.forEach((item) => {
+                  const m = Number(item._id.month);
+                  const fundaKey = String(item._id.funda);
+                  const i = fundaRow.get(fundaKey);
+                  if (m < 1 || m > 12 || !i) return;
 
-                        if (item._id.funda.toString() === fundaID.toString()) {
-                          for (var j = 4; j <= 10; j++) {
-                            if (
-                              Number(item._id.salesChannel) === Number(j - 3)
-                            ) {
-                              workbook
-                                .sheet(`T${m}`)
-                                .row(i)
-                                .cell(j)
-                                .value(Number(item.total));
-                            }
-                          }
-                        }
-                      }
-                    }
+                  const channel = Number(item._id.salesChannel);
+                  if (channel >= 1 && channel <= 7) {
+                    workbook.sheet(`T${m}`).row(i).cell(channel + 3).value(Number(item.total));
                   }
+
+                  const key = `${m}|${fundaKey}`;
+                  const cur = monthFundaSums.get(key) || { discount: 0, salesoff: 0, credit: 0, amount: 0 };
+                  cur.discount += Number(item.discount);
+                  cur.salesoff += Number(item.salesoff);
+                  cur.credit += Number(item.credit);
+                  cur.amount += Number(item.amount);
+                  monthFundaSums.set(key, cur);
                 });
 
                 for (var m = 1; m <= 12; m++) {
                   for (var i = 3; i <= Number(listFuda.length + 2); i++) {
-                    let discount = 0,
-                      salesoff = 0,
-                      credit = 0,
-                      amount = 0;
-
-                    let fundaID = workbook
-                      .sheet(`T${m}`)
-                      .row(i)
-                      .cell(3)
-                      .value();
-
-                    listData?.forEach((item, index) => {
-                      if (
-                        item._id.funda.toString() === fundaID.toString() &&
-                        Number(item._id.month) === Number(m)
-                      ) {
-                        discount = Number(discount) + Number(item.discount);
-                        salesoff = Number(salesoff) + Number(item.salesoff);
-                        credit = Number(credit) + Number(item.credit);
-                        amount = Number(amount) + Number(item.amount);
-                      }
-                    });
+                    const fundaID = `${listFuda[i - 3]._id}`;
+                    const { discount, salesoff, credit, amount } =
+                      monthFundaSums.get(`${m}|${fundaID}`) || { discount: 0, salesoff: 0, credit: 0, amount: 0 };
 
                     workbook
                       .sheet(`T${m}`)
@@ -3897,64 +3896,40 @@ class Model extends BaseModel {
                   .row(1)
                   .cell(2)
                   .value(Number(currentYear));
-                listData2?.forEach((item, index) => {
-                  for (var i = 3; i <= 379; i++) {
-                    let xlsDay = workbook
-                      .sheet(`BaoCaoNgay`)
-                      .row(i)
-                      .cell(3)
-                      .value();
-                    let xlsMonth = workbook
-                      .sheet(`BaoCaoNgay`)
-                      .row(i)
-                      .cell(4)
-                      .value();
+                /* Đọc ngày/tháng của 377 dòng mẫu MỘT lần, thay vì đọc lại cho từng bản ghi (bản cũ:
+                   ~600 bản ghi × 377 dòng × 2 lần đọc ô). Khoá so khớp giữ đúng phép `Number(...)` cũ. */
+                const dayRows = [];
+                const rowsByMonthDay = new Map(); // `${month}|${day}` → các dòng mẫu khớp
+                for (var i = 3; i <= 379; i++) {
+                  const xlsDay = workbook.sheet(`BaoCaoNgay`).row(i).cell(3).value();
+                  const xlsMonth = workbook.sheet(`BaoCaoNgay`).row(i).cell(4).value();
+                  const key = `${Number(xlsMonth)}|${Number(xlsDay)}`;
+                  dayRows.push({ i, xlsDay, key });
+                  if (!rowsByMonthDay.has(key)) rowsByMonthDay.set(key, []);
+                  rowsByMonthDay.get(key).push(i);
+                }
 
-                    for (var j = 5; j <= 11; j++) {
-                      if (
-                        Number(item._id.salesChannel) === Number(j - 4) &&
-                        Number(item._id.day) === Number(xlsDay) &&
-                        Number(item._id.month) === Number(xlsMonth)
-                      ) {
-                        workbook
-                          .sheet(`BaoCaoNgay`)
-                          .row(i)
-                          .cell(j)
-                          .value(Number(item.total));
-                      }
-                    }
+                const monthDaySums = new Map();
+                listData2?.forEach((item) => {
+                  const key = `${Number(item._id.month)}|${Number(item._id.day)}`;
+                  const channel = Number(item._id.salesChannel);
+                  if (channel >= 1 && channel <= 7) {
+                    (rowsByMonthDay.get(key) || []).forEach((i) => {
+                      workbook.sheet(`BaoCaoNgay`).row(i).cell(channel + 4).value(Number(item.total));
+                    });
                   }
+                  const cur = monthDaySums.get(key) || { discount: 0, salesoff: 0, credit: 0, amount: 0 };
+                  cur.discount += Number(item.discount);
+                  cur.salesoff += Number(item.salesoff);
+                  cur.credit += Number(item.credit);
+                  cur.amount += Number(item.amount);
+                  monthDaySums.set(key, cur);
                 });
 
-                for (var i = 3; i <= 379; i++) {
-                  let discount = 0,
-                    salesoff = 0,
-                    credit = 0,
-                    amount = 0;
-                  let xlsDay = workbook
-                    .sheet(`BaoCaoNgay`)
-                    .row(i)
-                    .cell(3)
-                    .value();
-                  let xlsMonth = workbook
-                    .sheet(`BaoCaoNgay`)
-                    .row(i)
-                    .cell(4)
-                    .value();
-
+                for (const { i, xlsDay, key } of dayRows) {
                   if (!isNaN(xlsDay)) {
-                    // console.log({xlsDay, xlsMonth})
-                    listData2?.forEach((item, index) => {
-                      if (
-                        Number(item._id.day) === Number(xlsDay) &&
-                        Number(item._id.month) === Number(xlsMonth)
-                      ) {
-                        discount = Number(discount) + Number(item.discount);
-                        salesoff = Number(salesoff) + Number(item.salesoff);
-                        credit = Number(credit) + Number(item.credit);
-                        amount = Number(amount) + Number(item.amount);
-                      }
-                    });
+                    const { discount, salesoff, credit, amount } =
+                      monthDaySums.get(key) || { discount: 0, salesoff: 0, credit: 0, amount: 0 };
 
                     workbook
                       .sheet(`BaoCaoNgay`)
