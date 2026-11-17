@@ -164,9 +164,29 @@ const downloadFileS3 = async (pathDownload, fileName, filePath, fileNameLocal) =
     })
 }
 
-const uploadFileS3V2 = (uploadParams) => {
+const uploadFileS3V2 = async (uploadParams) => {
     const bucketName = `${config.bucketDemo}`;
     const key = `files/temporary_uploads`;
+
+    // Local không có khoá S3: ghi Body ra public/local-files theo Key, trả kết quả cùng dạng.
+    if (!hasS3Credentials()) {
+        const relKey = String((uploadParams && uploadParams.Key) || `${key}/${uuidv4()}`).replace(/^\/+/, '');
+        const target = path.resolve(LOCAL_FILE_DIR, '..', relKey);
+        if (!target.startsWith(path.resolve(LOCAL_FILE_DIR, '..'))) throw new Error('invalid_local_key');
+        if (relKey.endsWith('/')) {
+            await fs.promises.mkdir(target, { recursive: true });
+        } else {
+            await fs.promises.mkdir(path.dirname(target), { recursive: true });
+            const body = uploadParams && uploadParams.Body;
+            if (body && typeof body.pipe === 'function') {
+                await stream.promises.pipeline(body, fs.createWriteStream(target));
+            } else {
+                await fs.promises.writeFile(target, body == null ? '' : body);
+            }
+        }
+        const base = (process.env.LOCAL_FILE_BASE_URL || `http://localhost:${process.env.PORT || 3003}`).replace(/\/+$/, '');
+        return { Key: relKey, Location: `${base}/local-files/${relKey.split('/').map(encodeURIComponent).join('/')}` };
+    }
 
     const params = {
         Bucket: bucketName,

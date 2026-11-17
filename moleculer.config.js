@@ -1,6 +1,18 @@
 "use strict";
 
 const { REDIS_SEPERATOR } = require('./tools/cache/cf_redis');
+
+// Chỉ bật khi chạy local (LOCAL_SAFE_MODE=1): một promise lỗi không ai bắt trong một action
+// (vd upload S3 trong .then của XlsxPopulate) không được kéo sập cả micro — ghi log để sửa.
+if (process.env.LOCAL_SAFE_MODE === '1') {
+	process.on('unhandledRejection', (reason) => {
+		console.error('[LOCAL_SAFE_MODE] unhandledRejection:', reason && reason.stack ? reason.stack : reason);
+	});
+	process.on('uncaughtException', (err) => {
+		if (err && err.code === 'EADDRINUSE') return; // socket.io trùng cổng 3003: vô hại khi chạy local
+		console.error('[LOCAL_SAFE_MODE] uncaughtException:', err && err.stack ? err.stack : err);
+	});
+}
 // const NewRelicMiddleware = require('./tools/newrelic/newrelic.middleware');
 
 /**
