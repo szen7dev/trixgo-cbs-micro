@@ -78,3 +78,6 @@ provisioning/dump
 ops/db/*
 mongodb-osx-ssl-x86_64-4.0.12.tgz
 temp/*
+
+# File xuat bao cao luu local khi khong co khoa S3 (tools/s3 saveFileLocally)
+public/local-files/
