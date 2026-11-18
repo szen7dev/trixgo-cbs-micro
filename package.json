@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "My Moleculer-based microservices project",
   "scripts": {
-    "dev": "moleculer-runner -r --hot ./services/**/*.service.js",
-    "dev:watch": "nodemon --watch services --watch tools --watch moleculer.config.js --exec \"npm run dev\"",
-    "start": "moleculer-runner services/**/*.service.js",
+    "dev": "node init && moleculer-runner -r --hot ./services/**/*.service.js",
+    "dev:watch": "node init && nodemon --watch services --watch tools --watch moleculer.config.js --exec \"npm run dev\"",
+    "start": "node init && moleculer-runner services/**/*.service.js",
     "onesignal:test": "node ./tools/cloudmsg/onesignal.diagnostic.js",
     "cli": "moleculer connect NATS",
     "ci": "jest --watch",

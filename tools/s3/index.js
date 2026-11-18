@@ -81,11 +81,40 @@ const withProxyLocation = (result) => {
     return { ...result, Location: toProxyUrl(result.Location) };
 }
 
+// Thư mục `public` ở gốc repo = assets.folder của gateway (moleculer-web phục vụ tĩnh)
+const LOCAL_FILE_DIR = path.resolve(__dirname, '../../public/local-files/temporary_uploads');
+
+const hasS3Credentials = () => Boolean(
+    (config.aws_access_key_id || process.env.AWS_ACCESS_KEY_ID) &&
+    (config.aws_secret_access_key || process.env.AWS_SECRET_ACCESS_KEY)
+);
+
+/**
+ * Chế độ local (không có khoá S3): chép file vào public/local-files ở gốc repo,
+ * gateway phục vụ tĩnh thư mục này ⇒ trình duyệt tải thẳng từ máy chạy micro.
+ * Giữ đúng dạng kết quả của Upload.done() (có Location, Key) để code gọi không phải đổi.
+ */
+const saveFileLocally = async (pathFile, fileName) => {
+    await fs.promises.mkdir(LOCAL_FILE_DIR, { recursive: true });
+    const safeName = path.basename(fileName);
+    await fs.promises.copyFile(pathFile, path.join(LOCAL_FILE_DIR, safeName));
+
+    const base = (process.env.LOCAL_FILE_BASE_URL || `http://localhost:${process.env.PORT || 3003}`).replace(/\/+$/, '');
+    const key = `local-files/temporary_uploads/${safeName}`;
+    return { Key: key, Location: `${base}/local-files/temporary_uploads/${encodeURIComponent(safeName)}` };
+}
+
 /**
  * @deprecated
  * Use uploadFileS3V2 instead
  */
-const uploadFileS3 = (pathFile, fileName) => {
+const uploadFileS3 =(pathFile, fileName) => {
+    // Máy local không có khoá S3: lưu file vào thư mục public của gateway và trả link tải trực tiếp,
+    // thay vì gọi S3 rồi văng lỗi "Resolved credential object is not valid" làm sập cả tiến trình.
+    if (!hasS3Credentials()) {
+        return saveFileLocally(pathFile, fileName);
+    }
+
     const fileContent = fs.readFileSync(pathFile);
     const bucket = process.env.AWS_BUCKET_DEMO;
     const key = `files/temporary_uploads/${fileName}`;
@@ -135,9 +164,29 @@ const downloadFileS3 = async (pathDownload, fileName, filePath, fileNameLocal) =
     })
 }
 
-const uploadFileS3V2 = (uploadParams) => {
+const uploadFileS3V2 = async (uploadParams) => {
     const bucketName = `${config.bucketDemo}`;
     const key = `files/temporary_uploads`;
+
+    // Local không có khoá S3: ghi Body ra public/local-files theo Key, trả kết quả cùng dạng.
+    if (!hasS3Credentials()) {
+        const relKey = String((uploadParams && uploadParams.Key) || `${key}/${uuidv4()}`).replace(/^\/+/, '');
+        const target = path.resolve(LOCAL_FILE_DIR, '..', relKey);
+        if (!target.startsWith(path.resolve(LOCAL_FILE_DIR, '..'))) throw new Error('invalid_local_key');
+        if (relKey.endsWith('/')) {
+            await fs.promises.mkdir(target, { recursive: true });
+        } else {
+            await fs.promises.mkdir(path.dirname(target), { recursive: true });
+            const body = uploadParams && uploadParams.Body;
+            if (body && typeof body.pipe === 'function') {
+                await stream.promises.pipeline(body, fs.createWriteStream(target));
+            } else {
+                await fs.promises.writeFile(target, body == null ? '' : body);
+            }
+        }
+        const base = (process.env.LOCAL_FILE_BASE_URL || `http://localhost:${process.env.PORT || 3003}`).replace(/\/+$/, '');
+        return { Key: relKey, Location: `${base}/local-files/${relKey.split('/').map(encodeURIComponent).join('/')}` };
+    }
 
     const params = {
         Bucket: bucketName,
